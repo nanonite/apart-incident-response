@@ -3,6 +3,7 @@ import json
 import os
 import sys
 import tempfile
+import threading
 import textwrap
 import unittest
 from pathlib import Path
@@ -16,6 +17,8 @@ from apart_incident_response.runtime import (
     RuntimeConfig,
     RuntimeConfigError,
     SystemBudget,
+    _ModelEgressProxy,
+    _prepare_model_limits,
     build_pi_command,
     create_isolated_workspace,
     load_identity,
@@ -137,6 +140,25 @@ class RuntimeContractTests(unittest.TestCase):
             identity_index = command.index("APART_RUN_ID")
             self.assertEqual(command[identity_index + 1], "run-001")
 
+    def test_model_relay_allows_model_and_oauth_hosts_only_over_https(self):
+        relay = _ModelEgressProxy(Path("/tmp/unused-relay.sock"), ("chatgpt.com", "auth.openai.com"))
+        self.assertTrue(relay._allowed("chatgpt.com", 443))
+        self.assertTrue(relay._allowed("auth.openai.com", 443))
+        self.assertFalse(relay._allowed("example.com", 443))
+        self.assertFalse(relay._allowed("chatgpt.com", 80))
+        self.assertEqual(relay._parse_connect_target("chatgpt.com:443"), ("chatgpt.com", 443))
+        self.assertEqual(relay._parse_connect_target("auth.openai.com:443"), ("auth.openai.com", 443))
+        for target in ("example.com:443", "chatgpt.com:80", "chatgpt.com", "https://chatgpt.com:443", "chatgpt.com:443:extra"):
+            self.assertIsNone(relay._parse_connect_target(target))
+
+    def test_model_relay_denies_malformed_proxy_request(self):
+        relay = _ModelEgressProxy(Path("/tmp/unused-relay.sock"), ("chatgpt.com", "auth.openai.com"))
+        client = MagicMock()
+        client.recv.return_value = b"GET https://example.com/ HTTP/1.1\r\n\r\n"
+        relay._handle_client(client)
+        self.assertTrue(any(b"403 Forbidden" in call.args[0] for call in client.sendall.call_args_list))
+        client.close.assert_called_once()
+
     def test_extension_is_mounted_and_enabled_explicitly(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
@@ -208,13 +230,78 @@ class RuntimeContractTests(unittest.TestCase):
     def test_system_budget_claim_is_reserved_before_launch(self):
         budget = SystemBudget(10, 2)
         claim = budget.claim(10, 2)
-        self.assertEqual(claim, (10, 2))
+        self.assertIsNotNone(claim)
+        assert claim is not None
+        self.assertEqual((claim.token_limit, claim.tool_call_limit), (10, 2))
         self.assertIsNone(budget.claim(1, 1))
         self.assertEqual(budget.snapshot()["tokens_reserved"], 10)
         self.assertTrue(budget.settle(claim, 3, 1))
         self.assertEqual(budget.tokens_used, 3)
         self.assertEqual(budget.tool_calls_used, 1)
         self.assertEqual(budget.snapshot()["tokens_reserved"], 0)
+
+    def test_system_budget_settlement_bounds_actual_over_claim(self):
+        budget = SystemBudget(10, 2)
+        claim = budget.claim(10, 2)
+        assert claim is not None
+        settlement = budget.settle(claim, tokens=15, tool_calls=3)
+        self.assertFalse(settlement)
+        self.assertEqual(settlement.token_overage, 5)
+        self.assertEqual(settlement.tool_call_overage, 1)
+        snapshot = budget.snapshot()
+        self.assertEqual(snapshot["tokens_used"], 10)
+        self.assertEqual(snapshot["tool_calls_used"], 2)
+        self.assertLessEqual(snapshot["tokens_used"] + snapshot["tokens_reserved"], snapshot["token_limit"])
+        self.assertLessEqual(snapshot["tool_calls_used"] + snapshot["tool_calls_reserved"], snapshot["tool_call_limit"])
+        with self.assertRaises(RuntimeConfigError):
+            budget.settle(claim, 0, 0)
+
+    def test_system_budget_concurrent_claims_are_atomic(self):
+        budget = SystemBudget(10, 4)
+        barrier = threading.Barrier(8)
+        claims = []
+        violations = []
+        lock = threading.Lock()
+
+        def claim_once():
+            barrier.wait()
+            claim = budget.claim(4, 1)
+            snapshot = budget.snapshot()
+            if snapshot["tokens_used"] + snapshot["tokens_reserved"] > snapshot["token_limit"]:
+                with lock:
+                    violations.append("tokens")
+            if snapshot["tool_calls_used"] + snapshot["tool_calls_reserved"] > snapshot["tool_call_limit"]:
+                with lock:
+                    violations.append("tool_calls")
+            if claim is not None:
+                with lock:
+                    claims.append(claim)
+
+        threads = [threading.Thread(target=claim_once) for _ in range(8)]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
+        self.assertEqual(violations, [])
+        self.assertEqual(len(claims), 2)
+        for claim in claims:
+            self.assertTrue(budget.settle(claim, 4, 1))
+        snapshot = budget.snapshot()
+        self.assertLessEqual(snapshot["tokens_used"] + snapshot["tokens_reserved"], snapshot["token_limit"])
+        self.assertLessEqual(snapshot["tool_calls_used"] + snapshot["tool_calls_reserved"], snapshot["tool_call_limit"])
+
+    def test_pi_provider_max_output_override_is_staged(self):
+        with tempfile.TemporaryDirectory() as temp:
+            identity = self.identity()
+            workspace = create_isolated_workspace(Path(temp), identity)
+            config = self.config(per_agent_token_budget=17)
+            path = _prepare_model_limits(workspace, config)
+            self.assertIsNotNone(path)
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            self.assertEqual(
+                payload["providers"]["openai-codex"]["modelOverrides"]["gpt-5.6-luna"]["maxTokens"],
+                17,
+            )
 
     def test_agent_lifecycle_writes_complete_artifact(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -336,6 +423,36 @@ class RuntimeContractTests(unittest.TestCase):
             self.assertEqual(result.status.value, "failed")
             self.assertIn("provider unavailable", result.failure_reason or "")
 
+    def test_agent_actual_usage_over_claim_is_explicit_budget_failure(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            fake_agent = root / "over_budget.py"
+            fake_agent.write_text(
+                "import json\n"
+                "print(json.dumps({'type': 'message_end', 'message': {"
+                "'role': 'assistant', 'content': [{'type': 'text', 'text': 'too much'}], "
+                "'usage': {'totalTokens': 15}, 'stopReason': 'stop'}}), flush=True)\n",
+                encoding="utf-8",
+            )
+            identity = self.identity()
+            workspace = create_isolated_workspace(root / "runs", identity)
+            config = self.config(
+                launch_command=(sys.executable, str(fake_agent)),
+                per_agent_token_budget=10,
+                per_agent_tool_call_budget=2,
+                aggregate_token_budget=10,
+                aggregate_tool_call_budget=2,
+            )
+            budget = SystemBudget(10, 2)
+            result = AgentRun(config, identity, workspace, budget).run("ping")
+            self.assertEqual(result.status.value, "budget_exhausted")
+            self.assertIn("provider usage exceeded", result.failure_reason or "")
+            snapshot = budget.snapshot()
+            self.assertEqual(snapshot["tokens_used"], 10)
+            self.assertEqual(snapshot["tokens_over_budget"], 5)
+            self.assertEqual(snapshot["tokens_reserved"], 0)
+            self.assertLessEqual(snapshot["tokens_used"] + snapshot["tokens_reserved"], snapshot["token_limit"])
+
     def test_budget_claim_blocks_process_before_launch(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
@@ -368,6 +485,9 @@ class RuntimeContractTests(unittest.TestCase):
                 aggregate_token_budget=10,
                 aggregate_tool_call_budget=2,
             )
+            private_agent_home = workspace.root / "home" / ".pi" / "agent"
+            private_agent_home.mkdir(parents=True)
+            (private_agent_home / "auth.json.lock").mkdir()
             fake_process = MagicMock()
             fake_process.stdin.write.side_effect = BrokenPipeError("child exited")
             fake_process.poll.return_value = 0
@@ -378,6 +498,57 @@ class RuntimeContractTests(unittest.TestCase):
                 result = AgentRun(config, identity, workspace, SystemBudget(10, 2)).run("ping")
             self.assertEqual(result.status.value, "failed")
             self.assertFalse((workspace.root / "home" / ".pi" / "agent" / "auth.json").exists())
+            self.assertFalse((workspace.root / "home" / ".pi" / "agent" / "auth.json.lock").exists())
+            self.assertFalse((workspace.root / "home" / ".pi" / "agent" / "models.json").exists())
+
+    def test_cleanup_error_does_not_skip_proxy_shutdown_or_mask_result(self):
+        with tempfile.TemporaryDirectory() as temp:
+            identity = self.identity()
+            workspace = create_isolated_workspace(Path(temp), identity)
+            config = self.config(
+                isolation=IsolationPolicy(model_network=True),
+                per_agent_token_budget=10,
+                per_agent_tool_call_budget=2,
+                aggregate_token_budget=10,
+                aggregate_tool_call_budget=2,
+            )
+            fake_process = MagicMock()
+            fake_process.stdin.write.side_effect = BrokenPipeError("child exited")
+            fake_process.poll.return_value = 0
+            fake_process.wait.return_value = 0
+            fake_proxy = MagicMock()
+            with patch("apart_incident_response.runtime._ModelEgressProxy", return_value=fake_proxy), patch(
+                "apart_incident_response.runtime.build_pi_command", return_value=["fake-agent"]
+            ), patch("apart_incident_response.runtime.subprocess.Popen", return_value=fake_process), patch.object(
+                AgentRun, "_cleanup_staged_auth", side_effect=OSError("cleanup failed")
+            ):
+                result = AgentRun(config, identity, workspace, SystemBudget(10, 2)).run("ping")
+            self.assertEqual(result.status.value, "failed")
+            fake_proxy.stop.assert_called_once()
+
+    def test_auth_cleanup_handles_lock_file_symlink_and_directory(self):
+        with tempfile.TemporaryDirectory() as temp:
+            identity = self.identity()
+            workspace = create_isolated_workspace(Path(temp), identity)
+            run = AgentRun(self.config(), identity, workspace, SystemBudget(10, 2))
+            agent_home = workspace.root / "home" / ".pi" / "agent"
+            agent_home.mkdir(parents=True)
+            outside = Path(temp) / "outside-lock-target"
+            outside.write_text("keep", encoding="utf-8")
+            for shape in ("file", "symlink", "directory"):
+                (agent_home / "auth.json").write_text("{}\n", encoding="utf-8")
+                lock = agent_home / "auth.json.lock"
+                if shape == "file":
+                    lock.write_text("lock", encoding="utf-8")
+                elif shape == "symlink":
+                    lock.symlink_to(outside)
+                else:
+                    lock.mkdir()
+                    (lock / "owner").write_text("lock", encoding="utf-8")
+                run._cleanup_staged_auth()
+                self.assertFalse((agent_home / "auth.json").exists())
+                self.assertFalse(lock.exists() or lock.is_symlink())
+            self.assertEqual(outside.read_text(encoding="utf-8"), "keep")
 
     def test_agent_timeout_produces_failure_artifact(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -407,6 +578,8 @@ class RuntimeContractTests(unittest.TestCase):
         self.assertEqual(config.model, "openai-codex/gpt-5.6-luna")
         self.assertEqual(config.pi_auth_file_env, "APART_PI_AUTH_FILE")
         self.assertTrue(config.isolation.model_network)
+        self.assertEqual(config.isolation.model_hosts, ("chatgpt.com",))
+        self.assertEqual(config.isolation.oauth_hosts, ("auth.openai.com",))
         encoded = json.dumps(config.to_dict())
         self.assertIn('"C2"', encoded)
 

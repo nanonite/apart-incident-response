@@ -19,6 +19,7 @@
     "sandbox": "bubblewrap",
     "model_network": true,
     "model_hosts": ["chatgpt.com"],
+    "oauth_hosts": ["auth.openai.com"],
     "network": false,
     "shared_filesystem": false,
     "shell": false,

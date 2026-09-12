@@ -178,6 +178,7 @@ class IsolationPolicy:
     # allowlisted relay, never through the host network namespace directly.
     model_network: bool = False
     model_hosts: tuple[str, ...] = ("chatgpt.com",)
+    oauth_hosts: tuple[str, ...] = ("auth.openai.com",)
     network: bool = False
     shared_filesystem: bool = False
     shell: bool = False
@@ -206,7 +207,9 @@ class IsolationPolicy:
             raise RuntimeConfigError("a production runtime requires bubblewrap isolation")
         if not self.model_hosts:
             raise RuntimeConfigError("model_hosts must contain at least one provider hostname")
-        for host in self.model_hosts:
+        if not self.oauth_hosts:
+            raise RuntimeConfigError("oauth_hosts must contain at least one authentication hostname")
+        for host in (*self.model_hosts, *self.oauth_hosts):
             if not isinstance(host, str) or not _MODEL_HOST.fullmatch(host.lower()):
                 raise RuntimeConfigError(f"invalid model provider hostname: {host!r}")
 
@@ -275,8 +278,13 @@ class RuntimeConfig:
         if not isinstance(isolation, Mapping):
             raise RuntimeConfigError("isolation must be an object")
         model_hosts = isolation.get("model_hosts", ["chatgpt.com"])
+        oauth_hosts = isolation.get("oauth_hosts", ["auth.openai.com"])
         if not isinstance(model_hosts, list):
             raise RuntimeConfigError("isolation.model_hosts must be a JSON array")
+        if not isinstance(oauth_hosts, list):
+            raise RuntimeConfigError("isolation.oauth_hosts must be a JSON array")
+        if any(not isinstance(host, str) for host in (*model_hosts, *oauth_hosts)):
+            raise RuntimeConfigError("isolation host allowlists must contain strings")
         if not isinstance(conditions, list):
             raise RuntimeConfigError("conditions must be a JSON array")
         command = pi.get("launch_command", [pi.get("executable", "pi")])
@@ -308,7 +316,8 @@ class RuntimeConfig:
                 model_network=_strict_bool(
                     isolation.get("model_network", False), "isolation.model_network"
                 ),
-                model_hosts=tuple(str(host).lower() for host in model_hosts),
+                model_hosts=tuple(host.lower() for host in model_hosts),
+                oauth_hosts=tuple(host.lower() for host in oauth_hosts),
                 network=_strict_bool(isolation.get("network", False), "isolation.network"),
                 shared_filesystem=_strict_bool(
                     isolation.get("shared_filesystem", False), "isolation.shared_filesystem"
@@ -360,6 +369,29 @@ class RuntimeConfig:
         }
 
 
+@dataclass(frozen=True)
+class BudgetClaim:
+    """An unforgeable controller-owned reservation for one agent envelope."""
+
+    claim_id: int
+    token_limit: int
+    tool_call_limit: int
+
+
+@dataclass(frozen=True)
+class BudgetSettlement:
+    """The bounded accounting result for one completed or failed claim."""
+
+    within_claim: bool
+    accepted_tokens: int
+    accepted_tool_calls: int
+    token_overage: int
+    tool_call_overage: int
+
+    def __bool__(self) -> bool:
+        return self.within_claim
+
+
 class SystemBudget:
     """Thread-safe whole-system budget shared by every agent in a run."""
 
@@ -370,7 +402,21 @@ class SystemBudget:
         self._tool_calls = 0
         self._reserved_tokens = 0
         self._reserved_tool_calls = 0
+        self._overage_tokens = 0
+        self._overage_tool_calls = 0
+        self._next_claim_id = 1
+        self._claims: dict[int, BudgetClaim] = {}
         self._lock = Lock()
+
+    def _assert_invariants_locked(self) -> None:
+        if self._tokens < 0 or self._reserved_tokens < 0:
+            raise RuntimeConfigError("negative token budget accounting")
+        if self._tool_calls < 0 or self._reserved_tool_calls < 0:
+            raise RuntimeConfigError("negative tool-call budget accounting")
+        if self._tokens + self._reserved_tokens > self.token_limit:
+            raise RuntimeConfigError("token aggregate ceiling exceeded")
+        if self._tool_calls + self._reserved_tool_calls > self.tool_call_limit:
+            raise RuntimeConfigError("tool-call aggregate ceiling exceeded")
 
     @property
     def tokens_used(self) -> int:
@@ -392,9 +438,10 @@ class SystemBudget:
                 return False
             self._tokens += tokens
             self._tool_calls += tool_calls
+            self._assert_invariants_locked()
             return True
 
-    def claim(self, tokens: int, tool_calls: int) -> tuple[int, int] | None:
+    def claim(self, tokens: int, tool_calls: int) -> BudgetClaim | None:
         """Claim a complete agent envelope before starting a provider request."""
 
         if tokens <= 0 or tool_calls <= 0:
@@ -404,24 +451,45 @@ class SystemBudget:
                 return None
             if self._tool_calls + self._reserved_tool_calls + tool_calls > self.tool_call_limit:
                 return None
+            claim = BudgetClaim(self._next_claim_id, tokens, tool_calls)
+            self._next_claim_id += 1
             self._reserved_tokens += tokens
             self._reserved_tool_calls += tool_calls
-            return tokens, tool_calls
+            self._claims[claim.claim_id] = claim
+            self._assert_invariants_locked()
+            return claim
 
-    def settle(self, claim: tuple[int, int], tokens: int, tool_calls: int) -> bool:
+    def settle(self, claim: BudgetClaim, tokens: int, tool_calls: int) -> BudgetSettlement:
         """Release a claim and account for the provider usage it incurred."""
 
-        claimed_tokens, claimed_tools = claim
-        if min(claimed_tokens, claimed_tools, tokens, tool_calls) < 0:
+        if not isinstance(claim, BudgetClaim):
+            raise RuntimeConfigError("invalid budget claim")
+        if min(claim.token_limit, claim.tool_call_limit, tokens, tool_calls) < 0:
             raise RuntimeConfigError("budget values cannot be negative")
         with self._lock:
-            self._reserved_tokens -= claimed_tokens
-            self._reserved_tool_calls -= claimed_tools
-            if self._reserved_tokens < 0 or self._reserved_tool_calls < 0:
-                raise RuntimeConfigError("budget claim was settled more than once")
-            self._tokens += tokens
-            self._tool_calls += tool_calls
-            return tokens <= claimed_tokens and tool_calls <= claimed_tools
+            stored = self._claims.pop(claim.claim_id, None)
+            if stored is not claim:
+                raise RuntimeConfigError("budget claim was settled more than once or was forged")
+            self._reserved_tokens -= claim.token_limit
+            self._reserved_tool_calls -= claim.tool_call_limit
+            available_tokens = self.token_limit - self._tokens - self._reserved_tokens
+            available_tools = self.tool_call_limit - self._tool_calls - self._reserved_tool_calls
+            accepted_tokens = min(tokens, claim.token_limit, max(available_tokens, 0))
+            accepted_tools = min(tool_calls, claim.tool_call_limit, max(available_tools, 0))
+            token_overage = tokens - accepted_tokens
+            tool_overage = tool_calls - accepted_tools
+            self._tokens += accepted_tokens
+            self._tool_calls += accepted_tools
+            self._overage_tokens += token_overage
+            self._overage_tool_calls += tool_overage
+            self._assert_invariants_locked()
+            return BudgetSettlement(
+                within_claim=(tokens <= claim.token_limit and tool_calls <= claim.tool_call_limit),
+                accepted_tokens=accepted_tokens,
+                accepted_tool_calls=accepted_tools,
+                token_overage=token_overage,
+                tool_call_overage=tool_overage,
+            )
 
     def snapshot(self) -> dict[str, int]:
         with self._lock:
@@ -432,6 +500,8 @@ class SystemBudget:
                 "tool_calls_used": self._tool_calls,
                 "tool_calls_reserved": self._reserved_tool_calls,
                 "tool_call_limit": self.tool_call_limit,
+                "tokens_over_budget": self._overage_tokens,
+                "tool_calls_over_budget": self._overage_tool_calls,
             }
 
 
@@ -549,6 +619,38 @@ def _prepare_auth_file(source: Path | None, workspace: IsolatedWorkspace) -> Pat
     return target
 
 
+def _prepare_model_limits(workspace: IsolatedWorkspace, config: RuntimeConfig) -> Path | None:
+    """Stage Pi's provider max-output override when its provider supports it.
+
+    Pi's generic provider APIs honor ``models.json`` ``maxTokens``. The
+    OpenAI Codex Responses adapter in Pi 0.85.1 currently does not forward
+    that field; the runtime therefore still treats observed overage as a
+    failed run and records it explicitly rather than pretending the provider
+    request was capped.
+    """
+
+    provider, separator, model_id = config.model.partition("/")
+    if not separator or not provider or not model_id:
+        return None
+    model_id = model_id.split(":", 1)[0]
+    if not model_id:
+        return None
+    target = workspace.root / "home" / ".pi" / "agent" / "models.json"
+    target.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    payload = {
+        "providers": {
+            provider: {
+                "modelOverrides": {
+                    model_id: {"maxTokens": config.per_agent_token_budget}
+                }
+            }
+        }
+    }
+    target.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    target.chmod(0o600)
+    return target
+
+
 def _resolve_launch_command(config: RuntimeConfig) -> tuple[list[str], Path | None]:
     """Resolve the checked-out Pi root without invoking a shell."""
 
@@ -621,7 +723,11 @@ class _ModelEgressProxy:
             clients = tuple(self._clients)
         for client in clients:
             client.join(timeout=1)
-        self.socket_path.unlink(missing_ok=True)
+        try:
+            self.socket_path.unlink(missing_ok=True)
+        except OSError:
+            # Shutdown is best-effort and must not mask the agent result.
+            pass
 
     def _serve(self) -> None:
         listener = self._listener
@@ -650,45 +756,24 @@ class _ModelEgressProxy:
             request = self._read_headers(client)
             if request is None:
                 return
-            header_bytes, remainder = request
+            header_bytes, _remainder = request
             first_line = header_bytes.split(b"\r\n", 1)[0].decode("latin-1", "replace")
             parts = first_line.split(" ", 2)
-            if len(parts) != 3:
+            if len(parts) != 3 or parts[2] not in {"HTTP/1.0", "HTTP/1.1"}:
                 self._deny(client)
                 return
             method, target, _ = parts
-            if method.upper() == "CONNECT":
-                host, separator, port_text = target.rpartition(":")
-                if not separator:
-                    host, port = target, 443
-                else:
-                    try:
-                        port = int(port_text)
-                    except ValueError:
-                        self._deny(client)
-                        return
-                if not self._allowed(host, port):
-                    self._deny(client)
-                    return
-                upstream = socket.create_connection((host, port), timeout=30)
-                try:
-                    client.sendall(b"HTTP/1.1 200 Connection Established\r\n\r\n")
-                    self._relay(client, upstream)
-                finally:
-                    upstream.close()
-                return
-
-            from urllib.parse import urlsplit
-
-            parsed = urlsplit(target)
-            host = parsed.hostname or ""
-            port = parsed.port or (443 if parsed.scheme == "https" else 80)
-            if parsed.scheme not in {"http", "https"} or not self._allowed(host, port):
+            if method.upper() != "CONNECT":
                 self._deny(client)
                 return
+            parsed_target = self._parse_connect_target(target)
+            if parsed_target is None:
+                self._deny(client)
+                return
+            host, port = parsed_target
             upstream = socket.create_connection((host, port), timeout=30)
             try:
-                upstream.sendall(header_bytes + remainder)
+                client.sendall(b"HTTP/1.1 200 Connection Established\r\n\r\n")
                 self._relay(client, upstream)
             finally:
                 upstream.close()
@@ -713,6 +798,19 @@ class _ModelEgressProxy:
 
     def _allowed(self, host: str, port: int) -> bool:
         return host.lower().rstrip(".") in self.allowed_hosts and port == 443
+
+    def _parse_connect_target(self, target: str) -> tuple[str, int] | None:
+        """Validate an explicit HTTPS CONNECT target and its allowlist entry."""
+
+        if target.count(":") != 1:
+            return None
+        host, port_text = target.rsplit(":", 1)
+        if not host or port_text != "443" or not _MODEL_HOST.fullmatch(host.lower()):
+            return None
+        host = host.lower().rstrip(".")
+        if not self._allowed(host, 443):
+            return None
+        return host, 443
 
     @staticmethod
     def _deny(client: socket.socket) -> None:
@@ -1107,16 +1205,36 @@ class AgentRun:
         agent_tool_calls_used = 0
         stdout_path = artifact_dir / "stdout.jsonl"
         stderr_path = artifact_dir / "stderr.log"
-        claim: tuple[int, int] | None = None
+        claim: BudgetClaim | None = None
         proxy: _ModelEgressProxy | None = None
+        settlement: BudgetSettlement | None = None
+
+        def settle_claim() -> None:
+            nonlocal claim, settlement, status, failure_reason
+            if claim is None:
+                return
+            settlement = self.system_budget.settle(
+                claim, agent_tokens_used, agent_tool_calls_used
+            )
+            claim = None
+            if not settlement.within_claim:
+                status = ExitStatus.BUDGET_EXHAUSTED
+                detail = (
+                    "provider usage exceeded its claimed envelope"
+                    f" (token overage={settlement.token_overage},"
+                    f" tool-call overage={settlement.tool_call_overage})"
+                )
+                failure_reason = f"{failure_reason}; {detail}" if failure_reason else detail
+
         try:
             if self.config.isolation.model_network and self.config.isolation.sandbox == "bubblewrap":
                 proxy = _ModelEgressProxy(
                     self.workspace.root / ".apart-model-proxy.sock",
-                    self.config.isolation.model_hosts,
+                    (*self.config.isolation.model_hosts, *self.config.isolation.oauth_hosts),
                 )
                 proxy.start()
             command = build_pi_command(self.config, self.identity, self.workspace, extension)
+            _prepare_model_limits(self.workspace, self.config)
             self._write_json(artifact_dir / "metadata.json", {
                 "identity": self.identity.to_dict(),
                 "runtime": self.config.to_dict(),
@@ -1162,6 +1280,7 @@ class AgentRun:
             except (OSError, ValueError) as exc:
                 failure_reason = f"launcher failed: {exc}"
                 status = ExitStatus.LAUNCH_ERROR
+                settle_claim()
                 return self._finish(
                     status, exit_code, started_at, _utc_now(), started_clock,
                     final_response, failure_reason, command, events,
@@ -1267,6 +1386,7 @@ class AgentRun:
                     status = ExitStatus.FAILED
                     if failure_reason is None:
                         failure_reason = f"agent exited with status {exit_code}"
+            settle_claim()
             result = self._finish(
                 status, exit_code, started_at, _utc_now(), started_clock,
                 final_response, failure_reason, command, events,
@@ -1276,11 +1396,21 @@ class AgentRun:
             (artifact_dir / "stderr.log").write_text("".join(stderr_lines), encoding="utf-8")
             return result
         finally:
-            if claim is not None:
-                self.system_budget.settle(claim, agent_tokens_used, agent_tool_calls_used)
-            self._cleanup_staged_auth()
+            try:
+                settle_claim()
+            except Exception:
+                # An existing run exception/result must not be masked by a
+                # defensive accounting or cleanup path.
+                pass
+            try:
+                self._cleanup_staged_auth()
+            except Exception:
+                pass
             if proxy is not None:
-                proxy.stop()
+                try:
+                    proxy.stop()
+                except Exception:
+                    pass
 
     @staticmethod
     def _parse_event(line: str) -> dict[str, Any] | None:
@@ -1306,12 +1436,25 @@ class AgentRun:
     def _cleanup_staged_auth(self) -> None:
         """Remove any transient Codex-to-Pi credential conversion after launch."""
 
-        agent_home = self.workspace.root / "home" / ".pi" / "agent"
-        for staged in (agent_home / "auth.json", agent_home / "auth.json.lock"):
+        run_root = self.workspace.root.resolve()
+        agent_home = run_root / "home" / ".pi" / "agent"
+        if agent_home.parent.parent.parent != run_root:
+            return
+        for staged in (
+            agent_home / "auth.json",
+            agent_home / "auth.json.lock",
+            agent_home / "models.json",
+        ):
             try:
-                staged.unlink()
-            except FileNotFoundError:
-                pass
+                if staged.is_symlink() or not staged.is_dir():
+                    staged.unlink(missing_ok=True)
+                else:
+                    shutil.rmtree(staged)
+            except OSError:
+                # Cleanup is best-effort. The caller's finally block always
+                # continues to proxy shutdown, and the run result/exception
+                # remains authoritative.
+                continue
 
     @staticmethod
     def _write_json(path: Path, value: Mapping[str, Any]) -> None:

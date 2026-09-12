@@ -20,8 +20,13 @@ Pi is launched as an argv list with all tools, skills, extensions, prompt
 templates, themes, context-file discovery, and session persistence disabled.
 Bubblewrap always gives the process a private network namespace. When
 `model_network` is enabled, only the allowlisted `model_hosts` endpoint is
-reachable through the controller relay; the Pi/extension process never gets
-the host network namespace. Agent shell, subprocess, MCP, subagent, and
+reachable through the controller relay. The pinned OpenAI Codex OAuth refresh
+host is separately allowlisted as `oauth_hosts` (`auth.openai.com`), also only
+on HTTPS port 443. The relay accepts only valid HTTP CONNECT requests and
+denies unrelated hosts, ports, and malformed requests; its TLS tunnel cannot
+inspect the encrypted OAuth path, so Pi 0.85.1 remains responsible for using
+the documented `/oauth/token` flow. The Pi/extension process never gets the
+host network namespace. Agent shell, subprocess, MCP, subagent, and
 shared-filesystem channels remain denied.
 If an explicit experiment extension is supplied, its directory is mounted
 read-only into the sandbox and only built-in tools are disabled so that the
@@ -46,6 +51,14 @@ UV_CACHE_DIR=.uv-cache uv run env PYTHONPATH=src python -m apart_incident_respon
 
 The `run` command writes metadata, raw JSONL, stderr, parsed events, the final
 response, budget usage, and exit status under the agent artifact directory.
+
+Each agent claims its complete configured compute envelope before Pi starts.
+Pi's generic providers receive a run-local `models.json` `maxTokens` override;
+the Pi 0.85.1 OpenAI Codex Responses adapter does not currently forward that
+field, so an observed provider overage is terminated/reported as
+`budget_exhausted` and recorded separately rather than silently counted beyond
+the aggregate ceiling. The controller's accepted accounting always remains
+within the aggregate ceiling.
 
 The pinned Pi version and model are intentionally configuration values so every
 co-worker can review or change them in one file before running a matrix.
