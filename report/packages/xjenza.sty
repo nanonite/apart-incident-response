@@ -1,0 +1,244 @@
+% Copyright (C) 2014 William Hicklin. Last revised 04/03/2015.
+
+% This is xjenza.sty, a LaTeX style for the Maltese Journal Xjenza.
+%
+% This package is supplied with a preamble file named `xjenza-preamble.tex'. This
+% file contains a list on commonly used packages in this journal. There are also
+% some new commands and redefinitions which might come in handy for some papers.
+%
+% This package is also supplied with a `xjenza-main.tex' file which can be
+% changed to `xjenza-Vol-Issue.tex'. This file is where the document is written.
+%
+% The xjenza package should contain: packages/xjenza.sty, packages/xjenza-
+% preamble.tex, packages/apa.bbx, packages/apa.cbx, xjenza-main.tex.
+%
+% The `apa.bbx' and `apa.cbx' files should be interchanged with those of the
+% biblatex-apa style. On Linux systems this is normally found in
+% /usr/local/share/texmf/tex/latex/biblatex-apa
+%
+% If you find any bugs in the style files, or omissions in the documentation,
+% please report them to: E-mail whic0001@um.edu.mt
+
+
+%%%:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+%  Include required packages.
+%%%:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+\RequirePackage{fancyhdr}
+\RequirePackage{geometry}
+\RequirePackage{graphicx}
+\RequirePackage{amsthm}
+\RequirePackage{cmbright}
+
+
+%%%:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+%  Setting margins
+%%%:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+\setlength{\paperwidth}{597.50787pt}
+\setlength{\paperheight}{845.04684pt}
+\setlength{\textwidth}{497.92322pt}
+\setlength{\textwidth}{497.92322pt}
+\setlength{\textheight}{654.41338pt}
+\setlength{\oddsidemargin}{-21.33955pt}
+\setlength{\evensidemargin}{-21.33955pt}
+\setlength{\topmargin}{-28.45274pt}
+\setlength{\headheight}{12.0pt}
+\setlength{\headsep}{25.0pt}
+\setlength{\topskip}{10.0pt}
+\setlength{\footskip}{30.0pt}
+\setlength{\marginparwidth}{4.0pt}
+\setlength{\marginparsep}{10.0pt}
+\setlength{\columnsep}{14.22636pt}
+
+
+%%%:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+%  Set captions type-setting.
+%%%:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+% removed "margin=10pt," (29/07/2015)
+\usepackage[font=footnotesize,labelfont=bf,margin=0.1in]{caption}
+
+
+%%%:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+%  Settting global variables and definitions
+%%%:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+\def\keywords#1{\gdef\@keywords{#1}}
+\def\shortTitle#1{\gdef\@shortTitle{#1}}
+\def\doi#1{\gdef\@doi{#1}}
+\def\articleType#1{\gdef\@articleType{#1}}
+\def\authorAnnotation#1{\gdef\@authorAnnotation{#1}}
+\def\correspondanceName#1{\gdef\@correspondanceName{#1}}
+\def\correspondanceMail#1{\gdef\@correspondanceMail{#1}}
+\def\correspondanceNames#1{\gdef\@correspondanceNames{#1}}
+\def\abstrac#1{\gdef\@abstrac{#1}}
+\def\selfCitation#1{\gdef\@selfCitation{#1}}
+
+
+%%%:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+%  The \keywords{} command
+%%%:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+\newcommand{\keywordscom}[1]{%
+
+\ifthenelse{\equal{#1}{}}{}{
+\noindent {\bfseries Keywords} #1\\
+}
+}
+
+
+%%%:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+%  The \maketitle command
+%%%:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+\renewcommand{\maketitle}{%
+% the following fiedls are required
+%
+% \title{}
+% \doi{}
+% \articleType{} %(Research Article, Review Article, Research Note...)
+% \authors{}
+% \authorAnnotations{}
+% \abstract{}
+% \correspondenceName{}
+% \correspondenceMail{}
+%
+% the following fiedls are optional
+%
+% \shortTitle{}
+% \keywords{}
+\clearpage% new page for new paper
+
+%- New headers::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+\pagestyle{fancy}
+
+\ifx\@shortTitle\empty
+	\fancyhead[LE]{\arabic{pagna}\stepcounter{pagna}}
+	\fancyhead[RE]{\@title}
+	\fancyhead[LO]{\@title}
+	\fancyhead[RO]{\arabic{pagna}\stepcounter{pagna}}
+\else
+	\fancyhead[LE]{\arabic{pagna}\stepcounter{pagna}}
+	\fancyhead[RE]{\@shortTitle}
+	\fancyhead[LO]{\@shortTitle}
+	\fancyhead[RO]{\arabic{pagna}\stepcounter{pagna}}
+\fi
+
+\lfoot{\small{\fontfamily{Montserrat-LF}\selectfont{\bfseries\href{https://doi.org/\@doi}{\@doi}}}}
+\rfoot{\small{\fontfamily{Montserrat-LF}\selectfont{\bfseries\href{https://xjenza.org}{www.xjenza.org}}}}
+\chead{}
+\cfoot{}
+
+\renewcommand{\headrulewidth}{0pt} %remove the header underline
+\renewcommand{\footrulewidth}{0pt} %remove the footer underline
+
+%- Keeping footnotes on the left side of the page:::::::::::::::::::::::::::::::::
+\interfootnotelinepenalty=10000
+
+%- Setting page style for title page::::::::::::::::::::::::::::::::::::::::::::::
+
+
+\fancypagestyle{firststyle}{
+	\lhead{\@selfCitation}
+	\rhead{\stepcounter{pagna}}
+	\rfoot{}
+	\chead{}
+	\cfoot{}
+	\fancyfoot[l]{
+	\ifx\@correspondanceName\empty
+	%No correspondance given
+	\else
+	\begin{adjustwidth}{-0mm}{}\footnotesize\emph{*Correspondence to}: \@correspondanceName{} (\href{mailto:\@correspondanceMail}{\@correspondanceMail})\end{adjustwidth}
+	\fi
+    {\fontfamily{Montserrat-LF}\selectfont\large\bfseries{© 2022 Xjenza Online}}
+	}
+}
+
+%\fancypagestyle{firststyle}{
+%	\lhead{\@selfCitation}
+%	\rhead{\stepcounter{pagna}}
+%	\rfoot{}
+%	\chead{}
+%	\cfoot{}
+%	\fancyfoot[l]{
+%	\ifx\@correspondanceNames\empty
+%		\ifx\@correspondanceName\empty
+%		%No correspondance given
+%		\else
+%		\begin{adjustwidth}{-0mm}{}\footnotesize\emph{*Correspondence to}: \@correspondanceName{} (\href{mailto:\@correspondanceMail}{\@correspondanceMail})\end{adjustwidth}
+%		\fi
+%	%No correspondance given
+%	\else
+%	\begin{adjustwidth}{-0mm}{}\footnotesize\emph{*Correspondence to}: \@correspondanceNames{}
+%	\end{adjustwidth}
+%	\fi
+%	\large{\textbf{\copyright\,2017 Xjenza Online}}
+%	}
+%}
+
+%- Title page:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+\begin{strip}
+    \vspace{-2cm}
+	\begin{adjustwidth}{-2mm}{}
+	\begin{tabular*}{\textwidth}{@{}l@{\extracolsep{\fill}}r@{}}
+	\begin{tabular}{l}
+		Xjenza Online: Science Journal of the Malta Chamber of Scientists\\
+		\href{https://www.xjenza.org}{\nolinkurl{www.xjenza.org}}\\
+		\ifx\@doi\empty
+		%No DOI given
+		\else
+		DOI: \href{https://doi.org/\@doi}{\nolinkurl{\@doi}}
+		\fi
+		\\\\
+		\end{tabular} & \begin{tabular}{r} \includegraphics[width=3.5cm] {packages/logo.pdf} \end{tabular}
+	\end{tabular*}\end{adjustwidth}
+	\noindent\emph{\@articleType}\\
+
+        \noindent\Large{\fontfamily{Montserrat-LF}\selectfont\bfseries{\@title}}\\
+
+        \noindent\normalsize{\fontfamily{Montserrat-LF}\selectfont\bfseries{\@author}}\\
+	\textit\@authorAnnotation
+	\vspace{2mm}
+\end{strip}
+
+\thispagestyle{firststyle}
+
+% The following will draw a line below the abstract if only an abstract is present. If either the keywords are only present or both the keywords and the abstract are present, the line is drawn below the keywords.
+
+\ifx\@abstrac\empty
+	% No abstract is given
+\else
+        \noindent {\fontfamily{Montserrat-LF}\selectfont\bfseries{Abstract. }}\@abstrac\\
+	\vspace{-1ex}
+\fi
+
+\ifx\@keywords\empty
+	% No keywords given
+	\ifx\@abstrac\empty
+		% No abstract is given
+	\else
+		\noindent \rule{\columnwidth}{0.5pt}
+	\fi
+\else
+        \noindent {\fontfamily{Montserrat-LF}\selectfont\bfseries{Keywords: }}\@keywords\\
+	\noindent \rule{\columnwidth}{0.5pt}
+\fi
+
+%\vspace{1mm}
+
+%- Default settings:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+\keywords{}
+
+% Begins a refsection for separating bibliographies by papers.
+% The \paperbib command must be used at the end of each paper where the bibliography
+% will be printed.
+}
+
+%- Default settings:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+\keywords{}
+\shortTitle{}
+\abstrac{}

@@ -1,0 +1,21 @@
+\section{Shannon Explanation}
+
+Defined by Claude Shannon in 1984, Shannon's entropy has become one of the cournerstones of information theory. With applications in file compression \parencite{shannon_encoding}, DDoS attack detection \parencite{shannon_ddos} and more recently a key aspect of hallucination detection for LLMs \parencite{shannon_hallucination}. It is expressed as:
+
+\begin{equation}
+  H(X) = - \sum_{i} p(x_i) \log\left(p(x_i)\right)
+  \label{eq:shanon_entropy}
+\end{equation}
+
+where $p_i(x_i)$ is the probability of the discrete event $x_i$ to occur. It can be approximated to a meassure of uniformity of the information inside a probabilistic distribution. 
+
+In the context of swarms of agents you can define the entropy not in terms of a discrete pool of events but connecting every term of the summatory into an agent with an internal distribution $p_i(t)$. Concretely, when considering every agent there are two possible expressions for the distribution corresponding with:
+
+\begin{enumerate}
+  \item \textbf{Predictive Entropy:} Every LLM by selecting between the space of tokens creates a probability distribution based upon the likeliness of a token to correspond with the next best option, that is called logist. In the distribution comes the intuition of uncertainty, connecting the dispersion of it with a context in wich multiple tokens could occupy the next space.
+  \item \textbf{Semantic Entropy:} As an improvement from predictive entropy in applications where the separation of syntax and semantics is crutial like hallucination detection \parencite{shannon_hallucination}. This kind clusters differents tokens into semantic similar structures. That way, the distribution is normalized considering the belonging to those structures and consequently the syntax uncertainty is removed from the distribution.
+\end{enumerate}
+
+In this paper we will use the first definition of entropy, because the uncertainty in syntax will contain an important amount of information given when two different aggents start interacting the style differences {probably} creates a considerable increase in entropy {by adding much more context and tokens in to the context of each agent}. 
+
+There
