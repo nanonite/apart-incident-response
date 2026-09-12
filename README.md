@@ -89,6 +89,35 @@ run.
 The `run` command writes metadata, raw JSONL, stderr, parsed events, the final
 response, budget usage, and exit status under the agent artifact directory.
 
+## Board storage foundation
+
+Epic 3 issue #16 provides the controller-owned storage primitive in
+`apart_incident_response.board_storage.BoardStore`. Initialize it from the
+board service with a path in a dedicated service-owned directory and the
+current agent workspace roots:
+
+```python
+from apart_incident_response.board_storage import BoardStore
+
+with BoardStore.initialize(
+    "/var/lib/apart-incident-response/board.sqlite3",
+    agent_workspace_roots=["/srv/apart/runs/run-001/agents/agent-1"],
+) as board:
+    record = board.append_message("run-001", "agent-1", "diagnostic note")
+```
+
+The store creates `messages` with an `AUTOINCREMENT` sequence ID, controller
+timestamp, run/agent identity, message body, and UTF-8 byte size. SQLite
+triggers reject `UPDATE` and `DELETE`, including direct SQL against the service
+database. `iter_messages()` is only a deterministic storage primitive for the
+future `board_read` API; cursor handling, C0/C1/C2 visibility, identity
+derivation, and Pi tools are intentionally not part of #16.
+
+The database is service-owned and must remain outside agent task directories,
+including symlinked paths. It is never mounted into Bubblewrap, included in a
+Pi command, or exposed as a path/connection to an agent. The board service is
+the only component that should hold a `BoardStore` instance.
+
 Each agent claims its complete configured compute envelope before Pi starts.
 Pi's generic providers receive a run-local `models.json` `maxTokens` override;
 the Pi 0.85.1 OpenAI Codex Responses adapter does not currently forward that
