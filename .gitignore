@@ -1,1 +1,7 @@
 docs/pdfs/
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+artifacts/
+.uv-cache/
