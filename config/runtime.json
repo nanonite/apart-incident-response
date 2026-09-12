@@ -3,6 +3,7 @@
     "version": "0.85.1",
     "model": "openai-codex/gpt-5.6-luna",
     "root_env": "APART_PI_ROOT",
+    "auth_file_env": "APART_PI_AUTH_FILE",
     "launch_command": ["bun", "run", "{pi_root}/packages/coding-agent/src/cli.ts"],
     "thinking_level": "xhigh"
   },
@@ -16,6 +17,7 @@
   },
   "isolation": {
     "sandbox": "bubblewrap",
+    "model_network": true,
     "network": false,
     "shared_filesystem": false,
     "shell": false,

@@ -18,11 +18,28 @@ than depending on a globally installed Pi binary. Each run receives a controller
 
 Pi is launched as an argv list with all tools, skills, extensions, prompt
 templates, themes, context-file discovery, and session persistence disabled.
-Bubblewrap is required for a normal run so the child has no network, IPC, PID,
-UTS, or shared writable filesystem channel. Custom experiment tools can later be
-loaded through the explicit extension argument without enabling Pi discovery.
+The provider network is available because Pi must call the pinned model; agent
+shell, subprocess, MCP, subagent, and shared-filesystem channels remain denied.
+If an explicit experiment extension is supplied, its directory is mounted
+read-only into the sandbox and only built-in tools are disabled so that the
+extension can expose the intended tools.
+
+Configure authentication outside the repository and point the launcher at a
+Pi-format `auth.json` or the local Codex CLI auth file. Codex credentials are
+converted into a private run-local Pi auth file; secrets never enter the child
+environment or repository:
+
+```bash
+export APART_PI_ROOT="$HOME/GitRepos/pi"
+export APART_PI_AUTH_FILE="$HOME/.codex/auth.json"
+UV_CACHE_DIR=.uv-cache uv run env PYTHONPATH=src python -m apart_incident_response.runtime run \
+  config/runtime.json --run-id run-001 --agent-id agent-1 --condition C0 \
+  --task-id task-1 --seed 1 --prompt "Run the assigned task." \
+  --workspace-root artifacts/runs
+```
+
+The `run` command writes metadata, raw JSONL, stderr, parsed events, the final
+response, budget usage, and exit status under the agent artifact directory.
 
 The pinned Pi version and model are intentionally configuration values so every
-co-worker can review or change them in one file before running a matrix. No API
-credentials are copied into the child environment; authentication must be
-configured by the host setup.
+co-worker can review or change them in one file before running a matrix.

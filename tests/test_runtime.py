@@ -91,8 +91,71 @@ class RuntimeContractTests(unittest.TestCase):
             self.assertIn("--no-extensions", command)
             self.assertIn("--no-context-files", command)
             self.assertIn("--no-session", command)
-            self.assertIn("--mode", command)
-            self.assertNotIn("bash", command)
+        self.assertIn("--mode", command)
+        self.assertNotIn("bash", command)
+
+    def test_bubblewrap_preserves_identity_and_model_network(self):
+        with tempfile.TemporaryDirectory() as temp:
+            pi_root = Path(temp) / "pi"
+            (pi_root / "packages/coding-agent").mkdir(parents=True)
+            (pi_root / "packages/coding-agent/package.json").write_text(
+                json.dumps({"version": "0.83.0"}), encoding="utf-8"
+            )
+            config = self.config(
+                pi_root_env="TEST_APART_PI_ROOT",
+                isolation=IsolationPolicy(model_network=True),
+                launch_command=("bun", "run", "{pi_root}/packages/coding-agent/src/cli.ts"),
+            )
+            workspace = create_isolated_workspace(Path(temp) / "runs", self.identity())
+            with patch.dict(os.environ, {"TEST_APART_PI_ROOT": str(pi_root)}):
+                command = build_pi_command(config, self.identity(), workspace)
+            self.assertNotIn("--unshare-net", command)
+            self.assertIn("--setenv", command)
+            identity_index = command.index("APART_RUN_ID")
+            self.assertEqual(command[identity_index + 1], "run-001")
+
+    def test_extension_is_mounted_and_enabled_explicitly(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            extension = root / "tools" / "experiment.ts"
+            extension.parent.mkdir()
+            extension.write_text("export default {};", encoding="utf-8")
+            workspace = create_isolated_workspace(root / "runs", self.identity())
+            config = self.config(isolation=IsolationPolicy(sandbox="none", allow_unsafe_for_tests=True))
+            command = build_pi_command(config, self.identity(), workspace, extension)
+            self.assertIn("--no-builtin-tools", command)
+            self.assertIn("--extension", command)
+            self.assertEqual(command[command.index("--extension") + 1], str(extension))
+
+    def test_bubblewrap_mounts_extension_and_auth_without_host_paths_in_pi_argv(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            pi_root = root / "pi"
+            (pi_root / "packages/coding-agent").mkdir(parents=True)
+            (pi_root / "packages/coding-agent/package.json").write_text(
+                json.dumps({"version": "0.83.0"}), encoding="utf-8"
+            )
+            extension = root / "tools" / "experiment.ts"
+            extension.parent.mkdir()
+            extension.write_text("export default {};", encoding="utf-8")
+            auth_file = root / "auth.json"
+            auth_file.write_text("{}\n", encoding="utf-8")
+            config = self.config(
+                pi_root_env="TEST_APART_PI_ROOT",
+                pi_auth_file_env="TEST_APART_PI_AUTH",
+                isolation=IsolationPolicy(model_network=True),
+                launch_command=("bun", "run", "{pi_root}/packages/coding-agent/src/cli.ts"),
+            )
+            workspace = create_isolated_workspace(root / "runs", self.identity())
+            with patch.dict(
+                os.environ,
+                {"TEST_APART_PI_ROOT": str(pi_root), "TEST_APART_PI_AUTH": str(auth_file)},
+            ):
+                command = build_pi_command(config, self.identity(), workspace, extension)
+            self.assertNotIn(str(auth_file), command)
+            self.assertIn(str(extension.parent), command)
+            self.assertEqual(command[command.index("--extension") + 1], "/experiment/extensions/experiment.ts")
+            self.assertIn("--no-builtin-tools", command)
 
     def test_local_pi_checkout_is_resolved_from_environment(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -155,6 +218,84 @@ class RuntimeContractTests(unittest.TestCase):
             saved = json.loads((workspace.artifact_dir / "result.json").read_text(encoding="utf-8"))
             self.assertEqual(saved["status"], "completed")
 
+    def test_pi_json_stream_replay_uses_authoritative_usage_and_message(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            fake_agent = root / "pi_json_replay.py"
+            events = [
+                {
+                    "type": "message_start",
+                    "message": {"role": "assistant", "content": [], "timestamp": 1},
+                },
+                {"type": "message_update", "usage": {"totalTokens": 120}},
+                {
+                    "type": "message_end",
+                    "message": {
+                        "role": "assistant",
+                        "content": [{"type": "toolCall", "id": "call-1", "name": "task_read", "arguments": {}}],
+                        "usage": {"totalTokens": 120},
+                        "stopReason": "toolUse",
+                        "timestamp": 1,
+                    },
+                },
+                {"type": "tool_execution_start", "toolCallId": "call-1", "toolName": "task_read"},
+                {"type": "tool_execution_end", "toolCallId": "call-1", "toolName": "task_read", "result": {}, "isError": False},
+                {
+                    "type": "message_start",
+                    "message": {"role": "assistant", "content": [], "timestamp": 2},
+                },
+                {"type": "message_update", "usage": {"totalTokens": 100}},
+                {
+                    "type": "message_end",
+                    "message": {
+                        "role": "assistant",
+                        "content": [{"type": "text", "text": "final"}],
+                        "usage": {"totalTokens": 100},
+                        "stopReason": "stop",
+                        "responseId": "response-2",
+                        "timestamp": 2,
+                    },
+                },
+            ]
+            fake_agent.write_text(
+                "import json, sys\n" + "events = " + repr(events) + "\n" +
+                "for event in events: print(json.dumps(event), flush=True)\n",
+                encoding="utf-8",
+            )
+            identity = self.identity()
+            workspace = create_isolated_workspace(root / "runs", identity)
+            config = self.config(
+                launch_command=(sys.executable, str(fake_agent)),
+                per_agent_token_budget=300,
+                per_agent_tool_call_budget=2,
+                aggregate_token_budget=300,
+                aggregate_tool_call_budget=2,
+                timeout_seconds=2,
+            )
+            result = AgentRun(config, identity, workspace, SystemBudget(300, 2)).run("diagnose this")
+            self.assertEqual(result.status.value, "completed")
+            self.assertEqual(result.tokens_used, 220)
+            self.assertEqual(result.tool_calls_used, 1)
+            self.assertEqual(result.final_response, "final")
+
+    def test_pi_provider_error_is_not_reported_as_completed(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            fake_agent = root / "pi_error.py"
+            fake_agent.write_text(
+                "import json\n"
+                "print(json.dumps({'type': 'message_end', 'message': {"
+                "'role': 'assistant', 'content': [], 'stopReason': 'error', "
+                "'errorMessage': 'provider unavailable', 'usage': {'totalTokens': 0}}}), flush=True)\n",
+                encoding="utf-8",
+            )
+            identity = self.identity()
+            workspace = create_isolated_workspace(root / "runs", identity)
+            config = self.config(launch_command=(sys.executable, str(fake_agent)))
+            result = AgentRun(config, identity, workspace, SystemBudget(10, 2)).run("ping")
+            self.assertEqual(result.status.value, "failed")
+            self.assertIn("provider unavailable", result.failure_reason or "")
+
     def test_agent_timeout_produces_failure_artifact(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
@@ -177,6 +318,8 @@ class RuntimeContractTests(unittest.TestCase):
         config = RuntimeConfig.from_json(Path("config/runtime.json"))
         self.assertEqual(config.pi_version, "0.85.1")
         self.assertEqual(config.model, "openai-codex/gpt-5.6-luna")
+        self.assertEqual(config.pi_auth_file_env, "APART_PI_AUTH_FILE")
+        self.assertTrue(config.isolation.model_network)
         encoded = json.dumps(config.to_dict())
         self.assertIn('"C2"', encoded)
 

@@ -9,6 +9,7 @@ run state is persisted under one agent-specific artifact directory.
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
 import json
 import os
@@ -146,6 +147,10 @@ class IsolationPolicy:
     """
 
     sandbox: str = "bubblewrap"
+    # Pi itself must reach the configured model provider. Agent-side network
+    # access remains denied by the tool policy and by the absence of network
+    # capable tools; this flag controls the provider transport namespace.
+    model_network: bool = False
     network: bool = False
     shared_filesystem: bool = False
     shell: bool = False
@@ -182,6 +187,7 @@ class RuntimeConfig:
     model: str
     launch_command: tuple[str, ...] = ("pi",)
     pi_root_env: str | None = None
+    pi_auth_file_env: str | None = None
     thinking_level: str = "medium"
     agent_count: int = 3
     per_agent_token_budget: int = 4_000
@@ -205,6 +211,8 @@ class RuntimeConfig:
             raise RuntimeConfigError("launch_command must not contain shell operators")
         if self.pi_root_env is not None and not _ENV_NAME.fullmatch(self.pi_root_env):
             raise RuntimeConfigError("pi_root_env must be a valid uppercase environment variable name")
+        if self.pi_auth_file_env is not None and not _ENV_NAME.fullmatch(self.pi_auth_file_env):
+            raise RuntimeConfigError("pi_auth_file_env must be a valid uppercase environment variable name")
         if self.thinking_level not in _THINKING_LEVELS:
             raise RuntimeConfigError(
                 f"thinking_level must be one of {sorted(_THINKING_LEVELS)}"
@@ -246,6 +254,9 @@ class RuntimeConfig:
             pi_root_env=(
                 str(pi.get("root_env")) if pi.get("root_env") is not None else None
             ),
+            pi_auth_file_env=(
+                str(pi.get("auth_file_env")) if pi.get("auth_file_env") is not None else None
+            ),
             thinking_level=str(pi.get("thinking_level", "medium")),
             agent_count=int(limits.get("agent_count", 3)),
             per_agent_token_budget=int(limits.get("per_agent_token_budget", 4_000)),
@@ -259,6 +270,9 @@ class RuntimeConfig:
             timeout_seconds=float(limits.get("timeout_seconds", 300.0)),
             isolation=IsolationPolicy(
                 sandbox=str(isolation.get("sandbox", "bubblewrap")),
+                model_network=_strict_bool(
+                    isolation.get("model_network", False), "isolation.model_network"
+                ),
                 network=_strict_bool(isolation.get("network", False), "isolation.network"),
                 shared_filesystem=_strict_bool(
                     isolation.get("shared_filesystem", False), "isolation.shared_filesystem"
@@ -270,6 +284,10 @@ class RuntimeConfig:
                 mcp=_strict_bool(isolation.get("mcp", False), "isolation.mcp"),
                 subagents=_strict_bool(
                     isolation.get("subagents", False), "isolation.subagents"
+                ),
+                allow_unsafe_for_tests=_strict_bool(
+                    isolation.get("allow_unsafe_for_tests", False),
+                    "isolation.allow_unsafe_for_tests",
                 ),
             ),
             conditions=tuple(Condition(str(condition)) for condition in conditions),
@@ -290,6 +308,7 @@ class RuntimeConfig:
                 "model": self.model,
                 "launch_command": list(self.launch_command),
                 "root_env": self.pi_root_env,
+                "auth_file_env": self.pi_auth_file_env,
                 "thinking_level": self.thinking_level,
             },
             "limits": {
@@ -379,11 +398,13 @@ def _safe_env(identity: AgentIdentity, workspace: IsolatedWorkspace, config: Run
     """Build a deliberately small child environment with no inherited secrets."""
 
     path = os.environ.get("PATH", os.defpath)
+    agent_dir = workspace.root / "home" / ".pi" / "agent"
     return {
         "PATH": path,
         "LANG": "C.UTF-8",
         "LC_ALL": "C.UTF-8",
         "HOME": str(workspace.root / "home"),
+        "PI_CODING_AGENT_DIR": str(agent_dir),
         "APART_RUN_ID": identity.run_id,
         "APART_AGENT_ID": identity.agent_id,
         "APART_CONDITION": identity.condition.value,
@@ -392,9 +413,71 @@ def _safe_env(identity: AgentIdentity, workspace: IsolatedWorkspace, config: Run
         "APART_PI_VERSION": config.pi_version,
         "APART_MODEL": config.model,
         "APART_BUILTIN_TOOLS": "disabled",
-        "APART_NETWORK": "disabled",
+        "APART_NETWORK": "model-only" if config.isolation.model_network else "disabled",
         "APART_SHARED_FILESYSTEM": "disabled",
     }
+
+
+def _resolve_auth_file(config: RuntimeConfig) -> Path | None:
+    """Resolve an optional host-side Pi auth file without placing secrets in env."""
+
+    if config.pi_auth_file_env is None:
+        return None
+    raw_path = os.environ.get(config.pi_auth_file_env)
+    if not raw_path:
+        return None
+    auth_file = Path(raw_path).expanduser().resolve()
+    if not auth_file.is_file():
+        raise RuntimeConfigError(f"Pi auth file does not exist: {auth_file}")
+    return auth_file
+
+
+def _codex_token_expiry(access_token: str) -> int:
+    """Read a JWT expiry in milliseconds without exposing token contents."""
+
+    try:
+        encoded_payload = access_token.split(".")[1]
+        padding = "=" * (-len(encoded_payload) % 4)
+        payload = json.loads(base64.urlsafe_b64decode(encoded_payload + padding))
+        expiry = payload.get("exp")
+        if isinstance(expiry, (int, float)) and not isinstance(expiry, bool):
+            return int(expiry * 1000)
+    except (IndexError, ValueError, TypeError, KeyError, json.JSONDecodeError):
+        pass
+    return int((time.time() + 3600) * 1000)
+
+
+def _prepare_auth_file(source: Path | None, workspace: IsolatedWorkspace) -> Path | None:
+    """Make Pi auth.json from either Pi auth storage or Codex CLI auth storage."""
+
+    if source is None:
+        return None
+    try:
+        raw = json.loads(source.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeConfigError(f"cannot read Pi auth file: {source}") from exc
+    if not isinstance(raw, Mapping):
+        raise RuntimeConfigError("Pi auth file must contain a JSON object")
+    target = workspace.root / "home" / ".pi" / "agent" / "auth.json"
+    target.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    payload: Mapping[str, Any] = raw
+    if "openai-codex" not in raw:
+        tokens = raw.get("tokens")
+        if isinstance(tokens, Mapping):
+            access = tokens.get("access_token")
+            refresh = tokens.get("refresh_token")
+            if isinstance(access, str) and isinstance(refresh, str) and access and refresh:
+                payload = {
+                    "openai-codex": {
+                        "type": "oauth",
+                        "access": access,
+                        "refresh": refresh,
+                        "expires": _codex_token_expiry(access),
+                    }
+                }
+    target.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+    target.chmod(0o600)
+    return target
 
 
 def _resolve_launch_command(config: RuntimeConfig) -> tuple[list[str], Path | None]:
@@ -444,9 +527,15 @@ def build_pi_command(
 
     config.isolation.validate()
     command, pi_root = _resolve_launch_command(config)
+    auth_file = _resolve_auth_file(config)
+    resolved_extension: Path | None = None
+    if extension is not None:
+        resolved_extension = extension.expanduser().resolve()
+        if not resolved_extension.is_file():
+            raise RuntimeConfigError(f"Pi extension does not exist: {resolved_extension}")
     command.extend(
         [
-            "--no-tools",
+            "--no-tools" if resolved_extension is None else "--no-builtin-tools",
             "--no-skills",
             "--no-extensions",
             "--no-prompt-templates",
@@ -461,21 +550,26 @@ def build_pi_command(
             config.thinking_level,
         ]
     )
-    if extension is not None:
-        extension = extension.expanduser().resolve()
-        command.extend(["--extension", str(extension)])
+    if resolved_extension is not None:
+        command.extend(["--extension", str(resolved_extension)])
     if config.isolation.sandbox == "none":
+        if auth_file is not None:
+            auth_file = _prepare_auth_file(auth_file, workspace)
         return command
     bwrap = shutil.which("bwrap")
     if bwrap is None:
         raise RuntimeConfigError("bubblewrap is required but was not found on PATH")
     home = workspace.root / "home"
     home.mkdir(mode=0o700, exist_ok=True)
+    (home / ".pi" / "agent").mkdir(mode=0o700, parents=True, exist_ok=True)
+    auth_file = _prepare_auth_file(auth_file, workspace)
+    safe_env = _safe_env(identity, workspace, config)
+    safe_env["HOME"] = "/home/agent"
+    safe_env["PI_CODING_AGENT_DIR"] = "/home/agent/.pi/agent"
     sandbox_command = [
         bwrap,
         "--die-with-parent",
         "--new-session",
-        "--unshare-net",
         "--unshare-ipc",
         "--unshare-pid",
         "--unshare-uts",
@@ -496,25 +590,36 @@ def build_pi_command(
         "--bind",
         str(workspace.task_dir),
         "/workspace/task",
-        "--ro-bind",
+        "--bind",
         str(home),
         "/home/agent",
         "--chdir",
         "/workspace/task",
-        "--setenv",
-        "PATH",
-        os.environ.get("PATH", os.defpath),
-        "--setenv",
-        "HOME",
-        "/home/agent",
-        "--setenv",
-        "LANG",
-        "C.UTF-8",
-        "--setenv",
-        "LC_ALL",
-        "C.UTF-8",
-        "--",
     ]
+    if config.isolation.model_network:
+        insert_at = sandbox_command.index("--chdir")
+        sandbox_command[insert_at:insert_at] = ["--dir", "/etc"]
+        for path in (Path("/etc/resolv.conf"), Path("/etc/hosts"), Path("/etc/nsswitch.conf")):
+            if path.exists():
+                sandbox_command[insert_at:insert_at] = ["--ro-bind", str(path), str(path)]
+        cert_dir = Path("/etc/ssl/certs")
+        if cert_dir.is_dir():
+            sandbox_command[insert_at:insert_at] = [
+                "--dir",
+                "/etc/ssl",
+                "--ro-bind",
+                str(cert_dir),
+                "/etc/ssl/certs",
+            ]
+    if not config.isolation.model_network:
+        insert_at = sandbox_command.index("--clearenv") + 1
+        sandbox_command[insert_at:insert_at] = ["--unshare-net"]
+    for name, value in safe_env.items():
+        sandbox_command.extend(["--setenv", name, value])
+    if auth_file is not None:
+        if auth_file != workspace.root / "home" / ".pi" / "agent" / "auth.json":
+            raise RuntimeConfigError("auth file staging escaped the isolated home")
+    sandbox_command.append("--")
     if pi_root is not None:
         insert_at = sandbox_command.index("--chdir")
         sandbox_command[insert_at:insert_at] = [
@@ -525,6 +630,22 @@ def build_pi_command(
             "/pi",
         ]
         command = [part.replace(str(pi_root), "/pi") for part in command]
+    if resolved_extension is not None:
+        extension_mount = "/experiment/extensions"
+        insert_at = sandbox_command.index("--chdir")
+        sandbox_command[insert_at:insert_at] = [
+            "--dir",
+            "/experiment",
+            "--dir",
+            extension_mount,
+            "--ro-bind",
+            str(resolved_extension.parent),
+            extension_mount,
+        ]
+        command = [
+            part.replace(str(resolved_extension), f"{extension_mount}/{resolved_extension.name}")
+            for part in command
+        ]
     for runtime_path in ("/nix/store", "/run/current-system"):
         path = Path(runtime_path)
         if path.exists():
@@ -533,32 +654,133 @@ def build_pi_command(
     return sandbox_command + command
 
 
-def _extract_event_usage(event: Mapping[str, Any]) -> tuple[int, int]:
-    usage = event.get("usage")
+def _usage_total(usage: Any) -> int:
     if not isinstance(usage, Mapping):
-        usage = event
-    token_keys = ("total_tokens", "totalTokens", "tokens", "token_count", "tokenCount")
-    tokens = next((usage.get(key) for key in token_keys if isinstance(usage.get(key), int)), 0)
-    tool_keys = ("tool_calls", "toolCalls", "tool_call_count", "toolCallCount")
-    tool_calls = next((usage.get(key) for key in tool_keys if isinstance(usage.get(key), int)), 0)
-    return max(tokens, 0), max(tool_calls, 0)
+        return 0
+    for key in ("totalTokens", "total_tokens", "tokens", "token_count", "tokenCount"):
+        value = usage.get(key)
+        if isinstance(value, int) and not isinstance(value, bool):
+            return max(value, 0)
+    components = [usage.get(key, 0) for key in ("input", "output", "cacheRead", "cacheWrite")]
+    if all(isinstance(value, int) and not isinstance(value, bool) for value in components):
+        return max(sum(components), 0)
+    return 0
 
 
-def _event_tool_call_count(event: Mapping[str, Any]) -> int:
+def _message_key(message: Mapping[str, Any]) -> str:
+    timestamp = message.get("timestamp")
+    if isinstance(timestamp, (int, float)) and not isinstance(timestamp, bool):
+        return f"timestamp:{timestamp}"
+    response_id = message.get("responseId") or message.get("response_id")
+    if isinstance(response_id, str) and response_id:
+        return f"response:{response_id}"
+    return "assistant:stream"
+
+
+def _event_usage_increment(
+    event: Mapping[str, Any],
+    current_message_key: str | None,
+    usage_seen: dict[str, int],
+) -> tuple[int, str | None]:
+    """Return newly observed Pi tokens, de-duplicating streaming snapshots."""
+
     event_type = str(event.get("type", "")).lower()
-    return 1 if "tool" in event_type and "result" not in event_type else 0
+    if event_type == "message_start":
+        message = event.get("message")
+        if isinstance(message, Mapping) and message.get("role") == "assistant":
+            current_message_key = _message_key(message)
+        return 0, current_message_key
+
+    if event_type == "message_update":
+        total = _usage_total(event.get("usage"))
+        key = current_message_key or "assistant:stream"
+    elif event_type == "message_end":
+        message = event.get("message")
+        if isinstance(message, Mapping):
+            if message.get("role") != "assistant":
+                return 0, current_message_key
+            key = _message_key(message)
+            total = _usage_total(message.get("usage"))
+        else:
+            usage = event.get("usage")
+            key = "legacy"
+            total = _usage_total(usage if isinstance(usage, Mapping) else event)
+    else:
+        usage = event.get("usage")
+        if not isinstance(usage, Mapping):
+            usage = event
+        total = _usage_total(usage)
+        key = "legacy"
+
+    previous = usage_seen.get(key, 0)
+    usage_seen[key] = max(previous, total)
+    return max(total - previous, 0), current_message_key
 
 
-def _event_text(event: Mapping[str, Any]) -> str | None:
-    for key in ("text", "response", "final", "content"):
+def _event_tool_call_ids(event: Mapping[str, Any]) -> set[str]:
+    """Return logical tool-call IDs, ignoring execution-end duplicates."""
+
+    event_type = str(event.get("type", "")).lower()
+    identifiers: set[str] = set()
+    if event_type in {"tool_execution_start", "tool_call"}:
+        raw_id = event.get("toolCallId") or event.get("tool_call_id") or event.get("id")
+        if isinstance(raw_id, str) and raw_id:
+            identifiers.add(raw_id)
+        else:
+            name = event.get("toolName") or event.get("name") or "unknown"
+            identifiers.add(f"anonymous-tool:{name}")
+    if event_type in {"message_start", "message_end"}:
+        message = event.get("message")
+        if isinstance(message, Mapping) and message.get("role") == "assistant":
+            content = message.get("content")
+            if isinstance(content, list):
+                for block in content:
+                    if isinstance(block, Mapping) and block.get("type") == "toolCall":
+                        raw_id = block.get("id")
+                        if isinstance(raw_id, str) and raw_id:
+                            identifiers.add(raw_id)
+                        else:
+                            identifiers.add(f"anonymous-tool:{block.get('name', 'unknown')}")
+    return identifiers
+
+
+def _assistant_text(event: Mapping[str, Any]) -> str | None:
+    """Extract the authoritative text from a Pi assistant message_end event."""
+
+    event_type = str(event.get("type", "")).lower()
+    message = event.get("message")
+    if event_type == "message_end" and isinstance(message, Mapping) and message.get("role") == "assistant":
+        content = message.get("content")
+        if isinstance(content, list):
+            text = "".join(
+                block.get("text", "")
+                for block in content
+                if isinstance(block, Mapping) and block.get("type") == "text" and isinstance(block.get("text"), str)
+            )
+            return text or None
+        if isinstance(content, str):
+            return content or None
+    for key in ("text", "response", "final"):
         value = event.get(key)
         if isinstance(value, str):
             return value
+    return None
+
+
+def _event_failure_reason(event: Mapping[str, Any]) -> str | None:
+    """Return a provider/agent error carried by Pi's JSON event stream."""
+
     message = event.get("message")
-    if isinstance(message, Mapping):
-        content = message.get("content")
-        if isinstance(content, str):
-            return content
+    if isinstance(message, Mapping) and message.get("role") == "assistant":
+        if message.get("stopReason") == "error":
+            error = message.get("errorMessage")
+            return f"Pi provider error: {error}" if isinstance(error, str) and error else "Pi provider error"
+    messages = event.get("messages")
+    if isinstance(messages, list):
+        for candidate in reversed(messages):
+            if isinstance(candidate, Mapping) and candidate.get("role") == "assistant" and candidate.get("stopReason") == "error":
+                error = candidate.get("errorMessage")
+                return f"Pi provider error: {error}" if isinstance(error, str) and error else "Pi provider error"
     return None
 
 
@@ -643,11 +865,13 @@ class AgentRun:
             failure_reason = f"launcher failed: {exc}"
             status = ExitStatus.LAUNCH_ERROR
             ended_at = _utc_now()
-            return self._finish(
+            result = self._finish(
                 status, exit_code, started_at, ended_at, started_clock,
                 final_response, failure_reason, command, events,
                 agent_tokens_used, agent_tool_calls_used,
             )
+            self._cleanup_staged_auth()
+            return result
 
         assert process.stdin is not None
         assert process.stdout is not None
@@ -658,8 +882,9 @@ class AgentRun:
         selector = selectors.DefaultSelector()
         selector.register(process.stdout, selectors.EVENT_READ, "stdout")
         selector.register(process.stderr, selectors.EVENT_READ, "stderr")
-        last_reported_tokens = 0
-        last_reported_tools = 0
+        current_message_key: str | None = None
+        usage_seen: dict[str, int] = {}
+        seen_tool_calls: set[str] = set()
         stdout_lines: list[str] = []
         stderr_lines: list[str] = []
         deadline = started_clock + self.config.timeout_seconds
@@ -688,13 +913,15 @@ class AgentRun:
                             if event is None:
                                 continue
                             events.append(event)
-                            event_tokens, event_tools = _extract_event_usage(event)
-                            token_delta = max(event_tokens - last_reported_tokens, 0)
-                            tool_delta = max(event_tools - last_reported_tools, 0)
-                            if tool_delta == 0:
-                                tool_delta += _event_tool_call_count(event)
-                            last_reported_tokens = max(last_reported_tokens, event_tokens)
-                            last_reported_tools = max(last_reported_tools, event_tools)
+                            event_failure = _event_failure_reason(event)
+                            if event_failure is not None and failure_reason is None:
+                                failure_reason = event_failure
+                            token_delta, current_message_key = _event_usage_increment(
+                                event, current_message_key, usage_seen
+                            )
+                            new_tool_calls = _event_tool_call_ids(event) - seen_tool_calls
+                            seen_tool_calls.update(new_tool_calls)
+                            tool_delta = len(new_tool_calls)
                             agent_tokens_used += token_delta
                             agent_tool_calls_used += tool_delta
                             if agent_tokens_used > self.config.per_agent_token_budget:
@@ -712,7 +939,7 @@ class AgentRun:
                                 status = ExitStatus.BUDGET_EXHAUSTED
                                 self._terminate(process)
                                 break
-                            candidate = _event_text(event)
+                            candidate = _assistant_text(event)
                             if candidate is not None:
                                 final_response = candidate
                         else:
@@ -740,7 +967,9 @@ class AgentRun:
             ExitStatus.BUDGET_EXHAUSTED,
             ExitStatus.LAUNCH_ERROR,
         }:
-            if exit_code == 0:
+            if failure_reason is not None:
+                status = ExitStatus.FAILED
+            elif exit_code == 0:
                 status = ExitStatus.COMPLETED
             else:
                 status = ExitStatus.FAILED
@@ -754,6 +983,7 @@ class AgentRun:
         )
         (artifact_dir / "stdout.jsonl").write_text("".join(stdout_lines), encoding="utf-8")
         (artifact_dir / "stderr.log").write_text("".join(stderr_lines), encoding="utf-8")
+        self._cleanup_staged_auth()
         return result
 
     @staticmethod
@@ -776,6 +1006,15 @@ class AgentRun:
                 os.killpg(process.pid, signal.SIGKILL)
             except OSError:
                 process.kill()
+
+    def _cleanup_staged_auth(self) -> None:
+        """Remove any transient Codex-to-Pi credential conversion after launch."""
+
+        staged = self.workspace.root / "home" / ".pi" / "agent" / "auth.json"
+        try:
+            staged.unlink()
+        except FileNotFoundError:
+            pass
 
     @staticmethod
     def _write_json(path: Path, value: Mapping[str, Any]) -> None:
@@ -830,16 +1069,57 @@ def _validate_config_command(path: Path) -> int:
     return 0
 
 
+def _run_agent_command(args: argparse.Namespace) -> int:
+    config = RuntimeConfig.from_json(args.config)
+    if args.prompt is not None:
+        prompt = args.prompt
+    else:
+        prompt = args.prompt_file.read_text(encoding="utf-8")
+    identity = AgentIdentity(
+        run_id=args.run_id,
+        agent_id=args.agent_id,
+        condition=Condition(args.condition),
+        task_id=args.task_id,
+        seed=args.seed,
+    )
+    workspace = create_isolated_workspace(args.workspace_root, identity)
+    result = AgentRun(
+        config,
+        identity,
+        workspace,
+        SystemBudget(config.aggregate_token_budget, config.aggregate_tool_call_budget),
+    ).run(prompt, args.extension)
+    print(json.dumps(result.to_dict(), indent=2, sort_keys=True))
+    return 0 if result.status is ExitStatus.COMPLETED else 1
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
     validate = subparsers.add_parser("validate-config")
     validate.add_argument("path", type=Path)
+    run = subparsers.add_parser("run", help="Run one isolated Pi agent")
+    run.add_argument("config", type=Path)
+    run.add_argument("--run-id", required=True)
+    run.add_argument("--agent-id", required=True)
+    run.add_argument("--condition", choices=[condition.value for condition in Condition], required=True)
+    run.add_argument("--task-id", required=True)
+    run.add_argument("--seed", type=int, required=True)
+    run.add_argument("--workspace-root", type=Path, default=Path("artifacts/runs"))
+    run.add_argument("--extension", type=Path)
+    prompt = run.add_mutually_exclusive_group(required=True)
+    prompt.add_argument("--prompt")
+    prompt.add_argument("--prompt-file", type=Path)
     args = parser.parse_args(argv)
     if args.command == "validate-config":
         try:
             return _validate_config_command(args.path)
         except (OSError, json.JSONDecodeError, RuntimeConfigError) as exc:
+            parser.error(str(exc))
+    if args.command == "run":
+        try:
+            return _run_agent_command(args)
+        except (OSError, json.JSONDecodeError, RuntimeConfigError, ValueError) as exc:
             parser.error(str(exc))
     parser.error(f"unsupported command: {args.command}")
     return 2
