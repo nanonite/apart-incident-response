@@ -18,6 +18,7 @@ from apart_incident_response.runtime import (
     RuntimeConfigError,
     SystemBudget,
     _ModelEgressProxy,
+    _bubblewrap_failure_reason,
     _prepare_model_limits,
     build_pi_command,
     create_isolated_workspace,
@@ -139,6 +140,16 @@ class RuntimeContractTests(unittest.TestCase):
             self.assertIn("--setenv", command)
             identity_index = command.index("APART_RUN_ID")
             self.assertEqual(command[identity_index + 1], "run-001")
+
+    def test_bubblewrap_namespace_failure_is_explicit_and_fail_closed(self):
+        reason = _bubblewrap_failure_reason(
+            ["bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted\n"]
+        )
+        self.assertEqual(
+            reason,
+            "Bubblewrap isolation failed: bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted",
+        )
+        self.assertIsNone(_bubblewrap_failure_reason(["agent failed\n"]))
 
     def test_model_relay_allows_model_and_oauth_hosts_only_over_https(self):
         relay = _ModelEgressProxy(Path("/tmp/unused-relay.sock"), ("chatgpt.com", "auth.openai.com"))
@@ -480,6 +491,7 @@ class RuntimeContractTests(unittest.TestCase):
             config = self.config(
                 launch_command=(sys.executable, "-c", "pass"),
                 pi_auth_file_env="TEST_APART_PI_AUTH",
+                pi_auth_store_env="TEST_APART_PI_AUTH_STORE",
                 per_agent_token_budget=10,
                 per_agent_tool_call_budget=2,
                 aggregate_token_budget=10,
@@ -492,7 +504,14 @@ class RuntimeContractTests(unittest.TestCase):
             fake_process.stdin.write.side_effect = BrokenPipeError("child exited")
             fake_process.poll.return_value = 0
             fake_process.wait.return_value = 0
-            with patch.dict(os.environ, {"TEST_APART_PI_AUTH": str(auth_file)}), patch(
+            store = root / "controller-state" / "codex-auth.json"
+            with patch.dict(
+                os.environ,
+                {
+                    "TEST_APART_PI_AUTH": str(auth_file),
+                    "TEST_APART_PI_AUTH_STORE": str(store),
+                },
+            ), patch(
                 "apart_incident_response.runtime.subprocess.Popen", return_value=fake_process
             ):
                 result = AgentRun(config, identity, workspace, SystemBudget(10, 2)).run("ping")
@@ -500,6 +519,7 @@ class RuntimeContractTests(unittest.TestCase):
             self.assertFalse((workspace.root / "home" / ".pi" / "agent" / "auth.json").exists())
             self.assertFalse((workspace.root / "home" / ".pi" / "agent" / "auth.json.lock").exists())
             self.assertFalse((workspace.root / "home" / ".pi" / "agent" / "models.json").exists())
+            self.assertTrue(store.exists())
 
     def test_cleanup_error_does_not_skip_proxy_shutdown_or_mask_result(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -577,11 +597,170 @@ class RuntimeContractTests(unittest.TestCase):
         self.assertEqual(config.pi_version, "0.85.1")
         self.assertEqual(config.model, "openai-codex/gpt-5.6-luna")
         self.assertEqual(config.pi_auth_file_env, "APART_PI_AUTH_FILE")
+        self.assertEqual(config.pi_auth_store_env, "APART_PI_AUTH_STORE")
         self.assertTrue(config.isolation.model_network)
         self.assertEqual(config.isolation.model_hosts, ("chatgpt.com",))
         self.assertEqual(config.isolation.oauth_hosts, ("auth.openai.com",))
         encoded = json.dumps(config.to_dict())
         self.assertIn('"C2"', encoded)
+
+    def test_oauth_refresh_persists_across_runs_without_mutating_source(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            source = root / "codex-source.json"
+            source_payload = {
+                "tokens": {
+                    "access_token": "access-0",
+                    "refresh_token": "refresh-0",
+                }
+            }
+            source.write_text(json.dumps(source_payload) + "\n", encoding="utf-8")
+            source_bytes = source.read_bytes()
+            store = root / "controller-state" / "codex-auth.json"
+            fake_agent = root / "rotating_agent.py"
+            fake_agent.write_text(
+                textwrap.dedent(
+                    """
+                    import json
+                    import os
+                    import sys
+                    from pathlib import Path
+
+                    auth_path = Path(os.environ["HOME"]) / ".pi" / "agent" / "auth.json"
+                    auth = json.loads(auth_path.read_text())
+                    credentials = auth["openai-codex"]
+                    refresh = credentials["refresh"]
+                    if refresh == "refresh-0":
+                        next_refresh = "refresh-1"
+                    elif refresh == "refresh-1":
+                        next_refresh = "refresh-2"
+                    else:
+                        print("unexpected refresh token", file=sys.stderr)
+                        raise SystemExit(2)
+                    credentials["access"] = "access-" + next_refresh[-1]
+                    credentials["refresh"] = next_refresh
+                    auth_path.write_text(json.dumps(auth) + "\\n")
+                    print(json.dumps({"type": "message_end", "message": {
+                        "role": "assistant", "content": [{"type": "text", "text": "rotated"}],
+                        "usage": {"totalTokens": 1}, "stopReason": "stop"}}), flush=True)
+                    """
+                ),
+                encoding="utf-8",
+            )
+            config = self.config(
+                launch_command=(sys.executable, str(fake_agent)),
+                pi_auth_file_env="TEST_AUTH_SOURCE",
+                pi_auth_store_env="TEST_AUTH_STORE",
+                per_agent_token_budget=10,
+                per_agent_tool_call_budget=2,
+                aggregate_token_budget=20,
+                aggregate_tool_call_budget=4,
+            )
+            with patch.dict(
+                os.environ,
+                {"TEST_AUTH_SOURCE": str(source), "TEST_AUTH_STORE": str(store)},
+            ):
+                first_identity = self.identity("agent-1")
+                first_workspace = create_isolated_workspace(root / "runs", first_identity)
+                first = AgentRun(
+                    config, first_identity, first_workspace, SystemBudget(20, 4)
+                ).run("refresh")
+                second_identity = self.identity("agent-2")
+                second_workspace = create_isolated_workspace(root / "runs", second_identity)
+                second = AgentRun(
+                    config, second_identity, second_workspace, SystemBudget(20, 4)
+                ).run("refresh")
+
+            self.assertEqual(first.status.value, "completed")
+            self.assertEqual(second.status.value, "completed")
+            stored = json.loads(store.read_text(encoding="utf-8"))
+            self.assertEqual(stored["auth"]["openai-codex"]["refresh"], "refresh-2")
+            self.assertEqual(source.read_bytes(), source_bytes)
+            self.assertEqual(store.stat().st_mode & 0o777, 0o600)
+            self.assertEqual(store.parent.stat().st_mode & 0o777, 0o700)
+            self.assertTrue(Path(f"{store}.lock").exists())
+            for workspace in (first_workspace, second_workspace):
+                agent_home = workspace.root / "home" / ".pi" / "agent"
+                self.assertFalse((agent_home / "auth.json").exists())
+                self.assertFalse((agent_home / "auth.json.lock").exists())
+                self.assertFalse((agent_home / "models.json").exists())
+                for artifact in workspace.artifact_dir.iterdir():
+                    self.assertNotIn(b"refresh-", artifact.read_bytes())
+
+    def test_concurrent_oauth_runs_serialize_refresh_rotation(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            source = root / "codex-source.json"
+            source.write_text(
+                json.dumps(
+                    {"tokens": {"access_token": "access-0", "refresh_token": "refresh-0"}}
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            store = root / "controller-state" / "codex-auth.json"
+            fake_agent = root / "rotating_agent.py"
+            fake_agent.write_text(
+                textwrap.dedent(
+                    """
+                    import json
+                    import os
+                    import time
+                    from pathlib import Path
+
+                    time.sleep(0.05)
+                    auth_path = Path(os.environ["HOME"]) / ".pi" / "agent" / "auth.json"
+                    auth = json.loads(auth_path.read_text())
+                    credentials = auth["openai-codex"]
+                    refresh = credentials["refresh"]
+                    next_refresh = {"refresh-0": "refresh-1", "refresh-1": "refresh-2"}[refresh]
+                    credentials["access"] = "access-" + next_refresh[-1]
+                    credentials["refresh"] = next_refresh
+                    auth_path.write_text(json.dumps(auth) + "\\n")
+                    print(json.dumps({"type": "message_end", "message": {
+                        "role": "assistant", "content": [{"type": "text", "text": "rotated"}],
+                        "usage": {"totalTokens": 1}, "stopReason": "stop"}}), flush=True)
+                    """
+                ),
+                encoding="utf-8",
+            )
+            config = self.config(
+                launch_command=(sys.executable, str(fake_agent)),
+                pi_auth_file_env="TEST_AUTH_SOURCE",
+                pi_auth_store_env="TEST_AUTH_STORE",
+                per_agent_token_budget=10,
+                per_agent_tool_call_budget=2,
+                aggregate_token_budget=20,
+                aggregate_tool_call_budget=4,
+            )
+            identities = [self.identity("agent-1"), self.identity("agent-2")]
+            workspaces = [
+                create_isolated_workspace(root / "runs", identity) for identity in identities
+            ]
+            results = []
+            result_lock = threading.Lock()
+
+            def run_agent(index):
+                result = AgentRun(
+                    config, identities[index], workspaces[index], SystemBudget(10, 2)
+                ).run("refresh")
+                with result_lock:
+                    results.append(result)
+
+            with patch.dict(
+                os.environ,
+                {"TEST_AUTH_SOURCE": str(source), "TEST_AUTH_STORE": str(store)},
+            ):
+                threads = [threading.Thread(target=run_agent, args=(index,)) for index in range(2)]
+                for thread in threads:
+                    thread.start()
+                for thread in threads:
+                    thread.join()
+
+            self.assertEqual(len(results), 2)
+            self.assertTrue(all(result.status.value == "completed" for result in results))
+            stored = json.loads(store.read_text(encoding="utf-8"))
+            self.assertEqual(stored["auth"]["openai-codex"]["refresh"], "refresh-2")
 
 
 if __name__ == "__main__":

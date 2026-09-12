@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import fcntl
 import hashlib
 import hmac
 import json
@@ -23,13 +24,15 @@ import signal
 import socket
 import subprocess
 import sys
+import tempfile
 import time
+from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from threading import Event, Lock, Thread
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any, IO, Iterable, Iterator, Mapping, Sequence
 
 
 class RuntimeConfigError(ValueError):
@@ -223,6 +226,7 @@ class RuntimeConfig:
     launch_command: tuple[str, ...] = ("pi",)
     pi_root_env: str | None = None
     pi_auth_file_env: str | None = None
+    pi_auth_store_env: str | None = None
     thinking_level: str = "medium"
     agent_count: int = 3
     per_agent_token_budget: int = 4_000
@@ -248,6 +252,8 @@ class RuntimeConfig:
             raise RuntimeConfigError("pi_root_env must be a valid uppercase environment variable name")
         if self.pi_auth_file_env is not None and not _ENV_NAME.fullmatch(self.pi_auth_file_env):
             raise RuntimeConfigError("pi_auth_file_env must be a valid uppercase environment variable name")
+        if self.pi_auth_store_env is not None and not _ENV_NAME.fullmatch(self.pi_auth_store_env):
+            raise RuntimeConfigError("pi_auth_store_env must be a valid uppercase environment variable name")
         if self.thinking_level not in _THINKING_LEVELS:
             raise RuntimeConfigError(
                 f"thinking_level must be one of {sorted(_THINKING_LEVELS)}"
@@ -299,6 +305,11 @@ class RuntimeConfig:
             ),
             pi_auth_file_env=(
                 str(pi.get("auth_file_env")) if pi.get("auth_file_env") is not None else None
+            ),
+            pi_auth_store_env=(
+                str(pi.get("auth_store_env"))
+                if pi.get("auth_store_env") is not None
+                else None
             ),
             thinking_level=str(pi.get("thinking_level", "medium")),
             agent_count=int(limits.get("agent_count", 3)),
@@ -354,6 +365,7 @@ class RuntimeConfig:
                 "launch_command": list(self.launch_command),
                 "root_env": self.pi_root_env,
                 "auth_file_env": self.pi_auth_file_env,
+                "auth_store_env": self.pi_auth_store_env,
                 "thinking_level": self.thinking_level,
             },
             "limits": {
@@ -571,6 +583,195 @@ def _resolve_auth_file(config: RuntimeConfig) -> Path | None:
     return auth_file
 
 
+@dataclass
+class _AuthStage:
+    """A run-local auth copy and its controller-owned persistence lease."""
+
+    target: Path
+    store: Path | None
+    baseline_revision: int
+    lock_handle: IO[str] | None = None
+
+    def release(self) -> None:
+        if self.lock_handle is None:
+            return
+        try:
+            fcntl.flock(self.lock_handle.fileno(), fcntl.LOCK_UN)
+        finally:
+            self.lock_handle.close()
+            self.lock_handle = None
+
+
+@dataclass(frozen=True)
+class _AuthStoreSnapshot:
+    auth: Mapping[str, Any]
+    revision: int
+
+
+def _resolve_auth_store(config: RuntimeConfig, source: Path | None) -> Path | None:
+    """Resolve the controller-owned OAuth store, never the user's source file."""
+
+    if config.pi_auth_store_env is None:
+        return None
+    raw_path = os.environ.get(config.pi_auth_store_env)
+    if not raw_path:
+        if source is not None:
+            raise RuntimeConfigError(
+                f"{config.pi_auth_store_env} must point to a controller-owned OAuth store"
+            )
+        return None
+    store = Path(raw_path).expanduser().resolve()
+    if source is not None and store == source:
+        raise RuntimeConfigError("OAuth store must not overwrite the source Pi/Codex auth file")
+    return store
+
+
+def _load_json_mapping(path: Path, label: str) -> Mapping[str, Any]:
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeConfigError(f"cannot read {label}: {path}") from exc
+    if not isinstance(raw, Mapping):
+        raise RuntimeConfigError(f"{label} must contain a JSON object")
+    return raw
+
+
+def _normalize_auth_payload(raw: Mapping[str, Any]) -> dict[str, Any]:
+    """Convert Codex CLI token storage to the Pi auth.json shape."""
+
+    if "openai-codex" in raw:
+        return json.loads(json.dumps(raw))
+    tokens = raw.get("tokens")
+    if isinstance(tokens, Mapping):
+        access = tokens.get("access_token")
+        refresh = tokens.get("refresh_token")
+        if isinstance(access, str) and isinstance(refresh, str) and access and refresh:
+            return {
+                "openai-codex": {
+                    "type": "oauth",
+                    "access": access,
+                    "refresh": refresh,
+                    "expires": _codex_token_expiry(access),
+                }
+            }
+    return json.loads(json.dumps(raw))
+
+
+def _codex_credentials(payload: Mapping[str, Any]) -> Mapping[str, Any] | None:
+    entry = payload.get("openai-codex")
+    if not isinstance(entry, Mapping):
+        return None
+    access = entry.get("access")
+    refresh = entry.get("refresh")
+    if not isinstance(access, str) or not access or not isinstance(refresh, str) or not refresh:
+        return None
+    return entry
+
+
+def _ensure_private_parent(path: Path) -> None:
+    path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    path.parent.chmod(0o700)
+
+
+def _atomic_write_json(path: Path, value: Mapping[str, Any]) -> None:
+    """Atomically write a controller or run-local JSON file with mode 0600."""
+
+    _ensure_private_parent(path)
+    descriptor = -1
+    temporary_name: str | None = None
+    try:
+        descriptor, temporary_name = tempfile.mkstemp(
+            prefix=f".{path.name}.", suffix=".tmp", dir=str(path.parent)
+        )
+        os.fchmod(descriptor, 0o600)
+        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+            descriptor = -1
+            json.dump(value, handle, indent=2, sort_keys=True)
+            handle.write("\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary_name, path)
+        temporary_name = None
+        path.chmod(0o600)
+        try:
+            directory_fd = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY)
+        except OSError:
+            directory_fd = -1
+        if directory_fd >= 0:
+            try:
+                os.fsync(directory_fd)
+            finally:
+                os.close(directory_fd)
+    finally:
+        if descriptor >= 0:
+            os.close(descriptor)
+        if temporary_name is not None:
+            try:
+                os.unlink(temporary_name)
+            except FileNotFoundError:
+                pass
+
+
+def _auth_store_document(auth: Mapping[str, Any], revision: int) -> dict[str, Any]:
+    return {"format": 1, "revision": revision, "auth": auth}
+
+
+def _read_auth_store(path: Path) -> _AuthStoreSnapshot | None:
+    if path.is_symlink():
+        raise RuntimeConfigError(f"OAuth store must not be a symlink: {path}")
+    if not path.exists():
+        return None
+    if not path.is_file():
+        raise RuntimeConfigError(f"OAuth store must be a regular file: {path}")
+    path.chmod(0o600)
+    raw = _load_json_mapping(path, "OAuth store")
+    auth = raw.get("auth")
+    revision = raw.get("revision")
+    if not isinstance(auth, Mapping) or isinstance(revision, bool) or not isinstance(revision, int) or revision < 1:
+        raise RuntimeConfigError(f"OAuth store has an invalid format: {path}")
+    return _AuthStoreSnapshot(auth=json.loads(json.dumps(auth)), revision=revision)
+
+
+def _write_auth_store(path: Path, auth: Mapping[str, Any], revision: int) -> None:
+    _atomic_write_json(path, _auth_store_document(auth, revision))
+
+
+def _acquire_auth_store_lock(path: Path) -> IO[str]:
+    """Acquire an advisory lock that spans staging, Pi refresh, and persistence."""
+
+    _ensure_private_parent(path)
+    lock_path = Path(f"{path}.lock")
+    if lock_path.is_symlink():
+        raise RuntimeConfigError(f"OAuth store lock must not be a symlink: {lock_path}")
+    flags = os.O_RDWR | os.O_CREAT
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    try:
+        descriptor = os.open(lock_path, flags, 0o600)
+    except OSError as exc:
+        raise RuntimeConfigError(f"cannot open OAuth store lock: {lock_path}") from exc
+    handle = os.fdopen(descriptor, "r+")
+    try:
+        os.fchmod(handle.fileno(), 0o600)
+        fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+    except BaseException:
+        handle.close()
+        raise
+    return handle
+
+
+@contextmanager
+def _locked_auth_store(path: Path) -> Iterator[None]:
+    handle = _acquire_auth_store_lock(path)
+    try:
+        yield
+    finally:
+        try:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+        finally:
+            handle.close()
+
+
 def _codex_token_expiry(access_token: str) -> int:
     """Read a JWT expiry in milliseconds without exposing token contents."""
 
@@ -586,37 +787,94 @@ def _codex_token_expiry(access_token: str) -> int:
     return int((time.time() + 3600) * 1000)
 
 
-def _prepare_auth_file(source: Path | None, workspace: IsolatedWorkspace) -> Path | None:
-    """Make Pi auth.json from either Pi auth storage or Codex CLI auth storage."""
+def _prepare_auth_file(
+    source: Path | None,
+    workspace: IsolatedWorkspace,
+    config: RuntimeConfig,
+    *,
+    hold_lock: bool = False,
+) -> _AuthStage | None:
+    """Stage credentials and optionally hold the controller refresh lease."""
 
-    if source is None:
-        return None
+    store = _resolve_auth_store(config, source)
+    lock_handle: IO[str] | None = None
+    baseline_revision = 0
     try:
-        raw = json.loads(source.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        raise RuntimeConfigError(f"cannot read Pi auth file: {source}") from exc
-    if not isinstance(raw, Mapping):
-        raise RuntimeConfigError("Pi auth file must contain a JSON object")
-    target = workspace.root / "home" / ".pi" / "agent" / "auth.json"
-    target.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
-    payload: Mapping[str, Any] = raw
-    if "openai-codex" not in raw:
-        tokens = raw.get("tokens")
-        if isinstance(tokens, Mapping):
-            access = tokens.get("access_token")
-            refresh = tokens.get("refresh_token")
-            if isinstance(access, str) and isinstance(refresh, str) and access and refresh:
-                payload = {
-                    "openai-codex": {
-                        "type": "oauth",
-                        "access": access,
-                        "refresh": refresh,
-                        "expires": _codex_token_expiry(access),
-                    }
-                }
-    target.write_text(json.dumps(payload) + "\n", encoding="utf-8")
-    target.chmod(0o600)
-    return target
+        if store is None:
+            if source is None:
+                return None
+            payload = _normalize_auth_payload(_load_json_mapping(source, "Pi auth file"))
+        elif hold_lock:
+            lock_handle = _acquire_auth_store_lock(store)
+            snapshot = _read_auth_store(store)
+            if snapshot is None:
+                if source is None:
+                    fcntl.flock(lock_handle.fileno(), fcntl.LOCK_UN)
+                    lock_handle.close()
+                    lock_handle = None
+                    return None
+                payload = _normalize_auth_payload(_load_json_mapping(source, "Pi auth file"))
+                baseline_revision = 1
+                _write_auth_store(store, payload, baseline_revision)
+            else:
+                payload = dict(snapshot.auth)
+                baseline_revision = snapshot.revision
+        else:
+            with _locked_auth_store(store):
+                snapshot = _read_auth_store(store)
+                if snapshot is None:
+                    if source is None:
+                        return None
+                    payload = _normalize_auth_payload(_load_json_mapping(source, "Pi auth file"))
+                    baseline_revision = 1
+                    _write_auth_store(store, payload, baseline_revision)
+                else:
+                    payload = dict(snapshot.auth)
+                    baseline_revision = snapshot.revision
+
+        target = workspace.root / "home" / ".pi" / "agent" / "auth.json"
+        _atomic_write_json(target, payload)
+        return _AuthStage(target, store, baseline_revision, lock_handle)
+    except BaseException:
+        if lock_handle is not None:
+            try:
+                fcntl.flock(lock_handle.fileno(), fcntl.LOCK_UN)
+            finally:
+                lock_handle.close()
+        raise
+
+
+def _persist_auth_stage(stage: _AuthStage | None) -> None:
+    """Persist Pi's rotated OAuth token without changing the source auth file."""
+
+    if stage is None or stage.store is None or not stage.target.is_file():
+        return
+    candidate = _normalize_auth_payload(_load_json_mapping(stage.target, "staged Pi auth file"))
+    if _codex_credentials(candidate) is None:
+        return
+
+    lock_handle: IO[str] | None = stage.lock_handle
+    acquired_here = False
+    if lock_handle is None:
+        lock_handle = _acquire_auth_store_lock(stage.store)
+        acquired_here = True
+    try:
+        current = _read_auth_store(stage.store)
+        if current is not None and current.revision != stage.baseline_revision:
+            # A controller holding the same lease cannot reach this branch,
+            # but refusing a stale write also protects against non-cooperating
+            # writers instead of replacing a newer refresh token.
+            return
+        next_revision = (current.revision if current is not None else stage.baseline_revision) + 1
+        if current is not None and candidate == current.auth:
+            return
+        _write_auth_store(stage.store, candidate, next_revision)
+    finally:
+        if acquired_here and lock_handle is not None:
+            try:
+                fcntl.flock(lock_handle.fileno(), fcntl.LOCK_UN)
+            finally:
+                lock_handle.close()
 
 
 def _prepare_model_limits(workspace: IsolatedWorkspace, config: RuntimeConfig) -> Path | None:
@@ -846,6 +1104,7 @@ def build_pi_command(
     identity: AgentIdentity,
     workspace: IsolatedWorkspace,
     extension: Path | None = None,
+    auth_stage: _AuthStage | None = None,
 ) -> list[str]:
     """Build the exact Pi argv used for one agent.
 
@@ -856,7 +1115,10 @@ def build_pi_command(
 
     config.isolation.validate()
     command, pi_root = _resolve_launch_command(config)
-    auth_file = _resolve_auth_file(config)
+    source_auth_file = _resolve_auth_file(config)
+    if auth_stage is None:
+        auth_stage = _prepare_auth_file(source_auth_file, workspace, config)
+    auth_file = auth_stage.target if auth_stage is not None else None
     resolved_extension: Path | None = None
     if extension is not None:
         resolved_extension = extension.expanduser().resolve()
@@ -882,8 +1144,6 @@ def build_pi_command(
     if resolved_extension is not None:
         command.extend(["--extension", str(resolved_extension)])
     if config.isolation.sandbox == "none":
-        if auth_file is not None:
-            auth_file = _prepare_auth_file(auth_file, workspace)
         return command
     bwrap = shutil.which("bwrap")
     if bwrap is None:
@@ -891,7 +1151,6 @@ def build_pi_command(
     home = workspace.root / "home"
     home.mkdir(mode=0o700, exist_ok=True)
     (home / ".pi" / "agent").mkdir(mode=0o700, parents=True, exist_ok=True)
-    auth_file = _prepare_auth_file(auth_file, workspace)
     safe_env = _safe_env(identity, workspace, config)
     safe_env["HOME"] = "/home/agent"
     safe_env["PI_CODING_AGENT_DIR"] = "/home/agent/.pi/agent"
@@ -1031,6 +1290,18 @@ def _usage_total(usage: Any) -> int:
     if all(isinstance(value, int) and not isinstance(value, bool) for value in components):
         return max(sum(components), 0)
     return 0
+
+
+def _bubblewrap_failure_reason(stderr_lines: Iterable[str]) -> str | None:
+    """Turn namespace setup failures into an explicit launch status."""
+
+    for line in stderr_lines:
+        stripped = line.strip()
+        if stripped.startswith("bwrap:") and (
+            "NETLINK_ROUTE" in stripped or "network namespace" in stripped.lower()
+        ):
+            return f"Bubblewrap isolation failed: {stripped}"
+    return None
 
 
 def _message_key(message: Mapping[str, Any]) -> str:
@@ -1207,6 +1478,7 @@ class AgentRun:
         stderr_path = artifact_dir / "stderr.log"
         claim: BudgetClaim | None = None
         proxy: _ModelEgressProxy | None = None
+        auth_stage: _AuthStage | None = None
         settlement: BudgetSettlement | None = None
 
         def settle_claim() -> None:
@@ -1233,7 +1505,19 @@ class AgentRun:
                     (*self.config.isolation.model_hosts, *self.config.isolation.oauth_hosts),
                 )
                 proxy.start()
-            command = build_pi_command(self.config, self.identity, self.workspace, extension)
+            auth_stage = _prepare_auth_file(
+                _resolve_auth_file(self.config),
+                self.workspace,
+                self.config,
+                hold_lock=True,
+            )
+            command = build_pi_command(
+                self.config,
+                self.identity,
+                self.workspace,
+                extension,
+                auth_stage=auth_stage,
+            )
             _prepare_model_limits(self.workspace, self.config)
             self._write_json(artifact_dir / "metadata.json", {
                 "identity": self.identity.to_dict(),
@@ -1383,9 +1667,14 @@ class AgentRun:
                 elif exit_code == 0:
                     status = ExitStatus.COMPLETED
                 else:
-                    status = ExitStatus.FAILED
-                    if failure_reason is None:
-                        failure_reason = f"agent exited with status {exit_code}"
+                    bubblewrap_failure = _bubblewrap_failure_reason(stderr_lines)
+                    if bubblewrap_failure is not None:
+                        status = ExitStatus.LAUNCH_ERROR
+                        failure_reason = bubblewrap_failure
+                    else:
+                        status = ExitStatus.FAILED
+                        if failure_reason is None:
+                            failure_reason = f"agent exited with status {exit_code}"
             settle_claim()
             result = self._finish(
                 status, exit_code, started_at, _utc_now(), started_clock,
@@ -1403,12 +1692,25 @@ class AgentRun:
                 # defensive accounting or cleanup path.
                 pass
             try:
+                _persist_auth_stage(auth_stage)
+            except Exception:
+                # Persistence must not mask the run result. The controller
+                # lock and atomic store update make successful rotations
+                # durable; a failed update remains visible to the caller's
+                # operational logs without exposing the token here.
+                pass
+            try:
                 self._cleanup_staged_auth()
             except Exception:
                 pass
             if proxy is not None:
                 try:
                     proxy.stop()
+                except Exception:
+                    pass
+            if auth_stage is not None:
+                try:
+                    auth_stage.release()
                 except Exception:
                     pass
 

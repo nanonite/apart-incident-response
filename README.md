@@ -32,14 +32,32 @@ If an explicit experiment extension is supplied, its directory is mounted
 read-only into the sandbox and only built-in tools are disabled so that the
 extension can expose the intended tools.
 
+Bubblewrap namespace creation is a host capability, not a model-network
+fallback. The launcher always retains `--unshare-net` and fails closed when
+the command environment denies it. On this host, the reproducible approved
+smoke uses the host execution context and the read-only system binds that the
+launcher itself uses:
+
+```bash
+bwrap --die-with-parent --new-session --unshare-net \
+  --ro-bind /nix/store /nix/store \
+  --ro-bind /run/current-system /run/current-system \
+  -- /run/current-system/sw/bin/true
+```
+
+Run the same `runtime run` command below from that approved host context for
+an end-to-end Bubblewrap/relay/Pi check. The ordinary managed command sandbox
+may reject network namespace creation with `Operation not permitted`; do not
+remove `--unshare-net` or run the agent on the host network to work around it.
+
 Configure authentication outside the repository and point the launcher at a
-Pi-format `auth.json` or the local Codex CLI auth file. Codex credentials are
-converted into a private run-local Pi auth file; secrets never enter the child
-environment or repository:
+Pi-format `auth.json` or the local Codex CLI auth file. Set a separate,
+controller-owned state path outside the repository for rotated credentials:
 
 ```bash
 export APART_PI_ROOT="$HOME/GitRepos/pi"
 export APART_PI_AUTH_FILE="$HOME/.codex/auth.json"
+export APART_PI_AUTH_STORE="$HOME/.local/state/apart-incident-response/codex-auth.json"
 # Optional stable controller secret for identity verification across processes.
 # If omitted, each controller process uses a private random signing key.
 export APART_IDENTITY_KEY="choose-a-secret-outside-the-repository"
@@ -48,6 +66,18 @@ UV_CACHE_DIR=.uv-cache uv run env PYTHONPATH=src python -m apart_incident_respon
   --task-id task-1 --seed 1 --prompt "Run the assigned task." \
   --workspace-root artifacts/runs
 ```
+
+On first use, the controller imports the source auth into the store; later
+runs use the store so a Pi OAuth refresh is available to the next run. The
+store directory is mode `0700`, the store and its advisory lock are mode
+`0600`, and updates are lock-protected and atomic. The credential lock spans
+staging, Pi execution, and persistence, so concurrent authenticated runs are
+serialized rather than racing a rotating refresh token. The source Codex/Pi
+auth file is never modified unless a separate, explicit controller workflow
+does so. Run-local `auth.json`, `auth.json.lock` (including directory-shaped
+proper-lockfile locks), and `models.json` are deleted on every exit path.
+Credentials are never placed in command arguments, logs, artifacts, or child
+environment variables.
 
 The `run` command writes metadata, raw JSONL, stderr, parsed events, the final
 response, budget usage, and exit status under the agent artifact directory.

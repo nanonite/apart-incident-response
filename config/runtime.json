@@ -4,6 +4,7 @@
     "model": "openai-codex/gpt-5.6-luna",
     "root_env": "APART_PI_ROOT",
     "auth_file_env": "APART_PI_AUTH_FILE",
+    "auth_store_env": "APART_PI_AUTH_STORE",
     "launch_command": ["bun", "run", "{pi_root}/packages/coding-agent/src/cli.ts"],
     "thinking_level": "xhigh"
   },
