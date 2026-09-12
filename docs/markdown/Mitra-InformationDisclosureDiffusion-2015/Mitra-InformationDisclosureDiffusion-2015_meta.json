@@ -1,0 +1,1793 @@
+{
+  "table_of_contents": [
+    {
+      "title": "Information Disclosure and the Diffusion of Information Security Attacks",
+      "heading_level": null,
+      "page_id": 1,
+      "polygon": [
+        [
+          104.3362282878412,
+          107.28058169375534
+        ],
+        [
+          502.197265625,
+          107.28058169375534
+        ],
+        [
+          502.197265625,
+          151.16259765625
+        ],
+        [
+          104.3362282878412,
+          151.16259765625
+        ]
+      ]
+    },
+    {
+      "title": "Sabyasachi Mitra",
+      "heading_level": null,
+      "page_id": 1,
+      "polygon": [
+        [
+          255.96153846153848,
+          165.72216796875
+        ],
+        [
+          349.7890818858561,
+          165.72216796875
+        ],
+        [
+          349.7890818858561,
+          177.8006843455945
+        ],
+        [
+          255.96153846153848,
+          177.8006843455945
+        ]
+      ]
+    },
+    {
+      "title": "Sam Ransbotham",
+      "heading_level": null,
+      "page_id": 1,
+      "polygon": [
+        [
+          254.052734375,
+          194.4130859375
+        ],
+        [
+          351.2903225806452,
+          194.4130859375
+        ],
+        [
+          351.2903225806452,
+          205.55859709153123
+        ],
+        [
+          254.052734375,
+          205.55859709153123
+        ]
+      ]
+    },
+    {
+      "title": "1. Introduction",
+      "heading_level": null,
+      "page_id": 1,
+      "polygon": [
+        [
+          53.173828125,
+          453.8793840889649
+        ],
+        [
+          153.12655086848636,
+          453.8793840889649
+        ],
+        [
+          153.12655086848636,
+          465.13259195893926
+        ],
+        [
+          53.173828125,
+          465.13259195893926
+        ]
+      ]
+    },
+    {
+      "title": "Theory and Hypothesis \nDevelopment",
+      "heading_level": null,
+      "page_id": 3,
+      "polygon": [
+        [
+          54.9462890625,
+          413.6630859375
+        ],
+        [
+          218.0126953125,
+          413.6630859375
+        ],
+        [
+          218.0126953125,
+          442.7822265625
+        ],
+        [
+          54.9462890625,
+          442.7822265625
+        ]
+      ]
+    },
+    {
+      "title": "2.1. Information Security Context",
+      "heading_level": null,
+      "page_id": 3,
+      "polygon": [
+        [
+          51.9921875,
+          447.49267578125
+        ],
+        [
+          216.1786600496278,
+          447.49267578125
+        ],
+        [
+          216.1786600496278,
+          459.13088109495294
+        ],
+        [
+          51.9921875,
+          459.13088109495294
+        ]
+      ]
+    },
+    {
+      "title": "2.2. Modeling the Diffusion of Attacks and Countermeasures",
+      "heading_level": null,
+      "page_id": 3,
+      "polygon": [
+        [
+          310.1806640625,
+          378.548828125
+        ],
+        [
+          517.9280397022333,
+          378.548828125
+        ],
+        [
+          517.9280397022333,
+          400.6142001710864
+        ],
+        [
+          310.1806640625,
+          400.6142001710864
+        ]
+      ]
+    },
+    {
+      "title": "2.3. The Effects of Limited and Full Disclosure on Diffusion of Attacks",
+      "heading_level": null,
+      "page_id": 4,
+      "polygon": [
+        [
+          54.9462890625,
+          566.1103515625
+        ],
+        [
+          292.741935483871,
+          566.1103515625
+        ],
+        [
+          292.741935483871,
+          588.1676646706586
+        ],
+        [
+          54.9462890625,
+          588.1676646706586
+        ]
+      ]
+    },
+    {
+      "title": "2.4. Probability of Successful Compromise",
+      "heading_level": null,
+      "page_id": 5,
+      "polygon": [
+        [
+          49.62890625,
+          70.65673828125
+        ],
+        [
+          255.96153846153848,
+          70.65673828125
+        ],
+        [
+          255.96153846153848,
+          81.77331052181351
+        ],
+        [
+          49.62890625,
+          81.77331052181351
+        ]
+      ]
+    },
+    {
+      "title": "2.5. The Race Between Expert Attackers and Security Professionals",
+      "heading_level": null,
+      "page_id": 5,
+      "polygon": [
+        [
+          307.8173828125,
+          345.8485885372113
+        ],
+        [
+          520.9305210918114,
+          345.8485885372113
+        ],
+        [
+          520.9305210918114,
+          369.1279296875
+        ],
+        [
+          307.8173828125,
+          369.1279296875
+        ]
+      ]
+    },
+    {
+      "title": "2.6. Strategic Allocation of Effort by Expert\nAttackers",
+      "heading_level": null,
+      "page_id": 6,
+      "polygon": [
+        [
+          51.4013671875,
+          236.80712890625
+        ],
+        [
+          258.96401985111663,
+          236.80712890625
+        ],
+        [
+          258.96401985111663,
+          258.07356715141145
+        ],
+        [
+          51.4013671875,
+          258.07356715141145
+        ]
+      ]
+    },
+    {
+      "title": "2.7. Strategic Choice and the Workload of Defenders",
+      "heading_level": null,
+      "page_id": 7,
+      "polygon": [
+        [
+          51.4013671875,
+          599.08349609375
+        ],
+        [
+          252.9590570719603,
+          599.08349609375
+        ],
+        [
+          252.9590570719603,
+          622.6775021385799
+        ],
+        [
+          51.4013671875,
+          622.6775021385799
+        ]
+      ]
+    },
+    {
+      "title": "2.8. Novice Attackers and Volume of Attacks",
+      "heading_level": null,
+      "page_id": 7,
+      "polygon": [
+        [
+          308.9990234375,
+          591.37548828125
+        ],
+        [
+          524.6836228287841,
+          591.37548828125
+        ],
+        [
+          524.6836228287841,
+          602.4217279726262
+        ],
+        [
+          308.9990234375,
+          602.4217279726262
+        ]
+      ]
+    },
+    {
+      "title": "3. Data",
+      "heading_level": null,
+      "page_id": 8,
+      "polygon": [
+        [
+          308.50496277915636,
+          280.0576171875
+        ],
+        [
+          361.0483870967742,
+          280.0576171875
+        ],
+        [
+          361.0483870967742,
+          290.33276304533786
+        ],
+        [
+          308.50496277915636,
+          290.33276304533786
+        ]
+      ]
+    },
+    {
+      "title": "3.1. Data Sources",
+      "heading_level": null,
+      "page_id": 8,
+      "polygon": [
+        [
+          308.9990234375,
+          299.33532934131733
+        ],
+        [
+          395.5769230769231,
+          299.33532934131733
+        ],
+        [
+          395.5769230769231,
+          309.1767578125
+        ],
+        [
+          308.9990234375,
+          309.1767578125
+        ]
+      ]
+    },
+    {
+      "title": "3.2. Full vs. Limited Disclosure",
+      "heading_level": null,
+      "page_id": 9,
+      "polygon": [
+        [
+          53.29404466501241,
+          219.0624465355004
+        ],
+        [
+          205.66997518610424,
+          219.0624465355004
+        ],
+        [
+          205.66997518610424,
+          228.24267578125
+        ],
+        [
+          53.29404466501241,
+          228.24267578125
+        ]
+      ]
+    },
+    {
+      "title": "3.3. Control Variables",
+      "heading_level": null,
+      "page_id": 9,
+      "polygon": [
+        [
+          53.29404466501241,
+          600.9213002566296
+        ],
+        [
+          160.63275434243178,
+          600.9213002566296
+        ],
+        [
+          160.63275434243178,
+          611.07373046875
+        ],
+        [
+          53.29404466501241,
+          611.07373046875
+        ]
+      ]
+    },
+    {
+      "title": "Methods and Results\n4.",
+      "heading_level": null,
+      "page_id": 10,
+      "polygon": [
+        [
+          51.792803970223325,
+          464.38237810094097
+        ],
+        [
+          204.16873449131515,
+          464.38237810094097
+        ],
+        [
+          204.16873449131515,
+          474.885372112917
+        ],
+        [
+          51.792803970223325,
+          474.885372112917
+        ]
+      ]
+    },
+    {
+      "title": "4.1. Delays in Attack Diffusion",
+      "heading_level": null,
+      "page_id": 10,
+      "polygon": [
+        [
+          51.9921875,
+          629.05908203125
+        ],
+        [
+          205.66997518610424,
+          629.05908203125
+        ],
+        [
+          205.66997518610424,
+          640.6826347305389
+        ],
+        [
+          51.9921875,
+          640.6826347305389
+        ]
+      ]
+    },
+    {
+      "title": "4.2. Risk of First Attack",
+      "heading_level": null,
+      "page_id": 12,
+      "polygon": [
+        [
+          51.10595703125,
+          200.3071000855432
+        ],
+        [
+          169.64019851116626,
+          200.3071000855432
+        ],
+        [
+          169.64019851116626,
+          210.81009409751923
+        ],
+        [
+          51.10595703125,
+          210.81009409751923
+        ]
+      ]
+    },
+    {
+      "title": "4.3. Full Disclosure and the Volume of Attacks",
+      "heading_level": null,
+      "page_id": 13,
+      "polygon": [
+        [
+          51.792803970223325,
+          659.89111328125
+        ],
+        [
+          276.2282878411911,
+          659.89111328125
+        ],
+        [
+          276.2282878411911,
+          672.9418306244653
+        ],
+        [
+          51.792803970223325,
+          672.9418306244653
+        ]
+      ]
+    },
+    {
+      "title": "4.4. Robustness Checks Using Matched Samples",
+      "heading_level": null,
+      "page_id": 13,
+      "polygon": [
+        [
+          308.408203125,
+          495.45361328125
+        ],
+        [
+          540.4466501240695,
+          495.45361328125
+        ],
+        [
+          540.4466501240695,
+          507.14456800684343
+        ],
+        [
+          308.408203125,
+          507.14456800684343
+        ]
+      ]
+    },
+    {
+      "title": "4.5. Probability of Successful Compromise",
+      "heading_level": null,
+      "page_id": 14,
+      "polygon": [
+        [
+          311.3623046875,
+          677.02001953125
+        ],
+        [
+          516.4267990074442,
+          677.02001953125
+        ],
+        [
+          516.4267990074442,
+          687.9461077844311
+        ],
+        [
+          311.3623046875,
+          687.9461077844311
+        ]
+      ]
+    },
+    {
+      "title": "5. Summary and Conclusions",
+      "heading_level": null,
+      "page_id": 15,
+      "polygon": [
+        [
+          310.771484375,
+          193.12841796875
+        ],
+        [
+          497.66129032258067,
+          193.12841796875
+        ],
+        [
+          497.66129032258067,
+          204.80838323353294
+        ],
+        [
+          310.771484375,
+          204.80838323353294
+        ]
+      ]
+    },
+    {
+      "title": "5.1. Implications for Information Security",
+      "heading_level": null,
+      "page_id": 15,
+      "polygon": [
+        [
+          309.58984375,
+          511.64585115483317
+        ],
+        [
+          511.1724565756824,
+          511.64585115483317
+        ],
+        [
+          511.1724565756824,
+          522.00341796875
+        ],
+        [
+          309.58984375,
+          522.00341796875
+        ]
+      ]
+    },
+    {
+      "title": "5.2. Implications for the Diffusion of Innovation",
+      "heading_level": null,
+      "page_id": 16,
+      "polygon": [
+        [
+          304.2724609375,
+          69.80029296875
+        ],
+        [
+          541.9478908188586,
+          69.80029296875
+        ],
+        [
+          541.9478908188586,
+          81.02309666381522
+        ],
+        [
+          304.2724609375,
+          81.02309666381522
+        ]
+      ]
+    },
+    {
+      "title": "5.3. Limitations",
+      "heading_level": null,
+      "page_id": 17,
+      "polygon": [
+        [
+          53.29404466501241,
+          164.29683490162532
+        ],
+        [
+          132.85980148883374,
+          164.29683490162532
+        ],
+        [
+          132.85980148883374,
+          172.57373046875
+        ],
+        [
+          53.29404466501241,
+          172.57373046875
+        ]
+      ]
+    },
+    {
+      "title": "Acknowledgments",
+      "heading_level": null,
+      "page_id": 17,
+      "polygon": [
+        [
+          310.00620347394545,
+          240.0684345594525
+        ],
+        [
+          398.5794044665013,
+          240.0684345594525
+        ],
+        [
+          398.5794044665013,
+          251.36669921875
+        ],
+        [
+          310.00620347394545,
+          251.36669921875
+        ]
+      ]
+    },
+    {
+      "title": "Appendix",
+      "heading_level": null,
+      "page_id": 17,
+      "polygon": [
+        [
+          310.00620347394545,
+          296.3344739093242
+        ],
+        [
+          357.2952853598015,
+          296.3344739093242
+        ],
+        [
+          357.2952853598015,
+          306.17919921875
+        ],
+        [
+          310.00620347394545,
+          306.17919921875
+        ]
+      ]
+    },
+    {
+      "title": "Cumulative Number of Target Systems Attacked and Protected",
+      "heading_level": null,
+      "page_id": 17,
+      "polygon": [
+        [
+          310.00620347394545,
+          318.84088964927287
+        ],
+        [
+          532.940446650124,
+          318.84088964927287
+        ],
+        [
+          532.940446650124,
+          338.3464499572284
+        ],
+        [
+          310.00620347394545,
+          338.3464499572284
+        ]
+      ]
+    },
+    {
+      "title": "Probability of Successful Compromise",
+      "heading_level": null,
+      "page_id": 18,
+      "polygon": [
+        [
+          51.792803970223325,
+          286.48095703125
+        ],
+        [
+          213.17617866004963,
+          286.48095703125
+        ],
+        [
+          213.17617866004963,
+          296.3344739093242
+        ],
+        [
+          51.792803970223325,
+          296.3344739093242
+        ]
+      ]
+    },
+    {
+      "title": "Equilibrium of Effort by Early Adopters",
+      "heading_level": null,
+      "page_id": 18,
+      "polygon": [
+        [
+          51.9921875,
+          639.33642578125
+        ],
+        [
+          222.18362282878414,
+          639.33642578125
+        ],
+        [
+          222.18362282878414,
+          651.9358426005132
+        ],
+        [
+          51.9921875,
+          651.9358426005132
+        ]
+      ]
+    },
+    {
+      "title": "Risk of First Attack",
+      "heading_level": null,
+      "page_id": 18,
+      "polygon": [
+        [
+          309.29443359375,
+          369.8554319931565
+        ],
+        [
+          394.075682382134,
+          369.8554319931565
+        ],
+        [
+          394.075682382134,
+          379.6082121471343
+        ],
+        [
+          309.29443359375,
+          379.6082121471343
+        ]
+      ]
+    },
+    {
+      "title": "Effective Life of a Vulnerability and Volume of Attacks",
+      "heading_level": null,
+      "page_id": 18,
+      "polygon": [
+        [
+          310.00620347394545,
+          649.61376953125
+        ],
+        [
+          544.9503722084368,
+          649.61376953125
+        ],
+        [
+          544.9503722084368,
+          659.4379811804961
+        ],
+        [
+          310.00620347394545,
+          659.4379811804961
+        ]
+      ]
+    },
+    {
+      "title": "Alternative Formulation of the Diffusion of Countermeasures",
+      "heading_level": null,
+      "page_id": 19,
+      "polygon": [
+        [
+          51.4013671875,
+          443.21044921875
+        ],
+        [
+          236.4454094292804,
+          443.21044921875
+        ],
+        [
+          236.4454094292804,
+          462.1317365269461
+        ],
+        [
+          51.4013671875,
+          462.1317365269461
+        ]
+      ]
+    },
+    {
+      "title": "References",
+      "heading_level": null,
+      "page_id": 19,
+      "polygon": [
+        [
+          310.00620347394545,
+          72.36962890625
+        ],
+        [
+          361.0483870967742,
+          72.36962890625
+        ],
+        [
+          361.0483870967742,
+          82.5235243798118
+        ],
+        [
+          310.00620347394545,
+          82.5235243798118
+        ]
+      ]
+    }
+  ],
+  "page_stats": [
+    {
+      "page_id": 0,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          33
+        ],
+        [
+          "Line",
+          15
+        ],
+        [
+          "Text",
+          9
+        ],
+        [
+          "Picture",
+          2
+        ],
+        [
+          "PageFooter",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 1,
+      "text_extraction_method": "surya",
+      "block_counts": [
+        [
+          "Line",
+          90
+        ],
+        [
+          "Span",
+          64
+        ],
+        [
+          "Text",
+          8
+        ],
+        [
+          "SectionHeader",
+          4
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "PageFooter",
+          2
+        ],
+        [
+          "Picture",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 2,
+      "text_extraction_method": "surya",
+      "block_counts": [
+        [
+          "Line",
+          122
+        ],
+        [
+          "Span",
+          113
+        ],
+        [
+          "Text",
+          7
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "PageFooter",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 3,
+      "text_extraction_method": "surya",
+      "block_counts": [
+        [
+          "Line",
+          119
+        ],
+        [
+          "Span",
+          113
+        ],
+        [
+          "Text",
+          5
+        ],
+        [
+          "SectionHeader",
+          3
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "PageFooter",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 4,
+      "text_extraction_method": "surya",
+      "block_counts": [
+        [
+          "Line",
+          123
+        ],
+        [
+          "Span",
+          87
+        ],
+        [
+          "Text",
+          9
+        ],
+        [
+          "Equation",
+          3
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "SectionHeader",
+          1
+        ],
+        [
+          "Footnote",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 5,
+      "text_extraction_method": "surya",
+      "block_counts": [
+        [
+          "Span",
+          130
+        ],
+        [
+          "Line",
+          111
+        ],
+        [
+          "Text",
+          6
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "SectionHeader",
+          2
+        ],
+        [
+          "Equation",
+          1
+        ],
+        [
+          "Caption",
+          1
+        ],
+        [
+          "Figure",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ],
+        [
+          "FigureGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 6,
+      "text_extraction_method": "surya",
+      "block_counts": [
+        [
+          "Line",
+          122
+        ],
+        [
+          "Span",
+          105
+        ],
+        [
+          "Text",
+          7
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "SectionHeader",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 7,
+      "text_extraction_method": "surya",
+      "block_counts": [
+        [
+          "Line",
+          124
+        ],
+        [
+          "Span",
+          120
+        ],
+        [
+          "Text",
+          8
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "SectionHeader",
+          2
+        ],
+        [
+          "Equation",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 8,
+      "text_extraction_method": "surya",
+      "block_counts": [
+        [
+          "Line",
+          115
+        ],
+        [
+          "Span",
+          103
+        ],
+        [
+          "Text",
+          7
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "SectionHeader",
+          2
+        ],
+        [
+          "Equation",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 9,
+      "text_extraction_method": "surya",
+      "block_counts": [
+        [
+          "Line",
+          118
+        ],
+        [
+          "Span",
+          85
+        ],
+        [
+          "Text",
+          5
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "SectionHeader",
+          2
+        ],
+        [
+          "Footnote",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 10,
+      "text_extraction_method": "surya",
+      "block_counts": [
+        [
+          "TableCell",
+          185
+        ],
+        [
+          "Span",
+          119
+        ],
+        [
+          "Line",
+          111
+        ],
+        [
+          "Text",
+          29
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "SectionHeader",
+          2
+        ],
+        [
+          "Table",
+          1
+        ],
+        [
+          "Caption",
+          1
+        ],
+        [
+          "Equation",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 11,
+      "text_extraction_method": "surya",
+      "block_counts": [
+        [
+          "TableCell",
+          390
+        ],
+        [
+          "Line",
+          59
+        ],
+        [
+          "Span",
+          36
+        ],
+        [
+          "Table",
+          3
+        ],
+        [
+          "Text",
+          3
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "Caption",
+          2
+        ],
+        [
+          "Footnote",
+          1
+        ],
+        [
+          "Figure",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ],
+        [
+          "TableGroup",
+          1
+        ],
+        [
+          "FigureGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 12,
+      "text_extraction_method": "surya",
+      "block_counts": [
+        [
+          "Line",
+          123
+        ],
+        [
+          "Span",
+          96
+        ],
+        [
+          "Text",
+          8
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "SectionHeader",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 13,
+      "text_extraction_method": "surya",
+      "block_counts": [
+        [
+          "TableCell",
+          142
+        ],
+        [
+          "Line",
+          94
+        ],
+        [
+          "Span",
+          80
+        ],
+        [
+          "Text",
+          6
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "Table",
+          2
+        ],
+        [
+          "SectionHeader",
+          2
+        ],
+        [
+          "Footnote",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 14,
+      "text_extraction_method": "surya",
+      "block_counts": [
+        [
+          "TableCell",
+          228
+        ],
+        [
+          "Line",
+          79
+        ],
+        [
+          "Span",
+          40
+        ],
+        [
+          "Text",
+          6
+        ],
+        [
+          "Footnote",
+          3
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "Caption",
+          2
+        ],
+        [
+          "Table",
+          2
+        ],
+        [
+          "TableGroup",
+          2
+        ],
+        [
+          "SectionHeader",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 15,
+      "text_extraction_method": "surya",
+      "block_counts": [
+        [
+          "TableCell",
+          112
+        ],
+        [
+          "Line",
+          101
+        ],
+        [
+          "Span",
+          62
+        ],
+        [
+          "Text",
+          6
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "SectionHeader",
+          2
+        ],
+        [
+          "Caption",
+          1
+        ],
+        [
+          "Table",
+          1
+        ],
+        [
+          "Footnote",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ],
+        [
+          "TableGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 16,
+      "text_extraction_method": "surya",
+      "block_counts": [
+        [
+          "Line",
+          120
+        ],
+        [
+          "Span",
+          104
+        ],
+        [
+          "Text",
+          5
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "SectionHeader",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 17,
+      "text_extraction_method": "surya",
+      "block_counts": [
+        [
+          "Line",
+          127
+        ],
+        [
+          "Span",
+          117
+        ],
+        [
+          "Text",
+          8
+        ],
+        [
+          "SectionHeader",
+          4
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "Equation",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 18,
+      "text_extraction_method": "surya",
+      "block_counts": [
+        [
+          "Span",
+          164
+        ],
+        [
+          "Line",
+          107
+        ],
+        [
+          "Text",
+          8
+        ],
+        [
+          "SectionHeader",
+          4
+        ],
+        [
+          "Equation",
+          3
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "Caption",
+          1
+        ],
+        [
+          "Figure",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ],
+        [
+          "FigureGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 19,
+      "text_extraction_method": "surya",
+      "block_counts": [
+        [
+          "Line",
+          159
+        ],
+        [
+          "Span",
+          120
+        ],
+        [
+          "Text",
+          31
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "Equation",
+          2
+        ],
+        [
+          "SectionHeader",
+          2
+        ],
+        [
+          "Caption",
+          1
+        ],
+        [
+          "Figure",
+          1
+        ],
+        [
+          "PageFooter",
+          1
+        ],
+        [
+          "FigureGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 20,
+      "text_extraction_method": "surya",
+      "block_counts": [
+        [
+          "Span",
+          85
+        ],
+        [
+          "Line",
+          77
+        ],
+        [
+          "ListItem",
+          30
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "ListGroup",
+          2
+        ],
+        [
+          "PageFooter",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    }
+  ],
+  "debug_data_path": "debug_data/Mitra-InformationDisclosureDiffusion-2015"
+}

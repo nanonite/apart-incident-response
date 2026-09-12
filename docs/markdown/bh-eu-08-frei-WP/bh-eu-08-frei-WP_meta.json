@@ -1,0 +1,1335 @@
+{
+  "table_of_contents": [
+    {
+      "title": "0-Day Patch\nExposing Vendors (In)security Performance",
+      "heading_level": null,
+      "page_id": 0,
+      "polygon": [
+        [
+          172.28271484375,
+          114.5528564453125
+        ],
+        [
+          441.96881103515625,
+          114.5528564453125
+        ],
+        [
+          441.96881103515625,
+          146.8990478515625
+        ],
+        [
+          172.28271484375,
+          146.8990478515625
+        ]
+      ]
+    },
+    {
+      "title": "1 Introduction",
+      "heading_level": null,
+      "page_id": 0,
+      "polygon": [
+        [
+          134.7601776123047,
+          498.7041015625
+        ],
+        [
+          217.36764526367188,
+          498.7041015625
+        ],
+        [
+          217.36764526367188,
+          510.81536865234375
+        ],
+        [
+          133.93310546875,
+          510.81536865234375
+        ]
+      ]
+    },
+    {
+      "title": "1.1 Related Work",
+      "heading_level": null,
+      "page_id": 1,
+      "polygon": [
+        [
+          134.2236328125,
+          378.6533203125
+        ],
+        [
+          216.61904907226562,
+          378.6533203125
+        ],
+        [
+          216.61904907226562,
+          389.17987060546875
+        ],
+        [
+          134.2236328125,
+          389.17987060546875
+        ]
+      ]
+    },
+    {
+      "title": "2 Methodology and Data Sources",
+      "heading_level": null,
+      "page_id": 2,
+      "polygon": [
+        [
+          133.93310546875,
+          160.341796875
+        ],
+        [
+          312.09100341796875,
+          160.341796875
+        ],
+        [
+          312.09100341796875,
+          172.77587890625
+        ],
+        [
+          132.77099609375,
+          172.77587890625
+        ]
+      ]
+    },
+    {
+      "title": "2.1 Lifecycle of a vulnerability",
+      "heading_level": null,
+      "page_id": 2,
+      "polygon": [
+        [
+          133.93310546875,
+          252.435546875
+        ],
+        [
+          271.02105712890625,
+          252.435546875
+        ],
+        [
+          271.02105712890625,
+          263.17974853515625
+        ],
+        [
+          133.93310546875,
+          263.17974853515625
+        ]
+      ]
+    },
+    {
+      "title": "\u2013 Discovery-Time",
+      "heading_level": null,
+      "page_id": 2,
+      "polygon": [
+        [
+          140.90576171875,
+          343.2958984375
+        ],
+        [
+          214.69970703125,
+          343.2958984375
+        ],
+        [
+          214.6634063720703,
+          353.9406433105469
+        ],
+        [
+          139.74365234375,
+          353.9406433105469
+        ]
+      ]
+    },
+    {
+      "title": "2.2 Risk exposure phases",
+      "heading_level": null,
+      "page_id": 3,
+      "polygon": [
+        [
+          134.51416015625,
+          583.3974609375
+        ],
+        [
+          247.83477783203125,
+          583.3974609375
+        ],
+        [
+          247.83477783203125,
+          593.5397491455078
+        ],
+        [
+          133.35205078125,
+          593.5397491455078
+        ]
+      ]
+    },
+    {
+      "title": "\u2013 Black Risk (exogenous)",
+      "heading_level": null,
+      "page_id": 4,
+      "polygon": [
+        [
+          140.615234375,
+          117.1728515625
+        ],
+        [
+          245.95758056640625,
+          117.1728515625
+        ],
+        [
+          245.95758056640625,
+          127.98089599609375
+        ],
+        [
+          140.615234375,
+          127.98089599609375
+        ]
+      ]
+    },
+    {
+      "title": "\u2013 Gray Risk (exogenous)",
+      "heading_level": null,
+      "page_id": 4,
+      "polygon": [
+        [
+          141.1962890625,
+          201.455078125
+        ],
+        [
+          243.79795837402344,
+          199.810546875
+        ],
+        [
+          243.79795837402344,
+          211.860595703125
+        ],
+        [
+          141.1962890625,
+          211.860595703125
+        ]
+      ]
+    },
+    {
+      "title": "2.3 0-Day Patch Defined",
+      "heading_level": null,
+      "page_id": 4,
+      "polygon": [
+        [
+          134.2236328125,
+          434.4171142578125
+        ],
+        [
+          244.5783233642578,
+          434.4171142578125
+        ],
+        [
+          244.5783233642578,
+          444.3797607421875
+        ],
+        [
+          133.0615234375,
+          444.3797607421875
+        ]
+      ]
+    },
+    {
+      "title": "2.4 Vulnerability Database",
+      "heading_level": null,
+      "page_id": 5,
+      "polygon": [
+        [
+          133.93310546875,
+          209.89715576171875
+        ],
+        [
+          255.223388671875,
+          208.4443359375
+        ],
+        [
+          255.223388671875,
+          219.85980224609375
+        ],
+        [
+          133.93310546875,
+          219.85980224609375
+        ]
+      ]
+    },
+    {
+      "title": "2.5 Data Selection Criteria",
+      "heading_level": null,
+      "page_id": 5,
+      "polygon": [
+        [
+          134.2236328125,
+          622.0439453125
+        ],
+        [
+          255.18194580078125,
+          622.0439453125
+        ],
+        [
+          255.18194580078125,
+          633.7396545410156
+        ],
+        [
+          133.0615234375,
+          633.7396545410156
+        ]
+      ]
+    },
+    {
+      "title": "1. Observation Period",
+      "heading_level": null,
+      "page_id": 6,
+      "polygon": [
+        [
+          139.20022583007812,
+          447.7236328125
+        ],
+        [
+          230.38818359375,
+          447.7236328125
+        ],
+        [
+          229.74163818359375,
+          458.9405517578125
+        ],
+        [
+          139.16259765625,
+          458.9405517578125
+        ]
+      ]
+    },
+    {
+      "title": "2. Selection of vulnerabilities",
+      "heading_level": null,
+      "page_id": 6,
+      "polygon": [
+        [
+          139.16259765625,
+          498.29296875
+        ],
+        [
+          258.63568115234375,
+          498.29296875
+        ],
+        [
+          258.63568115234375,
+          509.70074462890625
+        ],
+        [
+          138.00048828125,
+          509.70074462890625
+        ]
+      ]
+    },
+    {
+      "title": "3. Risk level of the vulnerability",
+      "heading_level": null,
+      "page_id": 7,
+      "polygon": [
+        [
+          138.8720703125,
+          117.1728515625
+        ],
+        [
+          268.42352294921875,
+          117.1728515625
+        ],
+        [
+          268.42352294921875,
+          127.98089599609375
+        ],
+        [
+          138.8720703125,
+          127.98089599609375
+        ]
+      ]
+    },
+    {
+      "title": "3 Analysis",
+      "heading_level": null,
+      "page_id": 7,
+      "polygon": [
+        [
+          133.642578125,
+          564.1406555175781
+        ],
+        [
+          195.93092346191406,
+          563.251953125
+        ],
+        [
+          195.93092346191406,
+          576.0958557128906
+        ],
+        [
+          133.642578125,
+          576.0958557128906
+        ]
+      ]
+    },
+    {
+      "title": "3.1 Patch Performance Metrics",
+      "heading_level": null,
+      "page_id": 7,
+      "polygon": [
+        [
+          134.2236328125,
+          586.275390625
+        ],
+        [
+          273.9957275390625,
+          586.275390625
+        ],
+        [
+          273.9957275390625,
+          598.4598693847656
+        ],
+        [
+          133.0615234375,
+          598.4598693847656
+        ]
+      ]
+    },
+    {
+      "title": "3.2 0-Day Patch: Microsoft",
+      "heading_level": null,
+      "page_id": 8,
+      "polygon": [
+        [
+          133.642578125,
+          329.2972412109375
+        ],
+        [
+          256.63848876953125,
+          327.6728515625
+        ],
+        [
+          256.63848876953125,
+          339.2598876953125
+        ],
+        [
+          133.642578125,
+          339.2598876953125
+        ]
+      ]
+    },
+    {
+      "title": "Observation",
+      "heading_level": null,
+      "page_id": 8,
+      "polygon": [
+        [
+          133.93310546875,
+          441.1455078125
+        ],
+        [
+          187.34027099609375,
+          441.1455078125
+        ],
+        [
+          187.34027099609375,
+          452.29974365234375
+        ],
+        [
+          132.77099609375,
+          452.29974365234375
+        ]
+      ]
+    },
+    {
+      "title": "3.3 0-Day Patch: Apple",
+      "heading_level": null,
+      "page_id": 9,
+      "polygon": [
+        [
+          134.76010131835938,
+          620.3994140625
+        ],
+        [
+          240.3436737060547,
+          620.3994140625
+        ],
+        [
+          240.3436737060547,
+          630.5000457763672
+        ],
+        [
+          134.2236328125,
+          630.5000457763672
+        ]
+      ]
+    },
+    {
+      "title": "Observation",
+      "heading_level": null,
+      "page_id": 10,
+      "polygon": [
+        [
+          134.76010131835938,
+          575.1748046875
+        ],
+        [
+          187.3391571044922,
+          573.5302734375
+        ],
+        [
+          187.3391571044922,
+          586.0995788574219
+        ],
+        [
+          133.642578125,
+          586.0995788574219
+        ]
+      ]
+    },
+    {
+      "title": "3.4 Unpatched Vulnerabilities Exposure",
+      "heading_level": null,
+      "page_id": 11,
+      "polygon": [
+        [
+          134.2236328125,
+          404.4171447753906
+        ],
+        [
+          311.1432800292969,
+          403.3212890625
+        ],
+        [
+          311.1432800292969,
+          414.3797912597656
+        ],
+        [
+          133.0615234375,
+          414.3797912597656
+        ]
+      ]
+    },
+    {
+      "title": "Observation",
+      "heading_level": null,
+      "page_id": 11,
+      "polygon": [
+        [
+          133.93310546875,
+          525.0166015625
+        ],
+        [
+          187.3391571044922,
+          523.3720703125
+        ],
+        [
+          187.3391571044922,
+          535.7001953125
+        ],
+        [
+          132.77099609375,
+          535.7001953125
+        ]
+      ]
+    },
+    {
+      "title": "4 Discussion",
+      "heading_level": null,
+      "page_id": 12,
+      "polygon": [
+        [
+          134.2236328125,
+          485.958984375
+        ],
+        [
+          206.5674285888672,
+          485.958984375
+        ],
+        [
+          206.5674285888672,
+          499.1756591796875
+        ],
+        [
+          133.0615234375,
+          499.1756591796875
+        ]
+      ]
+    },
+    {
+      "title": "5 Conclusions",
+      "heading_level": null,
+      "page_id": 13,
+      "polygon": [
+        [
+          134.76060485839844,
+          436.623046875
+        ],
+        [
+          214.41146850585938,
+          436.623046875
+        ],
+        [
+          214.41146850585938,
+          449.0157470703125
+        ],
+        [
+          133.642578125,
+          449.0157470703125
+        ]
+      ]
+    },
+    {
+      "title": "References",
+      "heading_level": null,
+      "page_id": 14,
+      "polygon": [
+        [
+          134.2236328125,
+          116.420654296875
+        ],
+        [
+          190.05072021484375,
+          115.939453125
+        ],
+        [
+          190.05072021484375,
+          128.3758544921875
+        ],
+        [
+          133.0615234375,
+          128.3758544921875
+        ]
+      ]
+    }
+  ],
+  "page_stats": [
+    {
+      "page_id": 0,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          91
+        ],
+        [
+          "Line",
+          38
+        ],
+        [
+          "Text",
+          6
+        ],
+        [
+          "SectionHeader",
+          2
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 1,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          113
+        ],
+        [
+          "Line",
+          45
+        ],
+        [
+          "Text",
+          3
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "PageFooter",
+          2
+        ],
+        [
+          "SectionHeader",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 2,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          130
+        ],
+        [
+          "Line",
+          42
+        ],
+        [
+          "Text",
+          7
+        ],
+        [
+          "SectionHeader",
+          3
+        ],
+        [
+          "ListItem",
+          3
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "PageFooter",
+          2
+        ],
+        [
+          "ListGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 3,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          132
+        ],
+        [
+          "Line",
+          38
+        ],
+        [
+          "Text",
+          3
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "Figure",
+          2
+        ],
+        [
+          "Caption",
+          2
+        ],
+        [
+          "PageFooter",
+          2
+        ],
+        [
+          "FigureGroup",
+          2
+        ],
+        [
+          "SectionHeader",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 4,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          146
+        ],
+        [
+          "Line",
+          44
+        ],
+        [
+          "Text",
+          7
+        ],
+        [
+          "SectionHeader",
+          3
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "ListItem",
+          2
+        ],
+        [
+          "PageFooter",
+          2
+        ],
+        [
+          "ListGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 5,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          145
+        ],
+        [
+          "Line",
+          41
+        ],
+        [
+          "ListItem",
+          7
+        ],
+        [
+          "Text",
+          4
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "SectionHeader",
+          2
+        ],
+        [
+          "PageFooter",
+          2
+        ],
+        [
+          "ListGroup",
+          2
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 6,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          267
+        ],
+        [
+          "TableCell",
+          140
+        ],
+        [
+          "Line",
+          45
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "SectionHeader",
+          2
+        ],
+        [
+          "Text",
+          2
+        ],
+        [
+          "PageFooter",
+          2
+        ],
+        [
+          "Table",
+          1
+        ],
+        [
+          "Caption",
+          1
+        ],
+        [
+          "TableGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 7,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          152
+        ],
+        [
+          "TableCell",
+          39
+        ],
+        [
+          "Line",
+          35
+        ],
+        [
+          "SectionHeader",
+          3
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "Text",
+          2
+        ],
+        [
+          "Table",
+          2
+        ],
+        [
+          "Caption",
+          2
+        ],
+        [
+          "PageFooter",
+          2
+        ],
+        [
+          "TableGroup",
+          2
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 8,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          155
+        ],
+        [
+          "Line",
+          42
+        ],
+        [
+          "ListItem",
+          5
+        ],
+        [
+          "Text",
+          3
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "SectionHeader",
+          2
+        ],
+        [
+          "PageFooter",
+          2
+        ],
+        [
+          "ListGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 9,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          126
+        ],
+        [
+          "Line",
+          31
+        ],
+        [
+          "TableCell",
+          24
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "Caption",
+          2
+        ],
+        [
+          "PageFooter",
+          2
+        ],
+        [
+          "Figure",
+          1
+        ],
+        [
+          "Table",
+          1
+        ],
+        [
+          "SectionHeader",
+          1
+        ],
+        [
+          "Text",
+          1
+        ],
+        [
+          "FigureGroup",
+          1
+        ],
+        [
+          "TableGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 10,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          114
+        ],
+        [
+          "Line",
+          30
+        ],
+        [
+          "ListItem",
+          3
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "PageFooter",
+          2
+        ],
+        [
+          "Text",
+          1
+        ],
+        [
+          "Figure",
+          1
+        ],
+        [
+          "Caption",
+          1
+        ],
+        [
+          "SectionHeader",
+          1
+        ],
+        [
+          "FigureGroup",
+          1
+        ],
+        [
+          "ListGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 11,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          125
+        ],
+        [
+          "Line",
+          38
+        ],
+        [
+          "TableCell",
+          18
+        ],
+        [
+          "ListItem",
+          7
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "SectionHeader",
+          2
+        ],
+        [
+          "PageFooter",
+          2
+        ],
+        [
+          "ListGroup",
+          2
+        ],
+        [
+          "Table",
+          1
+        ],
+        [
+          "Caption",
+          1
+        ],
+        [
+          "Text",
+          1
+        ],
+        [
+          "TableGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 12,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          98
+        ],
+        [
+          "Line",
+          32
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "Text",
+          2
+        ],
+        [
+          "PageFooter",
+          2
+        ],
+        [
+          "Figure",
+          1
+        ],
+        [
+          "Caption",
+          1
+        ],
+        [
+          "SectionHeader",
+          1
+        ],
+        [
+          "FigureGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 13,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          106
+        ],
+        [
+          "Line",
+          45
+        ],
+        [
+          "ListItem",
+          4
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "Text",
+          2
+        ],
+        [
+          "PageFooter",
+          2
+        ],
+        [
+          "SectionHeader",
+          1
+        ],
+        [
+          "ListGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 14,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          105
+        ],
+        [
+          "Line",
+          40
+        ],
+        [
+          "ListItem",
+          19
+        ],
+        [
+          "PageHeader",
+          2
+        ],
+        [
+          "PageFooter",
+          2
+        ],
+        [
+          "SectionHeader",
+          1
+        ],
+        [
+          "ListGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    }
+  ],
+  "debug_data_path": "debug_data/bh-eu-08-frei-WP"
+}
