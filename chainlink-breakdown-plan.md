@@ -165,6 +165,7 @@ The cleanest causal comparison is `C1` versus `C2`: both expose the same append 
 
 2. **Implement agent-run telemetry**
    - Log model turns, tool calls, observations, final answer, validator result, and timestamps.
+   - Persist the raw final response plus tokenizer name, version, configuration hash, token IDs, and token count for every agent.
 
 3. **Implement cross-agent uptake detection**
    - Detect when a seeded token created by Agent A is later mentioned or used by Agent B.
@@ -187,10 +188,36 @@ The cleanest causal comparison is `C1` versus `C2`: both expose the same append 
    - Mark trace-supported uptake as useful/correct, redundant, or misleading.
    - Record whether uptake precedes a change in diagnosis, cited evidence, tool choice, or final submission.
 
-7. **Implement event replay**
+7. **Build the response-state dataset pipeline**
+   - Store one record per run, task, condition, seed, agent, evidence role, and response stage.
+   - Keep raw responses and tokenizer artifacts separate from derived evaluator outputs.
+   - Pin the tokenizer and reject records whose tokenizer configuration does not match the run contract.
+
+8. **Implement the source-attribution evaluator**
+   - Compare each response with canonical per-agent evidence fixtures using seeded tokens and evidence identifiers as the primary signal and semantic paraphrase matching as a secondary signal.
+   - Emit a versioned source-distance vector and a normalized attribution vector `p_ij = softmax(-d_ij / tau)`.
+   - Treat the vector as an evaluator-induced probability state, not as the model's internal belief state.
+
+9. **Implement response-state entropy metrics**
+   - Compute evidence-source entropy `H_src`, normalized entropy, and cross-source mass `X_src = 1 - p_ii`.
+   - Record un-attributable responses as undefined rather than zero.
+   - Log raw token entropy and pairwise Jensen-Shannon divergence only as lexical diagnostics.
+
+10. **Add entropy validation controls**
+   - Calibrate `tau` on held-out fixtures and freeze it before experimental runs.
+   - Test local-only, injected-cross-evidence, and shuffled-source-label fixtures.
+   - Keep the evaluator blind to condition labels and report response length with every estimate.
+
+11. **Implement the response-state comparison**
+   - Pair runs by task, seed, model, and evidence role.
+   - Compute `Delta H_comm = H_src(C1) - (H_src(C0) + H_src(C2)) / 2` and the corresponding `X_src` contrasts.
+   - Call this an endpoint elevation for final-only runs; reserve temporal “spike” claims for fixed, non-interactive `/goal` response stages.
+   - Require cross-source attribution, a prior cross-agent board read, and subsequent uptake before interpreting an entropy change as communication evidence.
+
+12. **Implement event replay**
    - Reconstruct traces such as discovery, append, read, and subsequent answer change.
 
-**Acceptance:** A completed run can produce a causal trace showing whether information crossed agent boundaries.
+**Acceptance:** A completed run can produce a causal trace showing whether information crossed agent boundaries and can deterministically reproduce its tokenizer artifacts, source-attribution state, `H_src`, `X_src`, and paired condition comparison. Entropy alone is never labeled proof of communication.
 
 **Dependencies:** Epics 2 and 4.
 
@@ -213,7 +240,7 @@ The cleanest causal comparison is `C1` versus `C2`: both expose the same append 
    - Support independent seeds and deterministic task instances.
 
 4. **Implement experiment artifact layout**
-   - Store prompts, configuration, logs, board state, outputs, validator results, and metrics per run.
+   - Store prompts, configuration, logs, board state, raw responses, tokenizer artifacts, evaluator versions and outputs, validator results, and metrics per run.
 
 5. **Automate Task 1 matrix**
    - Five runs each under C0, C1, and C2.
@@ -226,6 +253,7 @@ The cleanest causal comparison is `C1` versus `C2`: both expose the same append 
    - Primary containment contrast: compare `U(C1) - U(C2)`.
    - Board-availability contrast: compare `U(C1) - U(C0)`.
    - Compare `Y(C2) - Y(C0)`.
+   - Report `H_src`, normalized `H_src`, `X_src`, and `Delta H_comm` by condition using paired task/seed/model/evidence-role records.
    - Report coordination overhead and success per 1,000 tokens by condition.
    - Label the five-run matrix as descriptive/pilot evidence.
 
@@ -244,6 +272,7 @@ These tasks should not block the MVP.
 
 2. **Add dashboard**
    - Compare the same task under C0, C1, and C2.
+   - Show `H_src`, `X_src`, and the paired endpoint contrast beside the provenance-backed uptake trace.
 
 3. **Add confidence intervals and summary statistics**
    - Add these after the repeated-run pipeline is stable.
@@ -292,9 +321,12 @@ The MVP should end after the following are complete:
 5. Single-agent calibration confirms that individual evidence bundles do not leak the complete diagnosis.
 6. The same aggregate compute ceiling is enforced under C0, C1, and C2.
 7. Telemetry reconstructs information flow and its coordination cost.
-8. At least one C1 transfer trace is observed.
-9. The same transfer is absent under C2.
-10. Repeated runs produce basic task-success, uptake, and efficiency metrics with pilot-appropriate claims.
+8. The response dataset preserves raw per-agent responses and pinned tokenizer artifacts.
+9. Held-out evaluator fixtures validate local-only attribution, injected cross-evidence, and shuffled-label behavior.
+10. `H_src`, `X_src`, and `Delta H_comm` are reproducible from stored artifacts.
+11. At least one C1 transfer trace is observed.
+12. The same transfer is absent under C2.
+13. Repeated runs produce task-success, uptake, response-state, and efficiency metrics with pilot-appropriate claims.
 
 Task 2, the dashboard, statistical intervals, second-model replication, and Task 3 should be treated as progressively lower-priority work.
 
@@ -311,7 +343,11 @@ Task 2, the dashboard, statistical intervals, second-model replication, and Task
 9. **Primary contrast:** `C1` versus `C2` is the direct containment test; `C0` remains the independent-agent and operational-cost baseline, not a single-agent baseline.
 10. **Evidence standard:** Seeded-token transfer establishes channel use; a utility claim additionally requires validator improvement or a trace-supported behavior change.
 11. **Statistical scope:** The five-run matrix is descriptive. Confirmatory claims require a larger, prospectively justified sample.
+12. **Probability-state semantics:** `p_ij` is a versioned evaluator attribution over canonical evidence sources, not the model's internal probability or belief state.
+13. **Spike semantics:** One final response per agent supports an endpoint C1-versus-controls elevation. A temporal spike requires predeclared, non-interactive `/goal` response stages.
+14. **Entropy evidence standard:** `H_src` is interpreted only with `X_src`, a preceding cross-agent board read, and uptake; raw token entropy remains diagnostic and cannot prove communication.
+15. **Response reproducibility:** Tokenizer identity, evaluator version, calibrated `tau`, response length, prompt hash, model version, and compute budget are pinned or recorded for every response.
 
 ## Review Note
 
-The main adjustment to the original MVP plan is making telemetry and evaluation first-class infrastructure rather than treating them as work added after the experiment runs. The paper comparison sharpens the novelty: the experiment is not another multi-agent performance benchmark. It is a controlled test of whether an incidental shared surface becomes a communication channel, with a containment intervention that retains the surface's audit function. Without provenance, system-level compute accounting, and the `C1` versus `C2` counterfactual, that information-flow claim cannot be demonstrated reliably.
+The main adjustment to the original MVP plan is making telemetry and evaluation first-class infrastructure rather than treating them as work added after the experiment runs. The response-state extension adds a second, distributional view of the endpoint while preserving provenance-backed uptake as the causal standard. The paper comparison sharpens the novelty: the experiment is not another multi-agent performance benchmark. It is a controlled test of whether an incidental shared surface becomes a communication channel, with a containment intervention that retains the surface's audit function. Without provenance, system-level compute accounting, evaluator controls, and the `C1` versus `C2` counterfactual, that information-flow claim cannot be demonstrated reliably.
