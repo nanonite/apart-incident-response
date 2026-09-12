@@ -199,3 +199,58 @@ only to make Pi emit constrained tool calls. Those calls cross the controller's
 fixture FIFO and produce the audit evidence in
 [docs/pi-extension-smoke-trace.json](docs/pi-extension-smoke-trace.json). Run it
 with `PYTHONPATH=src python scripts/pi_extension_smoke.py`.
+
+## Docker
+
+The image build includes the pinned Pi submodule. After cloning without
+`--recurse-submodules`, initialize it before building:
+
+```bash
+git submodule update --init --recursive
+```
+
+Build the runtime image and validate its pinned configuration:
+
+```bash
+docker compose build
+docker compose run --rm runtime
+```
+
+The build runs the unit test suite before producing the final image. The image
+contains Python 3.12, Bun, bubblewrap, CA certificates, `tini`, and a
+Linux-prepared copy of the pinned `pi` submodule at `/opt/pi`. Its dependencies
+are installed from `package-lock.json` without lifecycle scripts, and its
+required model catalog is generated for direct execution with Bun. The image
+does not contain credentials, experiment artifacts, or the research documents
+under `docs/`.
+
+To run an agent, mount only its authentication file read-only. For PowerShell:
+
+```powershell
+$authFile = (Resolve-Path $env:APART_PI_AUTH_FILE).Path
+
+docker compose run --rm `
+  --volume "${authFile}:/run/secrets/pi-auth.json:ro" `
+  runtime run config/runtime.json `
+  --run-id run-001 --agent-id agent-1 --condition C0 `
+  --task-id task-1 --seed 1 --prompt "Run the assigned task." `
+  --workspace-root artifacts/runs
+```
+
+For Bash:
+
+```bash
+docker compose run --rm \
+  --volume "${APART_PI_AUTH_FILE}:/run/secrets/pi-auth.json:ro" \
+  runtime run config/runtime.json \
+  --run-id run-001 --agent-id agent-1 --condition C0 \
+  --task-id task-1 --seed 1 --prompt "Run the assigned task." \
+  --workspace-root artifacts/runs
+```
+
+The `SYS_ADMIN` and `NET_ADMIN` capabilities and relaxed outer
+seccomp/AppArmor profiles are required so the controller can create
+bubblewrap's nested namespaces and initialize their loopback interface. They
+apply to the container only; the Pi child process is still launched inside the
+restricted filesystem and private network namespace defined by
+`config/runtime.json`.
