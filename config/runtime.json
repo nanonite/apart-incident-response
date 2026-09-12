@@ -1,0 +1,27 @@
+{
+  "pi": {
+    "version": "0.85.1",
+    "model": "openai/gpt-5",
+    "root_env": "APART_PI_ROOT",
+    "launch_command": ["bun", "run", "{pi_root}/packages/coding-agent/src/cli.ts"],
+    "thinking_level": "medium"
+  },
+  "limits": {
+    "agent_count": 3,
+    "per_agent_token_budget": 4000,
+    "per_agent_tool_call_budget": 32,
+    "aggregate_token_budget": 12000,
+    "aggregate_tool_call_budget": 96,
+    "timeout_seconds": 300
+  },
+  "isolation": {
+    "sandbox": "bubblewrap",
+    "network": false,
+    "shared_filesystem": false,
+    "shell": false,
+    "subprocess": false,
+    "mcp": false,
+    "subagents": false
+  },
+  "conditions": ["C0", "C1", "C2"]
+}
