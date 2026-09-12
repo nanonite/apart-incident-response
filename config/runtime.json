@@ -18,6 +18,7 @@
   "isolation": {
     "sandbox": "bubblewrap",
     "model_network": true,
+    "model_hosts": ["chatgpt.com"],
     "network": false,
     "shared_filesystem": false,
     "shell": false,

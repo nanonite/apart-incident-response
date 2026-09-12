@@ -1,3 +1,4 @@
+import hashlib
 import json
 import os
 import sys
@@ -5,7 +6,7 @@ import tempfile
 import textwrap
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from apart_incident_response.runtime import (
     AgentIdentity,
@@ -65,6 +66,27 @@ class RuntimeContractTests(unittest.TestCase):
         tampered["credential_id"] = "not-the-controller-binding"
         with self.assertRaises(RuntimeConfigError):
             load_identity(tampered)
+        altered_fields = identity.to_dict()
+        altered_fields["agent_id"] = "agent-2"
+        with self.assertRaises(RuntimeConfigError):
+            load_identity(altered_fields)
+        recomputed_unkeyed = altered_fields.copy()
+        material = "\0".join(
+            [
+                recomputed_unkeyed["run_id"],
+                recomputed_unkeyed["agent_id"],
+                recomputed_unkeyed["condition"],
+                recomputed_unkeyed["task_id"],
+                str(recomputed_unkeyed["seed"]),
+            ]
+        )
+        recomputed_unkeyed["credential_id"] = hashlib.sha256(material.encode()).hexdigest()
+        with self.assertRaises(RuntimeConfigError):
+            load_identity(recomputed_unkeyed)
+        missing_credential = identity.to_dict()
+        del missing_credential["credential_id"]
+        with self.assertRaises(RuntimeConfigError):
+            load_identity(missing_credential)
         missing = identity.to_dict()
         del missing["task_id"]
         with self.assertRaises(RuntimeConfigError):
@@ -109,7 +131,8 @@ class RuntimeContractTests(unittest.TestCase):
             workspace = create_isolated_workspace(Path(temp) / "runs", self.identity())
             with patch.dict(os.environ, {"TEST_APART_PI_ROOT": str(pi_root)}):
                 command = build_pi_command(config, self.identity(), workspace)
-            self.assertNotIn("--unshare-net", command)
+            self.assertIn("--unshare-net", command)
+            self.assertIn("network_bridge", " ".join(command))
             self.assertIn("--setenv", command)
             identity_index = command.index("APART_RUN_ID")
             self.assertEqual(command[identity_index + 1], "run-001")
@@ -181,6 +204,17 @@ class RuntimeContractTests(unittest.TestCase):
         self.assertEqual(budget.tool_calls_used, 1)
         self.assertTrue(budget.reserve(tokens=3, tool_calls=1))
         self.assertFalse(budget.reserve(tokens=0, tool_calls=1))
+
+    def test_system_budget_claim_is_reserved_before_launch(self):
+        budget = SystemBudget(10, 2)
+        claim = budget.claim(10, 2)
+        self.assertEqual(claim, (10, 2))
+        self.assertIsNone(budget.claim(1, 1))
+        self.assertEqual(budget.snapshot()["tokens_reserved"], 10)
+        self.assertTrue(budget.settle(claim, 3, 1))
+        self.assertEqual(budget.tokens_used, 3)
+        self.assertEqual(budget.tool_calls_used, 1)
+        self.assertEqual(budget.snapshot()["tokens_reserved"], 0)
 
     def test_agent_lifecycle_writes_complete_artifact(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -291,10 +325,59 @@ class RuntimeContractTests(unittest.TestCase):
             )
             identity = self.identity()
             workspace = create_isolated_workspace(root / "runs", identity)
-            config = self.config(launch_command=(sys.executable, str(fake_agent)))
+            config = self.config(
+                launch_command=(sys.executable, str(fake_agent)),
+                per_agent_token_budget=10,
+                per_agent_tool_call_budget=2,
+                aggregate_token_budget=10,
+                aggregate_tool_call_budget=2,
+            )
             result = AgentRun(config, identity, workspace, SystemBudget(10, 2)).run("ping")
             self.assertEqual(result.status.value, "failed")
             self.assertIn("provider unavailable", result.failure_reason or "")
+
+    def test_budget_claim_blocks_process_before_launch(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            identity = self.identity()
+            workspace = create_isolated_workspace(root / "runs", identity)
+            config = self.config(
+                per_agent_token_budget=10,
+                per_agent_tool_call_budget=2,
+                aggregate_token_budget=10,
+                aggregate_tool_call_budget=2,
+            )
+            with patch("apart_incident_response.runtime.subprocess.Popen") as popen:
+                result = AgentRun(config, identity, workspace, SystemBudget(9, 2)).run("ping")
+            popen.assert_not_called()
+            self.assertEqual(result.status.value, "budget_exhausted")
+            self.assertIn("before provider launch", result.failure_reason or "")
+
+    def test_auth_cleanup_runs_when_prompt_write_breaks(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            auth_file = root / "auth.json"
+            auth_file.write_text("{}\n", encoding="utf-8")
+            identity = self.identity()
+            workspace = create_isolated_workspace(root / "runs", identity)
+            config = self.config(
+                launch_command=(sys.executable, "-c", "pass"),
+                pi_auth_file_env="TEST_APART_PI_AUTH",
+                per_agent_token_budget=10,
+                per_agent_tool_call_budget=2,
+                aggregate_token_budget=10,
+                aggregate_tool_call_budget=2,
+            )
+            fake_process = MagicMock()
+            fake_process.stdin.write.side_effect = BrokenPipeError("child exited")
+            fake_process.poll.return_value = 0
+            fake_process.wait.return_value = 0
+            with patch.dict(os.environ, {"TEST_APART_PI_AUTH": str(auth_file)}), patch(
+                "apart_incident_response.runtime.subprocess.Popen", return_value=fake_process
+            ):
+                result = AgentRun(config, identity, workspace, SystemBudget(10, 2)).run("ping")
+            self.assertEqual(result.status.value, "failed")
+            self.assertFalse((workspace.root / "home" / ".pi" / "agent" / "auth.json").exists())
 
     def test_agent_timeout_produces_failure_artifact(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -308,6 +391,10 @@ class RuntimeContractTests(unittest.TestCase):
             workspace = create_isolated_workspace(root / "runs", identity)
             config = self.config(
                 launch_command=(sys.executable, str(fake_agent)),
+                per_agent_token_budget=10,
+                per_agent_tool_call_budget=2,
+                aggregate_token_budget=10,
+                aggregate_tool_call_budget=2,
                 timeout_seconds=0.05,
             )
             result = AgentRun(config, identity, workspace, SystemBudget(10, 2)).run("wait")

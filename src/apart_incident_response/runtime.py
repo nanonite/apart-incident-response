@@ -11,12 +11,16 @@ from __future__ import annotations
 import argparse
 import base64
 import hashlib
+import hmac
 import json
 import os
 import re
+import select
 import selectors
+import secrets
 import shutil
 import signal
+import socket
 import subprocess
 import sys
 import time
@@ -24,7 +28,7 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
-from threading import Lock
+from threading import Event, Lock, Thread
 from typing import Any, Iterable, Mapping, Sequence
 
 
@@ -53,6 +57,23 @@ class ExitStatus(str, Enum):
 _SAFE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
 _ENV_NAME = re.compile(r"^[A-Z][A-Z0-9_]{0,127}$")
 _THINKING_LEVELS = {"off", "minimal", "low", "medium", "high", "xhigh", "max"}
+_MODEL_HOST = re.compile(r"^[a-z0-9](?:[a-z0-9.-]{0,253}[a-z0-9])?$")
+_IDENTITY_SIGNING_KEY = secrets.token_bytes(32)
+
+
+def _identity_signing_key() -> bytes:
+    """Return the controller-only key used for identity bindings.
+
+    A deployment may provide a stable key through ``APART_IDENTITY_KEY`` so
+    separate controller processes can verify records.  The fallback is a
+    process-local random key; it is still secret from the child and prevents
+    an agent from recomputing bindings from the public identity fields.
+    """
+
+    configured = os.environ.get("APART_IDENTITY_KEY")
+    if configured:
+        return configured.encode("utf-8")
+    return _IDENTITY_SIGNING_KEY
 
 
 def _validate_id(value: str, field_name: str) -> str:
@@ -99,10 +120,12 @@ class AgentIdentity:
 
     @property
     def credential_id(self) -> str:
-        """Stable non-secret binding used by tool servers to identify the agent."""
+        """Controller-keyed binding used by tool servers to identify the agent."""
 
         material = f"{self.run_id}\0{self.agent_id}\0{self.condition.value}\0{self.task_id}\0{self.seed}"
-        return hashlib.sha256(material.encode("utf-8")).hexdigest()
+        return hmac.new(
+            _identity_signing_key(), material.encode("utf-8"), hashlib.sha256
+        ).hexdigest()
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -131,7 +154,9 @@ class AgentIdentity:
         except KeyError as exc:
             raise RuntimeConfigError(f"agent identity is missing {exc.args[0]!r}") from exc
         supplied_credential = raw.get("credential_id")
-        if supplied_credential is not None and supplied_credential != identity.credential_id:
+        if not isinstance(supplied_credential, str):
+            raise RuntimeConfigError("agent identity requires a controller credential_id")
+        if not hmac.compare_digest(supplied_credential, identity.credential_id):
             raise RuntimeConfigError("agent identity credential_id does not match its fields")
         return identity
 
@@ -149,8 +174,10 @@ class IsolationPolicy:
     sandbox: str = "bubblewrap"
     # Pi itself must reach the configured model provider. Agent-side network
     # access remains denied by the tool policy and by the absence of network
-    # capable tools; this flag controls the provider transport namespace.
+    # capable tools. Provider traffic is sent through the controller-owned
+    # allowlisted relay, never through the host network namespace directly.
     model_network: bool = False
+    model_hosts: tuple[str, ...] = ("chatgpt.com",)
     network: bool = False
     shared_filesystem: bool = False
     shell: bool = False
@@ -177,6 +204,11 @@ class IsolationPolicy:
             raise RuntimeConfigError("sandbox must be 'bubblewrap' or 'none'")
         if self.sandbox == "none" and not self.allow_unsafe_for_tests:
             raise RuntimeConfigError("a production runtime requires bubblewrap isolation")
+        if not self.model_hosts:
+            raise RuntimeConfigError("model_hosts must contain at least one provider hostname")
+        for host in self.model_hosts:
+            if not isinstance(host, str) or not _MODEL_HOST.fullmatch(host.lower()):
+                raise RuntimeConfigError(f"invalid model provider hostname: {host!r}")
 
 
 @dataclass(frozen=True)
@@ -242,6 +274,9 @@ class RuntimeConfig:
             raise RuntimeConfigError("config requires 'pi' and 'limits' objects")
         if not isinstance(isolation, Mapping):
             raise RuntimeConfigError("isolation must be an object")
+        model_hosts = isolation.get("model_hosts", ["chatgpt.com"])
+        if not isinstance(model_hosts, list):
+            raise RuntimeConfigError("isolation.model_hosts must be a JSON array")
         if not isinstance(conditions, list):
             raise RuntimeConfigError("conditions must be a JSON array")
         command = pi.get("launch_command", [pi.get("executable", "pi")])
@@ -273,6 +308,7 @@ class RuntimeConfig:
                 model_network=_strict_bool(
                     isolation.get("model_network", False), "isolation.model_network"
                 ),
+                model_hosts=tuple(str(host).lower() for host in model_hosts),
                 network=_strict_bool(isolation.get("network", False), "isolation.network"),
                 shared_filesystem=_strict_bool(
                     isolation.get("shared_filesystem", False), "isolation.shared_filesystem"
@@ -332,6 +368,8 @@ class SystemBudget:
         self.tool_call_limit = _positive_int(tool_call_limit, "tool_call_limit")
         self._tokens = 0
         self._tool_calls = 0
+        self._reserved_tokens = 0
+        self._reserved_tool_calls = 0
         self._lock = Lock()
 
     @property
@@ -348,20 +386,51 @@ class SystemBudget:
         if tokens < 0 or tool_calls < 0:
             raise RuntimeConfigError("budget increments cannot be negative")
         with self._lock:
-            if self._tokens + tokens > self.token_limit:
+            if self._tokens + self._reserved_tokens + tokens > self.token_limit:
                 return False
-            if self._tool_calls + tool_calls > self.tool_call_limit:
+            if self._tool_calls + self._reserved_tool_calls + tool_calls > self.tool_call_limit:
                 return False
             self._tokens += tokens
             self._tool_calls += tool_calls
             return True
 
+    def claim(self, tokens: int, tool_calls: int) -> tuple[int, int] | None:
+        """Claim a complete agent envelope before starting a provider request."""
+
+        if tokens <= 0 or tool_calls <= 0:
+            raise RuntimeConfigError("budget claims must be positive")
+        with self._lock:
+            if self._tokens + self._reserved_tokens + tokens > self.token_limit:
+                return None
+            if self._tool_calls + self._reserved_tool_calls + tool_calls > self.tool_call_limit:
+                return None
+            self._reserved_tokens += tokens
+            self._reserved_tool_calls += tool_calls
+            return tokens, tool_calls
+
+    def settle(self, claim: tuple[int, int], tokens: int, tool_calls: int) -> bool:
+        """Release a claim and account for the provider usage it incurred."""
+
+        claimed_tokens, claimed_tools = claim
+        if min(claimed_tokens, claimed_tools, tokens, tool_calls) < 0:
+            raise RuntimeConfigError("budget values cannot be negative")
+        with self._lock:
+            self._reserved_tokens -= claimed_tokens
+            self._reserved_tool_calls -= claimed_tools
+            if self._reserved_tokens < 0 or self._reserved_tool_calls < 0:
+                raise RuntimeConfigError("budget claim was settled more than once")
+            self._tokens += tokens
+            self._tool_calls += tool_calls
+            return tokens <= claimed_tokens and tool_calls <= claimed_tools
+
     def snapshot(self) -> dict[str, int]:
         with self._lock:
             return {
                 "tokens_used": self._tokens,
+                "tokens_reserved": self._reserved_tokens,
                 "token_limit": self.token_limit,
                 "tool_calls_used": self._tool_calls,
+                "tool_calls_reserved": self._reserved_tool_calls,
                 "tool_call_limit": self.tool_call_limit,
             }
 
@@ -512,6 +581,168 @@ def _resolve_launch_command(config: RuntimeConfig) -> tuple[list[str], Path | No
     return [part.replace("{pi_root}", str(pi_root)) for part in command], pi_root
 
 
+class _ModelEgressProxy:
+    """Host-side allowlisted CONNECT relay for the isolated model process."""
+
+    def __init__(self, socket_path: Path, allowed_hosts: Iterable[str]) -> None:
+        self.socket_path = socket_path
+        self.allowed_hosts = frozenset(host.lower() for host in allowed_hosts)
+        self._listener: socket.socket | None = None
+        self._stopping = Event()
+        self._thread: Thread | None = None
+        self._clients: set[Thread] = set()
+        self._clients_lock = Lock()
+
+    def start(self) -> None:
+        self.socket_path.unlink(missing_ok=True)
+        listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        try:
+            listener.bind(str(self.socket_path))
+            self.socket_path.chmod(0o600)
+            listener.listen(16)
+            listener.settimeout(0.2)
+        except BaseException:
+            listener.close()
+            self.socket_path.unlink(missing_ok=True)
+            raise
+        self._listener = listener
+        self._thread = Thread(target=self._serve, name="apart-model-egress", daemon=True)
+        self._thread.start()
+
+    def stop(self) -> None:
+        self._stopping.set()
+        listener = self._listener
+        self._listener = None
+        if listener is not None:
+            listener.close()
+        if self._thread is not None:
+            self._thread.join(timeout=2)
+        with self._clients_lock:
+            clients = tuple(self._clients)
+        for client in clients:
+            client.join(timeout=1)
+        self.socket_path.unlink(missing_ok=True)
+
+    def _serve(self) -> None:
+        listener = self._listener
+        if listener is None:
+            return
+        while not self._stopping.is_set():
+            try:
+                client, _ = listener.accept()
+            except socket.timeout:
+                continue
+            except OSError:
+                break
+            client_thread = Thread(
+                target=self._handle_client,
+                args=(client,),
+                name="apart-model-egress-client",
+                daemon=True,
+            )
+            with self._clients_lock:
+                self._clients.add(client_thread)
+            client_thread.start()
+
+    def _handle_client(self, client: socket.socket) -> None:
+        try:
+            client.settimeout(30)
+            request = self._read_headers(client)
+            if request is None:
+                return
+            header_bytes, remainder = request
+            first_line = header_bytes.split(b"\r\n", 1)[0].decode("latin-1", "replace")
+            parts = first_line.split(" ", 2)
+            if len(parts) != 3:
+                self._deny(client)
+                return
+            method, target, _ = parts
+            if method.upper() == "CONNECT":
+                host, separator, port_text = target.rpartition(":")
+                if not separator:
+                    host, port = target, 443
+                else:
+                    try:
+                        port = int(port_text)
+                    except ValueError:
+                        self._deny(client)
+                        return
+                if not self._allowed(host, port):
+                    self._deny(client)
+                    return
+                upstream = socket.create_connection((host, port), timeout=30)
+                try:
+                    client.sendall(b"HTTP/1.1 200 Connection Established\r\n\r\n")
+                    self._relay(client, upstream)
+                finally:
+                    upstream.close()
+                return
+
+            from urllib.parse import urlsplit
+
+            parsed = urlsplit(target)
+            host = parsed.hostname or ""
+            port = parsed.port or (443 if parsed.scheme == "https" else 80)
+            if parsed.scheme not in {"http", "https"} or not self._allowed(host, port):
+                self._deny(client)
+                return
+            upstream = socket.create_connection((host, port), timeout=30)
+            try:
+                upstream.sendall(header_bytes + remainder)
+                self._relay(client, upstream)
+            finally:
+                upstream.close()
+        except (OSError, ValueError):
+            return
+        finally:
+            client.close()
+
+    @staticmethod
+    def _read_headers(client: socket.socket) -> tuple[bytes, bytes] | None:
+        data = bytearray()
+        while b"\r\n\r\n" not in data and len(data) <= 64 * 1024:
+            chunk = client.recv(8192)
+            if not chunk:
+                return None
+            data.extend(chunk)
+        marker = data.find(b"\r\n\r\n")
+        if marker < 0:
+            return None
+        end = marker + 4
+        return bytes(data[:end]), bytes(data[end:])
+
+    def _allowed(self, host: str, port: int) -> bool:
+        return host.lower().rstrip(".") in self.allowed_hosts and port == 443
+
+    @staticmethod
+    def _deny(client: socket.socket) -> None:
+        try:
+            client.sendall(b"HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n")
+        except OSError:
+            pass
+
+    @staticmethod
+    def _relay(left: socket.socket, right: socket.socket) -> None:
+        left.settimeout(None)
+        right.settimeout(None)
+        open_sockets = [left, right]
+        while open_sockets:
+            readable, _, _ = select.select(open_sockets, [], [], 30)
+            if not readable:
+                return
+            for source in readable:
+                payload = source.recv(64 * 1024)
+                destination = right if source is left else left
+                if not payload:
+                    try:
+                        destination.shutdown(socket.SHUT_WR)
+                    except OSError:
+                        pass
+                    open_sockets.remove(source)
+                    continue
+                destination.sendall(payload)
+
+
 def build_pi_command(
     config: RuntimeConfig,
     identity: AgentIdentity,
@@ -566,6 +797,15 @@ def build_pi_command(
     safe_env = _safe_env(identity, workspace, config)
     safe_env["HOME"] = "/home/agent"
     safe_env["PI_CODING_AGENT_DIR"] = "/home/agent/.pi/agent"
+    # The child always gets a private network namespace. When model_network is
+    # enabled, the bridge process exposes only the controller's allowlisted
+    # model relay on loopback inside that namespace.
+    safe_env["HTTP_PROXY"] = "http://127.0.0.1:18080" if config.isolation.model_network else ""
+    safe_env["HTTPS_PROXY"] = safe_env["HTTP_PROXY"]
+    safe_env["http_proxy"] = safe_env["HTTP_PROXY"]
+    safe_env["https_proxy"] = safe_env["HTTP_PROXY"]
+    safe_env["NO_PROXY"] = ""
+    safe_env["no_proxy"] = ""
     sandbox_command = [
         bwrap,
         "--die-with-parent",
@@ -573,6 +813,7 @@ def build_pi_command(
         "--unshare-ipc",
         "--unshare-pid",
         "--unshare-uts",
+        "--unshare-net",
         "--clearenv",
         "--tmpfs",
         "/",
@@ -597,8 +838,19 @@ def build_pi_command(
         "/workspace/task",
     ]
     if config.isolation.model_network:
+        source_root = Path(__file__).resolve().parent.parent
+        if not source_root.is_dir():
+            raise RuntimeConfigError(f"runtime source directory does not exist: {source_root}")
         insert_at = sandbox_command.index("--chdir")
-        sandbox_command[insert_at:insert_at] = ["--dir", "/etc"]
+        sandbox_command[insert_at:insert_at] = [
+            "--dir",
+            "/runtime",
+            "--ro-bind",
+            str(source_root),
+            "/runtime/src",
+            "--dir",
+            "/etc",
+        ]
         for path in (Path("/etc/resolv.conf"), Path("/etc/hosts"), Path("/etc/nsswitch.conf")):
             if path.exists():
                 sandbox_command[insert_at:insert_at] = ["--ro-bind", str(path), str(path)]
@@ -611,9 +863,8 @@ def build_pi_command(
                 str(cert_dir),
                 "/etc/ssl/certs",
             ]
-    if not config.isolation.model_network:
-        insert_at = sandbox_command.index("--clearenv") + 1
-        sandbox_command[insert_at:insert_at] = ["--unshare-net"]
+    if config.isolation.model_network:
+        safe_env["PYTHONPATH"] = "/runtime/src"
     for name, value in safe_env.items():
         sandbox_command.extend(["--setenv", name, value])
     if auth_file is not None:
@@ -651,6 +902,23 @@ def build_pi_command(
         if path.exists():
             insert_at = sandbox_command.index("--chdir")
             sandbox_command[insert_at:insert_at] = ["--ro-bind", runtime_path, runtime_path]
+    if config.isolation.model_network:
+        bridge_python = (
+            "/run/current-system/sw/bin/python3"
+            if Path("/run/current-system/sw/bin/python3").exists()
+            else sys.executable
+        )
+        command = [
+            bridge_python,
+            "-m",
+            "apart_incident_response.network_bridge",
+            "--socket",
+            "/workspace/.apart-model-proxy.sock",
+            "--port",
+            "18080",
+            "--",
+            *command,
+        ]
     return sandbox_command + command
 
 
@@ -826,10 +1094,10 @@ class AgentRun:
     def run(self, prompt: str, extension: Path | None = None) -> RunResult:
         if not isinstance(prompt, str) or not prompt.strip():
             raise RuntimeConfigError("prompt must be a non-empty string")
-        command = build_pi_command(self.config, self.identity, self.workspace, extension)
         artifact_dir = self.workspace.artifact_dir
         started_at = _utc_now()
         started_clock = time.monotonic()
+        command: list[str] = []
         events: list[dict[str, Any]] = []
         final_response: str | None = None
         failure_reason: str | None = None
@@ -839,152 +1107,180 @@ class AgentRun:
         agent_tool_calls_used = 0
         stdout_path = artifact_dir / "stdout.jsonl"
         stderr_path = artifact_dir / "stderr.log"
-        self._write_json(artifact_dir / "metadata.json", {
-            "identity": self.identity.to_dict(),
-            "runtime": self.config.to_dict(),
-            "command": command,
-            "started_at": started_at,
-        })
+        claim: tuple[int, int] | None = None
+        proxy: _ModelEgressProxy | None = None
         try:
-            process = subprocess.Popen(
-                command,
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                cwd=self.workspace.task_dir,
-                env=_safe_env(self.identity, self.workspace, self.config),
-                shell=False,
-                close_fds=True,
-                start_new_session=True,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-                bufsize=1,
+            if self.config.isolation.model_network and self.config.isolation.sandbox == "bubblewrap":
+                proxy = _ModelEgressProxy(
+                    self.workspace.root / ".apart-model-proxy.sock",
+                    self.config.isolation.model_hosts,
+                )
+                proxy.start()
+            command = build_pi_command(self.config, self.identity, self.workspace, extension)
+            self._write_json(artifact_dir / "metadata.json", {
+                "identity": self.identity.to_dict(),
+                "runtime": self.config.to_dict(),
+                "command": command,
+                "started_at": started_at,
+            })
+            stdout_path.write_text("", encoding="utf-8")
+            stderr_path.write_text("", encoding="utf-8")
+
+            # Reserve the complete envelope before Popen. A provider request
+            # must never start merely because current accounting happens to
+            # have spare capacity; concurrent agents claim their ceilings
+            # atomically before they can incur usage.
+            claim = self.system_budget.claim(
+                self.config.per_agent_token_budget,
+                self.config.per_agent_tool_call_budget,
             )
-        except (OSError, ValueError) as exc:
-            failure_reason = f"launcher failed: {exc}"
-            status = ExitStatus.LAUNCH_ERROR
-            ended_at = _utc_now()
+            if claim is None:
+                failure_reason = "system compute ceiling exhausted before provider launch"
+                status = ExitStatus.BUDGET_EXHAUSTED
+                return self._finish(
+                    status, exit_code, started_at, _utc_now(), started_clock,
+                    final_response, failure_reason, command, events,
+                    agent_tokens_used, agent_tool_calls_used,
+                )
+
+            try:
+                process = subprocess.Popen(
+                    command,
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    cwd=self.workspace.task_dir,
+                    env=_safe_env(self.identity, self.workspace, self.config),
+                    shell=False,
+                    close_fds=True,
+                    start_new_session=True,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                    bufsize=1,
+                )
+            except (OSError, ValueError) as exc:
+                failure_reason = f"launcher failed: {exc}"
+                status = ExitStatus.LAUNCH_ERROR
+                return self._finish(
+                    status, exit_code, started_at, _utc_now(), started_clock,
+                    final_response, failure_reason, command, events,
+                    agent_tokens_used, agent_tool_calls_used,
+                )
+
+            assert process.stdin is not None
+            assert process.stdout is not None
+            assert process.stderr is not None
+            selector: selectors.BaseSelector | None = None
+            current_message_key: str | None = None
+            usage_seen: dict[str, int] = {}
+            seen_tool_calls: set[str] = set()
+            stdout_lines: list[str] = []
+            stderr_lines: list[str] = []
+            deadline = started_clock + self.config.timeout_seconds
+            try:
+                # Prompt delivery is inside the protected lifecycle. A child
+                # that exits early can raise BrokenPipeError here, and the
+                # outer finally below still removes staged credentials.
+                process.stdin.write(prompt)
+                process.stdin.write("\n")
+                process.stdin.close()
+                selector = selectors.DefaultSelector()
+                selector.register(process.stdout, selectors.EVENT_READ, "stdout")
+                selector.register(process.stderr, selectors.EVENT_READ, "stderr")
+                with stdout_path.open("w", encoding="utf-8") as stdout_file, stderr_path.open(
+                    "w", encoding="utf-8"
+                ) as stderr_file:
+                    while selector.get_map():
+                        remaining = deadline - time.monotonic()
+                        if remaining <= 0:
+                            failure_reason = "agent exceeded runtime timeout"
+                            status = ExitStatus.TIMED_OUT
+                            self._terminate(process)
+                            break
+                        ready = selector.select(min(remaining, 0.25))
+                        for key, _ in ready:
+                            line = key.fileobj.readline()
+                            if line == "":
+                                selector.unregister(key.fileobj)
+                                continue
+                            if key.data == "stdout":
+                                stdout_file.write(line)
+                                stdout_file.flush()
+                                stdout_lines.append(line)
+                                event = self._parse_event(line)
+                                if event is None:
+                                    continue
+                                events.append(event)
+                                event_failure = _event_failure_reason(event)
+                                if event_failure is not None and failure_reason is None:
+                                    failure_reason = event_failure
+                                token_delta, current_message_key = _event_usage_increment(
+                                    event, current_message_key, usage_seen
+                                )
+                                new_tool_calls = _event_tool_call_ids(event) - seen_tool_calls
+                                seen_tool_calls.update(new_tool_calls)
+                                tool_delta = len(new_tool_calls)
+                                agent_tokens_used += token_delta
+                                agent_tool_calls_used += tool_delta
+                                if agent_tokens_used > self.config.per_agent_token_budget:
+                                    failure_reason = "agent exceeded per-agent token budget"
+                                    status = ExitStatus.BUDGET_EXHAUSTED
+                                    self._terminate(process)
+                                    break
+                                if agent_tool_calls_used > self.config.per_agent_tool_call_budget:
+                                    failure_reason = "agent exceeded per-agent tool-call budget"
+                                    status = ExitStatus.BUDGET_EXHAUSTED
+                                    self._terminate(process)
+                                    break
+                                candidate = _assistant_text(event)
+                                if candidate is not None:
+                                    final_response = candidate
+                            else:
+                                stderr_file.write(line)
+                                stderr_file.flush()
+                                stderr_lines.append(line)
+                        if status == ExitStatus.BUDGET_EXHAUSTED:
+                            break
+                        if process.poll() is not None and not selector.get_map():
+                            break
+                    if process.poll() is None:
+                        self._terminate(process)
+                    exit_code = process.wait(timeout=5)
+            except (BrokenPipeError, OSError) as exc:
+                failure_reason = f"agent I/O failed: {exc}"
+                status = ExitStatus.FAILED
+                self._terminate(process)
+                exit_code = process.wait(timeout=5)
+            finally:
+                if selector is not None:
+                    selector.close()
+                process.stdin.close()
+                process.stdout.close()
+                process.stderr.close()
+            if status not in {ExitStatus.TIMED_OUT, ExitStatus.BUDGET_EXHAUSTED, ExitStatus.LAUNCH_ERROR}:
+                if failure_reason is not None:
+                    status = ExitStatus.FAILED
+                elif exit_code == 0:
+                    status = ExitStatus.COMPLETED
+                else:
+                    status = ExitStatus.FAILED
+                    if failure_reason is None:
+                        failure_reason = f"agent exited with status {exit_code}"
             result = self._finish(
-                status, exit_code, started_at, ended_at, started_clock,
+                status, exit_code, started_at, _utc_now(), started_clock,
                 final_response, failure_reason, command, events,
                 agent_tokens_used, agent_tool_calls_used,
             )
-            self._cleanup_staged_auth()
+            (artifact_dir / "stdout.jsonl").write_text("".join(stdout_lines), encoding="utf-8")
+            (artifact_dir / "stderr.log").write_text("".join(stderr_lines), encoding="utf-8")
             return result
-
-        assert process.stdin is not None
-        assert process.stdout is not None
-        assert process.stderr is not None
-        process.stdin.write(prompt)
-        process.stdin.write("\n")
-        process.stdin.close()
-        selector = selectors.DefaultSelector()
-        selector.register(process.stdout, selectors.EVENT_READ, "stdout")
-        selector.register(process.stderr, selectors.EVENT_READ, "stderr")
-        current_message_key: str | None = None
-        usage_seen: dict[str, int] = {}
-        seen_tool_calls: set[str] = set()
-        stdout_lines: list[str] = []
-        stderr_lines: list[str] = []
-        deadline = started_clock + self.config.timeout_seconds
-        try:
-            with stdout_path.open("w", encoding="utf-8") as stdout_file, stderr_path.open(
-                "w", encoding="utf-8"
-            ) as stderr_file:
-                while selector.get_map():
-                    remaining = deadline - time.monotonic()
-                    if remaining <= 0:
-                        failure_reason = "agent exceeded runtime timeout"
-                        status = ExitStatus.TIMED_OUT
-                        self._terminate(process)
-                        break
-                    ready = selector.select(min(remaining, 0.25))
-                    for key, _ in ready:
-                        line = key.fileobj.readline()
-                        if line == "":
-                            selector.unregister(key.fileobj)
-                            continue
-                        if key.data == "stdout":
-                            stdout_file.write(line)
-                            stdout_file.flush()
-                            stdout_lines.append(line)
-                            event = self._parse_event(line)
-                            if event is None:
-                                continue
-                            events.append(event)
-                            event_failure = _event_failure_reason(event)
-                            if event_failure is not None and failure_reason is None:
-                                failure_reason = event_failure
-                            token_delta, current_message_key = _event_usage_increment(
-                                event, current_message_key, usage_seen
-                            )
-                            new_tool_calls = _event_tool_call_ids(event) - seen_tool_calls
-                            seen_tool_calls.update(new_tool_calls)
-                            tool_delta = len(new_tool_calls)
-                            agent_tokens_used += token_delta
-                            agent_tool_calls_used += tool_delta
-                            if agent_tokens_used > self.config.per_agent_token_budget:
-                                failure_reason = "agent exceeded per-agent token budget"
-                                status = ExitStatus.BUDGET_EXHAUSTED
-                                self._terminate(process)
-                                break
-                            if agent_tool_calls_used > self.config.per_agent_tool_call_budget:
-                                failure_reason = "agent exceeded per-agent tool-call budget"
-                                status = ExitStatus.BUDGET_EXHAUSTED
-                                self._terminate(process)
-                                break
-                            if not self.system_budget.reserve(token_delta, tool_delta):
-                                failure_reason = "system compute ceiling exhausted"
-                                status = ExitStatus.BUDGET_EXHAUSTED
-                                self._terminate(process)
-                                break
-                            candidate = _assistant_text(event)
-                            if candidate is not None:
-                                final_response = candidate
-                        else:
-                            stderr_file.write(line)
-                            stderr_file.flush()
-                            stderr_lines.append(line)
-                    if status == ExitStatus.BUDGET_EXHAUSTED:
-                        break
-                    if process.poll() is not None and not selector.get_map():
-                        break
-                if process.poll() is None:
-                    self._terminate(process)
-                exit_code = process.wait(timeout=5)
-        except (BrokenPipeError, OSError) as exc:
-            failure_reason = f"agent I/O failed: {exc}"
-            status = ExitStatus.FAILED
-            self._terminate(process)
-            exit_code = process.wait(timeout=5)
         finally:
-            selector.close()
-            process.stdout.close()
-            process.stderr.close()
-        if status not in {
-            ExitStatus.TIMED_OUT,
-            ExitStatus.BUDGET_EXHAUSTED,
-            ExitStatus.LAUNCH_ERROR,
-        }:
-            if failure_reason is not None:
-                status = ExitStatus.FAILED
-            elif exit_code == 0:
-                status = ExitStatus.COMPLETED
-            else:
-                status = ExitStatus.FAILED
-                if failure_reason is None:
-                    failure_reason = f"agent exited with status {exit_code}"
-        ended_at = _utc_now()
-        result = self._finish(
-            status, exit_code, started_at, ended_at, started_clock,
-            final_response, failure_reason, command, events,
-            agent_tokens_used, agent_tool_calls_used,
-        )
-        (artifact_dir / "stdout.jsonl").write_text("".join(stdout_lines), encoding="utf-8")
-        (artifact_dir / "stderr.log").write_text("".join(stderr_lines), encoding="utf-8")
-        self._cleanup_staged_auth()
-        return result
+            if claim is not None:
+                self.system_budget.settle(claim, agent_tokens_used, agent_tool_calls_used)
+            self._cleanup_staged_auth()
+            if proxy is not None:
+                proxy.stop()
 
     @staticmethod
     def _parse_event(line: str) -> dict[str, Any] | None:
@@ -1010,11 +1306,12 @@ class AgentRun:
     def _cleanup_staged_auth(self) -> None:
         """Remove any transient Codex-to-Pi credential conversion after launch."""
 
-        staged = self.workspace.root / "home" / ".pi" / "agent" / "auth.json"
-        try:
-            staged.unlink()
-        except FileNotFoundError:
-            pass
+        agent_home = self.workspace.root / "home" / ".pi" / "agent"
+        for staged in (agent_home / "auth.json", agent_home / "auth.json.lock"):
+            try:
+                staged.unlink()
+            except FileNotFoundError:
+                pass
 
     @staticmethod
     def _write_json(path: Path, value: Mapping[str, Any]) -> None:

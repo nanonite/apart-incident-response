@@ -18,8 +18,11 @@ than depending on a globally installed Pi binary. Each run receives a controller
 
 Pi is launched as an argv list with all tools, skills, extensions, prompt
 templates, themes, context-file discovery, and session persistence disabled.
-The provider network is available because Pi must call the pinned model; agent
-shell, subprocess, MCP, subagent, and shared-filesystem channels remain denied.
+Bubblewrap always gives the process a private network namespace. When
+`model_network` is enabled, only the allowlisted `model_hosts` endpoint is
+reachable through the controller relay; the Pi/extension process never gets
+the host network namespace. Agent shell, subprocess, MCP, subagent, and
+shared-filesystem channels remain denied.
 If an explicit experiment extension is supplied, its directory is mounted
 read-only into the sandbox and only built-in tools are disabled so that the
 extension can expose the intended tools.
@@ -32,6 +35,9 @@ environment or repository:
 ```bash
 export APART_PI_ROOT="$HOME/GitRepos/pi"
 export APART_PI_AUTH_FILE="$HOME/.codex/auth.json"
+# Optional stable controller secret for identity verification across processes.
+# If omitted, each controller process uses a private random signing key.
+export APART_IDENTITY_KEY="choose-a-secret-outside-the-repository"
 UV_CACHE_DIR=.uv-cache uv run env PYTHONPATH=src python -m apart_incident_response.runtime run \
   config/runtime.json --run-id run-001 --agent-id agent-1 --condition C0 \
   --task-id task-1 --seed 1 --prompt "Run the assigned task." \
