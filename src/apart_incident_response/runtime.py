@@ -10,22 +10,30 @@ from __future__ import annotations
 
 import argparse
 import base64
+import fcntl
 import hashlib
+import hmac
 import json
 import os
 import re
+import select
 import selectors
+import secrets
 import shutil
 import signal
+import socket
+import stat
 import subprocess
 import sys
+import tempfile
 import time
+from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
-from threading import Lock
-from typing import Any, Iterable, Mapping, Sequence
+from threading import Event, Lock, Thread
+from typing import Any, IO, Iterable, Iterator, Mapping, Sequence
 
 
 class RuntimeConfigError(ValueError):
@@ -53,6 +61,24 @@ class ExitStatus(str, Enum):
 _SAFE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
 _ENV_NAME = re.compile(r"^[A-Z][A-Z0-9_]{0,127}$")
 _THINKING_LEVELS = {"off", "minimal", "low", "medium", "high", "xhigh", "max"}
+_MODEL_HOST = re.compile(r"^[a-z0-9](?:[a-z0-9.-]{0,253}[a-z0-9])?$")
+_IDENTITY_SIGNING_KEY = secrets.token_bytes(32)
+_REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
+
+
+def _identity_signing_key() -> bytes:
+    """Return the controller-only key used for identity bindings.
+
+    A deployment may provide a stable key through ``APART_IDENTITY_KEY`` so
+    separate controller processes can verify records.  The fallback is a
+    process-local random key; it is still secret from the child and prevents
+    an agent from recomputing bindings from the public identity fields.
+    """
+
+    configured = os.environ.get("APART_IDENTITY_KEY")
+    if configured:
+        return configured.encode("utf-8")
+    return _IDENTITY_SIGNING_KEY
 
 
 def _validate_id(value: str, field_name: str) -> str:
@@ -99,10 +125,12 @@ class AgentIdentity:
 
     @property
     def credential_id(self) -> str:
-        """Stable non-secret binding used by tool servers to identify the agent."""
+        """Controller-keyed binding used by tool servers to identify the agent."""
 
         material = f"{self.run_id}\0{self.agent_id}\0{self.condition.value}\0{self.task_id}\0{self.seed}"
-        return hashlib.sha256(material.encode("utf-8")).hexdigest()
+        return hmac.new(
+            _identity_signing_key(), material.encode("utf-8"), hashlib.sha256
+        ).hexdigest()
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -131,7 +159,9 @@ class AgentIdentity:
         except KeyError as exc:
             raise RuntimeConfigError(f"agent identity is missing {exc.args[0]!r}") from exc
         supplied_credential = raw.get("credential_id")
-        if supplied_credential is not None and supplied_credential != identity.credential_id:
+        if not isinstance(supplied_credential, str):
+            raise RuntimeConfigError("agent identity requires a controller credential_id")
+        if not hmac.compare_digest(supplied_credential, identity.credential_id):
             raise RuntimeConfigError("agent identity credential_id does not match its fields")
         return identity
 
@@ -149,8 +179,11 @@ class IsolationPolicy:
     sandbox: str = "bubblewrap"
     # Pi itself must reach the configured model provider. Agent-side network
     # access remains denied by the tool policy and by the absence of network
-    # capable tools; this flag controls the provider transport namespace.
+    # capable tools. Provider traffic is sent through the controller-owned
+    # allowlisted relay, never through the host network namespace directly.
     model_network: bool = False
+    model_hosts: tuple[str, ...] = ("chatgpt.com",)
+    oauth_hosts: tuple[str, ...] = ("auth.openai.com",)
     network: bool = False
     shared_filesystem: bool = False
     shell: bool = False
@@ -177,6 +210,13 @@ class IsolationPolicy:
             raise RuntimeConfigError("sandbox must be 'bubblewrap' or 'none'")
         if self.sandbox == "none" and not self.allow_unsafe_for_tests:
             raise RuntimeConfigError("a production runtime requires bubblewrap isolation")
+        if not self.model_hosts:
+            raise RuntimeConfigError("model_hosts must contain at least one provider hostname")
+        if not self.oauth_hosts:
+            raise RuntimeConfigError("oauth_hosts must contain at least one authentication hostname")
+        for host in (*self.model_hosts, *self.oauth_hosts):
+            if not isinstance(host, str) or not _MODEL_HOST.fullmatch(host.lower()):
+                raise RuntimeConfigError(f"invalid model provider hostname: {host!r}")
 
 
 @dataclass(frozen=True)
@@ -188,6 +228,7 @@ class RuntimeConfig:
     launch_command: tuple[str, ...] = ("pi",)
     pi_root_env: str | None = None
     pi_auth_file_env: str | None = None
+    pi_auth_store_env: str | None = None
     thinking_level: str = "medium"
     agent_count: int = 3
     per_agent_token_budget: int = 4_000
@@ -213,6 +254,8 @@ class RuntimeConfig:
             raise RuntimeConfigError("pi_root_env must be a valid uppercase environment variable name")
         if self.pi_auth_file_env is not None and not _ENV_NAME.fullmatch(self.pi_auth_file_env):
             raise RuntimeConfigError("pi_auth_file_env must be a valid uppercase environment variable name")
+        if self.pi_auth_store_env is not None and not _ENV_NAME.fullmatch(self.pi_auth_store_env):
+            raise RuntimeConfigError("pi_auth_store_env must be a valid uppercase environment variable name")
         if self.thinking_level not in _THINKING_LEVELS:
             raise RuntimeConfigError(
                 f"thinking_level must be one of {sorted(_THINKING_LEVELS)}"
@@ -242,6 +285,14 @@ class RuntimeConfig:
             raise RuntimeConfigError("config requires 'pi' and 'limits' objects")
         if not isinstance(isolation, Mapping):
             raise RuntimeConfigError("isolation must be an object")
+        model_hosts = isolation.get("model_hosts", ["chatgpt.com"])
+        oauth_hosts = isolation.get("oauth_hosts", ["auth.openai.com"])
+        if not isinstance(model_hosts, list):
+            raise RuntimeConfigError("isolation.model_hosts must be a JSON array")
+        if not isinstance(oauth_hosts, list):
+            raise RuntimeConfigError("isolation.oauth_hosts must be a JSON array")
+        if any(not isinstance(host, str) for host in (*model_hosts, *oauth_hosts)):
+            raise RuntimeConfigError("isolation host allowlists must contain strings")
         if not isinstance(conditions, list):
             raise RuntimeConfigError("conditions must be a JSON array")
         command = pi.get("launch_command", [pi.get("executable", "pi")])
@@ -256,6 +307,11 @@ class RuntimeConfig:
             ),
             pi_auth_file_env=(
                 str(pi.get("auth_file_env")) if pi.get("auth_file_env") is not None else None
+            ),
+            pi_auth_store_env=(
+                str(pi.get("auth_store_env"))
+                if pi.get("auth_store_env") is not None
+                else None
             ),
             thinking_level=str(pi.get("thinking_level", "medium")),
             agent_count=int(limits.get("agent_count", 3)),
@@ -273,6 +329,8 @@ class RuntimeConfig:
                 model_network=_strict_bool(
                     isolation.get("model_network", False), "isolation.model_network"
                 ),
+                model_hosts=tuple(host.lower() for host in model_hosts),
+                oauth_hosts=tuple(host.lower() for host in oauth_hosts),
                 network=_strict_bool(isolation.get("network", False), "isolation.network"),
                 shared_filesystem=_strict_bool(
                     isolation.get("shared_filesystem", False), "isolation.shared_filesystem"
@@ -309,6 +367,7 @@ class RuntimeConfig:
                 "launch_command": list(self.launch_command),
                 "root_env": self.pi_root_env,
                 "auth_file_env": self.pi_auth_file_env,
+                "auth_store_env": self.pi_auth_store_env,
                 "thinking_level": self.thinking_level,
             },
             "limits": {
@@ -324,6 +383,29 @@ class RuntimeConfig:
         }
 
 
+@dataclass(frozen=True)
+class BudgetClaim:
+    """An unforgeable controller-owned reservation for one agent envelope."""
+
+    claim_id: int
+    token_limit: int
+    tool_call_limit: int
+
+
+@dataclass(frozen=True)
+class BudgetSettlement:
+    """The bounded accounting result for one completed or failed claim."""
+
+    within_claim: bool
+    accepted_tokens: int
+    accepted_tool_calls: int
+    token_overage: int
+    tool_call_overage: int
+
+    def __bool__(self) -> bool:
+        return self.within_claim
+
+
 class SystemBudget:
     """Thread-safe whole-system budget shared by every agent in a run."""
 
@@ -332,7 +414,23 @@ class SystemBudget:
         self.tool_call_limit = _positive_int(tool_call_limit, "tool_call_limit")
         self._tokens = 0
         self._tool_calls = 0
+        self._reserved_tokens = 0
+        self._reserved_tool_calls = 0
+        self._overage_tokens = 0
+        self._overage_tool_calls = 0
+        self._next_claim_id = 1
+        self._claims: dict[int, BudgetClaim] = {}
         self._lock = Lock()
+
+    def _assert_invariants_locked(self) -> None:
+        if self._tokens < 0 or self._reserved_tokens < 0:
+            raise RuntimeConfigError("negative token budget accounting")
+        if self._tool_calls < 0 or self._reserved_tool_calls < 0:
+            raise RuntimeConfigError("negative tool-call budget accounting")
+        if self._tokens + self._reserved_tokens > self.token_limit:
+            raise RuntimeConfigError("token aggregate ceiling exceeded")
+        if self._tool_calls + self._reserved_tool_calls > self.tool_call_limit:
+            raise RuntimeConfigError("tool-call aggregate ceiling exceeded")
 
     @property
     def tokens_used(self) -> int:
@@ -348,26 +446,83 @@ class SystemBudget:
         if tokens < 0 or tool_calls < 0:
             raise RuntimeConfigError("budget increments cannot be negative")
         with self._lock:
-            if self._tokens + tokens > self.token_limit:
+            if self._tokens + self._reserved_tokens + tokens > self.token_limit:
                 return False
-            if self._tool_calls + tool_calls > self.tool_call_limit:
+            if self._tool_calls + self._reserved_tool_calls + tool_calls > self.tool_call_limit:
                 return False
             self._tokens += tokens
             self._tool_calls += tool_calls
+            self._assert_invariants_locked()
             return True
+
+    def claim(self, tokens: int, tool_calls: int) -> BudgetClaim | None:
+        """Claim a complete agent envelope before starting a provider request."""
+
+        if tokens <= 0 or tool_calls <= 0:
+            raise RuntimeConfigError("budget claims must be positive")
+        with self._lock:
+            if self._tokens + self._reserved_tokens + tokens > self.token_limit:
+                return None
+            if self._tool_calls + self._reserved_tool_calls + tool_calls > self.tool_call_limit:
+                return None
+            claim = BudgetClaim(self._next_claim_id, tokens, tool_calls)
+            self._next_claim_id += 1
+            self._reserved_tokens += tokens
+            self._reserved_tool_calls += tool_calls
+            self._claims[claim.claim_id] = claim
+            self._assert_invariants_locked()
+            return claim
+
+    def settle(self, claim: BudgetClaim, tokens: int, tool_calls: int) -> BudgetSettlement:
+        """Release a claim and account for the provider usage it incurred."""
+
+        if not isinstance(claim, BudgetClaim):
+            raise RuntimeConfigError("invalid budget claim")
+        if min(claim.token_limit, claim.tool_call_limit, tokens, tool_calls) < 0:
+            raise RuntimeConfigError("budget values cannot be negative")
+        with self._lock:
+            stored = self._claims.pop(claim.claim_id, None)
+            if stored is not claim:
+                raise RuntimeConfigError("budget claim was settled more than once or was forged")
+            self._reserved_tokens -= claim.token_limit
+            self._reserved_tool_calls -= claim.tool_call_limit
+            available_tokens = self.token_limit - self._tokens - self._reserved_tokens
+            available_tools = self.tool_call_limit - self._tool_calls - self._reserved_tool_calls
+            accepted_tokens = min(tokens, claim.token_limit, max(available_tokens, 0))
+            accepted_tools = min(tool_calls, claim.tool_call_limit, max(available_tools, 0))
+            token_overage = tokens - accepted_tokens
+            tool_overage = tool_calls - accepted_tools
+            self._tokens += accepted_tokens
+            self._tool_calls += accepted_tools
+            self._overage_tokens += token_overage
+            self._overage_tool_calls += tool_overage
+            self._assert_invariants_locked()
+            return BudgetSettlement(
+                within_claim=(tokens <= claim.token_limit and tool_calls <= claim.tool_call_limit),
+                accepted_tokens=accepted_tokens,
+                accepted_tool_calls=accepted_tools,
+                token_overage=token_overage,
+                tool_call_overage=tool_overage,
+            )
 
     def snapshot(self) -> dict[str, int]:
         with self._lock:
             return {
                 "tokens_used": self._tokens,
+                "tokens_reserved": self._reserved_tokens,
                 "token_limit": self.token_limit,
                 "tool_calls_used": self._tool_calls,
+                "tool_calls_reserved": self._reserved_tool_calls,
                 "tool_call_limit": self.tool_call_limit,
+                "tokens_over_budget": self._overage_tokens,
+                "tool_calls_over_budget": self._overage_tool_calls,
             }
 
 
 @dataclass(frozen=True)
 class IsolatedWorkspace:
+    workspace_root: Path
+    run_root: Path
     root: Path
     task_dir: Path
     session_dir: Path
@@ -391,7 +546,14 @@ def create_isolated_workspace(root: Path, identity: AgentIdentity) -> IsolatedWo
     for path in (task_dir, session_dir, artifact_dir):
         path.mkdir(mode=0o700)
         path.chmod(0o700)
-    return IsolatedWorkspace(root=agent_root, task_dir=task_dir, session_dir=session_dir, artifact_dir=artifact_dir)
+    return IsolatedWorkspace(
+        workspace_root=root,
+        run_root=run_root,
+        root=agent_root,
+        task_dir=task_dir,
+        session_dir=session_dir,
+        artifact_dir=artifact_dir,
+    )
 
 
 def _safe_env(identity: AgentIdentity, workspace: IsolatedWorkspace, config: RuntimeConfig) -> dict[str, str]:
@@ -432,6 +594,259 @@ def _resolve_auth_file(config: RuntimeConfig) -> Path | None:
     return auth_file
 
 
+@dataclass
+class _AuthStage:
+    """A run-local auth copy and its controller-owned persistence lease."""
+
+    target: Path
+    store: Path | None
+    baseline_revision: int
+    lock_handle: IO[str] | None = None
+
+    def release(self) -> None:
+        if self.lock_handle is None:
+            return
+        try:
+            fcntl.flock(self.lock_handle.fileno(), fcntl.LOCK_UN)
+        finally:
+            self.lock_handle.close()
+            self.lock_handle = None
+
+
+@dataclass(frozen=True)
+class _AuthStoreSnapshot:
+    auth: Mapping[str, Any]
+    revision: int
+
+
+def _path_is_within(path: Path, directory: Path) -> bool:
+    try:
+        path.relative_to(directory)
+    except ValueError:
+        return False
+    return True
+
+
+def _resolve_auth_store(
+    config: RuntimeConfig,
+    source: Path | None,
+    workspace: IsolatedWorkspace,
+) -> Path | None:
+    """Resolve the controller-owned OAuth store, never the user's source file."""
+
+    if config.pi_auth_store_env is None:
+        return None
+    raw_path = os.environ.get(config.pi_auth_store_env)
+    if not raw_path:
+        if source is not None:
+            raise RuntimeConfigError(
+                f"{config.pi_auth_store_env} must point to a controller-owned OAuth store"
+            )
+        return None
+    raw_store = Path(raw_path).expanduser()
+    if raw_store.is_symlink():
+        raise RuntimeConfigError("OAuth store path must not be a symlink")
+    store = raw_store.resolve()
+    if source is not None and store == source.resolve():
+        raise RuntimeConfigError("OAuth store must not overwrite the source Pi/Codex auth file")
+    forbidden = (
+        _REPOSITORY_ROOT,
+        workspace.workspace_root.resolve(),
+        workspace.run_root.resolve(),
+        workspace.root.resolve(),
+    )
+    if any(_path_is_within(store, directory) for directory in forbidden):
+        raise RuntimeConfigError(
+            "APART_PI_AUTH_STORE must resolve outside the repository and run workspaces"
+        )
+    return store
+
+
+def _load_json_mapping(path: Path, label: str) -> Mapping[str, Any]:
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeConfigError(f"cannot read {label}: {path}") from exc
+    if not isinstance(raw, Mapping):
+        raise RuntimeConfigError(f"{label} must contain a JSON object")
+    return raw
+
+
+def _normalize_auth_payload(raw: Mapping[str, Any]) -> dict[str, Any]:
+    """Convert Codex CLI token storage to the Pi auth.json shape."""
+
+    if "openai-codex" in raw:
+        return json.loads(json.dumps(raw))
+    tokens = raw.get("tokens")
+    if isinstance(tokens, Mapping):
+        access = tokens.get("access_token")
+        refresh = tokens.get("refresh_token")
+        if isinstance(access, str) and isinstance(refresh, str) and access and refresh:
+            return {
+                "openai-codex": {
+                    "type": "oauth",
+                    "access": access,
+                    "refresh": refresh,
+                    "expires": _codex_token_expiry(access),
+                }
+            }
+    return json.loads(json.dumps(raw))
+
+
+def _codex_credentials(payload: Mapping[str, Any]) -> Mapping[str, Any] | None:
+    entry = payload.get("openai-codex")
+    if not isinstance(entry, Mapping):
+        return None
+    access = entry.get("access")
+    refresh = entry.get("refresh")
+    if not isinstance(access, str) or not access or not isinstance(refresh, str) or not refresh:
+        return None
+    return entry
+
+
+def _validate_private_directory(path: Path, label: str) -> None:
+    try:
+        info = path.stat()
+    except OSError as exc:
+        raise RuntimeConfigError(f"cannot inspect {label}: {path}") from exc
+    mode = stat.S_IMODE(info.st_mode)
+    if (
+        not stat.S_ISDIR(info.st_mode)
+        or info.st_uid != os.geteuid()
+        or mode & 0o077
+        or mode & 0o700 != 0o700
+    ):
+        raise RuntimeConfigError(
+            f"{label} must be a dedicated private directory owned by the controller "
+            f"with mode 0700; create one and point APART_PI_AUTH_STORE at it: {path}"
+        )
+
+
+def _validate_private_file(path: Path, label: str) -> None:
+    try:
+        info = path.stat()
+    except OSError as exc:
+        raise RuntimeConfigError(f"cannot inspect {label}: {path}") from exc
+    if (
+        not stat.S_ISREG(info.st_mode)
+        or info.st_uid != os.geteuid()
+        or stat.S_IMODE(info.st_mode) != 0o600
+    ):
+        raise RuntimeConfigError(f"{label} must be owned by the controller with mode 0600: {path}")
+
+
+def _ensure_private_parent(path: Path, *, validate_existing: bool = True) -> None:
+    parent = path.parent
+    if parent.exists():
+        if validate_existing:
+            _validate_private_directory(parent, "OAuth store parent")
+        return
+    parent.mkdir(mode=0o700, parents=True, exist_ok=False)
+    if validate_existing:
+        _validate_private_directory(parent, "new OAuth store parent")
+
+
+def _atomic_write_json(
+    path: Path,
+    value: Mapping[str, Any],
+    *,
+    validate_parent: bool = True,
+) -> None:
+    """Atomically write a controller or run-local JSON file with mode 0600."""
+
+    _ensure_private_parent(path, validate_existing=validate_parent)
+    descriptor = -1
+    temporary_name: str | None = None
+    try:
+        descriptor, temporary_name = tempfile.mkstemp(
+            prefix=f".{path.name}.", suffix=".tmp", dir=str(path.parent)
+        )
+        os.fchmod(descriptor, 0o600)
+        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+            descriptor = -1
+            json.dump(value, handle, indent=2, sort_keys=True)
+            handle.write("\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary_name, path)
+        temporary_name = None
+        try:
+            directory_fd = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY)
+        except OSError:
+            directory_fd = -1
+        if directory_fd >= 0:
+            try:
+                os.fsync(directory_fd)
+            finally:
+                os.close(directory_fd)
+    finally:
+        if descriptor >= 0:
+            os.close(descriptor)
+        if temporary_name is not None:
+            try:
+                os.unlink(temporary_name)
+            except FileNotFoundError:
+                pass
+
+
+def _auth_store_document(auth: Mapping[str, Any], revision: int) -> dict[str, Any]:
+    return {"format": 1, "revision": revision, "auth": auth}
+
+
+def _read_auth_store(path: Path) -> _AuthStoreSnapshot | None:
+    if path.is_symlink():
+        raise RuntimeConfigError(f"OAuth store must not be a symlink: {path}")
+    if not path.exists():
+        return None
+    _validate_private_file(path, "OAuth store")
+    raw = _load_json_mapping(path, "OAuth store")
+    auth = raw.get("auth")
+    revision = raw.get("revision")
+    if not isinstance(auth, Mapping) or isinstance(revision, bool) or not isinstance(revision, int) or revision < 1:
+        raise RuntimeConfigError(f"OAuth store has an invalid format: {path}")
+    return _AuthStoreSnapshot(auth=json.loads(json.dumps(auth)), revision=revision)
+
+
+def _write_auth_store(path: Path, auth: Mapping[str, Any], revision: int) -> None:
+    _atomic_write_json(path, _auth_store_document(auth, revision))
+
+
+def _acquire_auth_store_lock(path: Path) -> IO[str]:
+    """Acquire an advisory lock that spans staging, Pi refresh, and persistence."""
+
+    _ensure_private_parent(path)
+    lock_path = Path(f"{path}.lock")
+    if lock_path.is_symlink():
+        raise RuntimeConfigError(f"OAuth store lock must not be a symlink: {lock_path}")
+    flags = os.O_RDWR | os.O_CREAT
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    try:
+        descriptor = os.open(lock_path, flags, 0o600)
+    except OSError as exc:
+        raise RuntimeConfigError(f"cannot open OAuth store lock: {lock_path}") from exc
+    handle = os.fdopen(descriptor, "r+")
+    try:
+        _validate_private_file(lock_path, "OAuth store lock")
+        fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+    except BaseException:
+        handle.close()
+        raise
+    return handle
+
+
+@contextmanager
+def _locked_auth_store(path: Path) -> Iterator[None]:
+    handle = _acquire_auth_store_lock(path)
+    try:
+        yield
+    finally:
+        try:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+        finally:
+            handle.close()
+
+
 def _codex_token_expiry(access_token: str) -> int:
     """Read a JWT expiry in milliseconds without exposing token contents."""
 
@@ -447,35 +862,124 @@ def _codex_token_expiry(access_token: str) -> int:
     return int((time.time() + 3600) * 1000)
 
 
-def _prepare_auth_file(source: Path | None, workspace: IsolatedWorkspace) -> Path | None:
-    """Make Pi auth.json from either Pi auth storage or Codex CLI auth storage."""
+def _prepare_auth_file(
+    source: Path | None,
+    workspace: IsolatedWorkspace,
+    config: RuntimeConfig,
+    *,
+    hold_lock: bool = False,
+) -> _AuthStage | None:
+    """Stage credentials and optionally hold the controller refresh lease."""
 
-    if source is None:
-        return None
+    store = _resolve_auth_store(config, source, workspace)
+    lock_handle: IO[str] | None = None
+    baseline_revision = 0
     try:
-        raw = json.loads(source.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        raise RuntimeConfigError(f"cannot read Pi auth file: {source}") from exc
-    if not isinstance(raw, Mapping):
-        raise RuntimeConfigError("Pi auth file must contain a JSON object")
-    target = workspace.root / "home" / ".pi" / "agent" / "auth.json"
+        if store is None:
+            if source is None:
+                return None
+            payload = _normalize_auth_payload(_load_json_mapping(source, "Pi auth file"))
+        elif hold_lock:
+            lock_handle = _acquire_auth_store_lock(store)
+            snapshot = _read_auth_store(store)
+            if snapshot is None:
+                if source is None:
+                    fcntl.flock(lock_handle.fileno(), fcntl.LOCK_UN)
+                    lock_handle.close()
+                    lock_handle = None
+                    return None
+                payload = _normalize_auth_payload(_load_json_mapping(source, "Pi auth file"))
+                baseline_revision = 1
+                _write_auth_store(store, payload, baseline_revision)
+            else:
+                payload = dict(snapshot.auth)
+                baseline_revision = snapshot.revision
+        else:
+            with _locked_auth_store(store):
+                snapshot = _read_auth_store(store)
+                if snapshot is None:
+                    if source is None:
+                        return None
+                    payload = _normalize_auth_payload(_load_json_mapping(source, "Pi auth file"))
+                    baseline_revision = 1
+                    _write_auth_store(store, payload, baseline_revision)
+                else:
+                    payload = dict(snapshot.auth)
+                    baseline_revision = snapshot.revision
+
+        target = workspace.root / "home" / ".pi" / "agent" / "auth.json"
+        _atomic_write_json(target, payload, validate_parent=False)
+        return _AuthStage(target, store, baseline_revision, lock_handle)
+    except BaseException:
+        if lock_handle is not None:
+            try:
+                fcntl.flock(lock_handle.fileno(), fcntl.LOCK_UN)
+            finally:
+                lock_handle.close()
+        raise
+
+
+def _persist_auth_stage(stage: _AuthStage | None) -> None:
+    """Persist Pi's rotated OAuth token without changing the source auth file."""
+
+    if stage is None or stage.store is None or not stage.target.is_file():
+        return
+    candidate = _normalize_auth_payload(_load_json_mapping(stage.target, "staged Pi auth file"))
+    if _codex_credentials(candidate) is None:
+        return
+
+    lock_handle: IO[str] | None = stage.lock_handle
+    acquired_here = False
+    if lock_handle is None:
+        lock_handle = _acquire_auth_store_lock(stage.store)
+        acquired_here = True
+    try:
+        current = _read_auth_store(stage.store)
+        if current is not None and current.revision != stage.baseline_revision:
+            # A controller holding the same lease cannot reach this branch,
+            # but refusing a stale write also protects against non-cooperating
+            # writers instead of replacing a newer refresh token.
+            return
+        next_revision = (current.revision if current is not None else stage.baseline_revision) + 1
+        if current is not None and candidate == current.auth:
+            return
+        _write_auth_store(stage.store, candidate, next_revision)
+    finally:
+        if acquired_here and lock_handle is not None:
+            try:
+                fcntl.flock(lock_handle.fileno(), fcntl.LOCK_UN)
+            finally:
+                lock_handle.close()
+
+
+def _prepare_model_limits(workspace: IsolatedWorkspace, config: RuntimeConfig) -> Path | None:
+    """Stage Pi's provider max-output override when its provider supports it.
+
+    Pi's generic provider APIs honor ``models.json`` ``maxTokens``. The
+    OpenAI Codex Responses adapter in Pi 0.85.1 currently does not forward
+    that field; the runtime therefore still treats observed overage as a
+    failed run and records it explicitly rather than pretending the provider
+    request was capped.
+    """
+
+    provider, separator, model_id = config.model.partition("/")
+    if not separator or not provider or not model_id:
+        return None
+    model_id = model_id.split(":", 1)[0]
+    if not model_id:
+        return None
+    target = workspace.root / "home" / ".pi" / "agent" / "models.json"
     target.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
-    payload: Mapping[str, Any] = raw
-    if "openai-codex" not in raw:
-        tokens = raw.get("tokens")
-        if isinstance(tokens, Mapping):
-            access = tokens.get("access_token")
-            refresh = tokens.get("refresh_token")
-            if isinstance(access, str) and isinstance(refresh, str) and access and refresh:
-                payload = {
-                    "openai-codex": {
-                        "type": "oauth",
-                        "access": access,
-                        "refresh": refresh,
-                        "expires": _codex_token_expiry(access),
-                    }
+    payload = {
+        "providers": {
+            provider: {
+                "modelOverrides": {
+                    model_id: {"maxTokens": config.per_agent_token_budget}
                 }
-    target.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+            }
+        }
+    }
+    target.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     target.chmod(0o600)
     return target
 
@@ -512,11 +1016,170 @@ def _resolve_launch_command(config: RuntimeConfig) -> tuple[list[str], Path | No
     return [part.replace("{pi_root}", str(pi_root)) for part in command], pi_root
 
 
+class _ModelEgressProxy:
+    """Host-side allowlisted CONNECT relay for the isolated model process."""
+
+    def __init__(self, socket_path: Path, allowed_hosts: Iterable[str]) -> None:
+        self.socket_path = socket_path
+        self.allowed_hosts = frozenset(host.lower() for host in allowed_hosts)
+        self._listener: socket.socket | None = None
+        self._stopping = Event()
+        self._thread: Thread | None = None
+        self._clients: set[Thread] = set()
+        self._clients_lock = Lock()
+
+    def start(self) -> None:
+        self.socket_path.unlink(missing_ok=True)
+        listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        try:
+            listener.bind(str(self.socket_path))
+            self.socket_path.chmod(0o600)
+            listener.listen(16)
+            listener.settimeout(0.2)
+        except BaseException:
+            listener.close()
+            self.socket_path.unlink(missing_ok=True)
+            raise
+        self._listener = listener
+        self._thread = Thread(target=self._serve, name="apart-model-egress", daemon=True)
+        self._thread.start()
+
+    def stop(self) -> None:
+        self._stopping.set()
+        listener = self._listener
+        self._listener = None
+        if listener is not None:
+            listener.close()
+        if self._thread is not None:
+            self._thread.join(timeout=2)
+        with self._clients_lock:
+            clients = tuple(self._clients)
+        for client in clients:
+            client.join(timeout=1)
+        try:
+            self.socket_path.unlink(missing_ok=True)
+        except OSError:
+            # Shutdown is best-effort and must not mask the agent result.
+            pass
+
+    def _serve(self) -> None:
+        listener = self._listener
+        if listener is None:
+            return
+        while not self._stopping.is_set():
+            try:
+                client, _ = listener.accept()
+            except socket.timeout:
+                continue
+            except OSError:
+                break
+            client_thread = Thread(
+                target=self._handle_client,
+                args=(client,),
+                name="apart-model-egress-client",
+                daemon=True,
+            )
+            with self._clients_lock:
+                self._clients.add(client_thread)
+            client_thread.start()
+
+    def _handle_client(self, client: socket.socket) -> None:
+        try:
+            client.settimeout(30)
+            request = self._read_headers(client)
+            if request is None:
+                return
+            header_bytes, _remainder = request
+            first_line = header_bytes.split(b"\r\n", 1)[0].decode("latin-1", "replace")
+            parts = first_line.split(" ", 2)
+            if len(parts) != 3 or parts[2] not in {"HTTP/1.0", "HTTP/1.1"}:
+                self._deny(client)
+                return
+            method, target, _ = parts
+            if method.upper() != "CONNECT":
+                self._deny(client)
+                return
+            parsed_target = self._parse_connect_target(target)
+            if parsed_target is None:
+                self._deny(client)
+                return
+            host, port = parsed_target
+            upstream = socket.create_connection((host, port), timeout=30)
+            try:
+                client.sendall(b"HTTP/1.1 200 Connection Established\r\n\r\n")
+                self._relay(client, upstream)
+            finally:
+                upstream.close()
+        except (OSError, ValueError):
+            return
+        finally:
+            client.close()
+
+    @staticmethod
+    def _read_headers(client: socket.socket) -> tuple[bytes, bytes] | None:
+        data = bytearray()
+        while b"\r\n\r\n" not in data and len(data) <= 64 * 1024:
+            chunk = client.recv(8192)
+            if not chunk:
+                return None
+            data.extend(chunk)
+        marker = data.find(b"\r\n\r\n")
+        if marker < 0:
+            return None
+        end = marker + 4
+        return bytes(data[:end]), bytes(data[end:])
+
+    def _allowed(self, host: str, port: int) -> bool:
+        return host.lower().rstrip(".") in self.allowed_hosts and port == 443
+
+    def _parse_connect_target(self, target: str) -> tuple[str, int] | None:
+        """Validate an explicit HTTPS CONNECT target and its allowlist entry."""
+
+        if target.count(":") != 1:
+            return None
+        host, port_text = target.rsplit(":", 1)
+        if not host or port_text != "443" or not _MODEL_HOST.fullmatch(host.lower()):
+            return None
+        host = host.lower().rstrip(".")
+        if not self._allowed(host, 443):
+            return None
+        return host, 443
+
+    @staticmethod
+    def _deny(client: socket.socket) -> None:
+        try:
+            client.sendall(b"HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n")
+        except OSError:
+            pass
+
+    @staticmethod
+    def _relay(left: socket.socket, right: socket.socket) -> None:
+        left.settimeout(None)
+        right.settimeout(None)
+        open_sockets = [left, right]
+        while open_sockets:
+            readable, _, _ = select.select(open_sockets, [], [], 30)
+            if not readable:
+                return
+            for source in readable:
+                payload = source.recv(64 * 1024)
+                destination = right if source is left else left
+                if not payload:
+                    try:
+                        destination.shutdown(socket.SHUT_WR)
+                    except OSError:
+                        pass
+                    open_sockets.remove(source)
+                    continue
+                destination.sendall(payload)
+
+
 def build_pi_command(
     config: RuntimeConfig,
     identity: AgentIdentity,
     workspace: IsolatedWorkspace,
     extension: Path | None = None,
+    auth_stage: _AuthStage | None = None,
 ) -> list[str]:
     """Build the exact Pi argv used for one agent.
 
@@ -527,7 +1190,10 @@ def build_pi_command(
 
     config.isolation.validate()
     command, pi_root = _resolve_launch_command(config)
-    auth_file = _resolve_auth_file(config)
+    source_auth_file = _resolve_auth_file(config)
+    if auth_stage is None:
+        auth_stage = _prepare_auth_file(source_auth_file, workspace, config)
+    auth_file = auth_stage.target if auth_stage is not None else None
     resolved_extension: Path | None = None
     if extension is not None:
         resolved_extension = extension.expanduser().resolve()
@@ -553,8 +1219,6 @@ def build_pi_command(
     if resolved_extension is not None:
         command.extend(["--extension", str(resolved_extension)])
     if config.isolation.sandbox == "none":
-        if auth_file is not None:
-            auth_file = _prepare_auth_file(auth_file, workspace)
         return command
     bwrap = shutil.which("bwrap")
     if bwrap is None:
@@ -562,10 +1226,18 @@ def build_pi_command(
     home = workspace.root / "home"
     home.mkdir(mode=0o700, exist_ok=True)
     (home / ".pi" / "agent").mkdir(mode=0o700, parents=True, exist_ok=True)
-    auth_file = _prepare_auth_file(auth_file, workspace)
     safe_env = _safe_env(identity, workspace, config)
     safe_env["HOME"] = "/home/agent"
     safe_env["PI_CODING_AGENT_DIR"] = "/home/agent/.pi/agent"
+    # The child always gets a private network namespace. When model_network is
+    # enabled, the bridge process exposes only the controller's allowlisted
+    # model relay on loopback inside that namespace.
+    safe_env["HTTP_PROXY"] = "http://127.0.0.1:18080" if config.isolation.model_network else ""
+    safe_env["HTTPS_PROXY"] = safe_env["HTTP_PROXY"]
+    safe_env["http_proxy"] = safe_env["HTTP_PROXY"]
+    safe_env["https_proxy"] = safe_env["HTTP_PROXY"]
+    safe_env["NO_PROXY"] = ""
+    safe_env["no_proxy"] = ""
     sandbox_command = [
         bwrap,
         "--die-with-parent",
@@ -573,6 +1245,7 @@ def build_pi_command(
         "--unshare-ipc",
         "--unshare-pid",
         "--unshare-uts",
+        "--unshare-net",
         "--clearenv",
         "--tmpfs",
         "/",
@@ -597,8 +1270,19 @@ def build_pi_command(
         "/workspace/task",
     ]
     if config.isolation.model_network:
+        source_root = Path(__file__).resolve().parent.parent
+        if not source_root.is_dir():
+            raise RuntimeConfigError(f"runtime source directory does not exist: {source_root}")
         insert_at = sandbox_command.index("--chdir")
-        sandbox_command[insert_at:insert_at] = ["--dir", "/etc"]
+        sandbox_command[insert_at:insert_at] = [
+            "--dir",
+            "/runtime",
+            "--ro-bind",
+            str(source_root),
+            "/runtime/src",
+            "--dir",
+            "/etc",
+        ]
         for path in (Path("/etc/resolv.conf"), Path("/etc/hosts"), Path("/etc/nsswitch.conf")):
             if path.exists():
                 sandbox_command[insert_at:insert_at] = ["--ro-bind", str(path), str(path)]
@@ -611,9 +1295,8 @@ def build_pi_command(
                 str(cert_dir),
                 "/etc/ssl/certs",
             ]
-    if not config.isolation.model_network:
-        insert_at = sandbox_command.index("--clearenv") + 1
-        sandbox_command[insert_at:insert_at] = ["--unshare-net"]
+    if config.isolation.model_network:
+        safe_env["PYTHONPATH"] = "/runtime/src"
     for name, value in safe_env.items():
         sandbox_command.extend(["--setenv", name, value])
     if auth_file is not None:
@@ -651,6 +1334,23 @@ def build_pi_command(
         if path.exists():
             insert_at = sandbox_command.index("--chdir")
             sandbox_command[insert_at:insert_at] = ["--ro-bind", runtime_path, runtime_path]
+    if config.isolation.model_network:
+        bridge_python = (
+            "/run/current-system/sw/bin/python3"
+            if Path("/run/current-system/sw/bin/python3").exists()
+            else sys.executable
+        )
+        command = [
+            bridge_python,
+            "-m",
+            "apart_incident_response.network_bridge",
+            "--socket",
+            "/workspace/.apart-model-proxy.sock",
+            "--port",
+            "18080",
+            "--",
+            *command,
+        ]
     return sandbox_command + command
 
 
@@ -665,6 +1365,24 @@ def _usage_total(usage: Any) -> int:
     if all(isinstance(value, int) and not isinstance(value, bool) for value in components):
         return max(sum(components), 0)
     return 0
+
+
+def _bubblewrap_failure_reason(stderr_lines: Iterable[str]) -> str | None:
+    """Turn namespace setup failures into an explicit launch status."""
+
+    for line in stderr_lines:
+        stripped = line.strip()
+        if stripped.startswith("bwrap:") and (
+            "NETLINK_ROUTE" in stripped or "network namespace" in stripped.lower()
+        ):
+            return f"Bubblewrap isolation failed: {stripped}"
+    return None
+
+
+def _persistence_failure_diagnostic(error: BaseException) -> str:
+    """Describe persistence failure without copying exception details or secrets."""
+
+    return f"OAuth credential persistence failed ({type(error).__name__})"
 
 
 def _message_key(message: Mapping[str, Any]) -> str:
@@ -800,6 +1518,7 @@ class RunResult:
     workspace: str
     artifact_dir: str
     events: list[dict[str, Any]] = field(default_factory=list)
+    persistence_failure: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         result = asdict(self)
@@ -826,10 +1545,10 @@ class AgentRun:
     def run(self, prompt: str, extension: Path | None = None) -> RunResult:
         if not isinstance(prompt, str) or not prompt.strip():
             raise RuntimeConfigError("prompt must be a non-empty string")
-        command = build_pi_command(self.config, self.identity, self.workspace, extension)
         artifact_dir = self.workspace.artifact_dir
         started_at = _utc_now()
         started_clock = time.monotonic()
+        command: list[str] = []
         events: list[dict[str, Any]] = []
         final_response: str | None = None
         failure_reason: str | None = None
@@ -839,152 +1558,263 @@ class AgentRun:
         agent_tool_calls_used = 0
         stdout_path = artifact_dir / "stdout.jsonl"
         stderr_path = artifact_dir / "stderr.log"
-        self._write_json(artifact_dir / "metadata.json", {
-            "identity": self.identity.to_dict(),
-            "runtime": self.config.to_dict(),
-            "command": command,
-            "started_at": started_at,
-        })
-        try:
-            process = subprocess.Popen(
-                command,
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                cwd=self.workspace.task_dir,
-                env=_safe_env(self.identity, self.workspace, self.config),
-                shell=False,
-                close_fds=True,
-                start_new_session=True,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-                bufsize=1,
+        claim: BudgetClaim | None = None
+        proxy: _ModelEgressProxy | None = None
+        auth_stage: _AuthStage | None = None
+        settlement: BudgetSettlement | None = None
+        result: RunResult | None = None
+        persistence_failure: str | None = None
+
+        def settle_claim() -> None:
+            nonlocal claim, settlement, status, failure_reason
+            if claim is None:
+                return
+            settlement = self.system_budget.settle(
+                claim, agent_tokens_used, agent_tool_calls_used
             )
-        except (OSError, ValueError) as exc:
-            failure_reason = f"launcher failed: {exc}"
-            status = ExitStatus.LAUNCH_ERROR
-            ended_at = _utc_now()
+            claim = None
+            if not settlement.within_claim:
+                status = ExitStatus.BUDGET_EXHAUSTED
+                detail = (
+                    "provider usage exceeded its claimed envelope"
+                    f" (token overage={settlement.token_overage},"
+                    f" tool-call overage={settlement.tool_call_overage})"
+                )
+                failure_reason = f"{failure_reason}; {detail}" if failure_reason else detail
+
+        try:
+            if self.config.isolation.model_network and self.config.isolation.sandbox == "bubblewrap":
+                proxy = _ModelEgressProxy(
+                    self.workspace.root / ".apart-model-proxy.sock",
+                    (*self.config.isolation.model_hosts, *self.config.isolation.oauth_hosts),
+                )
+                proxy.start()
+            auth_stage = _prepare_auth_file(
+                _resolve_auth_file(self.config),
+                self.workspace,
+                self.config,
+                hold_lock=True,
+            )
+            command = build_pi_command(
+                self.config,
+                self.identity,
+                self.workspace,
+                extension,
+                auth_stage=auth_stage,
+            )
+            _prepare_model_limits(self.workspace, self.config)
+            self._write_json(artifact_dir / "metadata.json", {
+                "identity": self.identity.to_dict(),
+                "runtime": self.config.to_dict(),
+                "command": command,
+                "started_at": started_at,
+            })
+            stdout_path.write_text("", encoding="utf-8")
+            stderr_path.write_text("", encoding="utf-8")
+
+            # Reserve the complete envelope before Popen. A provider request
+            # must never start merely because current accounting happens to
+            # have spare capacity; concurrent agents claim their ceilings
+            # atomically before they can incur usage.
+            claim = self.system_budget.claim(
+                self.config.per_agent_token_budget,
+                self.config.per_agent_tool_call_budget,
+            )
+            if claim is None:
+                failure_reason = "system compute ceiling exhausted before provider launch"
+                status = ExitStatus.BUDGET_EXHAUSTED
+                result = self._finish(
+                    status, exit_code, started_at, _utc_now(), started_clock,
+                    final_response, failure_reason, command, events,
+                    agent_tokens_used, agent_tool_calls_used,
+                )
+                return result
+
+            try:
+                process = subprocess.Popen(
+                    command,
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    cwd=self.workspace.task_dir,
+                    env=_safe_env(self.identity, self.workspace, self.config),
+                    shell=False,
+                    close_fds=True,
+                    start_new_session=True,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                    bufsize=1,
+                )
+            except (OSError, ValueError) as exc:
+                failure_reason = f"launcher failed: {exc}"
+                status = ExitStatus.LAUNCH_ERROR
+                settle_claim()
+                result = self._finish(
+                    status, exit_code, started_at, _utc_now(), started_clock,
+                    final_response, failure_reason, command, events,
+                    agent_tokens_used, agent_tool_calls_used,
+                )
+                return result
+
+            assert process.stdin is not None
+            assert process.stdout is not None
+            assert process.stderr is not None
+            selector: selectors.BaseSelector | None = None
+            current_message_key: str | None = None
+            usage_seen: dict[str, int] = {}
+            seen_tool_calls: set[str] = set()
+            stdout_lines: list[str] = []
+            stderr_lines: list[str] = []
+            deadline = started_clock + self.config.timeout_seconds
+            try:
+                # Prompt delivery is inside the protected lifecycle. A child
+                # that exits early can raise BrokenPipeError here, and the
+                # outer finally below still removes staged credentials.
+                process.stdin.write(prompt)
+                process.stdin.write("\n")
+                process.stdin.close()
+                selector = selectors.DefaultSelector()
+                selector.register(process.stdout, selectors.EVENT_READ, "stdout")
+                selector.register(process.stderr, selectors.EVENT_READ, "stderr")
+                with stdout_path.open("w", encoding="utf-8") as stdout_file, stderr_path.open(
+                    "w", encoding="utf-8"
+                ) as stderr_file:
+                    while selector.get_map():
+                        remaining = deadline - time.monotonic()
+                        if remaining <= 0:
+                            failure_reason = "agent exceeded runtime timeout"
+                            status = ExitStatus.TIMED_OUT
+                            self._terminate(process)
+                            break
+                        ready = selector.select(min(remaining, 0.25))
+                        for key, _ in ready:
+                            line = key.fileobj.readline()
+                            if line == "":
+                                selector.unregister(key.fileobj)
+                                continue
+                            if key.data == "stdout":
+                                stdout_file.write(line)
+                                stdout_file.flush()
+                                stdout_lines.append(line)
+                                event = self._parse_event(line)
+                                if event is None:
+                                    continue
+                                events.append(event)
+                                event_failure = _event_failure_reason(event)
+                                if event_failure is not None and failure_reason is None:
+                                    failure_reason = event_failure
+                                token_delta, current_message_key = _event_usage_increment(
+                                    event, current_message_key, usage_seen
+                                )
+                                new_tool_calls = _event_tool_call_ids(event) - seen_tool_calls
+                                seen_tool_calls.update(new_tool_calls)
+                                tool_delta = len(new_tool_calls)
+                                agent_tokens_used += token_delta
+                                agent_tool_calls_used += tool_delta
+                                if agent_tokens_used > self.config.per_agent_token_budget:
+                                    failure_reason = "agent exceeded per-agent token budget"
+                                    status = ExitStatus.BUDGET_EXHAUSTED
+                                    self._terminate(process)
+                                    break
+                                if agent_tool_calls_used > self.config.per_agent_tool_call_budget:
+                                    failure_reason = "agent exceeded per-agent tool-call budget"
+                                    status = ExitStatus.BUDGET_EXHAUSTED
+                                    self._terminate(process)
+                                    break
+                                candidate = _assistant_text(event)
+                                if candidate is not None:
+                                    final_response = candidate
+                            else:
+                                stderr_file.write(line)
+                                stderr_file.flush()
+                                stderr_lines.append(line)
+                        if status == ExitStatus.BUDGET_EXHAUSTED:
+                            break
+                        if process.poll() is not None and not selector.get_map():
+                            break
+                    if process.poll() is None:
+                        self._terminate(process)
+                    exit_code = process.wait(timeout=5)
+            except (BrokenPipeError, OSError) as exc:
+                failure_reason = f"agent I/O failed: {exc}"
+                status = ExitStatus.FAILED
+                self._terminate(process)
+                exit_code = process.wait(timeout=5)
+            finally:
+                if selector is not None:
+                    selector.close()
+                process.stdin.close()
+                process.stdout.close()
+                process.stderr.close()
+            if status not in {ExitStatus.TIMED_OUT, ExitStatus.BUDGET_EXHAUSTED, ExitStatus.LAUNCH_ERROR}:
+                if failure_reason is not None:
+                    status = ExitStatus.FAILED
+                elif exit_code == 0:
+                    status = ExitStatus.COMPLETED
+                else:
+                    bubblewrap_failure = _bubblewrap_failure_reason(stderr_lines)
+                    if bubblewrap_failure is not None:
+                        status = ExitStatus.LAUNCH_ERROR
+                        failure_reason = bubblewrap_failure
+                    else:
+                        status = ExitStatus.FAILED
+                        if failure_reason is None:
+                            failure_reason = f"agent exited with status {exit_code}"
+            settle_claim()
             result = self._finish(
-                status, exit_code, started_at, ended_at, started_clock,
+                status, exit_code, started_at, _utc_now(), started_clock,
                 final_response, failure_reason, command, events,
                 agent_tokens_used, agent_tool_calls_used,
             )
-            self._cleanup_staged_auth()
+            (artifact_dir / "stdout.jsonl").write_text("".join(stdout_lines), encoding="utf-8")
+            (artifact_dir / "stderr.log").write_text("".join(stderr_lines), encoding="utf-8")
             return result
-
-        assert process.stdin is not None
-        assert process.stdout is not None
-        assert process.stderr is not None
-        process.stdin.write(prompt)
-        process.stdin.write("\n")
-        process.stdin.close()
-        selector = selectors.DefaultSelector()
-        selector.register(process.stdout, selectors.EVENT_READ, "stdout")
-        selector.register(process.stderr, selectors.EVENT_READ, "stderr")
-        current_message_key: str | None = None
-        usage_seen: dict[str, int] = {}
-        seen_tool_calls: set[str] = set()
-        stdout_lines: list[str] = []
-        stderr_lines: list[str] = []
-        deadline = started_clock + self.config.timeout_seconds
-        try:
-            with stdout_path.open("w", encoding="utf-8") as stdout_file, stderr_path.open(
-                "w", encoding="utf-8"
-            ) as stderr_file:
-                while selector.get_map():
-                    remaining = deadline - time.monotonic()
-                    if remaining <= 0:
-                        failure_reason = "agent exceeded runtime timeout"
-                        status = ExitStatus.TIMED_OUT
-                        self._terminate(process)
-                        break
-                    ready = selector.select(min(remaining, 0.25))
-                    for key, _ in ready:
-                        line = key.fileobj.readline()
-                        if line == "":
-                            selector.unregister(key.fileobj)
-                            continue
-                        if key.data == "stdout":
-                            stdout_file.write(line)
-                            stdout_file.flush()
-                            stdout_lines.append(line)
-                            event = self._parse_event(line)
-                            if event is None:
-                                continue
-                            events.append(event)
-                            event_failure = _event_failure_reason(event)
-                            if event_failure is not None and failure_reason is None:
-                                failure_reason = event_failure
-                            token_delta, current_message_key = _event_usage_increment(
-                                event, current_message_key, usage_seen
-                            )
-                            new_tool_calls = _event_tool_call_ids(event) - seen_tool_calls
-                            seen_tool_calls.update(new_tool_calls)
-                            tool_delta = len(new_tool_calls)
-                            agent_tokens_used += token_delta
-                            agent_tool_calls_used += tool_delta
-                            if agent_tokens_used > self.config.per_agent_token_budget:
-                                failure_reason = "agent exceeded per-agent token budget"
-                                status = ExitStatus.BUDGET_EXHAUSTED
-                                self._terminate(process)
-                                break
-                            if agent_tool_calls_used > self.config.per_agent_tool_call_budget:
-                                failure_reason = "agent exceeded per-agent tool-call budget"
-                                status = ExitStatus.BUDGET_EXHAUSTED
-                                self._terminate(process)
-                                break
-                            if not self.system_budget.reserve(token_delta, tool_delta):
-                                failure_reason = "system compute ceiling exhausted"
-                                status = ExitStatus.BUDGET_EXHAUSTED
-                                self._terminate(process)
-                                break
-                            candidate = _assistant_text(event)
-                            if candidate is not None:
-                                final_response = candidate
-                        else:
-                            stderr_file.write(line)
-                            stderr_file.flush()
-                            stderr_lines.append(line)
-                    if status == ExitStatus.BUDGET_EXHAUSTED:
-                        break
-                    if process.poll() is not None and not selector.get_map():
-                        break
-                if process.poll() is None:
-                    self._terminate(process)
-                exit_code = process.wait(timeout=5)
-        except (BrokenPipeError, OSError) as exc:
-            failure_reason = f"agent I/O failed: {exc}"
-            status = ExitStatus.FAILED
-            self._terminate(process)
-            exit_code = process.wait(timeout=5)
         finally:
-            selector.close()
-            process.stdout.close()
-            process.stderr.close()
-        if status not in {
-            ExitStatus.TIMED_OUT,
-            ExitStatus.BUDGET_EXHAUSTED,
-            ExitStatus.LAUNCH_ERROR,
-        }:
-            if failure_reason is not None:
-                status = ExitStatus.FAILED
-            elif exit_code == 0:
-                status = ExitStatus.COMPLETED
-            else:
-                status = ExitStatus.FAILED
-                if failure_reason is None:
-                    failure_reason = f"agent exited with status {exit_code}"
-        ended_at = _utc_now()
-        result = self._finish(
-            status, exit_code, started_at, ended_at, started_clock,
-            final_response, failure_reason, command, events,
-            agent_tokens_used, agent_tool_calls_used,
-        )
-        (artifact_dir / "stdout.jsonl").write_text("".join(stdout_lines), encoding="utf-8")
-        (artifact_dir / "stderr.log").write_text("".join(stderr_lines), encoding="utf-8")
-        self._cleanup_staged_auth()
-        return result
+            try:
+                settle_claim()
+            except Exception:
+                # An existing run exception/result must not be masked by a
+                # defensive accounting or cleanup path.
+                pass
+            try:
+                _persist_auth_stage(auth_stage)
+            except Exception as exc:
+                # Keep the diagnostic deliberately class-only: exception
+                # messages can contain paths or provider data and must never
+                # expose a credential in the artifact.
+                persistence_failure = _persistence_failure_diagnostic(exc)
+            try:
+                self._cleanup_staged_auth()
+            except Exception:
+                pass
+            if proxy is not None:
+                try:
+                    proxy.stop()
+                except Exception:
+                    pass
+            if auth_stage is not None:
+                try:
+                    auth_stage.release()
+                except Exception:
+                    pass
+            if persistence_failure is not None and result is not None:
+                result.persistence_failure = persistence_failure
+                if result.status is ExitStatus.COMPLETED:
+                    result.status = ExitStatus.FAILED
+                result.failure_reason = (
+                    f"{result.failure_reason}; {persistence_failure}"
+                    if result.failure_reason
+                    else persistence_failure
+                )
+                try:
+                    self._write_json(
+                        self.workspace.artifact_dir / "result.json", result.to_dict()
+                    )
+                except Exception:
+                    # Preserve the original run result if artifact rewriting
+                    # itself is unavailable; never mask it from the caller.
+                    pass
 
     @staticmethod
     def _parse_event(line: str) -> dict[str, Any] | None:
@@ -1010,11 +1840,25 @@ class AgentRun:
     def _cleanup_staged_auth(self) -> None:
         """Remove any transient Codex-to-Pi credential conversion after launch."""
 
-        staged = self.workspace.root / "home" / ".pi" / "agent" / "auth.json"
-        try:
-            staged.unlink()
-        except FileNotFoundError:
-            pass
+        run_root = self.workspace.root.resolve()
+        agent_home = run_root / "home" / ".pi" / "agent"
+        if agent_home.parent.parent.parent != run_root:
+            return
+        for staged in (
+            agent_home / "auth.json",
+            agent_home / "auth.json.lock",
+            agent_home / "models.json",
+        ):
+            try:
+                if staged.is_symlink() or not staged.is_dir():
+                    staged.unlink(missing_ok=True)
+                else:
+                    shutil.rmtree(staged)
+            except OSError:
+                # Cleanup is best-effort. The caller's finally block always
+                # continues to proxy shutdown, and the run result/exception
+                # remains authoritative.
+                continue
 
     @staticmethod
     def _write_json(path: Path, value: Mapping[str, Any]) -> None:

@@ -18,28 +18,84 @@ than depending on a globally installed Pi binary. Each run receives a controller
 
 Pi is launched as an argv list with all tools, skills, extensions, prompt
 templates, themes, context-file discovery, and session persistence disabled.
-The provider network is available because Pi must call the pinned model; agent
-shell, subprocess, MCP, subagent, and shared-filesystem channels remain denied.
+Bubblewrap always gives the process a private network namespace. When
+`model_network` is enabled, only the allowlisted `model_hosts` endpoint is
+reachable through the controller relay. The pinned OpenAI Codex OAuth refresh
+host is separately allowlisted as `oauth_hosts` (`auth.openai.com`), also only
+on HTTPS port 443. The relay accepts only valid HTTP CONNECT requests and
+denies unrelated hosts, ports, and malformed requests; its TLS tunnel cannot
+inspect the encrypted OAuth path, so Pi 0.85.1 remains responsible for using
+the documented `/oauth/token` flow. The Pi/extension process never gets the
+host network namespace. Agent shell, subprocess, MCP, subagent, and
+shared-filesystem channels remain denied.
 If an explicit experiment extension is supplied, its directory is mounted
 read-only into the sandbox and only built-in tools are disabled so that the
 extension can expose the intended tools.
 
+Bubblewrap namespace creation is a host capability, not a model-network
+fallback. The launcher always retains `--unshare-net` and fails closed when
+the command environment denies it. On this host, the reproducible approved
+smoke uses the host execution context and the read-only system binds that the
+launcher itself uses:
+
+```bash
+bwrap --die-with-parent --new-session --unshare-net \
+  --ro-bind /nix/store /nix/store \
+  --ro-bind /run/current-system /run/current-system \
+  -- /run/current-system/sw/bin/true
+```
+
+Run the same `runtime run` command below from that approved host context for
+an end-to-end Bubblewrap/relay/Pi check. The ordinary managed command sandbox
+may reject network namespace creation with `Operation not permitted`; do not
+remove `--unshare-net` or run the agent on the host network to work around it.
+
 Configure authentication outside the repository and point the launcher at a
-Pi-format `auth.json` or the local Codex CLI auth file. Codex credentials are
-converted into a private run-local Pi auth file; secrets never enter the child
-environment or repository:
+Pi-format `auth.json` or the local Codex CLI auth file. Set a separate,
+controller-owned state path outside the repository for rotated credentials:
 
 ```bash
 export APART_PI_ROOT="$HOME/GitRepos/pi"
 export APART_PI_AUTH_FILE="$HOME/.codex/auth.json"
+export APART_PI_AUTH_STORE="$HOME/.local/state/apart-incident-response/codex-auth.json"
+# Optional stable controller secret for identity verification across processes.
+# If omitted, each controller process uses a private random signing key.
+export APART_IDENTITY_KEY="choose-a-secret-outside-the-repository"
 UV_CACHE_DIR=.uv-cache uv run env PYTHONPATH=src python -m apart_incident_response.runtime run \
   config/runtime.json --run-id run-001 --agent-id agent-1 --condition C0 \
   --task-id task-1 --seed 1 --prompt "Run the assigned task." \
   --workspace-root artifacts/runs
 ```
 
+On first use, the controller imports the source auth into the store; later
+runs use the store so a Pi OAuth refresh is available to the next run. The
+resolved store path must be outside this repository and all run
+workspaces, including through symlinks. Its dedicated parent must be owned by
+the controller and already have mode `0700`; an existing parent is never
+chmodded. A missing dedicated parent is created with mode `0700`. The store
+and its advisory lock are mode `0600`, and updates are lock-protected and
+atomic. The credential lock spans
+staging, Pi execution, and persistence, so concurrent authenticated runs are
+serialized rather than racing a rotating refresh token. The source Codex/Pi
+auth file is never modified unless a separate, explicit controller workflow
+does so. Run-local `auth.json`, `auth.json.lock` (including directory-shaped
+proper-lockfile locks), and `models.json` are deleted on every exit path.
+Credentials are never placed in command arguments, logs, artifacts, or child
+environment variables. If a rotated-token write fails, the run is marked
+failed (or retains its original failure status) with a non-secret persistence
+diagnostic in `result.json`; cleanup, relay shutdown, and lock release still
+run.
+
 The `run` command writes metadata, raw JSONL, stderr, parsed events, the final
 response, budget usage, and exit status under the agent artifact directory.
+
+Each agent claims its complete configured compute envelope before Pi starts.
+Pi's generic providers receive a run-local `models.json` `maxTokens` override;
+the Pi 0.85.1 OpenAI Codex Responses adapter does not currently forward that
+field, so an observed provider overage is terminated/reported as
+`budget_exhausted` and recorded separately rather than silently counted beyond
+the aggregate ceiling. The controller's accepted accounting always remains
+within the aggregate ceiling.
 
 The pinned Pi version and model are intentionally configuration values so every
 co-worker can review or change them in one file before running a matrix.
