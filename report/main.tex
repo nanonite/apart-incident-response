@@ -1,0 +1,51 @@
+\input{packages/xjenza-preamble.tex}
+
+% Front matter
+\title{A very interesting scientific publication}
+\doi{10.7423/XJENZA.2022.x.xx}
+\articleType{Research Article}%Research Article, Review Article, Research Note, News Article...
+\author{J. Borg$^{1}$, J. Doe$^{2*}$ and J. Bloggs$^{2}$}
+\authorAnnotation{$^{1}$Department of Mathematics, Faculty of Science, University of Malta, Malta\\
+$^{2}$Department of Physics, Harvard University, Cambridge MA, US}
+\correspondanceName{J. Doe}
+\correspondanceMail{john.doe@harvard.edu}
+
+% This goes in the header, in case the full title is too long
+\shortTitle{A very interesting scientific publication}
+
+\selfCitation{Borg, J. et al.\ (2022).\newblock {\em Xjenza Online}, \pageref{firstpage}--\pageref{lastPage}.}
+
+% Bibliography file
+\addbibresource{references.bib}
+
+% Insert additional packages here
+\usepackage{lipsum}
+
+%%%%% Do not edit %%%%%
+\def\firstpage{1}
+\newcounter{pagna}
+\setcounter{pagna}{\firstpage}
+\setcounter{page}{\firstpage}
+%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{document}
+	\label{firstpage}
+
+	\abstrac{Hola}
+
+	\maketitle
+	
+  %\input{content/introduction.tex}
+  \input{content/entropy.tex}
+    
+    % List all citations
+	\nocite{*}
+	\printbibliography
+	
+	% Balance columns on last page
+	\balance
+
+    % For header on first page
+	\label{lastPage}
+\end{document}

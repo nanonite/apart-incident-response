@@ -1,0 +1,16 @@
+doc_name := "main"
+
+build:
+    latexmk -pdf "{{doc_name}}.tex"
+
+show:
+    evince "{{doc_name}}.pdf"
+
+watch:
+  just list | entr just build
+
+list:
+  find . -type f | sed 's|^\./||'
+
+clean:
+  latexmk -C "{{doc_name}}.tex"

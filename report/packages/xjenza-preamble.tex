@@ -1,0 +1,124 @@
+\documentclass[twoside,a4paper,floatfix,twocolumn,superscriptaddress]{article}%twoside
+\usepackage{packages/xjenza}
+\usepackage{datetime,tabularx,multirow,subfigure,dblfloatfix}
+\usepackage{graphicx,float}
+\usepackage{fancyhdr,calc}
+\usepackage{lipsum,cuted,setspace,enumerate}
+\usepackage[compact]{titlesec}
+\usepackage{changepage}
+\usepackage{colortbl,color}
+\usepackage[xcdraw]{xcolor}
+\usepackage{soul,hyphenat,longtable}
+\usepackage{algpseudocode}
+\usepackage{algorithm}
+\usepackage{textgreek, upgreek}% these should be before amssymb, amsthm and amsmath
+\usepackage[T1]{tipa}
+\usepackage{amssymb,amsthm}
+\usepackage{relsize}
+\usepackage{epstopdf}
+\usepackage{siunitx}
+\usepackage[version=4]{mhchem}
+\usepackage{booktabs}
+\usepackage{balance}
+\usepackage{enumitem}
+\usepackage{placeins}
+\setlist{noitemsep}
+\usepackage{latexsym}
+\usepackage{csquotes}
+\usepackage{pdfpages}
+\usepackage[scale=1.03]{inconsolata}
+\usepackage[                % For hyperlinks and PDF document links
+    hidelinks,
+    colorlinks,
+    linkcolor=blue!80!black,
+    citecolor=red!80!black,
+    urlcolor=blue!80!black,
+    bookmarks,
+    bookmarksopen,
+    bookmarksdepth=3,
+    pdfstartview={XYZ null null null},
+    pdfcreator={Created with vim+LaTeX}]{hyperref}
+
+\usepackage[                % For clever in-document references
+    nameinlink,
+    noabbrev]{cleveref}
+
+\usepackage[all]{hypcap}    % Correct PDF hyperlinks to figures
+
+
+% Maltese Letters
+\newcommand \mc {\.c}
+\newcommand \mC {\.C}
+\newcommand \mg {\.g}
+\newcommand \mG {\.G}
+\newcommand \mh {{\leavevmode\rlap{\kern-.7pt\={\empty}}}h}
+\newcommand \mhi {$\hbar$}
+\newcommand \mH {\leavevmode\rlap{\raisebox{-.8pt}{\={\empty}}}H\llap{\raisebox{-.8pt}{\={\empty}}}}
+\newcommand \mHi {\leavevmode\rlap{\kern-.3pt\raisebox{-.7pt}{\={\empty}}}H\llap{\raisebox{-.7pt}{\={\empty}}}}
+\newcommand \mz {\.z}
+\newcommand \mZ {\.Z}
+
+
+% Montserrat for bold
+\let\oldtextbf\textbf
+\renewcommand{\textbf}[1]{{\small\fontfamily{Montserrat-LF}\selectfont{\oldtextbf{#1}}}}
+
+
+%\usepackage{multicol}
+%\usepackage{flushend}%balancing cols
+
+%--Settings for the modified apa citation style--:::::::::::::::::::::::::::::::::
+%
+%  This method uses the Biblatex package with the biber backend.
+%  After installing the Biblatex package install the
+%  biblatex-apa citation style. Afterwords, replace the `apa.bbx'
+%  and `apa.cbx' files in the biblatex-apa directory, ex:
+%  /usr/local/share/texmf/tex/latex/biblatex-apa
+%  with the files present in the packages folder.
+
+\usepackage[british]{babel}
+\usepackage[isbn=false,url=false,doi=false,eprint=false,maxcitenames=1,uniquelist=false,sorting=nyt,backend=biber,style=apa,texencoding=ascii]{biblatex}
+\AtEveryBibitem{% suppressing the month
+  \clearfield{month}
+  \clearfield{day}
+}
+\DeclareLanguageMapping{british}{british-apa}
+\setlength\bibhang{2em}
+%---
+
+%--Item spacing: add \begin{enumerate}[noitemsep,topsep=0pt,
+%--parsep=0pt,partopsep=0pt] to use--:::::::::::::::::::::::::::::::::::::::::::::
+
+\usepackage{enumitem}
+\setitemize{noitemsep,topsep=0pt,parsep=0pt,partopsep=0pt}
+%---
+
+%--New commands--:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+\newcommand{\udt}[3]{#1^{#2}_{\phantom{#2}#3}}
+\newcommand{\dut}[3]{#1_{#2}^{\phantom{#2}#3}}
+\newcommand{\dudt}[4]{#1_{#2\phantom{#3}#4}^{\phantom{#2}#3}}
+%---
+
+% This removes 'n.d.' from misc entries which have no year field associated with them
+\DeclareLabeldate[misc]{%
+	\field{year}
+}
+
+% Suppress fancyhdr warning
+\setlength{\headheight}{12.49998pt}
+
+%--Setting section headers--::::::::::::::::::::::::::::::::::::::::::::::::::::::
+        \titleformat{\section}{\fontfamily{Montserrat-LF}\selectfont\large\bfseries}{\thesection}{1em}{}
+        \titleformat{\subsection}{\fontfamily{Montserrat-LF}\selectfont\normalsize\bfseries}{\thesubsection}{1em}{}
+%\titleformat{\subsubsection}{\normalfont\normalsize\bfseries}{\thesubsubsection}{1em}{}
+%\titleformat{\paragraph}[runin]{\normalfont\normalsize\bfseries}{\theparagraph}{1em}{}
+%\titleformat{\subparagraph}[runin]{\normalfont\normalsize\bfseries}{\thesubparagraph}{1em}{}
+%---
+
+
+%--paragraph spacing--::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+\parindent 10 pt
+\parskip 0 pt
+%---
+
+%::::::::::::::::::::::::--End of xjenza-preamble.tex--::::::::::::::::::::::::::%
