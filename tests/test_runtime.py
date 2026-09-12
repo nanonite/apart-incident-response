@@ -17,6 +17,7 @@ from apart_incident_response.runtime import (
     SystemBudget,
     build_pi_command,
     create_isolated_workspace,
+    load_identity,
 )
 
 
@@ -24,7 +25,7 @@ class RuntimeContractTests(unittest.TestCase):
     def config(self, **overrides):
         values = {
             "pi_version": "0.83.0",
-            "model": "openai/gpt-5",
+            "model": "openai-codex/gpt-5.6-luna",
             "pi_root_env": None,
             "isolation": IsolationPolicy(sandbox="none", allow_unsafe_for_tests=True),
         }
@@ -53,7 +54,21 @@ class RuntimeContractTests(unittest.TestCase):
         second = self.identity("agent-2")
         self.assertEqual(first.credential_id, first.credential_id)
         self.assertNotEqual(first.credential_id, second.credential_id)
+        self.assertNotEqual(first.credential_id, self.identity("agent-1", Condition.C1).credential_id)
+        self.assertNotEqual(first.credential_id, AgentIdentity("run-001", "agent-1", Condition.C0, "task-1", 18).credential_id)
         self.assertEqual(first.to_dict()["condition"], "C0")
+
+    def test_identity_round_trip_rejects_tampering(self):
+        identity = self.identity()
+        self.assertEqual(load_identity(identity.to_dict()), identity)
+        tampered = identity.to_dict()
+        tampered["credential_id"] = "not-the-controller-binding"
+        with self.assertRaises(RuntimeConfigError):
+            load_identity(tampered)
+        missing = identity.to_dict()
+        del missing["task_id"]
+        with self.assertRaises(RuntimeConfigError):
+            load_identity(missing)
 
     def test_workspace_is_agent_specific_and_private(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -61,16 +76,17 @@ class RuntimeContractTests(unittest.TestCase):
             first = create_isolated_workspace(root, self.identity("agent-1"))
             second = create_isolated_workspace(root, self.identity("agent-2"))
             self.assertNotEqual(first.root, second.root)
+            self.assertNotEqual(first.task_dir, second.task_dir)
             self.assertEqual(first.root.stat().st_mode & 0o777, 0o700)
             self.assertEqual(first.task_dir.stat().st_mode & 0o777, 0o700)
             with self.assertRaises(RuntimeConfigError):
                 create_isolated_workspace(root, self.identity("agent-1"))
 
-    def test_pi_command_disables_builtin_discovery_and_session_persistence(self):
+    def test_pi_command_is_minimal_and_disables_session_persistence(self):
         with tempfile.TemporaryDirectory() as temp:
             workspace = create_isolated_workspace(Path(temp), self.identity())
             command = build_pi_command(self.config(), self.identity(), workspace)
-            self.assertIn("--no-builtin-tools", command)
+            self.assertIn("--no-tools", command)
             self.assertIn("--no-skills", command)
             self.assertIn("--no-extensions", command)
             self.assertIn("--no-context-files", command)
@@ -160,7 +176,7 @@ class RuntimeContractTests(unittest.TestCase):
     def test_json_config_round_trips(self):
         config = RuntimeConfig.from_json(Path("config/runtime.json"))
         self.assertEqual(config.pi_version, "0.85.1")
-        self.assertEqual(config.model, "openai/gpt-5")
+        self.assertEqual(config.model, "openai-codex/gpt-5.6-luna")
         encoded = json.dumps(config.to_dict())
         self.assertIn('"C2"', encoded)
 

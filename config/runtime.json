@@ -1,10 +1,10 @@
 {
   "pi": {
     "version": "0.85.1",
-    "model": "openai/gpt-5",
+    "model": "openai-codex/gpt-5.6-luna",
     "root_env": "APART_PI_ROOT",
     "launch_command": ["bun", "run", "{pi_root}/packages/coding-agent/src/cli.ts"],
-    "thinking_level": "medium"
+    "thinking_level": "xhigh"
   },
   "limits": {
     "agent_count": 3,

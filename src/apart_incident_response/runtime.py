@@ -113,6 +113,27 @@ class AgentIdentity:
             "credential_id": self.credential_id,
         }
 
+    @classmethod
+    def from_dict(cls, raw: Mapping[str, Any]) -> "AgentIdentity":
+        """Parse and verify a controller-issued identity record."""
+
+        if not isinstance(raw, Mapping):
+            raise RuntimeConfigError("agent identity must be an object")
+        try:
+            identity = cls(
+                run_id=raw["run_id"],
+                agent_id=raw["agent_id"],
+                condition=raw["condition"],
+                task_id=raw["task_id"],
+                seed=raw["seed"],
+            )
+        except KeyError as exc:
+            raise RuntimeConfigError(f"agent identity is missing {exc.args[0]!r}") from exc
+        supplied_credential = raw.get("credential_id")
+        if supplied_credential is not None and supplied_credential != identity.credential_id:
+            raise RuntimeConfigError("agent identity credential_id does not match its fields")
+        return identity
+
 
 @dataclass(frozen=True)
 class IsolationPolicy:
@@ -425,7 +446,7 @@ def build_pi_command(
     command, pi_root = _resolve_launch_command(config)
     command.extend(
         [
-            "--no-builtin-tools",
+            "--no-tools",
             "--no-skills",
             "--no-extensions",
             "--no-prompt-templates",
@@ -800,13 +821,7 @@ class AgentRun:
 def load_identity(raw: Mapping[str, Any]) -> AgentIdentity:
     """Parse identity data at a controller boundary."""
 
-    return AgentIdentity(
-        run_id=str(raw["run_id"]),
-        agent_id=str(raw["agent_id"]),
-        condition=Condition(str(raw["condition"])),
-        task_id=str(raw["task_id"]),
-        seed=int(raw["seed"]),
-    )
+    return AgentIdentity.from_dict(raw)
 
 
 def _validate_config_command(path: Path) -> int:
