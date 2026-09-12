@@ -69,15 +69,22 @@ UV_CACHE_DIR=.uv-cache uv run env PYTHONPATH=src python -m apart_incident_respon
 
 On first use, the controller imports the source auth into the store; later
 runs use the store so a Pi OAuth refresh is available to the next run. The
-store directory is mode `0700`, the store and its advisory lock are mode
-`0600`, and updates are lock-protected and atomic. The credential lock spans
+resolved store path must be outside this repository and all run
+workspaces, including through symlinks. Its dedicated parent must be owned by
+the controller and already have mode `0700`; an existing parent is never
+chmodded. A missing dedicated parent is created with mode `0700`. The store
+and its advisory lock are mode `0600`, and updates are lock-protected and
+atomic. The credential lock spans
 staging, Pi execution, and persistence, so concurrent authenticated runs are
 serialized rather than racing a rotating refresh token. The source Codex/Pi
 auth file is never modified unless a separate, explicit controller workflow
 does so. Run-local `auth.json`, `auth.json.lock` (including directory-shaped
 proper-lockfile locks), and `models.json` are deleted on every exit path.
 Credentials are never placed in command arguments, logs, artifacts, or child
-environment variables.
+environment variables. If a rotated-token write fails, the run is marked
+failed (or retains its original failure status) with a non-secret persistence
+diagnostic in `result.json`; cleanup, relay shutdown, and lock release still
+run.
 
 The `run` command writes metadata, raw JSONL, stderr, parsed events, the final
 response, budget usage, and exit status under the agent artifact directory.

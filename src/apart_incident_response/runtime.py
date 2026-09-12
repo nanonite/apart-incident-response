@@ -22,6 +22,7 @@ import secrets
 import shutil
 import signal
 import socket
+import stat
 import subprocess
 import sys
 import tempfile
@@ -62,6 +63,7 @@ _ENV_NAME = re.compile(r"^[A-Z][A-Z0-9_]{0,127}$")
 _THINKING_LEVELS = {"off", "minimal", "low", "medium", "high", "xhigh", "max"}
 _MODEL_HOST = re.compile(r"^[a-z0-9](?:[a-z0-9.-]{0,253}[a-z0-9])?$")
 _IDENTITY_SIGNING_KEY = secrets.token_bytes(32)
+_REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _identity_signing_key() -> bytes:
@@ -519,6 +521,8 @@ class SystemBudget:
 
 @dataclass(frozen=True)
 class IsolatedWorkspace:
+    workspace_root: Path
+    run_root: Path
     root: Path
     task_dir: Path
     session_dir: Path
@@ -542,7 +546,14 @@ def create_isolated_workspace(root: Path, identity: AgentIdentity) -> IsolatedWo
     for path in (task_dir, session_dir, artifact_dir):
         path.mkdir(mode=0o700)
         path.chmod(0o700)
-    return IsolatedWorkspace(root=agent_root, task_dir=task_dir, session_dir=session_dir, artifact_dir=artifact_dir)
+    return IsolatedWorkspace(
+        workspace_root=root,
+        run_root=run_root,
+        root=agent_root,
+        task_dir=task_dir,
+        session_dir=session_dir,
+        artifact_dir=artifact_dir,
+    )
 
 
 def _safe_env(identity: AgentIdentity, workspace: IsolatedWorkspace, config: RuntimeConfig) -> dict[str, str]:
@@ -608,7 +619,19 @@ class _AuthStoreSnapshot:
     revision: int
 
 
-def _resolve_auth_store(config: RuntimeConfig, source: Path | None) -> Path | None:
+def _path_is_within(path: Path, directory: Path) -> bool:
+    try:
+        path.relative_to(directory)
+    except ValueError:
+        return False
+    return True
+
+
+def _resolve_auth_store(
+    config: RuntimeConfig,
+    source: Path | None,
+    workspace: IsolatedWorkspace,
+) -> Path | None:
     """Resolve the controller-owned OAuth store, never the user's source file."""
 
     if config.pi_auth_store_env is None:
@@ -620,9 +643,22 @@ def _resolve_auth_store(config: RuntimeConfig, source: Path | None) -> Path | No
                 f"{config.pi_auth_store_env} must point to a controller-owned OAuth store"
             )
         return None
-    store = Path(raw_path).expanduser().resolve()
-    if source is not None and store == source:
+    raw_store = Path(raw_path).expanduser()
+    if raw_store.is_symlink():
+        raise RuntimeConfigError("OAuth store path must not be a symlink")
+    store = raw_store.resolve()
+    if source is not None and store == source.resolve():
         raise RuntimeConfigError("OAuth store must not overwrite the source Pi/Codex auth file")
+    forbidden = (
+        _REPOSITORY_ROOT,
+        workspace.workspace_root.resolve(),
+        workspace.run_root.resolve(),
+        workspace.root.resolve(),
+    )
+    if any(_path_is_within(store, directory) for directory in forbidden):
+        raise RuntimeConfigError(
+            "APART_PI_AUTH_STORE must resolve outside the repository and run workspaces"
+        )
     return store
 
 
@@ -668,15 +704,57 @@ def _codex_credentials(payload: Mapping[str, Any]) -> Mapping[str, Any] | None:
     return entry
 
 
-def _ensure_private_parent(path: Path) -> None:
-    path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
-    path.parent.chmod(0o700)
+def _validate_private_directory(path: Path, label: str) -> None:
+    try:
+        info = path.stat()
+    except OSError as exc:
+        raise RuntimeConfigError(f"cannot inspect {label}: {path}") from exc
+    mode = stat.S_IMODE(info.st_mode)
+    if (
+        not stat.S_ISDIR(info.st_mode)
+        or info.st_uid != os.geteuid()
+        or mode & 0o077
+        or mode & 0o700 != 0o700
+    ):
+        raise RuntimeConfigError(
+            f"{label} must be a dedicated private directory owned by the controller "
+            f"with mode 0700; create one and point APART_PI_AUTH_STORE at it: {path}"
+        )
 
 
-def _atomic_write_json(path: Path, value: Mapping[str, Any]) -> None:
+def _validate_private_file(path: Path, label: str) -> None:
+    try:
+        info = path.stat()
+    except OSError as exc:
+        raise RuntimeConfigError(f"cannot inspect {label}: {path}") from exc
+    if (
+        not stat.S_ISREG(info.st_mode)
+        or info.st_uid != os.geteuid()
+        or stat.S_IMODE(info.st_mode) != 0o600
+    ):
+        raise RuntimeConfigError(f"{label} must be owned by the controller with mode 0600: {path}")
+
+
+def _ensure_private_parent(path: Path, *, validate_existing: bool = True) -> None:
+    parent = path.parent
+    if parent.exists():
+        if validate_existing:
+            _validate_private_directory(parent, "OAuth store parent")
+        return
+    parent.mkdir(mode=0o700, parents=True, exist_ok=False)
+    if validate_existing:
+        _validate_private_directory(parent, "new OAuth store parent")
+
+
+def _atomic_write_json(
+    path: Path,
+    value: Mapping[str, Any],
+    *,
+    validate_parent: bool = True,
+) -> None:
     """Atomically write a controller or run-local JSON file with mode 0600."""
 
-    _ensure_private_parent(path)
+    _ensure_private_parent(path, validate_existing=validate_parent)
     descriptor = -1
     temporary_name: str | None = None
     try:
@@ -692,7 +770,6 @@ def _atomic_write_json(path: Path, value: Mapping[str, Any]) -> None:
             os.fsync(handle.fileno())
         os.replace(temporary_name, path)
         temporary_name = None
-        path.chmod(0o600)
         try:
             directory_fd = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY)
         except OSError:
@@ -721,9 +798,7 @@ def _read_auth_store(path: Path) -> _AuthStoreSnapshot | None:
         raise RuntimeConfigError(f"OAuth store must not be a symlink: {path}")
     if not path.exists():
         return None
-    if not path.is_file():
-        raise RuntimeConfigError(f"OAuth store must be a regular file: {path}")
-    path.chmod(0o600)
+    _validate_private_file(path, "OAuth store")
     raw = _load_json_mapping(path, "OAuth store")
     auth = raw.get("auth")
     revision = raw.get("revision")
@@ -752,7 +827,7 @@ def _acquire_auth_store_lock(path: Path) -> IO[str]:
         raise RuntimeConfigError(f"cannot open OAuth store lock: {lock_path}") from exc
     handle = os.fdopen(descriptor, "r+")
     try:
-        os.fchmod(handle.fileno(), 0o600)
+        _validate_private_file(lock_path, "OAuth store lock")
         fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
     except BaseException:
         handle.close()
@@ -796,7 +871,7 @@ def _prepare_auth_file(
 ) -> _AuthStage | None:
     """Stage credentials and optionally hold the controller refresh lease."""
 
-    store = _resolve_auth_store(config, source)
+    store = _resolve_auth_store(config, source, workspace)
     lock_handle: IO[str] | None = None
     baseline_revision = 0
     try:
@@ -833,7 +908,7 @@ def _prepare_auth_file(
                     baseline_revision = snapshot.revision
 
         target = workspace.root / "home" / ".pi" / "agent" / "auth.json"
-        _atomic_write_json(target, payload)
+        _atomic_write_json(target, payload, validate_parent=False)
         return _AuthStage(target, store, baseline_revision, lock_handle)
     except BaseException:
         if lock_handle is not None:
@@ -1304,6 +1379,12 @@ def _bubblewrap_failure_reason(stderr_lines: Iterable[str]) -> str | None:
     return None
 
 
+def _persistence_failure_diagnostic(error: BaseException) -> str:
+    """Describe persistence failure without copying exception details or secrets."""
+
+    return f"OAuth credential persistence failed ({type(error).__name__})"
+
+
 def _message_key(message: Mapping[str, Any]) -> str:
     timestamp = message.get("timestamp")
     if isinstance(timestamp, (int, float)) and not isinstance(timestamp, bool):
@@ -1437,6 +1518,7 @@ class RunResult:
     workspace: str
     artifact_dir: str
     events: list[dict[str, Any]] = field(default_factory=list)
+    persistence_failure: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         result = asdict(self)
@@ -1480,6 +1562,8 @@ class AgentRun:
         proxy: _ModelEgressProxy | None = None
         auth_stage: _AuthStage | None = None
         settlement: BudgetSettlement | None = None
+        result: RunResult | None = None
+        persistence_failure: str | None = None
 
         def settle_claim() -> None:
             nonlocal claim, settlement, status, failure_reason
@@ -1539,11 +1623,12 @@ class AgentRun:
             if claim is None:
                 failure_reason = "system compute ceiling exhausted before provider launch"
                 status = ExitStatus.BUDGET_EXHAUSTED
-                return self._finish(
+                result = self._finish(
                     status, exit_code, started_at, _utc_now(), started_clock,
                     final_response, failure_reason, command, events,
                     agent_tokens_used, agent_tool_calls_used,
                 )
+                return result
 
             try:
                 process = subprocess.Popen(
@@ -1565,11 +1650,12 @@ class AgentRun:
                 failure_reason = f"launcher failed: {exc}"
                 status = ExitStatus.LAUNCH_ERROR
                 settle_claim()
-                return self._finish(
+                result = self._finish(
                     status, exit_code, started_at, _utc_now(), started_clock,
                     final_response, failure_reason, command, events,
                     agent_tokens_used, agent_tool_calls_used,
                 )
+                return result
 
             assert process.stdin is not None
             assert process.stdout is not None
@@ -1693,12 +1779,11 @@ class AgentRun:
                 pass
             try:
                 _persist_auth_stage(auth_stage)
-            except Exception:
-                # Persistence must not mask the run result. The controller
-                # lock and atomic store update make successful rotations
-                # durable; a failed update remains visible to the caller's
-                # operational logs without exposing the token here.
-                pass
+            except Exception as exc:
+                # Keep the diagnostic deliberately class-only: exception
+                # messages can contain paths or provider data and must never
+                # expose a credential in the artifact.
+                persistence_failure = _persistence_failure_diagnostic(exc)
             try:
                 self._cleanup_staged_auth()
             except Exception:
@@ -1712,6 +1797,23 @@ class AgentRun:
                 try:
                     auth_stage.release()
                 except Exception:
+                    pass
+            if persistence_failure is not None and result is not None:
+                result.persistence_failure = persistence_failure
+                if result.status is ExitStatus.COMPLETED:
+                    result.status = ExitStatus.FAILED
+                result.failure_reason = (
+                    f"{result.failure_reason}; {persistence_failure}"
+                    if result.failure_reason
+                    else persistence_failure
+                )
+                try:
+                    self._write_json(
+                        self.workspace.artifact_dir / "result.json", result.to_dict()
+                    )
+                except Exception:
+                    # Preserve the original run result if artifact rewriting
+                    # itself is unavailable; never mask it from the caller.
                     pass
 
     @staticmethod

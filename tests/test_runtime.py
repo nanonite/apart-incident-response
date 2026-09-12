@@ -1,3 +1,4 @@
+import fcntl
 import hashlib
 import json
 import os
@@ -19,6 +20,7 @@ from apart_incident_response.runtime import (
     SystemBudget,
     _ModelEgressProxy,
     _bubblewrap_failure_reason,
+    _prepare_auth_file,
     _prepare_model_limits,
     build_pi_command,
     create_isolated_workspace,
@@ -761,6 +763,190 @@ class RuntimeContractTests(unittest.TestCase):
             self.assertTrue(all(result.status.value == "completed" for result in results))
             stored = json.loads(store.read_text(encoding="utf-8"))
             self.assertEqual(stored["auth"]["openai-codex"]["refresh"], "refresh-2")
+
+    def test_auth_store_rejects_repository_workspace_and_insecure_parent_paths(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            source = root / "source.json"
+            source.write_text("{}\n", encoding="utf-8")
+            identity = self.identity()
+            workspace = create_isolated_workspace(root / "runs", identity)
+            config = self.config(
+                pi_auth_file_env="TEST_AUTH_SOURCE",
+                pi_auth_store_env="TEST_AUTH_STORE",
+            )
+            environment = {"TEST_AUTH_SOURCE": str(source)}
+
+            with patch.dict(
+                os.environ,
+                {**environment, "TEST_AUTH_STORE": str(Path.cwd() / ".review-store.json")},
+            ), self.assertRaisesRegex(RuntimeConfigError, "outside the repository"):
+                _prepare_auth_file(source, workspace, config, hold_lock=True)
+
+            workspace_alias = root / "workspace-alias"
+            workspace_alias.symlink_to(workspace.workspace_root, target_is_directory=True)
+            with patch.dict(
+                os.environ,
+                {**environment, "TEST_AUTH_STORE": str(workspace_alias / "store.json")},
+            ), self.assertRaisesRegex(RuntimeConfigError, "outside the repository"):
+                _prepare_auth_file(source, workspace, config, hold_lock=True)
+
+            with patch.dict(
+                os.environ,
+                {**environment, "TEST_AUTH_STORE": str(source)},
+            ), self.assertRaisesRegex(RuntimeConfigError, "must not overwrite"):
+                _prepare_auth_file(source, workspace, config, hold_lock=True)
+
+            insecure_parent = root / "existing-0755"
+            insecure_parent.mkdir(mode=0o755)
+            insecure_parent.chmod(0o755)
+            before_mode = insecure_parent.stat().st_mode & 0o777
+            with patch.dict(
+                os.environ,
+                {**environment, "TEST_AUTH_STORE": str(insecure_parent / "store.json")},
+            ), self.assertRaisesRegex(RuntimeConfigError, "dedicated private directory"):
+                _prepare_auth_file(source, workspace, config, hold_lock=True)
+            self.assertEqual(insecure_parent.stat().st_mode & 0o777, before_mode)
+            self.assertFalse((insecure_parent / "store.json").exists())
+
+    def test_oauth_persistence_failure_is_visible_and_releases_lock(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            state_dir = root / "controller-state"
+            state_dir.mkdir(mode=0o700)
+            state_dir.chmod(0o700)
+            store = state_dir / "codex-auth.json"
+            store.write_text(
+                json.dumps(
+                    {
+                        "format": 1,
+                        "revision": 1,
+                        "auth": {
+                            "openai-codex": {
+                                "type": "oauth",
+                                "access": "access-0",
+                                "refresh": "refresh-0",
+                                "expires": 0,
+                            }
+                        },
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            store.chmod(0o600)
+            fake_agent = root / "rotating_agent.py"
+            fake_agent.write_text(
+                textwrap.dedent(
+                    """
+                    import json
+                    import os
+                    import sys
+                    from pathlib import Path
+
+                    failed = sys.stdin.read().strip() == "agent-failure"
+                    auth_path = Path(os.environ["HOME"]) / ".pi" / "agent" / "auth.json"
+                    auth = json.loads(auth_path.read_text())
+                    auth["openai-codex"]["access"] = "rotated-" + "access-" + "value"
+                    auth["openai-codex"]["refresh"] = "rotated-" + "refresh-" + "value"
+                    auth_path.write_text(json.dumps(auth) + "\\n")
+                    message = {"type": "message_end", "message": {
+                        "role": "assistant", "content": [{"type": "text", "text": "completed"}],
+                        "usage": {"totalTokens": 1},
+                        "stopReason": "error" if failed else "stop",
+                    }}
+                    if failed:
+                        message["message"]["errorMessage"] = "agent failed"
+                    print(json.dumps(message), flush=True)
+                    if failed:
+                        raise SystemExit(7)
+                    """
+                ),
+                encoding="utf-8",
+            )
+            identity = self.identity()
+            workspace = create_isolated_workspace(root / "runs", identity)
+            agent_home = workspace.root / "home" / ".pi" / "agent"
+            agent_home.mkdir(parents=True)
+            (agent_home / "auth.json.lock").mkdir()
+            config = self.config(
+                launch_command=(sys.executable, str(fake_agent)),
+                pi_auth_file_env="TEST_MISSING_SOURCE",
+                pi_auth_store_env="TEST_AUTH_STORE",
+                per_agent_token_budget=10,
+                per_agent_tool_call_budget=2,
+                aggregate_token_budget=10,
+                aggregate_tool_call_budget=2,
+            )
+            with patch.dict(
+                os.environ,
+                {"TEST_MISSING_SOURCE": "", "TEST_AUTH_STORE": str(store)},
+            ), patch(
+                "apart_incident_response.runtime._write_auth_store",
+                side_effect=OSError("simulated store write failure"),
+            ):
+                result = AgentRun(config, identity, workspace, SystemBudget(10, 2)).run("refresh")
+
+            self.assertEqual(result.exit_code, 0)
+            self.assertEqual(result.status.value, "failed")
+            self.assertEqual(
+                result.persistence_failure,
+                "OAuth credential persistence failed (OSError)",
+            )
+            self.assertIn("OAuth credential persistence failed (OSError)", result.failure_reason or "")
+            artifact = json.loads((workspace.artifact_dir / "result.json").read_text(encoding="utf-8"))
+            self.assertEqual(artifact["status"], "failed")
+            self.assertEqual(artifact["persistence_failure"], "OAuth credential persistence failed (OSError)")
+            for artifact_path in workspace.artifact_dir.iterdir():
+                self.assertNotIn(b"rotated-access-value", artifact_path.read_bytes())
+                self.assertNotIn(b"rotated-refresh-value", artifact_path.read_bytes())
+            self.assertFalse((agent_home / "auth.json").exists())
+            self.assertFalse((agent_home / "auth.json.lock").exists())
+            self.assertFalse((agent_home / "models.json").exists())
+            stored = json.loads(store.read_text(encoding="utf-8"))
+            self.assertEqual(stored["auth"]["openai-codex"]["refresh"], "refresh-0")
+
+            failed_identity = self.identity("agent-2")
+            failed_workspace = create_isolated_workspace(root / "runs", failed_identity)
+            failed_agent_home = failed_workspace.root / "home" / ".pi" / "agent"
+            failed_agent_home.mkdir(parents=True)
+            (failed_agent_home / "auth.json.lock").mkdir()
+            with patch.dict(
+                os.environ,
+                {"TEST_MISSING_SOURCE": "", "TEST_AUTH_STORE": str(store)},
+            ), patch(
+                "apart_incident_response.runtime._write_auth_store",
+                side_effect=OSError("simulated store write failure"),
+            ):
+                failed_result = AgentRun(
+                    config,
+                    failed_identity,
+                    failed_workspace,
+                    SystemBudget(10, 2),
+                ).run("agent-failure")
+            self.assertEqual(failed_result.exit_code, 7)
+            self.assertEqual(failed_result.status.value, "failed")
+            self.assertIn("agent failed", failed_result.failure_reason or "")
+            self.assertIn(
+                "OAuth credential persistence failed (OSError)",
+                failed_result.failure_reason or "",
+            )
+            self.assertEqual(
+                failed_result.persistence_failure,
+                "OAuth credential persistence failed (OSError)",
+            )
+            failed_artifact = json.loads(
+                (failed_workspace.artifact_dir / "result.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(failed_artifact["status"], "failed")
+            self.assertIn("agent failed", failed_artifact["failure_reason"])
+            self.assertFalse((failed_agent_home / "auth.json").exists())
+            self.assertFalse((failed_agent_home / "auth.json.lock").exists())
+
+            lock_path = Path(f"{store}.lock")
+            with lock_path.open("r+") as lock_handle:
+                fcntl.flock(lock_handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                fcntl.flock(lock_handle.fileno(), fcntl.LOCK_UN)
 
 
 if __name__ == "__main__":
