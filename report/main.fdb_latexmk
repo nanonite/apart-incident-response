@@ -1,12 +1,12 @@
 # Fdb version 4
-["biber main"] 1789311317.61855 "main.bcf" "main.bbl" "main" 1789311498.1072 0
-  "main.bcf" 1789311498.00019 142711 9f0684831910af1525b3e1b9ae9f44c0 "pdflatex"
+["biber main"] 1789318807.94161 "main.bcf" "main.bbl" "main" 1789318969.16604 0
+  "main.bcf" 1789318969.07709 142998 387fb2a773287c26a2438adbb465d88c "pdflatex"
   "references.bib" 1789275076.03499 6104 c6f2d72fa3887ba389db7384736e0e26 ""
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1789311496.35123 "main.tex" "main.pdf" "main" 1789311498.10759 0
+["pdflatex"] 1789318966.79901 "main.tex" "main.pdf" "main" 1789318969.16635 0
   "/usr/share/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1775415801 2971 def0b6c1f0b107b3b936def894055589 ""
   "/usr/share/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1775415801 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "/usr/share/texmf-dist/fonts/enc/dvips/montserrat/zmo_umrhwx.enc" 1775415801 3078 57cf00a973d6059b76d540bd27630c2e ""
@@ -187,13 +187,13 @@
   "/usr/share/texmf-dist/web2c/texmf.cnf" 1775415801 43569 fd570f2fa160877d211e859f687312ba ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1789250613 5422491 3b25fbbbcb2c1af6a14f1637976e2e1c ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1789250553 2859297 302cf598a2de4d14dc6e47416ad5cb49 ""
-  "content/entropy.tex" 1789275034.9569 7696 f7be3a6ff1cc940a98cebb2ebb8b0263 ""
+  "content/entropy.tex" 1789318961.17627 9354 b217bba434426552646777f65d6016fd ""
   "content/introduction.tex" 1789275032.13297 9564 8595835638e846ff1636e7d42c8debfd ""
   "content/limitations.tex" 1789310552.67358 1883 c054216be32ae5838b6261c15d106921 ""
-  "main.aux" 1789311497.99319 7522 3cbf8d8d4ef59edf73e6687a6d5f1f3d "pdflatex"
-  "main.bbl" 1789311318.31192 54756 4a891bb561294cc475440ec41e5db459 "biber main"
-  "main.out" 1789311497.99619 1203 80e44aa2a6c2fca0d2a1e1741f9996c9 "pdflatex"
-  "main.run.xml" 1789311498.00204 2493 18dd6adf559d62ac41bc607e0ad6ec06 "pdflatex"
+  "main.aux" 1789318969.07209 8415 6f11d9ee8bbcde8757e927c88631a5e2 "pdflatex"
+  "main.bbl" 1789318808.63805 54756 4a891bb561294cc475440ec41e5db459 "biber main"
+  "main.out" 1789318969.07409 1203 80e44aa2a6c2fca0d2a1e1741f9996c9 "pdflatex"
+  "main.run.xml" 1789318969.07918 2493 18dd6adf559d62ac41bc607e0ad6ec06 "pdflatex"
   "main.tex" 1789311484.58914 1153 1ac7167a3622597dc7ced92374aec9a8 ""
   "packages/preamble.tex" 1789311301.74287 2914 3cbf1bd5c2a40cfeaba3e209782627b9 ""
   "packages/sprint-report.sty" 1789311391.41924 5907 ac11d08bd9b7f723f859e2de59460d55 ""

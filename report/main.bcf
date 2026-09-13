@@ -3326,7 +3326,11 @@
     <bcf:citekey order="22" intorder="1">watanabe1960</bcf:citekey>
     <bcf:citekey order="23" intorder="1">cover2006elements</bcf:citekey>
     <bcf:citekey order="24" intorder="1">openai2026incident</bcf:citekey>
-    <bcf:citekey order="25" intorder="1" nocite="1">*</bcf:citekey>
+    <bcf:citekey order="25" intorder="1">cover2006elements</bcf:citekey>
+    <bcf:citekey order="26" intorder="1">cover2006elements</bcf:citekey>
+    <bcf:citekey order="27" intorder="1">cover2006elements</bcf:citekey>
+    <bcf:citekey order="27" intorder="2">watanabe1960</bcf:citekey>
+    <bcf:citekey order="28" intorder="1" nocite="1">*</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="nyt">
