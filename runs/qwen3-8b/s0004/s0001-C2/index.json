@@ -1,0 +1,248 @@
+{
+  "agents": {
+    "agent-1": {
+      "artifacts": {
+        "agent_telemetry.json": {
+          "path": "agents/agent-1/artifacts/agent_telemetry.json",
+          "present": true
+        },
+        "events.json": {
+          "path": "agents/agent-1/artifacts/events.json",
+          "present": true
+        },
+        "final_response.txt": {
+          "path": "agents/agent-1/artifacts/final_response.txt",
+          "present": true
+        },
+        "metadata.json": {
+          "path": "agents/agent-1/artifacts/metadata.json",
+          "present": true
+        },
+        "response.json": {
+          "path": "agents/agent-1/artifacts/response.json",
+          "present": true
+        },
+        "result.json": {
+          "path": "agents/agent-1/artifacts/result.json",
+          "present": true
+        },
+        "stderr.log": {
+          "path": "agents/agent-1/artifacts/stderr.log",
+          "present": true
+        },
+        "stdout.jsonl": {
+          "path": "agents/agent-1/artifacts/stdout.jsonl",
+          "present": true
+        },
+        "task_submission.json": {
+          "path": "agents/agent-1/artifacts/task_submission.json",
+          "present": false
+        },
+        "timeline.json": {
+          "path": "agents/agent-1/artifacts/timeline.json",
+          "present": false
+        },
+        "tool_calls.jsonl": {
+          "path": "agents/agent-1/artifacts/tool_calls.jsonl",
+          "present": true
+        }
+      },
+      "failure_reasons": [],
+      "identity": {
+        "agent_id": "agent-1",
+        "capability_profile": "task-diagnostic-v1",
+        "condition": "C2",
+        "credential_id": "2c6f03f63907885dca94330a62d5599506cc59402f0001889120094335dda077",
+        "run_id": "s0001-C2",
+        "seed": 1,
+        "task_id": "task-1"
+      },
+      "status": "completed",
+      "timeline": {
+        "path": "agents/agent-1/artifacts/timeline.json",
+        "present": true
+      },
+      "usage": {
+        "provider_tokens": 10966,
+        "tool_calls": 4,
+        "turns": 5
+      }
+    },
+    "agent-2": {
+      "artifacts": {
+        "agent_telemetry.json": {
+          "path": "agents/agent-2/artifacts/agent_telemetry.json",
+          "present": true
+        },
+        "events.json": {
+          "path": "agents/agent-2/artifacts/events.json",
+          "present": true
+        },
+        "final_response.txt": {
+          "path": "agents/agent-2/artifacts/final_response.txt",
+          "present": true
+        },
+        "metadata.json": {
+          "path": "agents/agent-2/artifacts/metadata.json",
+          "present": true
+        },
+        "response.json": {
+          "path": "agents/agent-2/artifacts/response.json",
+          "present": true
+        },
+        "result.json": {
+          "path": "agents/agent-2/artifacts/result.json",
+          "present": true
+        },
+        "stderr.log": {
+          "path": "agents/agent-2/artifacts/stderr.log",
+          "present": true
+        },
+        "stdout.jsonl": {
+          "path": "agents/agent-2/artifacts/stdout.jsonl",
+          "present": true
+        },
+        "task_submission.json": {
+          "path": "agents/agent-2/artifacts/task_submission.json",
+          "present": false
+        },
+        "timeline.json": {
+          "path": "agents/agent-2/artifacts/timeline.json",
+          "present": false
+        },
+        "tool_calls.jsonl": {
+          "path": "agents/agent-2/artifacts/tool_calls.jsonl",
+          "present": true
+        }
+      },
+      "failure_reasons": [],
+      "identity": {
+        "agent_id": "agent-2",
+        "capability_profile": "task-diagnostic-v1",
+        "condition": "C2",
+        "credential_id": "08784463a99839264eb46e944e24d1b6bb1de3ca17202754586fd5424e00b1b4",
+        "run_id": "s0001-C2",
+        "seed": 1,
+        "task_id": "task-1"
+      },
+      "status": "completed",
+      "timeline": {
+        "path": "agents/agent-2/artifacts/timeline.json",
+        "present": true
+      },
+      "usage": {
+        "provider_tokens": 24352,
+        "tool_calls": 8,
+        "turns": 9
+      }
+    },
+    "agent-3": {
+      "artifacts": {
+        "agent_telemetry.json": {
+          "path": "agents/agent-3/artifacts/agent_telemetry.json",
+          "present": true
+        },
+        "events.json": {
+          "path": "agents/agent-3/artifacts/events.json",
+          "present": true
+        },
+        "final_response.txt": {
+          "path": "agents/agent-3/artifacts/final_response.txt",
+          "present": true
+        },
+        "metadata.json": {
+          "path": "agents/agent-3/artifacts/metadata.json",
+          "present": true
+        },
+        "response.json": {
+          "path": "agents/agent-3/artifacts/response.json",
+          "present": true
+        },
+        "result.json": {
+          "path": "agents/agent-3/artifacts/result.json",
+          "present": true
+        },
+        "stderr.log": {
+          "path": "agents/agent-3/artifacts/stderr.log",
+          "present": true
+        },
+        "stdout.jsonl": {
+          "path": "agents/agent-3/artifacts/stdout.jsonl",
+          "present": true
+        },
+        "task_submission.json": {
+          "path": "agents/agent-3/artifacts/task_submission.json",
+          "present": false
+        },
+        "timeline.json": {
+          "path": "agents/agent-3/artifacts/timeline.json",
+          "present": false
+        },
+        "tool_calls.jsonl": {
+          "path": "agents/agent-3/artifacts/tool_calls.jsonl",
+          "present": true
+        }
+      },
+      "failure_reasons": [
+        "agent exceeded per-agent token budget; provider usage exceeded its claimed envelope (token overage=3504, tool-call overage=0)"
+      ],
+      "identity": {
+        "agent_id": "agent-3",
+        "capability_profile": "task-diagnostic-v1",
+        "condition": "C2",
+        "credential_id": "b398dbb4fcbf54beaee3c57e83dfd6f03c02a81dde76d5b9fde9a93e4f20c035",
+        "run_id": "s0001-C2",
+        "seed": 1,
+        "task_id": "task-1"
+      },
+      "status": "budget_exhausted",
+      "timeline": {
+        "path": "agents/agent-3/artifacts/timeline.json",
+        "present": true
+      },
+      "usage": {
+        "provider_tokens": 29504,
+        "tool_calls": 9,
+        "turns": 9
+      }
+    }
+  },
+  "artifacts": {
+    "budget": {
+      "path": "budget.json",
+      "present": true
+    },
+    "manifest": {
+      "path": "manifest.json",
+      "present": true
+    },
+    "metrics": {
+      "path": "artifacts/metrics.json",
+      "present": true
+    },
+    "replay": {
+      "path": "artifacts/replay.json",
+      "present": true
+    },
+    "results": {
+      "path": "results.json",
+      "present": true
+    }
+  },
+  "failure_reasons": [
+    {
+      "agent_id": "agent-3",
+      "reason": "agent exceeded per-agent token budget; provider usage exceeded its claimed envelope (token overage=3504, tool-call overage=0)"
+    }
+  ],
+  "prompt": "Diagnose the incident described by the evidence assigned to you. Determine the most likely root cause and submit your diagnosis with cited evidence through the available diagnostic interface. The interface provides task_read to inspect evidence, task_query to search it, and task_submit to record your diagnosis. Return a concise final explanation after submitting.",
+  "run": {
+    "condition": "C2",
+    "run_class": "experimental",
+    "run_id": "s0001-C2",
+    "seed": 1,
+    "triplet_id": "s0001"
+  },
+  "schema_version": 1,
+  "status": "failed"
+}
