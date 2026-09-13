@@ -62,12 +62,28 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--socket", type=Path, required=True)
     parser.add_argument("--port", type=int, required=True)
+    parser.add_argument("--local-port", type=int)
     parser.add_argument("command", nargs=argparse.REMAINDER)
     args = parser.parse_args(argv)
     if not args.command or args.command[0] != "--":
         parser.error("a Pi command is required after --")
 
-    server = _BridgeServer(("127.0.0.1", args.port), args.socket)
+    if not 1 <= args.port <= 65535:
+        parser.error("--port must be between 1 and 65535")
+    if args.local_port is not None and not 1 <= args.local_port <= 65535:
+        parser.error("--local-port must be between 1 and 65535")
+    if args.local_port == args.port:
+        parser.error("--local-port must differ from --port")
+
+    servers = [_BridgeServer(("127.0.0.1", args.port), args.socket)]
+    if args.local_port is not None:
+        servers.append(_BridgeServer(("127.0.0.1", args.local_port), args.socket))
+    serving = [
+        threading.Thread(target=server.serve_forever, daemon=True)
+        for server in servers
+    ]
+    for thread in serving:
+        thread.start()
     child = subprocess.Popen(
         args.command[1:],
         stdin=sys.stdin,
@@ -76,13 +92,12 @@ def main(argv: list[str] | None = None) -> int:
         env=os.environ.copy(),
         close_fds=True,
     )
-    serving = threading.Thread(target=server.serve_forever, daemon=True)
-    serving.start()
     try:
         return child.wait()
     finally:
-        server.shutdown()
-        server.server_close()
+        for server in servers:
+            server.shutdown()
+            server.server_close()
         if child.poll() is None:
             child.terminate()
             try:

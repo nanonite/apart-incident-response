@@ -32,11 +32,12 @@ goal-host := "http://localhost:11434"
 goal-output := "runs/qwen3-8b/logprobs/compat-goal"
 
 goal: ollama-pull
-    just qwen mode=logprobs \
-        prompt="The capital of France is" \
-        host={{ goal-host }} \
-        model={{ goal-model }} \
-        output={{ goal-output }}
+    just qwen logprobs \
+        "The capital of France is" \
+        1 \
+        {{ goal-output }} \
+        {{ goal-model }} \
+        {{ goal-host }}
 
 # Run either the existing Ollama token-logprob mode or the full-vocabulary
 # Transformers/Unsloth mode. Empty output/model values use mode-specific

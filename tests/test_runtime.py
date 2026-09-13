@@ -31,6 +31,7 @@ from apart_incident_response.runtime import (
     build_pi_command,
     create_isolated_workspace,
     load_identity,
+    probe_ollama,
 )
 
 
@@ -195,6 +196,76 @@ class RuntimeContractTests(unittest.TestCase):
             _opencode_session_id(self.identity("agent-1")),
             _opencode_session_id(self.identity("agent-2")),
         )
+
+    def test_ollama_selection_uses_loopback_endpoint_and_disables_oauth(self):
+        config = self.config().for_model("ollama/qwen3:8b")
+        self.assertEqual(config.model, "ollama/qwen3:8b")
+        self.assertEqual(config.isolation.model_hosts, ("127.0.0.1",))
+        self.assertEqual(config.isolation.oauth_hosts, ())
+        self.assertEqual(config.thinking_level, "off")
+
+    def test_codex_selection_restores_egress_after_ollama(self):
+        config = self.config().for_model("ollama/qwen3:8b").for_model("openai-codex/gpt-5.6-luna")
+        self.assertEqual(config.isolation.model_hosts, ("chatgpt.com",))
+        self.assertEqual(config.isolation.oauth_hosts, ("auth.openai.com",))
+
+    def test_ollama_model_limits_stage_openai_compatibility_config(self):
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = create_isolated_workspace(Path(temp), self.identity())
+            config = self.config(per_agent_token_budget=17).for_model("ollama/qwen3:8b")
+            path = _prepare_model_limits(workspace, config)
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            provider = payload["providers"]["ollama"]
+            self.assertEqual(provider["baseUrl"], "http://127.0.0.1:11434/v1")
+            self.assertEqual(provider["api"], "openai-completions")
+            self.assertEqual(provider["models"], [{"id": "qwen3:8b", "name": "Qwen3 8B 4-bit"}])
+            self.assertEqual(provider["modelOverrides"]["qwen3:8b"]["maxTokens"], 17)
+            self.assertFalse(provider["modelOverrides"]["qwen3:8b"]["samplingParams"]["think"])
+
+    def test_ollama_relay_allows_only_controller_selected_local_target(self):
+        relay = _ModelEgressProxy(
+            Path("/tmp/unused-ollama-relay.sock"),
+            (),
+            local_target=("127.0.0.1", 11434),
+        )
+        self.assertTrue(relay._allowed("127.0.0.1", 11434))
+        self.assertFalse(relay._allowed("127.0.0.1", 443))
+        self.assertFalse(relay._allowed("localhost", 11434))
+        self.assertFalse(relay._allowed("chatgpt.com", 443))
+        self.assertFalse(relay._allowed("opencode.ai", 443))
+        self.assertTrue(relay._parse_local_request(
+            b"POST /v1/chat/completions HTTP/1.1\r\n"
+            b"Host: 127.0.0.1:11434\r\n"
+            b"Content-Length: 2\r\n\r\n"
+        ))
+        self.assertTrue(relay._parse_local_request(
+            b"POST http://127.0.0.1:11434/v1/chat/completions HTTP/1.1\r\n"
+            b"Host: 127.0.0.1:11434\r\n\r\n"
+        ))
+        self.assertFalse(relay._parse_local_request(
+            b"GET /v1/models HTTP/1.1\r\nHost: 127.0.0.1:11434\r\n\r\n"
+        ))
+        self.assertFalse(relay._parse_local_request(
+            b"POST /v1/chat/completions HTTP/1.1\r\nHost: chatgpt.com:443\r\n\r\n"
+        ))
+
+    def test_unknown_ollama_tag_is_rejected(self):
+        with self.assertRaises(RuntimeConfigError):
+            self.config().for_model("ollama/qwen3:14b")
+
+    def test_ollama_probe_records_digest_and_checkpoint_pin(self):
+        response = MagicMock()
+        response.__enter__.return_value = response
+        response.read.return_value = json.dumps({
+            "models": [{"name": "qwen3:8b", "digest": "sha256:test-digest"}],
+        }).encode("utf-8")
+        config = self.config().for_model("ollama/qwen3:8b")
+        with patch("apart_incident_response.runtime.urllib.request.urlopen", return_value=response):
+            probe = probe_ollama(config)
+        self.assertEqual(probe["ollama_host"], "http://127.0.0.1:11434")
+        self.assertEqual(probe["ollama_model"], "qwen3:8b")
+        self.assertEqual(probe["digest"], "sha256:test-digest")
+        self.assertEqual(probe["checkpoint"]["revision"], "47719a242beab8f9aecc40ce3928b034dd5dd559")
 
     def test_opencode_does_not_use_configured_codex_oauth_store(self):
         with tempfile.TemporaryDirectory() as temp:

@@ -11,7 +11,7 @@ from typing import Any, Mapping, Sequence
 
 from .board_storage import BoardStore
 from .capabilities import CAPABILITY_PROFILES, get_capability_profile
-from .runtime import AgentIdentity, AgentRun, Condition, ExitStatus, RuntimeConfig, RuntimeConfigError, SystemBudget, create_isolated_workspace
+from .runtime import AgentIdentity, AgentRun, Condition, ExitStatus, RuntimeConfig, RuntimeConfigError, SystemBudget, create_isolated_workspace, probe_ollama
 from .task_one import TaskOneInstance, task_one_bundle_for_agent, task_one_instance, materialize_task_one_bundle
 from .task_tools import TaskCatalog, TaskDefinition, TaskToolService
 from .tool_service import BoardToolService, ConstrainedToolService
@@ -170,6 +170,7 @@ class ExperimentController:
         instance: TaskOneInstance,
         capability_profile: str,
         observation_window_turns: int,
+        ollama_probe: Mapping[str, Any] | None,
     ) -> dict[str, Any]:
         assignments = []
         for number in range(1, run_config.agent_count + 1):
@@ -228,6 +229,7 @@ class ExperimentController:
                 "model": run_config.model,
             },
             "runtime": run_config.to_dict(),
+            **({"ollama_probe": dict(ollama_probe)} if ollama_probe is not None else {}),
             "prompt": run_config.prompt_for(instance.task_id, seed),
             "prompt_sha256": hashlib.sha256(run_config.prompt_for(instance.task_id, seed).encode("utf-8")).hexdigest(),
             "budget": {
@@ -272,6 +274,7 @@ class ExperimentController:
         observation_window_turns: int = 1,
         model: str | None = None,
         condition_order: Sequence[Condition] | None = None,
+        _ollama_probe: Mapping[str, Any] | None = None,
     ) -> SwarmRun:
         selected_condition = Condition(condition)
         if isinstance(seed, bool) or not isinstance(seed, int):
@@ -283,6 +286,9 @@ class ExperimentController:
         get_capability_profile(profile_name)
         instance = task_one_instance(seed, difficulty)
         run_config = self._config_for_n(count, model)
+        selected_ollama_probe = _ollama_probe
+        if selected_ollama_probe is None:
+            selected_ollama_probe = probe_ollama(run_config)
         triplet = _safe_component(triplet_id or f"task1-seed-{seed}", "triplet_id")
         identifier = _safe_component(run_id or f"{triplet}-{selected_condition.value}", "run_id")
         run_root = self.artifact_root / identifier
@@ -301,6 +307,7 @@ class ExperimentController:
             instance=instance,
             capability_profile=profile_name,
             observation_window_turns=observation_window_turns,
+            ollama_probe=selected_ollama_probe,
         )
         selected_order = tuple(condition_order or (selected_condition,))
         manifest["condition_order"] = [item.value for item in selected_order]
@@ -407,6 +414,8 @@ class ExperimentController:
         """Run one matched C0/C1/C2 triplet and attach baseline overhead fields."""
 
         triplet = _safe_component(triplet_id or f"task1-seed-{seed}", "triplet_id")
+        selected_config = self.config if model is None else self.config.for_model(model)
+        ollama_probe_result = probe_ollama(selected_config)
         execution_order = tuple(
             self.protocol.conditions[(seed - 1 + index) % len(self.protocol.conditions)]
             for index in range(len(self.protocol.conditions))
@@ -418,10 +427,11 @@ class ExperimentController:
                 triplet_id=triplet,
                 agent_count=agent_count,
                 capability_profile=capability_profile,
-                difficulty=difficulty,
-                observation_window_turns=observation_window_turns,
-                model=model,
-                condition_order=execution_order,
+                  difficulty=difficulty,
+                  observation_window_turns=observation_window_turns,
+                  model=model,
+                  condition_order=execution_order,
+                  _ollama_probe=ollama_probe_result,
             )
             for condition in execution_order
         )

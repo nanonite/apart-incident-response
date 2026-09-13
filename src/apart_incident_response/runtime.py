@@ -28,6 +28,9 @@ import subprocess
 import sys
 import tempfile
 import time
+import urllib.error
+import urllib.parse
+import urllib.request
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field, replace
 from datetime import datetime, timezone
@@ -75,6 +78,14 @@ _IDENTITY_SIGNING_KEY = secrets.token_bytes(32)
 _REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 _OPENCODE_PROVIDER = "opencode-go"
 _OPENCODE_HOST = "opencode.ai"
+_CODEX_PROVIDER = "openai-codex"
+_OLLAMA_PROVIDER = "ollama"
+_OLLAMA_DEFAULT_HOST = "127.0.0.1"
+_OLLAMA_DEFAULT_PORT = 11434
+_OLLAMA_PROXY_HOST = "127.0.0.1"
+_OLLAMA_PROXY_PORT = 11434
+_OLLAMA_PROXY_PATH = "/v1/chat/completions"
+_OLLAMA_DUMMY_API_KEY = "ollama-local"
 _DEFAULT_PROVIDER_USER_AGENT = "apart-incident-response/1"
 
 
@@ -115,6 +126,30 @@ def _strict_bool(value: Any, field_name: str) -> bool:
     if not isinstance(value, bool):
         raise RuntimeConfigError(f"{field_name} must be a JSON boolean")
     return value
+
+
+def _pinned_ollama_config() -> dict[str, str]:
+    """Load the repository pin used for controller-owned Ollama runs."""
+
+    path = _REPOSITORY_ROOT / "config" / "qwen3-8b.json"
+    try:
+        with path.open(encoding="utf-8") as handle:
+            payload = json.load(handle)
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeConfigError(f"cannot load pinned Ollama config: {path}") from exc
+    if not isinstance(payload, Mapping):
+        raise RuntimeConfigError(f"pinned Ollama config is not an object: {path}")
+    model = payload.get("ollama_model")
+    model_id = payload.get("model_id")
+    revision = payload.get("revision")
+    if not all(isinstance(value, str) and value.strip() for value in (model, model_id, revision)):
+        raise RuntimeConfigError(f"pinned Ollama config is missing model metadata: {path}")
+    return {
+        "path": str(path),
+        "ollama_model": model,
+        "model_id": model_id,
+        "revision": revision,
+    }
 
 
 @dataclass(frozen=True)
@@ -316,6 +351,18 @@ class RuntimeConfig:
                 )
             if self.isolation.oauth_hosts:
                 raise RuntimeConfigError("OpenCode Go must not allow unrelated OAuth egress hosts")
+        if separator and provider == _OLLAMA_PROVIDER:
+            pinned = _pinned_ollama_config()
+            if _model_id != pinned["ollama_model"]:
+                raise RuntimeConfigError(
+                    f"Ollama model is not pinned in {pinned['path']}: {_model_id!r}"
+                )
+            if self.isolation.model_hosts != (_OLLAMA_PROXY_HOST,):
+                raise RuntimeConfigError(
+                    "Ollama requires the isolated loopback model endpoint in the egress contract"
+                )
+            if self.isolation.oauth_hosts:
+                raise RuntimeConfigError("Ollama must not allow OAuth egress hosts")
         try:
             catalog = TaskPromptCatalog(self.task_prompts)
         except TaskPromptConfigError as exc:
@@ -418,12 +465,26 @@ class RuntimeConfig:
 
         if not isinstance(model, str) or "/" not in model:
             raise RuntimeConfigError("model must use the provider/model-id form")
-        provider, _separator, _model_id = model.partition("/")
+        provider, _separator, model_id = model.partition("/")
         isolation = self.isolation
         current_provider = self.model.partition("/")[0]
         if provider == _OPENCODE_PROVIDER:
             isolation = replace(isolation, model_hosts=(_OPENCODE_HOST,), oauth_hosts=())
-        elif current_provider == _OPENCODE_PROVIDER:
+        elif provider == _OLLAMA_PROVIDER:
+            pinned = _pinned_ollama_config()
+            if model_id != pinned["ollama_model"]:
+                raise RuntimeConfigError(
+                    f"unknown Ollama model {model_id!r}; only {pinned['ollama_model']!r} is pinned"
+                )
+            isolation = replace(
+                isolation,
+                model_hosts=(_OLLAMA_PROXY_HOST,),
+                oauth_hosts=(),
+            )
+            # Pi's generic --thinking flag is not Ollama's native `think` field.
+            # Local runs are explicitly non-thinking unless the caller overrides it.
+            return replace(self, model=model, thinking_level="off", isolation=isolation)
+        elif provider == _CODEX_PROVIDER or current_provider in {_OPENCODE_PROVIDER, _OLLAMA_PROVIDER}:
             isolation = replace(
                 isolation,
                 model_hosts=("chatgpt.com",),
@@ -714,9 +775,24 @@ def _stage_controller_credential(path: Path, credential: str) -> None:
             os.close(descriptor)
 
 
+def _create_bind_mount_placeholder(path: Path) -> None:
+    """Create a private file target for a Bubblewrap socket bind mount."""
+
+    if path.exists() or path.is_symlink():
+        raise RuntimeConfigError(f"Bubblewrap bind target already exists: {path}")
+    descriptor = os.open(
+        path,
+        os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0),
+        0o600,
+    )
+    os.close(descriptor)
+
+
 def _resolve_auth_file(config: RuntimeConfig) -> Path | None:
     """Resolve an optional host-side Pi auth file without placing secrets in env."""
 
+    if _model_provider(config.model) == _OLLAMA_PROVIDER:
+        return None
     if config.pi_auth_file_env is None:
         return None
     raw_path = os.environ.get(config.pi_auth_file_env)
@@ -766,6 +842,108 @@ def _model_provider(model: str) -> str:
     return model.partition("/")[0]
 
 
+def _resolve_ollama_target() -> tuple[str, int, str, str]:
+    """Resolve the controller-only Ollama target without accepting a URL path."""
+
+    configured = os.environ.get("OLLAMA_HOST", "").strip()
+    raw = configured or f"http://{_OLLAMA_DEFAULT_HOST}:{_OLLAMA_DEFAULT_PORT}"
+    candidate = raw if "://" in raw else f"http://{raw}"
+    try:
+        parsed = urllib.parse.urlsplit(candidate)
+        host = parsed.hostname
+        port = parsed.port
+    except ValueError as exc:
+        raise RuntimeConfigError("OLLAMA_HOST is not a valid HTTP host and port") from exc
+    if (
+        parsed.scheme != "http"
+        or parsed.username is not None
+        or parsed.password is not None
+        or parsed.path not in {"", "/"}
+        or parsed.query
+        or parsed.fragment
+        or host is None
+        or ":" in host
+        or not _MODEL_HOST.fullmatch(host.lower())
+        or port is None
+        or not 1 <= port <= 65535
+    ):
+        raise RuntimeConfigError(
+            "OLLAMA_HOST must be an http://host:port endpoint without credentials or a URL path"
+        )
+    normalized_host = host.lower().rstrip(".")
+    endpoint = f"http://{normalized_host}:{port}"
+    return normalized_host, port, endpoint, raw
+
+
+def probe_ollama(config: RuntimeConfig) -> dict[str, Any] | None:
+    """Verify the pinned local model before any isolated agent is launched."""
+
+    if _model_provider(config.model) != _OLLAMA_PROVIDER:
+        return None
+    pinned = _pinned_ollama_config()
+    model_id = config.model.partition("/")[2]
+    if model_id != pinned["ollama_model"]:
+        raise RuntimeConfigError(
+            f"unknown Ollama model {model_id!r}; only {pinned['ollama_model']!r} is pinned"
+        )
+    _host, _port, endpoint, raw_host = _resolve_ollama_target()
+    request = urllib.request.Request(
+        f"{endpoint}/api/tags",
+        headers={"Accept": "application/json"},
+        method="GET",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=10) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except (OSError, ValueError, TypeError, json.JSONDecodeError, urllib.error.URLError) as exc:
+        raise RuntimeConfigError(
+            f"Ollama preflight failed for {endpoint} ({type(exc).__name__})"
+        ) from exc
+    models = payload.get("models") if isinstance(payload, Mapping) else None
+    if not isinstance(models, list):
+        raise RuntimeConfigError("Ollama preflight returned no model list")
+    selected = next(
+        (
+            item
+            for item in models
+            if isinstance(item, Mapping)
+            and (item.get("name") == model_id or item.get("model") == model_id)
+        ),
+        None,
+    )
+    digest = selected.get("digest") if isinstance(selected, Mapping) else None
+    if not isinstance(digest, str) or not digest:
+        raise RuntimeConfigError(f"Ollama model tag is missing: {model_id}")
+    return {
+        "status": "ok",
+        "ollama_host": endpoint,
+        "ollama_host_env": raw_host,
+        "ollama_model": model_id,
+        "digest": digest,
+        "checkpoint": {
+            "model_id": pinned["model_id"],
+            "revision": pinned["revision"],
+        },
+    }
+
+
+def _model_request_metadata(config: RuntimeConfig) -> dict[str, Any]:
+    metadata: dict[str, Any] = {
+        "provider": _model_provider(config.model),
+        "model": config.model,
+        "thinking_level": config.thinking_level,
+    }
+    if _model_provider(config.model) == _OLLAMA_PROVIDER:
+        _host, _port, endpoint, raw_host = _resolve_ollama_target()
+        metadata.update({
+            "ollama_host": endpoint,
+            "ollama_host_env": raw_host,
+            "ollama_model": config.model.partition("/")[2],
+            "ollama_think": config.thinking_level != "off",
+        })
+    return metadata
+
+
 def _opencode_session_id(identity: AgentIdentity) -> str:
     """Return one stable, non-secret routing ID for an agent run."""
 
@@ -801,9 +979,12 @@ def _read_private_api_key(path: Path) -> str:
 
 
 def _resolve_provider_api_key(config: RuntimeConfig) -> str | None:
-    """Resolve an OpenCode key only in the controller before private staging."""
+    """Resolve provider credentials only in the controller before private staging."""
 
-    if _model_provider(config.model) != _OPENCODE_PROVIDER:
+    provider = _model_provider(config.model)
+    if provider == _OLLAMA_PROVIDER:
+        return _OLLAMA_DUMMY_API_KEY
+    if provider != _OPENCODE_PROVIDER:
         return None
     if config.api_key_file_env:
         raw_path = os.environ.get(config.api_key_file_env)
@@ -851,8 +1032,11 @@ def _resolve_auth_store(
 ) -> Path | None:
     """Resolve the controller-owned OAuth store, never the user's source file."""
 
-    if config.pi_auth_store_env is None or _model_provider(config.model) == _OPENCODE_PROVIDER:
-        # OpenCode Go keys are staged only in the run-local Pi auth file.
+    if config.pi_auth_store_env is None or _model_provider(config.model) in {
+        _OPENCODE_PROVIDER,
+        _OLLAMA_PROVIDER,
+    }:
+        # OpenCode and Ollama credentials are staged only in the run-local Pi auth file.
         # Keep the configured Codex store intact so switching back to Codex
         # preserves its existing credential lifecycle.
         return None
@@ -1098,8 +1282,8 @@ def _prepare_auth_file(
     """Stage credentials and optionally hold the controller refresh lease."""
 
     transient_provider = _model_provider(config.model) if api_key is not None else None
-    if api_key is not None and transient_provider != _OPENCODE_PROVIDER:
-        raise RuntimeConfigError("an API key can only be staged for OpenCode Go")
+    if api_key is not None and transient_provider not in {_OPENCODE_PROVIDER, _OLLAMA_PROVIDER}:
+        raise RuntimeConfigError("a transient API key can only be staged for OpenCode Go or Ollama")
     store = _resolve_auth_store(config, source, workspace)
     lock_handle: IO[str] | None = None
     baseline_revision = 0
@@ -1211,20 +1395,43 @@ def _prepare_model_limits(workspace: IsolatedWorkspace, config: RuntimeConfig) -
     provider, separator, model_id = config.model.partition("/")
     if not separator or not provider or not model_id:
         return None
-    model_id = model_id.split(":", 1)[0]
     if not model_id:
         return None
     target = workspace.root / "home" / ".pi" / "agent" / "models.json"
     target.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
-    payload = {
-        "providers": {
-            provider: {
-                "modelOverrides": {
-                    model_id: {"maxTokens": config.per_agent_token_budget}
+    if provider == _OLLAMA_PROVIDER:
+        if model_id != _pinned_ollama_config()["ollama_model"]:
+            raise RuntimeConfigError(f"unknown Ollama model {model_id!r}")
+        payload = {
+            "providers": {
+                _OLLAMA_PROVIDER: {
+                    "baseUrl": f"http://{_OLLAMA_PROXY_HOST}:{_OLLAMA_PROXY_PORT}/v1",
+                    "api": "openai-completions",
+                    "models": [{
+                        "id": model_id,
+                        "name": "Qwen3 8B 4-bit",
+                    }],
+                    "modelOverrides": {
+                        model_id: {
+                            "maxTokens": config.per_agent_token_budget,
+                            "samplingParams": {
+                                "think": config.thinking_level != "off",
+                            },
+                        }
+                    },
                 }
             }
         }
-    }
+    else:
+        payload = {
+            "providers": {
+                provider: {
+                    "modelOverrides": {
+                        model_id: {"maxTokens": config.per_agent_token_budget}
+                    }
+                }
+            }
+        }
     target.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     target.chmod(0o600)
     return target
@@ -1276,11 +1483,24 @@ def _resolve_launch_command(config: RuntimeConfig) -> tuple[list[str], Path | No
 
 
 class _ModelEgressProxy:
-    """Host-side allowlisted CONNECT relay for the isolated model process."""
+    """Host-side allowlisted relay for the isolated model process."""
 
-    def __init__(self, socket_path: Path, allowed_hosts: Iterable[str]) -> None:
+    def __init__(
+        self,
+        socket_path: Path,
+        allowed_hosts: Iterable[str],
+        *,
+        local_target: tuple[str, int] | None = None,
+    ) -> None:
         self.socket_path = socket_path
         self.allowed_hosts = frozenset(host.lower() for host in allowed_hosts)
+        if local_target is not None:
+            host, port = local_target
+            if ":" in host or not _MODEL_HOST.fullmatch(host.lower()) or not 1 <= port <= 65535:
+                raise RuntimeConfigError("local model target must be a valid host and port")
+            self.local_target = (host.lower().rstrip("."), port)
+        else:
+            self.local_target = None
         self._listener: socket.socket | None = None
         self._stopping = Event()
         self._thread: Thread | None = None
@@ -1348,7 +1568,19 @@ class _ModelEgressProxy:
             request = self._read_headers(client)
             if request is None:
                 return
-            header_bytes, _remainder = request
+            header_bytes, remainder = request
+            if self.local_target is not None:
+                normalized_request = self._parse_local_request(header_bytes)
+                if normalized_request is None:
+                    self._deny(client)
+                    return
+                upstream = socket.create_connection(self.local_target, timeout=30)
+                try:
+                    upstream.sendall(normalized_request + remainder)
+                    self._relay(client, upstream)
+                finally:
+                    upstream.close()
+                return
             first_line = header_bytes.split(b"\r\n", 1)[0].decode("latin-1", "replace")
             parts = first_line.split(" ", 2)
             if len(parts) != 3 or parts[2] not in {"HTTP/1.0", "HTTP/1.1"}:
@@ -1389,11 +1621,15 @@ class _ModelEgressProxy:
         return bytes(data[:end]), bytes(data[end:])
 
     def _allowed(self, host: str, port: int) -> bool:
+        if self.local_target is not None:
+            return (host.lower().rstrip("."), port) == self.local_target
         return host.lower().rstrip(".") in self.allowed_hosts and port == 443
 
     def _parse_connect_target(self, target: str) -> tuple[str, int] | None:
         """Validate an explicit HTTPS CONNECT target and its allowlist entry."""
 
+        if self.local_target is not None:
+            return None
         if target.count(":") != 1:
             return None
         host, port_text = target.rsplit(":", 1)
@@ -1403,6 +1639,55 @@ class _ModelEgressProxy:
         if not self._allowed(host, 443):
             return None
         return host, 443
+
+    @staticmethod
+    def _parse_local_request(header_bytes: bytes) -> bytes | None:
+        """Accept only Ollama's OpenAI-compatible chat completion request."""
+
+        try:
+            header_text = header_bytes.decode("latin-1")
+        except UnicodeDecodeError:
+            return None
+        lines = header_text.rstrip("\r\n").split("\r\n")
+        if not lines:
+            return None
+        parts = lines[0].split(" ", 2)
+        if len(parts) != 3 or parts[0] != "POST" or parts[2] not in {"HTTP/1.0", "HTTP/1.1"}:
+            return None
+        request_target = parts[1]
+        if request_target == _OLLAMA_PROXY_PATH:
+            normalized_target = request_target
+        else:
+            try:
+                parsed_target = urllib.parse.urlsplit(request_target)
+                target_port = parsed_target.port
+            except ValueError:
+                return None
+            if (
+                parsed_target.scheme != "http"
+                or parsed_target.username is not None
+                or parsed_target.password is not None
+                or parsed_target.hostname != _OLLAMA_PROXY_HOST
+                or target_port != _OLLAMA_PROXY_PORT
+                or parsed_target.path != _OLLAMA_PROXY_PATH
+                or parsed_target.query
+                or parsed_target.fragment
+            ):
+                return None
+            normalized_target = parsed_target.path
+        host_values = [
+            line.partition(":")[2].strip()
+            for line in lines[1:]
+            if line.partition(":")[0].lower() == "host"
+        ]
+        if len(host_values) != 1 or host_values[0] != f"{_OLLAMA_PROXY_HOST}:{_OLLAMA_PROXY_PORT}":
+            return None
+        if not all(":" in line for line in lines[1:] if line):
+            return None
+        if normalized_target == request_target:
+            return header_bytes
+        lines[0] = f"POST {normalized_target} {parts[2]}"
+        return ("\r\n".join(lines) + "\r\n\r\n").encode("latin-1")
 
     @staticmethod
     def _deny(client: socket.socket) -> None:
@@ -1440,6 +1725,7 @@ def build_pi_command(
     extension: Path | None = None,
     auth_stage: _AuthStage | None = None,
     tool_socket: Path | None = None,
+    model_proxy_socket: Path | None = None,
     extra_env: Mapping[str, str] | None = None,
 ) -> list[str]:
     """Build the exact Pi argv used for one agent.
@@ -1503,6 +1789,30 @@ def build_pi_command(
                 or transient_mode != 0o700
             ):
                 raise RuntimeConfigError("tool service socket must use a private transient IPC directory") from exc
+    resolved_model_proxy_socket: Path | None = None
+    if model_proxy_socket is not None:
+        resolved_model_proxy_socket = model_proxy_socket.expanduser().resolve()
+        if resolved_model_proxy_socket.name != ".apart-model-proxy.sock":
+            raise RuntimeConfigError("model proxy socket must use the controller socket name")
+        try:
+            resolved_model_proxy_socket.relative_to(workspace.root.resolve())
+        except ValueError as exc:
+            transient_root = Path(tempfile.gettempdir()).resolve()
+            transient_parent = resolved_model_proxy_socket.parent
+            try:
+                transient_parent.relative_to(transient_root)
+            except ValueError:
+                raise RuntimeConfigError("model proxy socket must use a private transient IPC directory") from exc
+            try:
+                transient_mode = stat.S_IMODE(transient_parent.stat().st_mode)
+            except OSError as stat_error:
+                raise RuntimeConfigError("model proxy socket must use a private transient IPC directory") from stat_error
+            if (
+                transient_parent.parent != transient_root
+                or not transient_parent.name.startswith("apart-model-")
+                or transient_mode != 0o700
+            ):
+                raise RuntimeConfigError("model proxy socket must use a private transient IPC directory") from exc
     if config.isolation.sandbox == "none":
         return command
     bwrap = shutil.which("bwrap")
@@ -1579,6 +1889,13 @@ def build_pi_command(
             "--bind",
             str(resolved_tool_socket),
             "/workspace/.apart-tool-service.sock",
+        ]
+    if resolved_model_proxy_socket is not None:
+        insert_at = sandbox_command.index("--chdir")
+        sandbox_command[insert_at:insert_at] = [
+            "--bind",
+            str(resolved_model_proxy_socket),
+            "/workspace/.apart-model-proxy.sock",
         ]
     if resolved_credential_file is not None:
         insert_at = sandbox_command.index("--chdir")
@@ -1677,7 +1994,7 @@ def build_pi_command(
             if Path("/run/current-system/sw/bin/python3").exists()
             else sys.executable
         )
-        command = [
+        wrapped_command = [
             bridge_python,
             "-m",
             "apart_incident_response.network_bridge",
@@ -1685,9 +2002,10 @@ def build_pi_command(
             "/workspace/.apart-model-proxy.sock",
             "--port",
             "18080",
-            "--",
-            *command,
         ]
+        if _model_provider(config.model) == _OLLAMA_PROVIDER:
+            wrapped_command.extend(["--local-port", str(_OLLAMA_PROXY_PORT)])
+        command = [*wrapped_command, "--", *command]
     return sandbox_command + command
 
 
@@ -1920,8 +2238,10 @@ class AgentRun:
         stderr_path = artifact_dir / "stderr.log"
         claim: BudgetClaim | None = None
         proxy: _ModelEgressProxy | None = None
+        model_ipc_dir: Path | None = None
         tool_server: "ToolServiceSocketServer | None" = None
         tool_ipc_dir: Path | None = None
+        bind_mount_placeholders: list[Path] = []
         tool_environment: dict[str, str] = {}
         credential_file: Path | None = None
         auth_stage: _AuthStage | None = None
@@ -1992,10 +2312,21 @@ class AgentRun:
                     )
                     return result
             if self.config.isolation.model_network and self.config.isolation.sandbox == "bubblewrap":
-                proxy = _ModelEgressProxy(
-                    self.workspace.root / ".apart-model-proxy.sock",
-                    (*self.config.isolation.model_hosts, *self.config.isolation.oauth_hosts),
-                )
+                model_ipc_dir = Path(tempfile.mkdtemp(prefix="apart-model-", dir=tempfile.gettempdir()))
+                model_ipc_dir.chmod(0o700)
+                model_socket = model_ipc_dir / ".apart-model-proxy.sock"
+                if _model_provider(self.config.model) == _OLLAMA_PROVIDER:
+                    ollama_host, ollama_port, _endpoint, _raw_host = _resolve_ollama_target()
+                    proxy = _ModelEgressProxy(
+                        model_socket,
+                        (),
+                        local_target=(ollama_host, ollama_port),
+                    )
+                else:
+                    proxy = _ModelEgressProxy(
+                        model_socket,
+                        (*self.config.isolation.model_hosts, *self.config.isolation.oauth_hosts),
+                    )
                 proxy.start()
             provider_api_key = _resolve_provider_api_key(self.config)
             if provider_api_key is not None:
@@ -2009,6 +2340,15 @@ class AgentRun:
                 api_key=provider_api_key,
                 hold_lock=False,
             )
+            if self.config.isolation.sandbox == "bubblewrap":
+                if tool_server is not None and not tool_server.uses_fifo:
+                    placeholder = self.workspace.root / ".apart-tool-service.sock"
+                    _create_bind_mount_placeholder(placeholder)
+                    bind_mount_placeholders.append(placeholder)
+                if model_ipc_dir is not None:
+                    placeholder = self.workspace.root / ".apart-model-proxy.sock"
+                    _create_bind_mount_placeholder(placeholder)
+                    bind_mount_placeholders.append(placeholder)
             command = build_pi_command(
                 self.config,
                 self.identity,
@@ -2022,13 +2362,19 @@ class AgentRun:
                         and not tool_server.uses_fifo
                     )
                     else None
-                ),
-                extra_env=tool_environment,
+                  ),
+                  model_proxy_socket=(
+                      model_ipc_dir / ".apart-model-proxy.sock"
+                      if model_ipc_dir is not None
+                      else None
+                  ),
+                  extra_env=tool_environment,
             )
             _prepare_model_limits(self.workspace, self.config)
             self._write_json(artifact_dir / "metadata.json", {
                 "identity": self.identity.to_dict(),
                 "runtime": self.config.to_dict(),
+                "model_request": _model_request_metadata(self.config),
                 "prompt": prompt,
                 "command": command,
                 "started_at": started_at,
@@ -2246,6 +2592,16 @@ class AgentRun:
                 try:
                     proxy.stop()
                 except Exception:
+                    pass
+            if model_ipc_dir is not None:
+                try:
+                    shutil.rmtree(model_ipc_dir)
+                except OSError:
+                    pass
+            for placeholder in bind_mount_placeholders:
+                try:
+                    placeholder.unlink(missing_ok=True)
+                except OSError:
                     pass
             if tool_server is not None:
                 try:

@@ -7,6 +7,9 @@ services:
     environment:
       APART_PI_ROOT: /opt/pi
       APART_PI_AUTH_FILE: /run/secrets/pi-auth.json
+      OLLAMA_HOST: http://ollama:11434
+    depends_on:
+      - ollama
     volumes:
       - type: bind
         source: ./artifacts
