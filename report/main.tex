@@ -38,13 +38,14 @@ $^{2}$Department of Physics, Harvard University, Cambridge MA, US}
 	
   \input{content/introduction.tex}
   \input{content/entropy.tex}
+  \input{content/board_storage.tex}
     
     % List all citations
 	\nocite{*}
 	\printbibliography
 	
 	% Balance columns on last page
-	\balance
+\IfFileExists{balance.sty}{\balance}{}
 
     % For header on first page
 	\label{lastPage}

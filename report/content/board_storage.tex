@@ -1,0 +1,49 @@
+\section{Controller-Owned Append-Only Board Storage}
+
+Chainlink issue \#16 establishes the storage boundary for the experiment's
+message board.  The implementation uses a controller-owned SQLite database,
+not a database exposed to the Pi agent.  The public storage interface is
+deliberately small:
+
+\begin{verbatim}
+with BoardStore.initialize(database_path,
+                           agent_workspace_roots=roots) as board:
+    record = board.append_message(run_id, agent_id, message_body)
+\end{verbatim}
+
+The service generates the UTC server timestamp and UTF-8 byte count.  The
+SQLite table contains the following fields:
+
+\begin{center}
+\begin{tabular}{ll}
+\textbf{Field} & \textbf{Constraint or meaning} \\
+\hline
+\texttt{sequence\_id} & \texttt{INTEGER PRIMARY KEY AUTOINCREMENT} \\
+\texttt{run\_id} & Required non-empty text \\
+\texttt{agent\_id} & Required non-empty text \\
+\texttt{server\_timestamp} & Required controller-generated UTC text \\
+\texttt{message\_body} & Required non-empty UTF-8 text \\
+\texttt{message\_size} & Required byte length of the UTF-8 body \\
+\end{tabular}
+\end{center}
+
+Append-only behavior is enforced in the database itself.  Triggers reject
+both \texttt{UPDATE} and \texttt{DELETE}, so the invariant does not depend
+only on callers using the Python interface.  The low-level iterator orders
+rows by \texttt{sequence\_id}; cursor semantics, C0/C1/C2 visibility, agent
+identity derivation, and Pi extension tools remain follow-up work.
+
+The database path is checked against agent workspace roots, including paths
+that resolve through symlinks.  The board service retains the database path
+and connection.  Neither is passed to Pi, mounted into Bubblewrap, or made
+available to an agent task directory.
+
+The implementation and regression tests were delivered in commit
+\texttt{264af09} and pushed to \texttt{origin/main} as part of the merge at
+\texttt{d39bd82}.  Verification recorded for issue \#16 is 39 passing
+unittest cases, successful runtime configuration validation, successful
+Python compilation checks, and a clean \texttt{git diff --check}.  The tests
+cover schema creation, required-field and size constraints, UTF-8 sizing,
+monotonic ordering, symlink-aware workspace rejection, and direct SQL
+\texttt{UPDATE}/\texttt{DELETE} rejection.  No subscription-backed model
+request was made.

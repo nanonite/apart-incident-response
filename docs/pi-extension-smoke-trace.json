@@ -1,0 +1,178 @@
+{
+  "audit": [
+    {
+      "agent_id": "pi-agent",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "ok": true,
+        "result": {
+          "content": "ORCHID-731 fixture\n",
+          "path": "evidence.txt",
+          "size": 19,
+          "task_id": "task-1"
+        }
+      },
+      "run_id": "pi-smoke-run",
+      "task_id": "task-1",
+      "timestamp": "2026-09-12T00:00:00Z",
+      "validated_input": {
+        "path": "evidence.txt"
+      }
+    },
+    {
+      "agent_id": "pi-agent",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [
+            {
+              "line": 1,
+              "path": "evidence.txt",
+              "text": "ORCHID-731 fixture"
+            }
+          ],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "pi-smoke-run",
+      "task_id": "task-1",
+      "timestamp": "2026-09-12T00:00:00Z",
+      "validated_input": {
+        "query": "ORCHID-731"
+      }
+    },
+    {
+      "agent_id": "pi-agent",
+      "condition": "C1",
+      "operation": "board_append",
+      "response": {
+        "ok": true,
+        "result": {
+          "agent_id": "pi-agent",
+          "message_body": "Pi agent: ORCHID-731",
+          "message_size": 20,
+          "run_id": "pi-smoke-run",
+          "sequence_id": 1,
+          "server_timestamp": "2026-09-12T00:00:00Z"
+        }
+      },
+      "run_id": "pi-smoke-run",
+      "task_id": "task-1",
+      "timestamp": "2026-09-12T00:00:00Z",
+      "validated_input": {
+        "message": "Pi agent: ORCHID-731"
+      }
+    },
+    {
+      "agent_id": "pi-agent",
+      "condition": "C1",
+      "operation": "board_read",
+      "response": {
+        "ok": true,
+        "result": {
+          "has_more": false,
+          "messages": [
+            {
+              "agent_id": "pi-agent",
+              "message_body": "Pi agent: ORCHID-731",
+              "message_size": 20,
+              "run_id": "pi-smoke-run",
+              "sequence_id": 1,
+              "server_timestamp": "2026-09-12T00:00:00Z"
+            }
+          ],
+          "next_cursor": 1
+        }
+      },
+      "run_id": "pi-smoke-run",
+      "task_id": "task-1",
+      "timestamp": "2026-09-12T00:00:00Z",
+      "validated_input": {
+        "limit": 10
+      }
+    },
+    {
+      "agent_id": "pi-agent",
+      "condition": "C1",
+      "operation": "task_submit",
+      "response": {
+        "ok": true,
+        "result": {
+          "accepted": true,
+          "submission_id": "sha256:1236c18abd11b2da68efda994e57de353b2aabe9056c34a11eb8dedc3d18d533",
+          "submission_sha256": "1236c18abd11b2da68efda994e57de353b2aabe9056c34a11eb8dedc3d18d533",
+          "task_id": "task-1"
+        }
+      },
+      "run_id": "pi-smoke-run",
+      "task_id": "task-1",
+      "timestamp": "2026-09-12T00:00:00Z",
+      "validated_input": {
+        "diagnosis": "The ORCHID-731 configuration revision changed CACHE_MODE from local to shared, causing the cache-related outage.",
+        "evidence": [
+          {
+            "excerpt": "ORCHID-731 fixture",
+            "path": "evidence.txt"
+          }
+        ]
+      }
+    }
+  ],
+  "built_in_tools": false,
+  "credential_free": true,
+  "extension": "pi-extension/incident-tools.ts",
+  "extension_discovery": false,
+  "fixture_provider": "tests/fixtures/pi-faux-provider.ts",
+  "pi_version": "0.85.1",
+  "submission": {
+    "agent_id": "pi-agent",
+    "condition": "C1",
+    "diagnosis": "The ORCHID-731 configuration revision changed CACHE_MODE from local to shared, causing the cache-related outage.",
+    "evidence": [
+      {
+        "excerpt": "ORCHID-731 fixture",
+        "path": "evidence.txt"
+      }
+    ],
+    "run_id": "pi-smoke-run",
+    "schema_version": 1,
+    "seed": 1,
+    "submission_id": "sha256:1236c18abd11b2da68efda994e57de353b2aabe9056c34a11eb8dedc3d18d533",
+    "submission_sha256": "1236c18abd11b2da68efda994e57de353b2aabe9056c34a11eb8dedc3d18d533",
+    "task_id": "task-1",
+    "timestamp": "2026-09-12T00:00:00Z",
+    "token_usage": {
+      "source": "controller_runtime_accounting",
+      "status": "final",
+      "tool_calls": 4,
+      "total_tokens": 420
+    }
+  },
+  "tool_events": [
+    {
+      "is_error": false,
+      "tool": "task_read"
+    },
+    {
+      "is_error": false,
+      "tool": "task_query"
+    },
+    {
+      "is_error": false,
+      "tool": "board_append"
+    },
+    {
+      "is_error": false,
+      "tool": "board_read"
+    },
+    {
+      "is_error": false,
+      "tool": "task_submit"
+    }
+  ],
+  "transport": "fixture-fifo"
+}
