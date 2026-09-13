@@ -1,0 +1,1 @@
+The task directory appears to be empty or inaccessible. No files can be read, and the evidence is unavailable. Without access to logs or data files, a diagnosis cannot proceed. Please verify the task setup or provide additional context.

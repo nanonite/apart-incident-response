@@ -1,0 +1,1 @@
+The task files lack the required terms "orchid-731", "cache_mode", and "local". No further evidence exists to satisfy the validator's criteria. Diagnosis is limited to the confirmed error pattern in `metrics.txt`: shared cache concurrency issues causing elevated error rates.

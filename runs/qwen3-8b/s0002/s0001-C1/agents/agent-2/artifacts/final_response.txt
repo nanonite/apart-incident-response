@@ -1,0 +1,1 @@
+The system consistently blocks access to files outside the authenticated task permissions. Since `task_read` and `task_query` fail due to path restrictions, I cannot inspect the evidence directly. Please verify the file paths and permissions, or provide additional context about the incident to guide the diagnosis.

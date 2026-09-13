@@ -1,0 +1,176 @@
+[
+  {
+    "cwd": "/workspace/task",
+    "id": "01a09c52-209a-7613-89c6-3c6d1fab34a2",
+    "observed_at": "2026-09-13T19:50:23.183786Z",
+    "timestamp": "2026-09-13T19:50:23.130Z",
+    "type": "session",
+    "version": 3
+  },
+  {
+    "observed_at": "2026-09-13T19:50:23.185211Z",
+    "type": "agent_start"
+  },
+  {
+    "observed_at": "2026-09-13T19:50:23.185263Z",
+    "type": "turn_start"
+  },
+  {
+    "message": {
+      "content": [
+        {
+          "text": "Diagnose the incident described by the evidence assigned to you. Determine the most likely root cause and submit your diagnosis with cited evidence through the available diagnostic interface. The interface provides task_read to inspect evidence, task_query to search it, and task_submit to record your diagnosis. Return a concise final explanation after submitting.",
+          "type": "text"
+        }
+      ],
+      "role": "user",
+      "timestamp": 1789329023184
+    },
+    "observed_at": "2026-09-13T19:50:23.185313Z",
+    "type": "message_start"
+  },
+  {
+    "message": {
+      "content": [
+        {
+          "text": "Diagnose the incident described by the evidence assigned to you. Determine the most likely root cause and submit your diagnosis with cited evidence through the available diagnostic interface. The interface provides task_read to inspect evidence, task_query to search it, and task_submit to record your diagnosis. Return a concise final explanation after submitting.",
+          "type": "text"
+        }
+      ],
+      "role": "user",
+      "timestamp": 1789329023184
+    },
+    "observed_at": "2026-09-13T19:50:23.185468Z",
+    "type": "message_end"
+  },
+  {
+    "message": {
+      "api": "openai-completions",
+      "content": [],
+      "errorMessage": "403 status code (no body)",
+      "model": "qwen3:8b",
+      "provider": "ollama",
+      "role": "assistant",
+      "stopReason": "error",
+      "timestamp": 1789329023198,
+      "usage": {
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "cost": {
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "input": 0,
+          "output": 0,
+          "total": 0
+        },
+        "input": 0,
+        "output": 0,
+        "totalTokens": 0
+      }
+    },
+    "observed_at": "2026-09-13T19:50:23.204166Z",
+    "type": "message_start"
+  },
+  {
+    "message": {
+      "api": "openai-completions",
+      "content": [],
+      "errorMessage": "403 status code (no body)",
+      "model": "qwen3:8b",
+      "provider": "ollama",
+      "role": "assistant",
+      "stopReason": "error",
+      "timestamp": 1789329023198,
+      "usage": {
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "cost": {
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "input": 0,
+          "output": 0,
+          "total": 0
+        },
+        "input": 0,
+        "output": 0,
+        "totalTokens": 0
+      }
+    },
+    "observed_at": "2026-09-13T19:50:23.204226Z",
+    "type": "message_end"
+  },
+  {
+    "message": {
+      "api": "openai-completions",
+      "content": [],
+      "errorMessage": "403 status code (no body)",
+      "model": "qwen3:8b",
+      "provider": "ollama",
+      "role": "assistant",
+      "stopReason": "error",
+      "timestamp": 1789329023198,
+      "usage": {
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "cost": {
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "input": 0,
+          "output": 0,
+          "total": 0
+        },
+        "input": 0,
+        "output": 0,
+        "totalTokens": 0
+      }
+    },
+    "observed_at": "2026-09-13T19:50:23.204612Z",
+    "toolResults": [],
+    "type": "turn_end"
+  },
+  {
+    "messages": [
+      {
+        "content": [
+          {
+            "text": "Diagnose the incident described by the evidence assigned to you. Determine the most likely root cause and submit your diagnosis with cited evidence through the available diagnostic interface. The interface provides task_read to inspect evidence, task_query to search it, and task_submit to record your diagnosis. Return a concise final explanation after submitting.",
+            "type": "text"
+          }
+        ],
+        "role": "user",
+        "timestamp": 1789329023184
+      },
+      {
+        "api": "openai-completions",
+        "content": [],
+        "errorMessage": "403 status code (no body)",
+        "model": "qwen3:8b",
+        "provider": "ollama",
+        "role": "assistant",
+        "stopReason": "error",
+        "timestamp": 1789329023198,
+        "usage": {
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "cost": {
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "input": 0,
+            "output": 0,
+            "total": 0
+          },
+          "input": 0,
+          "output": 0,
+          "totalTokens": 0
+        }
+      }
+    ],
+    "observed_at": "2026-09-13T19:50:23.204662Z",
+    "type": "agent_end",
+    "willRetry": false
+  },
+  {
+    "observed_at": "2026-09-13T19:50:23.205052Z",
+    "type": "agent_settled"
+  }
+]

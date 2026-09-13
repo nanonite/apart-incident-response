@@ -1,0 +1,1 @@
+The system indicates no valid evidence files are accessible within the task's permission set. Without permitted files to analyze, a diagnosis cannot be made. Please verify task permissions or provide specific files for inspection.

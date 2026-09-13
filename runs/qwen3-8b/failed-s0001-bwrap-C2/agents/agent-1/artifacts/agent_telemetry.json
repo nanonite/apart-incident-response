@@ -1,0 +1,22 @@
+{
+  "ended_at": "2026-09-13T19:47:15.671430Z",
+  "event_counts": {},
+  "failure_reason": "Bubblewrap isolation failed: bwrap: loopback: Failed RTM_NEWADDR: Operation not permitted",
+  "identity": {
+    "agent_id": "agent-1",
+    "capability_profile": "task-diagnostic-v1",
+    "condition": "C2",
+    "credential_id": "a5c300de43418e22174f822c5526b53e980dc8384ec9c9a2a8a1f9c2d593fd64",
+    "run_id": "s0001-C2",
+    "seed": 1,
+    "task_id": "task-1"
+  },
+  "provider_started_at": "2026-09-13T19:47:15.669458Z",
+  "provider_tokens": 0,
+  "schema_version": 1,
+  "started_at": "2026-09-13T19:47:15.636740Z",
+  "status": "launch_error",
+  "tool_call_count": 0,
+  "turn_count": 0,
+  "wall_clock_seconds": 0.034834
+}

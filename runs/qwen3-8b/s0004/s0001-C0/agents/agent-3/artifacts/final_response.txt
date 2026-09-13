@@ -1,0 +1,1 @@
+The evidence files are inaccessible due to permission restrictions. Without access to the task files or logs, a diagnosis cannot be performed. Please verify that the task has valid files and that you have read permissions for the specified paths. If this is a test scenario, ensure the files are properly attached to the task.

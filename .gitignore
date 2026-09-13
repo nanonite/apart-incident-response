@@ -3,7 +3,7 @@ docs/pdfs/
 __pycache__/
 *.py[cod]
 .pytest_cache/
-artifacts/
+/artifacts/
 qwen3-cache/
 .uv-cache/
 ollama-models/

@@ -1,0 +1,510 @@
+{
+  "artifacts": {
+    "agent_telemetry.json": {
+      "path": "agents/agent-2/artifacts/agent_telemetry.json",
+      "present": true
+    },
+    "events.json": {
+      "path": "agents/agent-2/artifacts/events.json",
+      "present": true
+    },
+    "final_response.txt": {
+      "path": "agents/agent-2/artifacts/final_response.txt",
+      "present": true
+    },
+    "metadata.json": {
+      "path": "agents/agent-2/artifacts/metadata.json",
+      "present": true
+    },
+    "response.json": {
+      "path": "agents/agent-2/artifacts/response.json",
+      "present": true
+    },
+    "result.json": {
+      "path": "agents/agent-2/artifacts/result.json",
+      "present": true
+    },
+    "stderr.log": {
+      "path": "agents/agent-2/artifacts/stderr.log",
+      "present": true
+    },
+    "stdout.jsonl": {
+      "path": "agents/agent-2/artifacts/stdout.jsonl",
+      "present": true
+    },
+    "task_submission.json": {
+      "path": "agents/agent-2/artifacts/task_submission.json",
+      "present": false
+    },
+    "timeline.json": {
+      "path": "agents/agent-2/artifacts/timeline.json",
+      "present": false
+    },
+    "tool_calls.jsonl": {
+      "path": "agents/agent-2/artifacts/tool_calls.jsonl",
+      "present": false
+    }
+  },
+  "entries": [
+    {
+      "kind": "prompt",
+      "sequence": 0,
+      "source": "controller",
+      "text": "Diagnose the incident described by the evidence assigned to you. Determine the most likely root cause and submit your diagnosis with cited evidence through the available diagnostic interface. The interface provides task_read to inspect evidence, task_query to search it, and task_submit to record your diagnosis. Return a concise final explanation after submitting.",
+      "timestamp": "2026-09-13T19:50:22.711136Z"
+    },
+    {
+      "event": {
+        "cwd": "/workspace/task",
+        "id": "01a09c52-209f-7392-8c9e-335a46adaefd",
+        "observed_at": "2026-09-13T19:50:23.194323Z",
+        "timestamp": "2026-09-13T19:50:23.136Z",
+        "type": "session",
+        "version": 3
+      },
+      "event_type": "session",
+      "kind": "pi_event",
+      "sequence": 1,
+      "source": "pi",
+      "source_sequence": 1,
+      "timestamp": "2026-09-13T19:50:23.136Z"
+    },
+    {
+      "event": {
+        "observed_at": "2026-09-13T19:50:23.195662Z",
+        "type": "agent_start"
+      },
+      "event_type": "agent_start",
+      "kind": "pi_event",
+      "sequence": 2,
+      "source": "pi",
+      "source_sequence": 2,
+      "timestamp": "2026-09-13T19:50:23.195662Z"
+    },
+    {
+      "event": {
+        "observed_at": "2026-09-13T19:50:23.195714Z",
+        "type": "turn_start"
+      },
+      "event_type": "turn_start",
+      "kind": "pi_event",
+      "sequence": 3,
+      "source": "pi",
+      "source_sequence": 3,
+      "timestamp": "2026-09-13T19:50:23.195714Z"
+    },
+    {
+      "event": {
+        "message": {
+          "content": [
+            {
+              "text": "Diagnose the incident described by the evidence assigned to you. Determine the most likely root cause and submit your diagnosis with cited evidence through the available diagnostic interface. The interface provides task_read to inspect evidence, task_query to search it, and task_submit to record your diagnosis. Return a concise final explanation after submitting.",
+              "type": "text"
+            }
+          ],
+          "role": "user",
+          "timestamp": 1789329023194
+        },
+        "observed_at": "2026-09-13T19:50:23.195756Z",
+        "type": "message_start"
+      },
+      "event_type": "message_start",
+      "kind": "pi_event",
+      "sequence": 4,
+      "source": "pi",
+      "source_sequence": 4,
+      "timestamp": "2026-09-13T19:50:23.195756Z"
+    },
+    {
+      "event": {
+        "message": {
+          "content": [
+            {
+              "text": "Diagnose the incident described by the evidence assigned to you. Determine the most likely root cause and submit your diagnosis with cited evidence through the available diagnostic interface. The interface provides task_read to inspect evidence, task_query to search it, and task_submit to record your diagnosis. Return a concise final explanation after submitting.",
+              "type": "text"
+            }
+          ],
+          "role": "user",
+          "timestamp": 1789329023194
+        },
+        "observed_at": "2026-09-13T19:50:23.195932Z",
+        "type": "message_end"
+      },
+      "event_type": "message_end",
+      "kind": "pi_event",
+      "sequence": 5,
+      "source": "pi",
+      "source_sequence": 5,
+      "timestamp": "2026-09-13T19:50:23.195932Z"
+    },
+    {
+      "assistant_messages": [
+        {
+          "content": [],
+          "model": "qwen3:8b",
+          "provider": "ollama",
+          "role": "assistant",
+          "stopReason": "error",
+          "usage": {
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "cost": {
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "input": 0,
+              "output": 0,
+              "total": 0
+            },
+            "input": 0,
+            "output": 0,
+            "totalTokens": 0
+          }
+        }
+      ],
+      "event": {
+        "message": {
+          "api": "openai-completions",
+          "content": [],
+          "errorMessage": "403 status code (no body)",
+          "model": "qwen3:8b",
+          "provider": "ollama",
+          "role": "assistant",
+          "stopReason": "error",
+          "timestamp": 1789329023207,
+          "usage": {
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "cost": {
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "input": 0,
+              "output": 0,
+              "total": 0
+            },
+            "input": 0,
+            "output": 0,
+            "totalTokens": 0
+          }
+        },
+        "observed_at": "2026-09-13T19:50:23.212311Z",
+        "type": "message_start"
+      },
+      "event_type": "message_start",
+      "kind": "assistant_message",
+      "sequence": 6,
+      "source": "pi",
+      "source_sequence": 6,
+      "timestamp": "2026-09-13T19:50:23.212311Z",
+      "usage": {
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "cost": {
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "input": 0,
+          "output": 0,
+          "total": 0
+        },
+        "input": 0,
+        "output": 0,
+        "totalTokens": 0
+      }
+    },
+    {
+      "assistant_messages": [
+        {
+          "content": [],
+          "model": "qwen3:8b",
+          "provider": "ollama",
+          "role": "assistant",
+          "stopReason": "error",
+          "usage": {
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "cost": {
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "input": 0,
+              "output": 0,
+              "total": 0
+            },
+            "input": 0,
+            "output": 0,
+            "totalTokens": 0
+          }
+        }
+      ],
+      "event": {
+        "message": {
+          "api": "openai-completions",
+          "content": [],
+          "errorMessage": "403 status code (no body)",
+          "model": "qwen3:8b",
+          "provider": "ollama",
+          "role": "assistant",
+          "stopReason": "error",
+          "timestamp": 1789329023207,
+          "usage": {
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "cost": {
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "input": 0,
+              "output": 0,
+              "total": 0
+            },
+            "input": 0,
+            "output": 0,
+            "totalTokens": 0
+          }
+        },
+        "observed_at": "2026-09-13T19:50:23.212350Z",
+        "type": "message_end"
+      },
+      "event_type": "message_end",
+      "kind": "assistant_message",
+      "sequence": 7,
+      "source": "pi",
+      "source_sequence": 7,
+      "timestamp": "2026-09-13T19:50:23.212350Z",
+      "usage": {
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "cost": {
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "input": 0,
+          "output": 0,
+          "total": 0
+        },
+        "input": 0,
+        "output": 0,
+        "totalTokens": 0
+      }
+    },
+    {
+      "assistant_messages": [
+        {
+          "content": [],
+          "model": "qwen3:8b",
+          "provider": "ollama",
+          "role": "assistant",
+          "stopReason": "error",
+          "usage": {
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "cost": {
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "input": 0,
+              "output": 0,
+              "total": 0
+            },
+            "input": 0,
+            "output": 0,
+            "totalTokens": 0
+          }
+        }
+      ],
+      "event": {
+        "message": {
+          "api": "openai-completions",
+          "content": [],
+          "errorMessage": "403 status code (no body)",
+          "model": "qwen3:8b",
+          "provider": "ollama",
+          "role": "assistant",
+          "stopReason": "error",
+          "timestamp": 1789329023207,
+          "usage": {
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "cost": {
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "input": 0,
+              "output": 0,
+              "total": 0
+            },
+            "input": 0,
+            "output": 0,
+            "totalTokens": 0
+          }
+        },
+        "observed_at": "2026-09-13T19:50:23.212777Z",
+        "toolResults": [],
+        "type": "turn_end"
+      },
+      "event_type": "turn_end",
+      "kind": "assistant_message",
+      "sequence": 8,
+      "source": "pi",
+      "source_sequence": 8,
+      "timestamp": "2026-09-13T19:50:23.212777Z",
+      "usage": {
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "cost": {
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "input": 0,
+          "output": 0,
+          "total": 0
+        },
+        "input": 0,
+        "output": 0,
+        "totalTokens": 0
+      }
+    },
+    {
+      "event": {
+        "messages": [
+          {
+            "content": [
+              {
+                "text": "Diagnose the incident described by the evidence assigned to you. Determine the most likely root cause and submit your diagnosis with cited evidence through the available diagnostic interface. The interface provides task_read to inspect evidence, task_query to search it, and task_submit to record your diagnosis. Return a concise final explanation after submitting.",
+                "type": "text"
+              }
+            ],
+            "role": "user",
+            "timestamp": 1789329023194
+          },
+          {
+            "api": "openai-completions",
+            "content": [],
+            "errorMessage": "403 status code (no body)",
+            "model": "qwen3:8b",
+            "provider": "ollama",
+            "role": "assistant",
+            "stopReason": "error",
+            "timestamp": 1789329023207,
+            "usage": {
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "cost": {
+                "cacheRead": 0,
+                "cacheWrite": 0,
+                "input": 0,
+                "output": 0,
+                "total": 0
+              },
+              "input": 0,
+              "output": 0,
+              "totalTokens": 0
+            }
+          }
+        ],
+        "observed_at": "2026-09-13T19:50:23.212811Z",
+        "type": "agent_end",
+        "willRetry": false
+      },
+      "event_type": "agent_end",
+      "kind": "pi_event",
+      "sequence": 9,
+      "source": "pi",
+      "source_sequence": 9,
+      "timestamp": "2026-09-13T19:50:23.212811Z"
+    },
+    {
+      "event": {
+        "observed_at": "2026-09-13T19:50:23.213218Z",
+        "type": "agent_settled"
+      },
+      "event_type": "agent_settled",
+      "kind": "pi_event",
+      "sequence": 10,
+      "source": "pi",
+      "source_sequence": 10,
+      "timestamp": "2026-09-13T19:50:23.213218Z"
+    }
+  ],
+  "event_order": {
+    "global_sequence": "timestamp order from observed Pi events and tool audits; source order is stable when timestamps are absent",
+    "pi_events": "events.json order, preserved by source_sequence",
+    "tool_audits": "tool_calls.jsonl order, preserved by source_sequence"
+  },
+  "failure_reasons": [
+    "Pi provider error: 403 status code (no body)"
+  ],
+  "identity": {
+    "agent_id": "agent-2",
+    "capability_profile": "task-diagnostic-v1",
+    "condition": "C1",
+    "credential_id": "22a25d4cbd5c3564a932ec541fac93ab04d7a53bb4d451a824c704ef8aa10d61",
+    "run_id": "s0001-C1",
+    "seed": 1,
+    "task_id": "task-1"
+  },
+  "prompt": "Diagnose the incident described by the evidence assigned to you. Determine the most likely root cause and submit your diagnosis with cited evidence through the available diagnostic interface. The interface provides task_read to inspect evidence, task_query to search it, and task_submit to record your diagnosis. Return a concise final explanation after submitting.",
+  "reported_usage": [
+    {
+      "event_type": "message_start",
+      "source_sequence": 6,
+      "timestamp": "2026-09-13T19:50:23.212311Z",
+      "usage": {
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "cost": {
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "input": 0,
+          "output": 0,
+          "total": 0
+        },
+        "input": 0,
+        "output": 0,
+        "totalTokens": 0
+      }
+    },
+    {
+      "event_type": "message_end",
+      "source_sequence": 7,
+      "timestamp": "2026-09-13T19:50:23.212350Z",
+      "usage": {
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "cost": {
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "input": 0,
+          "output": 0,
+          "total": 0
+        },
+        "input": 0,
+        "output": 0,
+        "totalTokens": 0
+      }
+    },
+    {
+      "event_type": "turn_end",
+      "source_sequence": 8,
+      "timestamp": "2026-09-13T19:50:23.212777Z",
+      "usage": {
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "cost": {
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "input": 0,
+          "output": 0,
+          "total": 0
+        },
+        "input": 0,
+        "output": 0,
+        "totalTokens": 0
+      }
+    }
+  ],
+  "schema_version": 1,
+  "status": "failed",
+  "tool_summary": {
+    "by_operation": {},
+    "total_calls": 0
+  },
+  "usage": {
+    "provider_tokens": 0,
+    "tool_calls": 0,
+    "turns": 1
+  }
+}

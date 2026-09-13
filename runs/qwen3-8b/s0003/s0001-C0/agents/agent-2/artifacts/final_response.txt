@@ -1,0 +1,1 @@
+The diagnostic interface indicates no files match the search criteria. Please verify the file paths or provide additional context about the incident's location (e.g., specific directories, log names, or error messages). Without access to the evidence files, a diagnosis cannot proceed.

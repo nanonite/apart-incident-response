@@ -1,0 +1,6 @@
+The errors suggest the path is invalid or unsupported. Since we cannot resolve the path dynamically, we'll proceed by assuming the correct path is `./error_logs/` (relative to the current working directory). If this fails, the user must verify the directory structure or provide explicit file names for `task_read`. 
+
+Final attempt:
+```json
+{"name": "task_query", "arguments": {"max_results": 5, "path": "./error_logs/", "query": "error"}}
+```
