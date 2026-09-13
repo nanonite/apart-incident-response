@@ -13,6 +13,8 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 const SOCKET_ENV = "APART_TOOL_SOCKET";
 const condition = process.env.APART_CONDITION;
+const capabilityProfile = process.env.APART_CAPABILITY_PROFILE ?? "task-diagnostic-v1";
+const hasTaskQuery = capabilityProfile === "task-diagnostic-v1";
 
 if (condition !== "C0" && condition !== "C1" && condition !== "C2") {
 	throw new Error("APART_CONDITION must be C0, C1, or C2");
@@ -150,19 +152,21 @@ export default function (pi: ExtensionAPI) {
 		},
 	});
 
-	pi.registerTool({
-		name: "task_query",
-		label: "Query task files",
-		description: "Search permitted task files for a literal, case-insensitive text query.",
-		parameters: Type.Object({
-			query: Type.String({ minLength: 1, maxLength: 256 }),
-			path: Type.Optional(Type.String({ minLength: 1, maxLength: 256 })),
-			max_results: Type.Optional(Type.Integer({ minimum: 1, maximum: 50 })),
-		}),
-		async execute(_toolCallId, params, signal) {
-			return result(await callService("task_query", params, signal));
-		},
-	});
+	if (hasTaskQuery) {
+		pi.registerTool({
+			name: "task_query",
+			label: "Query task files",
+			description: "Search permitted task files for a literal, case-insensitive text query.",
+			parameters: Type.Object({
+				query: Type.String({ minLength: 1, maxLength: 256 }),
+				path: Type.Optional(Type.String({ minLength: 1, maxLength: 256 })),
+				max_results: Type.Optional(Type.Integer({ minimum: 1, maximum: 50 })),
+			}),
+			async execute(_toolCallId, params, signal) {
+				return result(await callService("task_query", params, signal));
+			},
+		});
+	}
 
 	pi.registerTool({
 		name: "task_submit",

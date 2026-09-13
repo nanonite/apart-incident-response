@@ -20,11 +20,40 @@ _TOOL_EXPORTS = {
     "ToolUnavailableError",
     "ToolValidationError",
 }
+_EXPERIMENT_EXPORTS = {
+    "CAPABILITY_PROFILES",
+    "CapabilityProfile",
+    "ExperimentController",
+    "ExperimentProtocol",
+    "FACTOR_LEVELS",
+    "PROTOCOL_VERSION",
+    "SwarmRun",
+    "compute_metrics",
+    "classify_uptake_outcomes",
+    "detect_uptake",
+    "replay_trace",
+    "write_derived_artifacts",
+}
 
 
 def __getattr__(name: str) -> Any:
     if name not in _TOOL_EXPORTS:
-        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+        if name not in _EXPERIMENT_EXPORTS:
+            raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+        if name in {"CAPABILITY_PROFILES", "CapabilityProfile"}:
+            from . import capabilities
+
+            value = getattr(capabilities, name)
+        elif name in {"classify_uptake_outcomes", "compute_metrics", "detect_uptake", "replay_trace", "write_derived_artifacts"}:
+            from . import telemetry
+
+            value = getattr(telemetry, name)
+        else:
+            from . import controller
+
+            value = getattr(controller, name)
+        globals()[name] = value
+        return value
     from . import tool_service
 
     value = getattr(tool_service, name)
@@ -50,4 +79,16 @@ __all__ = [
     "ToolServiceSocketServer",
     "ToolUnavailableError",
     "ToolValidationError",
+    "CAPABILITY_PROFILES",
+    "CapabilityProfile",
+    "ExperimentController",
+    "ExperimentProtocol",
+    "FACTOR_LEVELS",
+    "PROTOCOL_VERSION",
+    "SwarmRun",
+    "compute_metrics",
+    "classify_uptake_outcomes",
+    "detect_uptake",
+    "replay_trace",
+    "write_derived_artifacts",
 ]

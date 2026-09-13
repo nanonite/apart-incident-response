@@ -31,7 +31,10 @@ from apart_incident_response.runtime import (  # noqa: E402
 from apart_incident_response.task_one import (  # noqa: E402
     TASK_ONE_EVIDENCE_BUNDLES,
     TASK_ONE_ID,
+    TASK_ONE_DIFFICULTIES,
     validate_task_one_answer,
+    materialize_task_one_bundle,
+    task_one_instance,
 )
 from apart_incident_response.task_prompts import TASK_ONE_PROMPT  # noqa: E402
 
@@ -168,13 +171,82 @@ def capture_calibration() -> dict[str, Any]:
         }
 
 
+def capture_difficulty_calibration() -> dict[str, Any]:
+    """Run independent fake agents against every predeclared difficulty level."""
+
+    with tempfile.TemporaryDirectory(prefix="a1d-") as temporary:
+        root = Path(temporary)
+        fake_agent = root / "fake_agent.py"
+        fake_agent.write_text(FAKE_AGENT, encoding="utf-8")
+        config = _config(fake_agent)
+        records: list[dict[str, Any]] = []
+        for difficulty in TASK_ONE_DIFFICULTIES:
+            instance = task_one_instance(1, difficulty)
+            for bundle in instance.bundles:
+                identity = AgentIdentity(
+                    f"cal-1-{difficulty}-{bundle.agent_id}",
+                    bundle.agent_id,
+                    Condition.C0,
+                    TASK_ONE_ID,
+                    1,
+                )
+                workspace = create_isolated_workspace(root / "runs", identity)
+                evidence_path = materialize_task_one_bundle(workspace.task_dir, bundle.agent_id, instance)
+                catalog = TaskCatalog({
+                    TASK_ONE_ID: TaskDefinition(
+                        TASK_ONE_ID,
+                        workspace.task_dir,
+                        allowed_paths=(evidence_path.name,),
+                        answer_validator=instance.validate_answer,
+                    )
+                })
+                service = ConstrainedToolService(
+                    TaskToolService(catalog),
+                    artifact_root=workspace.workspace_root,
+                )
+                result = AgentRun(
+                    config,
+                    identity,
+                    workspace,
+                    SystemBudget(10, 4),
+                    service,
+                ).run()
+                validation = instance.validate_answer(result.final_response or "")
+                records.append({
+                    "difficulty": difficulty,
+                    "seed": 1,
+                    "agent_id": bundle.agent_id,
+                    "evidence_role": bundle.agent_id,
+                    "fixture_sha256": instance.manifest()["fixture_sha256"],
+                    "status": result.status.value,
+                    "tokens_used": result.tokens_used,
+                    "tool_calls_used": result.tool_calls_used,
+                    "validator": {"accepted": validation.accepted, "missing_terms": list(validation.missing_terms)},
+                })
+        if any(record["validator"]["accepted"] for record in records):
+            raise RuntimeError("an independent difficulty calibration bundle passed the full validator")
+        return {
+            "schema_version": 1,
+            "task_id": TASK_ONE_ID,
+            "seed": 1,
+            "calibration": True,
+            "credential_free": True,
+            "model_request": False,
+            "purpose": "difficulty calibration; not experimental data",
+            "difficulty_levels": list(TASK_ONE_DIFFICULTIES),
+            "records": records,
+        }
+
+
 def main() -> int:
     import argparse
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--difficulty-all", action="store_true")
     args = parser.parse_args()
-    encoded = json.dumps(capture_calibration(), indent=2, sort_keys=True) + "\n"
+    calibration = capture_difficulty_calibration() if args.difficulty_all else capture_calibration()
+    encoded = json.dumps(calibration, indent=2, sort_keys=True) + "\n"
     if args.output is None:
         sys.stdout.write(encoded)
     else:

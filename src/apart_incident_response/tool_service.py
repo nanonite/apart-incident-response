@@ -8,6 +8,7 @@ import threading
 from typing import Any, Callable, Mapping
 
 from .board_tools import BoardToolService
+from .capabilities import get_capability_profile
 from .runtime import AgentIdentity, Condition
 from .task_tools import TaskCatalog, TaskDefinition, TaskToolService, TrustedRuntimeUsage
 from .tool_audit import ToolAuditLog, _utc_now
@@ -45,10 +46,13 @@ class ConstrainedToolService:
         credentials: ControllerCredentialAuthority | None = None,
         artifact_root: Path | str | os.PathLike[str] | None = None,
         clock: Callable[[], str] = _utc_now,
+        telemetry: Callable[[Mapping[str, Any]], None] | None = None,
     ) -> None:
         self.credentials = credentials or ControllerCredentialAuthority()
         self._task_service = task_service
         self._board_service = board_service
+        self._clock = clock
+        self._telemetry = telemetry
         self._runtime_usage: dict[tuple[str, str], TrustedRuntimeUsage] = {}
         self._runtime_lock = threading.Lock()
         if artifact_root is not None:
@@ -86,9 +90,11 @@ class ConstrainedToolService:
         return self.credentials.issue(identity)
 
     def available_tools(self, identity: AgentIdentity) -> tuple[str, ...]:
+        profile = get_capability_profile(identity.capability_profile)
+        task_tools = tuple(name for name in CORE_TOOL_NAMES if name in profile.task_tools)
         if identity.condition is Condition.C0 or self._board_service is None:
-            return CORE_TOOL_NAMES
-        return CORE_TOOL_NAMES + BOARD_TOOL_NAMES
+            return task_tools
+        return task_tools + BOARD_TOOL_NAMES
 
     def invoke(self, credential: str, operation: Any, arguments: Any) -> dict[str, Any]:
         try:
@@ -118,13 +124,71 @@ class ConstrainedToolService:
             }
         if self._audit is not None:
             self._audit.record(verified, operation_name, validated_input, response)
+        if self._telemetry is not None and operation_name in BOARD_TOOL_NAMES:
+            self._record_board_telemetry(
+                verified.identity, operation_name, validated_input, response
+            )
         return response
+
+    def _record_board_telemetry(
+        self,
+        identity: AgentIdentity,
+        operation: str,
+        arguments: Any,
+        response: Mapping[str, Any],
+    ) -> None:
+        result = response.get("result") if response.get("ok") else None
+        messages = result.get("messages", []) if isinstance(result, Mapping) else []
+        if not isinstance(messages, list):
+            messages = []
+        serialized_messages = [
+            {
+                "sequence_id": message.get("sequence_id"),
+                "source_agent": message.get("agent_id"),
+                "message_size": message.get("message_size"),
+                "message_body": message.get("message_body"),
+            }
+            for message in messages
+            if isinstance(message, Mapping)
+        ]
+        append_result = result if operation == "board_append" and isinstance(result, Mapping) else {}
+        event: dict[str, Any] = {
+            "schema_version": 1,
+            "timestamp": self._clock(),
+            "run_id": identity.run_id,
+            "agent_id": identity.agent_id,
+            "condition": identity.condition.value,
+            "operation": operation,
+            "cursor_before": arguments.get("after_sequence_id", 0) if isinstance(arguments, Mapping) else None,
+            "requested_limit": arguments.get("limit") if isinstance(arguments, Mapping) else None,
+            "message_ids": [message.get("sequence_id") for message in serialized_messages],
+            "messages": serialized_messages,
+            "bytes_read": sum(int(message.get("message_size") or 0) for message in serialized_messages),
+            "bytes_written": int(append_result.get("message_size") or 0),
+            "message_id": append_result.get("sequence_id"),
+            "message": arguments.get("message") if operation == "board_append" and isinstance(arguments, Mapping) else None,
+            "ok": bool(response.get("ok")),
+        }
+        if not response.get("ok"):
+            error = response.get("error")
+            event["error"] = dict(error) if isinstance(error, Mapping) else {"code": "unknown"}
+        try:
+            self._telemetry(event)
+        except Exception:
+            # Telemetry must not alter an authenticated tool result. A missing
+            # event remains diagnosable from the raw audit and manifest files.
+            return
 
     def _check_operation(self, identity: AgentIdentity, operation: str) -> None:
         if operation in self.available_tools(identity):
             return
         if operation in BOARD_TOOL_NAMES and identity.condition is Condition.C0:
             raise ToolUnavailableError("board tools are unavailable in C0")
+        if operation in CORE_TOOL_NAMES:
+            raise ToolUnavailableError(
+                f"{operation} is not exposed by capability profile "
+                f"{identity.capability_profile}"
+            )
         raise ToolValidationError("unsupported tool")
 
     def _dispatch(

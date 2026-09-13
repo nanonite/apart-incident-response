@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+from collections import defaultdict
 import fcntl
 import hashlib
 import hmac
@@ -122,6 +123,7 @@ class AgentIdentity:
     condition: Condition
     task_id: str
     seed: int
+    capability_profile: str = "task-diagnostic-v1"
 
     def __post_init__(self) -> None:
         _validate_id(self.run_id, "run_id")
@@ -129,13 +131,17 @@ class AgentIdentity:
         _validate_id(self.task_id, "task_id")
         if not isinstance(self.seed, int) or isinstance(self.seed, bool):
             raise RuntimeConfigError("seed must be an integer")
+        _validate_id(self.capability_profile, "capability_profile")
         object.__setattr__(self, "condition", Condition(self.condition))
 
     @property
     def credential_id(self) -> str:
         """Controller-keyed binding used by tool servers to identify the agent."""
 
-        material = f"{self.run_id}\0{self.agent_id}\0{self.condition.value}\0{self.task_id}\0{self.seed}"
+        material = (
+            f"{self.run_id}\0{self.agent_id}\0{self.condition.value}\0{self.task_id}"
+            f"\0{self.seed}\0{self.capability_profile}"
+        )
         return hmac.new(
             _identity_signing_key(), material.encode("utf-8"), hashlib.sha256
         ).hexdigest()
@@ -147,6 +153,7 @@ class AgentIdentity:
             "condition": self.condition.value,
             "task_id": self.task_id,
             "seed": self.seed,
+            "capability_profile": self.capability_profile,
             "credential_id": self.credential_id,
         }
 
@@ -163,6 +170,7 @@ class AgentIdentity:
                 condition=raw["condition"],
                 task_id=raw["task_id"],
                 seed=raw["seed"],
+                capability_profile=raw.get("capability_profile", "task-diagnostic-v1"),
             )
         except KeyError as exc:
             raise RuntimeConfigError(f"agent identity is missing {exc.args[0]!r}") from exc
@@ -604,6 +612,7 @@ def _safe_env(
         "APART_CONDITION": identity.condition.value,
         "APART_TASK_ID": identity.task_id,
         "APART_SEED": str(identity.seed),
+        "APART_CAPABILITY_PROFILE": identity.capability_profile,
         "APART_PI_VERSION": config.pi_version,
         "APART_MODEL": config.model,
         "APART_BUILTIN_TOOLS": "disabled",
@@ -2092,6 +2101,7 @@ class AgentRun:
     @staticmethod
     def _write_json(path: Path, value: Mapping[str, Any]) -> None:
         path.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        path.chmod(0o600)
 
     def _finish(
         self,
@@ -2125,9 +2135,51 @@ class AgentRun:
             events=events,
             persistence_failure=persistence_failure,
         )
+        response_text = final_response or ""
+        response_bytes = response_text.encode("utf-8")
+        tokenizer_config = {
+            "name": "utf8-byte-v1",
+            "version": "1",
+            "normalization": "none",
+            "encoding": "utf-8",
+        }
+        tokenizer_config_hash = hashlib.sha256(
+            json.dumps(tokenizer_config, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        ).hexdigest()
+        (self.workspace.artifact_dir / "final_response.txt").write_bytes(response_bytes)
+        (self.workspace.artifact_dir / "final_response.txt").chmod(0o600)
+        self._write_json(self.workspace.artifact_dir / "response.json", {
+            "schema_version": 1,
+            "identity": self.identity.to_dict(),
+            "final_response": final_response,
+            "response_sha256": hashlib.sha256(response_bytes).hexdigest(),
+            "provider_token_count": tokens_used,
+            "tokenizer": tokenizer_config,
+            "tokenizer_config_sha256": tokenizer_config_hash,
+            "token_ids": list(response_bytes),
+            "token_count": len(response_bytes),
+            "token_count_definition": "derived UTF-8 byte token count; provider_token_count is authoritative usage",
+        })
+        event_counts: dict[str, int] = defaultdict(int)
+        for event in events:
+            event_counts[str(event.get("type", "unknown"))] += 1
+        self._write_json(self.workspace.artifact_dir / "agent_telemetry.json", {
+            "schema_version": 1,
+            "identity": self.identity.to_dict(),
+            "started_at": started_at,
+            "ended_at": ended_at,
+            "status": status.value,
+            "event_counts": dict(sorted(event_counts.items())),
+            "turn_count": event_counts.get("turn_end", event_counts.get("message_end", 0)),
+            "tool_call_count": tool_calls_used,
+            "provider_tokens": tokens_used,
+            "wall_clock_seconds": round(time.monotonic() - started_clock, 6),
+            "failure_reason": failure_reason,
+        })
         (self.workspace.artifact_dir / "events.json").write_text(
             json.dumps(events, indent=2, sort_keys=True) + "\n", encoding="utf-8"
         )
+        (self.workspace.artifact_dir / "events.json").chmod(0o600)
         self._write_json(self.workspace.artifact_dir / "result.json", result.to_dict())
         return result
 
