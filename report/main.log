@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=pdflatex 2026.9.12)  12 SEP 2026 18:25
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=pdflatex 2026.9.12)  12 SEP 2026 23:51
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1872,7 +1872,7 @@ LaTeX Font Info:    Trying to load font information for U+lasy on input line 38
 (/usr/share/texmf-dist/tex/latex/base/ulasy.fd
 File: ulasy.fd 1998/08/17 v2.2e LaTeX symbol font definitions
 )
-<packages/logo.pdf, id=10, 401.5pt x 401.5pt>
+<packages/logo.pdf, id=30, 401.5pt x 401.5pt>
 File: packages/logo.pdf Graphic file (type pdf)
 <use packages/logo.pdf>
 Package pdftex.def Info: packages/logo.pdf  used on input line 38.
@@ -1915,77 +1915,87 @@ Pagestretch: 0.0pt
 CUTED [output]: 0.0pt
 CUTED [leftcolumn badness]: 0
 CUTED [rightcolumn badness]: 0
-(./content/entropy.tex
+(./content/introduction.tex
 LaTeX Font Info:    Font shape `T1/Montserrat-LF/m/n' aliased to
 (Font)              `T1/Montserrat-LF/regular/n' on input line 1.
 LaTeX Font Info:    Font shape `T1/Montserrat-LF/b/n' aliased to
 (Font)              `T1/Montserrat-LF/bold/n' on input line 1.
-LaTeX Font Info:    Font shape `T1/Montserrat-LF/m/n' aliased to
-(Font)              `T1/Montserrat-LF/regular/n' on input line 15.
-LaTeX Font Info:    Font shape `T1/Montserrat-LF/b/n' aliased to
-(Font)              `T1/Montserrat-LF/bold/n' on input line 15.
-)
 
-Package balance Warning: You have called \balance in second column
-(balance)                Columns might not be balanced.
-
-LaTeX Font Info:    Font shape `T1/cmbr/b/n' in size <10> not available
-(Font)              Font shape `T1/cmbr/bx/n' tried instead on input line 51.
-
-LaTeX Warning: Reference `firstpage' on page 1 undefined on input line 51.
+Underfull \vbox (badness 10000) has occurred while \output is active []
 
 LaTeX Font Info:    Font shape `T1/cmbr/m/it' in size <8> not available
-(Font)              Font shape `T1/cmbr/m/sl' tried instead on input line 51.
+(Font)              Font shape `T1/cmbr/m/sl' tried instead on input line 10.
 LaTeX Font Info:    Trying to load font information for TS1+Montserrat-LF on in
-put line 51.
+put line 10.
+
 (/usr/share/texmf-dist/tex/latex/montserrat/TS1Montserrat-LF.fd
 File: TS1Montserrat-LF.fd 2019/11/07 (autoinst) Font definitions for TS1/Montse
 rrat-LF.
 )
 LaTeX Font Info:    Font shape `TS1/Montserrat-LF/b/n' aliased to
-(Font)              `TS1/Montserrat-LF/bold/n' on input line 51.
+(Font)              `TS1/Montserrat-LF/bold/n' on input line 10.
  [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}{/usr/share/texmf-dist/fo
-nts/enc/dvips/cm-super/cm-super-t1.enc}{/usr/share/texmf-dist/fonts/enc/dvips/m
-ontserrat/zmo_umrhwx.enc}{/usr/share/texmf-dist/fonts/enc/dvips/montserrat/zmo_
-ro7vi7.enc}]
-[2
+nts/enc/dvips/cm-super/cm-super-t1.enc}
 
-] (./main.aux)
+
+{/usr/share/texmf-dist/fonts/enc/dvips/montserrat/zmo_umrhwx.enc}{/usr/share/te
+xmf-dist/fonts/enc/dvips/montserrat/zmo_ro7vi7.enc} <./packages/logo.pdf>]
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+)
+(./content/entropy.tex
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+LaTeX Font Info:    Font shape `T1/Montserrat-LF/m/n' aliased to
+(Font)              `T1/Montserrat-LF/regular/n' on input line 1.
+LaTeX Font Info:    Font shape `T1/Montserrat-LF/b/n' aliased to
+(Font)              `T1/Montserrat-LF/bold/n' on input line 1.
+ [2]
+Underfull \hbox (badness 4582) in paragraph at lines 37--39
+\T1/cmbr/m/n/10 where $\OML/cmbrm/m/it/10 TC\OT1/cmbr/m/n/10 (\OML/cmbrm/m/it/1
+0 X[]\OT1/cmbr/m/n/10 ; \OML/cmbrm/m/it/10 X[]\OT1/cmbr/m/n/10 ; [] ; \OML/cmbr
+m/m/it/10 X[]\OT1/cmbr/m/n/10 )$ \T1/cmbr/m/n/10 is the to-tal cor-re-la-tion
+ []
+
+[3])
+
+Package balance Warning: You have called \balance in second column
+(balance)                Columns might not be balanced.
+
+[4] (./main.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
  ***********
-
-
-LaTeX Warning: There were undefined references.
-
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: 330F8E392129344350C6A0CA16D26134;140.
+(rerunfilecheck)             Checksum: CBA4DCA558358AB5009DDBBD363246EE;1022.
 Package logreq Info: Writing requests to 'main.run.xml'.
 \openout1 = `main.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 36633 strings out of 469326
- 706547 string characters out of 5465272
- 1769874 words of memory out of 5000000
- 64766 multiletter control sequences out of 15000+600000
- 772461 words of font info for 86 fonts, out of 8000000 for 9000
+ 36749 strings out of 469326
+ 709541 string characters out of 5465272
+ 1774946 words of memory out of 5000000
+ 64858 multiletter control sequences out of 15000+600000
+ 772107 words of font info for 86 fonts, out of 8000000 for 9000
  85 hyphenation exceptions out of 8191
- 101i,19n,165p,1321b,8866s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 101i,19n,165p,1656b,8866s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texmf-dist/fonts/type1/public/montserrat/Montserrat-Bold.pfb></us
 r/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texmf-
 dist/fonts/type1/public/hfbright/hfbr10.pfb></usr/share/texmf-dist/fonts/type1/
-public/hfbright/hfbrmi10.pfb></usr/share/texmf-dist/fonts/type1/public/hfbright
-/hfbrmi8.pfb></usr/share/texmf-dist/fonts/type1/public/hfbright/hfbrsy10.pfb></
-usr/share/texmf-dist/fonts/type1/public/cm-super/sfbbx10.pfb></usr/share/texmf-
-dist/fonts/type1/public/cm-super/sfbmo10.pfb></usr/share/texmf-dist/fonts/type1
-/public/cm-super/sfbmo8.pfb></usr/share/texmf-dist/fonts/type1/public/cm-super/
-sfbmr10.pfb></usr/share/texmf-dist/fonts/type1/public/cm-super/sfbmr8.pfb>
-Output written on main.pdf (2 pages, 144550 bytes).
+public/hfbright/hfbr8.pfb></usr/share/texmf-dist/fonts/type1/public/hfbright/hf
+brbs10.pfb></usr/share/texmf-dist/fonts/type1/public/hfbright/hfbrmi10.pfb></us
+r/share/texmf-dist/fonts/type1/public/hfbright/hfbrmi8.pfb></usr/share/texmf-di
+st/fonts/type1/public/hfbright/hfbrsy10.pfb></usr/share/texmf-dist/fonts/type1/
+public/hfbright/hfbrsy8.pfb></usr/share/texmf-dist/fonts/type1/public/cm-super/
+sfbmo10.pfb></usr/share/texmf-dist/fonts/type1/public/cm-super/sfbmo8.pfb></usr
+/share/texmf-dist/fonts/type1/public/cm-super/sfbmr10.pfb></usr/share/texmf-dis
+t/fonts/type1/public/cm-super/sfbmr8.pfb>
+Output written on main.pdf (4 pages, 983908 bytes).
 PDF statistics:
- 102 PDF objects out of 1000 (max. 8388607)
- 71 compressed objects within 1 object stream
- 10 named destinations out of 1000 (max. 500000)
- 14 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 232 PDF objects out of 1000 (max. 8388607)
+ 167 compressed objects within 2 object streams
+ 31 named destinations out of 1000 (max. 500000)
+ 54 words of extra memory for PDF output out of 10000 (max. 10000000)
 
