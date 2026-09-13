@@ -27,7 +27,10 @@ export default function (pi: ExtensionAPI) {
 		fauxAssistantMessage(fauxToolCall("board_read", { limit: 10 }, { id: "board-read-1" }), {
 			stopReason: "toolUse",
 		}),
-		fauxAssistantMessage(fauxToolCall("task_submit", { answer: "diagnosis" }, { id: "submit-1" }), {
+		fauxAssistantMessage(fauxToolCall("task_submit", {
+			diagnosis: "The ORCHID-731 configuration revision changed CACHE_MODE from local to shared, causing the cache-related outage.",
+			evidence: [{ path: "evidence.txt", excerpt: "ORCHID-731 fixture" }],
+		}, { id: "submit-1" }), {
 			stopReason: "toolUse",
 		}),
 		fauxAssistantMessage("Pi direct smoke complete"),

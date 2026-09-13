@@ -4,21 +4,26 @@ from __future__ import annotations
 
 from pathlib import Path
 import os
+import threading
 from typing import Any, Callable, Mapping
 
 from .board_tools import BoardToolService
 from .runtime import AgentIdentity, Condition
-from .task_tools import TaskCatalog, TaskDefinition, TaskToolService
+from .task_tools import TaskCatalog, TaskDefinition, TaskToolService, TrustedRuntimeUsage
 from .tool_audit import ToolAuditLog, _utc_now
 from .tool_contract import (
     BOARD_TOOL_NAMES,
     CORE_TOOL_NAMES,
+    MAX_DIAGNOSIS_BYTES,
+    MAX_EVIDENCE_EXCERPT_BYTES,
+    MAX_EVIDENCE_REFERENCES,
     MAX_MESSAGE_BYTES,
     MAX_QUERY_RESULTS,
     MAX_READ_BYTES,
     MAX_READ_MESSAGES,
     MAX_TASK_FILE_BYTES,
     MAX_TOOL_REQUEST_BYTES,
+    MAX_SUBMISSION_BYTES,
     CredentialError,
     ToolServiceError,
     ToolUnavailableError,
@@ -44,9 +49,31 @@ class ConstrainedToolService:
         self.credentials = credentials or ControllerCredentialAuthority()
         self._task_service = task_service
         self._board_service = board_service
+        self._runtime_usage: dict[tuple[str, str], TrustedRuntimeUsage] = {}
+        self._runtime_lock = threading.Lock()
+        if artifact_root is not None:
+            self._task_service.configure_submission_artifacts(artifact_root, clock)
         self._audit = (
             ToolAuditLog(artifact_root, clock) if artifact_root is not None else None
         )
+
+    def update_runtime_usage(
+        self, identity: AgentIdentity, total_tokens: int, tool_calls: int
+    ) -> None:
+        """Record controller-observed usage for the next task submission."""
+
+        if not isinstance(identity, AgentIdentity):
+            raise ToolValidationError("runtime identity is invalid")
+        usage = TrustedRuntimeUsage(total_tokens, tool_calls)
+        key = (identity.run_id, identity.agent_id)
+        with self._runtime_lock:
+            previous = self._runtime_usage.get(key)
+            if previous is not None and (
+                usage.total_tokens < previous.total_tokens
+                or usage.tool_calls < previous.tool_calls
+            ):
+                raise ToolValidationError("runtime usage cannot decrease")
+            self._runtime_usage[key] = usage
 
     def issue_credential(self, identity: AgentIdentity) -> str:
         return self.credentials.issue(identity)
@@ -67,7 +94,13 @@ class ConstrainedToolService:
             self._check_operation(verified.identity, operation_name)
             input_object = validate_object(arguments)
             validated_input = input_object
-            result = self._dispatch(verified.identity, operation_name, input_object)
+            result = self._dispatch(
+                verified.identity,
+                operation_name,
+                input_object,
+                credential=verified.token,
+                runtime_usage=self._runtime_usage_for(verified.identity),
+            )
             response: dict[str, Any] = {"ok": True, "result": result}
         except ToolServiceError as exc:
             response = self._error_response(exc)
@@ -88,14 +121,25 @@ class ConstrainedToolService:
         raise ToolValidationError("unsupported tool")
 
     def _dispatch(
-        self, identity: AgentIdentity, operation: str, arguments: Mapping[str, Any]
+        self,
+        identity: AgentIdentity,
+        operation: str,
+        arguments: Mapping[str, Any],
+        *,
+        credential: str,
+        runtime_usage: TrustedRuntimeUsage | None,
     ) -> dict[str, Any]:
         if operation == "task_read":
             return self._task_service.read(identity, arguments)
         if operation == "task_query":
             return self._task_service.query(identity, arguments)
         if operation == "task_submit":
-            return self._task_service.submit(identity, arguments)
+            return self._task_service.submit(
+                identity,
+                arguments,
+                runtime_usage=runtime_usage,
+                credential=credential,
+            )
         if self._board_service is None:
             raise ToolUnavailableError("board service is not mounted")
         if operation == "board_read":
@@ -103,6 +147,10 @@ class ConstrainedToolService:
         if operation == "board_append":
             return self._board_service.append(identity, arguments)
         raise ToolValidationError("unsupported tool")
+
+    def _runtime_usage_for(self, identity: AgentIdentity) -> TrustedRuntimeUsage | None:
+        with self._runtime_lock:
+            return self._runtime_usage.get((identity.run_id, identity.agent_id))
 
     @staticmethod
     def _error_response(error: ToolServiceError) -> dict[str, Any]:
@@ -117,14 +165,19 @@ __all__ = [
     "ControllerCredentialAuthority",
     "CredentialError",
     "MAX_MESSAGE_BYTES",
+    "MAX_DIAGNOSIS_BYTES",
+    "MAX_EVIDENCE_EXCERPT_BYTES",
+    "MAX_EVIDENCE_REFERENCES",
     "MAX_QUERY_RESULTS",
     "MAX_READ_BYTES",
     "MAX_READ_MESSAGES",
     "MAX_TASK_FILE_BYTES",
     "MAX_TOOL_REQUEST_BYTES",
+    "MAX_SUBMISSION_BYTES",
     "TaskCatalog",
     "TaskDefinition",
     "TaskToolService",
+    "TrustedRuntimeUsage",
     "ToolServiceError",
     "ToolServiceSocketServer",
     "ToolUnavailableError",

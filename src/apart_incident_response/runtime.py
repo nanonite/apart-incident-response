@@ -1681,6 +1681,9 @@ class AgentRun:
             if self.tool_service is not None:
                 from .tool_service import ToolServiceSocketServer
 
+                # The controller owns the counters that a task submission may
+                # record; initialize them before the child can call a tool.
+                self.tool_service.update_runtime_usage(self.identity, 0, 0)
                 tool_server = ToolServiceSocketServer(
                     self.tool_service,
                     self.workspace.root / ".apart-tool-service.sock",
@@ -1851,6 +1854,12 @@ class AgentRun:
                                 tool_delta = len(new_tool_calls)
                                 agent_tokens_used += token_delta
                                 agent_tool_calls_used += tool_delta
+                                if self.tool_service is not None:
+                                    self.tool_service.update_runtime_usage(
+                                        self.identity,
+                                        agent_tokens_used,
+                                        agent_tool_calls_used,
+                                    )
                                 if agent_tokens_used > self.config.per_agent_token_budget:
                                     failure_reason = "agent exceeded per-agent token budget"
                                     status = ExitStatus.BUDGET_EXHAUSTED
@@ -2078,8 +2087,34 @@ def _build_cli_tool_service(
         TaskToolService,
     )
 
-    task_root = args.task_root or workspace.task_dir
-    catalog = TaskCatalog({identity.task_id: TaskDefinition(identity.task_id, task_root)})
+    from .task_one import TASK_ONE_ID
+
+    if identity.task_id == TASK_ONE_ID:
+        from .task_one import TASK_ONE_EVIDENCE_BUNDLES, materialize_task_one_bundle
+
+        bundle = next(
+            (candidate for candidate in TASK_ONE_EVIDENCE_BUNDLES if candidate.agent_id == identity.agent_id),
+            None,
+        )
+        if bundle is None:
+            raise RuntimeConfigError("Task 1 has no evidence bundle for the authenticated agent")
+        bundle_name = Path(bundle.relative_path).name
+        if args.task_root is None:
+            task_root = workspace.task_dir
+            materialize_task_one_bundle(task_root, identity.agent_id)
+        else:
+            supplied_root = Path(args.task_root).expanduser().resolve()
+            candidate_root = supplied_root / identity.agent_id
+            task_root = candidate_root if candidate_root.is_dir() else supplied_root
+        task_definition = TaskDefinition(
+            identity.task_id,
+            task_root,
+            allowed_paths=(bundle_name,),
+        )
+    else:
+        task_root = args.task_root or workspace.task_dir
+        task_definition = TaskDefinition(identity.task_id, task_root)
+    catalog = TaskCatalog({identity.task_id: task_definition})
     board_store = None
     board_service = None
     if identity.condition is not Condition.C0:

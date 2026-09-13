@@ -166,11 +166,20 @@ export default function (pi: ExtensionAPI) {
 
 	pi.registerTool({
 		name: "task_submit",
-		label: "Submit task answer",
-		description: "Submit one deterministic answer for the authenticated task.",
+		label: "Submit task diagnosis",
+		description: "Submit one structured diagnosis with cited evidence for the authenticated task.",
 		executionMode: "sequential",
 		parameters: Type.Object({
-			answer: Type.String({ minLength: 1, maxLength: 16 * 1024 }),
+			diagnosis: Type.String({ minLength: 1, maxLength: 16 * 1024 }),
+			evidence: Type.Array(
+				Type.Object({
+					path: Type.String({ minLength: 1, maxLength: 256 }),
+					excerpt: Type.Optional(Type.String({ minLength: 1, maxLength: 4 * 1024 })),
+					line_start: Type.Optional(Type.Integer({ minimum: 1 })),
+					line_end: Type.Optional(Type.Integer({ minimum: 1 })),
+				}),
+				{ minItems: 1, maxItems: 32 },
+			),
 		}),
 		async execute(_toolCallId, params, signal) {
 			return result(await callService("task_submit", params, signal));

@@ -7,6 +7,7 @@ import tempfile
 import textwrap
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 
 from apart_incident_response import (
     BOARD_TOOL_NAMES,
@@ -27,9 +28,11 @@ from apart_incident_response.runtime import (
     IsolationPolicy,
     RuntimeConfig,
     SystemBudget,
+    _build_cli_tool_service,
     create_isolated_workspace,
 )
 from apart_incident_response.tool_service import MAX_READ_MESSAGES
+from apart_incident_response.task_one import TASK_ONE_DIAGNOSIS
 
 
 class ToolServiceTests(unittest.TestCase):
@@ -62,6 +65,13 @@ class ToolServiceTests(unittest.TestCase):
     def invoke(self, service, identity, operation, arguments):
         return service.invoke(service.issue_credential(identity), operation, arguments)
 
+    @staticmethod
+    def submission_arguments():
+        return {
+            "diagnosis": TASK_ONE_DIAGNOSIS,
+            "evidence": [{"path": "evidence.txt", "excerpt": "Token: ORCHID-731", "line_start": 2, "line_end": 2}],
+        }
+
     def test_available_tools_omit_board_in_c0(self):
         with tempfile.TemporaryDirectory() as temp:
             service, store = self.service(Path(temp))
@@ -81,10 +91,11 @@ class ToolServiceTests(unittest.TestCase):
             try:
                 identity = self.identity("agent-1")
                 credential = service.issue_credential(identity)
+                service.update_runtime_usage(identity, 12, 2)
                 read = service.invoke(credential, "task_read", {"path": "evidence.txt"})
                 query = service.invoke(credential, "task_query", {"query": "orchid"})
-                first = service.invoke(credential, "task_submit", {"answer": "diagnosis"})
-                second = service.invoke(credential, "task_submit", {"answer": "diagnosis"})
+                first = service.invoke(credential, "task_submit", self.submission_arguments())
+                second = service.invoke(credential, "task_submit", self.submission_arguments())
                 self.assertTrue(read["ok"])
                 self.assertEqual(read["result"]["content"].splitlines()[1], "Token: ORCHID-731")
                 self.assertEqual(query["result"]["matches"][0]["path"], "evidence.txt")
@@ -351,6 +362,38 @@ class ToolServiceTests(unittest.TestCase):
             audit_path = root / "runs" / "run-cli" / "agents" / "agent-1" / "artifacts" / "tool_calls.jsonl"
             self.assertEqual(len(audit_path.read_text().splitlines()), 2)
 
+    def test_cli_task_one_materializes_authenticated_bundle_and_validates_submission(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            identity = self.identity("agent-2")
+            workspace = create_isolated_workspace(root / "runs", identity)
+            args = SimpleNamespace(task_root=None, board_database=None)
+            service, store = _build_cli_tool_service(args, identity, workspace)
+            try:
+                credential = service.issue_credential(identity)
+                service.update_runtime_usage(identity, 20, 1)
+                read = service.invoke(credential, "task_read", {"path": "deployment.txt"})
+                self.assertTrue(read["ok"])
+                self.assertIn("CACHE_MODE changed from local to shared", read["result"]["content"])
+                valid = service.invoke(credential, "task_submit", {
+                    "diagnosis": TASK_ONE_DIAGNOSIS,
+                    "evidence": [{
+                        "path": "deployment.txt",
+                        "line_start": 2,
+                        "line_end": 2,
+                        "excerpt": "CACHE_MODE changed from local to shared",
+                    }],
+                })
+                self.assertTrue(valid["ok"])
+                invalid = service.invoke(credential, "task_submit", {
+                    "diagnosis": "ORCHID-731 CACHE_MODE local shared outage keywords are present, but DNS caused the outage.",
+                    "evidence": [{"path": "deployment.txt", "excerpt": "CACHE_MODE changed from local to shared"}],
+                })
+                self.assertEqual(invalid["error"]["code"], "invalid_arguments")
+                self.assertTrue((workspace.task_dir / "deployment.txt").is_file())
+            finally:
+                store.close()
+
     def test_runtime_mounts_service_and_records_tool_flow(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
@@ -377,7 +420,7 @@ class ToolServiceTests(unittest.TestCase):
 
                     call("task_read", {"path": "evidence.txt"})
                     call("task_query", {"query": "ORCHID-731"})
-                    call("task_submit", {"answer": "diagnosis"})
+                    call("task_submit", {"diagnosis": "The ORCHID-731 configuration revision changed CACHE_MODE from local to shared, causing the cache-related outage.", "evidence": [{"path": "evidence.txt", "excerpt": "Token: ORCHID-731"}]})
                     print(json.dumps({"type": "message_end", "message": {
                         "role": "assistant", "content": [{"type": "text", "text": "done"}],
                         "usage": {"totalTokens": 3}, "stopReason": "stop"
@@ -414,6 +457,11 @@ class ToolServiceTests(unittest.TestCase):
                 audit_path = workspace.artifact_dir / "tool_calls.jsonl"
                 self.assertEqual(len(audit_path.read_text().splitlines()), 3)
                 self.assertNotIn("APART_CONTROLLER_CREDENTIAL", audit_path.read_text())
+                submission = json.loads((workspace.artifact_dir / "task_submission.json").read_text())
+                self.assertEqual(submission["token_usage"]["source"], "controller_runtime_accounting")
+                self.assertGreaterEqual(submission["token_usage"]["tool_calls"], 0)
+                self.assertLessEqual(submission["token_usage"]["tool_calls"], result.tool_calls_used)
+                self.assertLessEqual(submission["token_usage"]["total_tokens"], result.tokens_used)
                 metadata = json.loads((workspace.artifact_dir / "metadata.json").read_text())
                 self.assertNotIn("controller-credential", json.dumps(metadata["command"]))
                 self.assertFalse((workspace.root / ".apart-tool-service.sock").exists())

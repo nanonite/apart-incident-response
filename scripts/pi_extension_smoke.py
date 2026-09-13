@@ -127,6 +127,9 @@ def capture_trace() -> dict[str, Any]:
                 clock=lambda: FIXED_TIMESTAMP,
             )
             identity = AgentIdentity("pi-smoke-run", "pi-agent", Condition.C1, "task-1", 1)
+            # The controller owns this accounting state; Pi cannot supply it
+            # as part of the task_submit arguments.
+            service.update_runtime_usage(identity, 420, 4)
             credential = service.issue_credential(identity)
             credential_file.write_text(credential, encoding="utf-8")
             credential_file.chmod(0o600)
@@ -157,6 +160,16 @@ def capture_trace() -> dict[str, Any]:
                 raise RuntimeError("Pi board_read did not observe the preceding board_append")
             if credential in json.dumps(audit):
                 raise RuntimeError("controller credential appeared in the audit")
+            submission_path = root / "artifacts" / "pi-smoke-run" / "agents" / "pi-agent" / "artifacts" / "task_submission.json"
+            submission = json.loads(submission_path.read_text(encoding="utf-8"))
+            if submission["token_usage"] != {
+                "source": "controller_runtime_accounting",
+                "total_tokens": 420,
+                "tool_calls": 4,
+            }:
+                raise RuntimeError(f"unexpected trusted usage: {submission['token_usage']}")
+            if credential in json.dumps(submission):
+                raise RuntimeError("controller credential appeared in the submission")
             return {
                 "pi_version": version,
                 "extension": "pi-extension/incident-tools.ts",
@@ -167,6 +180,7 @@ def capture_trace() -> dict[str, Any]:
                 "extension_discovery": False,
                 "tool_events": tool_events,
                 "audit": audit,
+                "submission": submission,
             }
         finally:
             store.close()

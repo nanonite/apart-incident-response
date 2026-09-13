@@ -53,6 +53,31 @@ class TaskOneTests(unittest.TestCase):
         self.assertTrue(result.accepted)
         self.assertEqual(result.missing_terms, ())
 
+    def test_validator_rejects_negated_diagnosis(self):
+        answer = TASK_ONE_DIAGNOSIS + " This revision did not cause the outage."
+        result = validate_task_one_answer(answer)
+        self.assertFalse(result.accepted)
+        self.assertEqual(result.missing_terms, ("diagnosis negates the expected cause",))
+
+    def test_validator_rejects_unrelated_diagnosis_with_matching_keywords(self):
+        answers = (
+            (
+                "ORCHID-731 CACHE_MODE local shared outage keywords are present, but "
+                "a DNS failure caused the outage.",
+                "diagnosis does not state the expected cache-mode change",
+            ),
+            (
+                "The ORCHID-731 configuration revision changed CACHE_MODE from local "
+                "to shared, but a DNS failure caused the outage.",
+                "diagnosis does not connect the revision to the outage",
+            ),
+        )
+        for answer, reason in answers:
+            with self.subTest(answer=answer):
+                result = validate_task_one_answer(answer)
+                self.assertFalse(result.accepted)
+                self.assertEqual(result.missing_terms, (reason,))
+
     def test_validator_fails_closed_for_non_text_answers(self):
         result = validate_task_one_answer(None)  # type: ignore[arg-type]
         self.assertFalse(result.accepted)

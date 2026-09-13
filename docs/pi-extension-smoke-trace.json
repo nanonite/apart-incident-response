@@ -103,7 +103,8 @@
         "ok": true,
         "result": {
           "accepted": true,
-          "submission_sha256": "b54e2b152c2135f45dfca42c67ec11c8a8d6076f1796f3deaa64a752c1d4efa8",
+          "submission_id": "sha256:1236c18abd11b2da68efda994e57de353b2aabe9056c34a11eb8dedc3d18d533",
+          "submission_sha256": "1236c18abd11b2da68efda994e57de353b2aabe9056c34a11eb8dedc3d18d533",
           "task_id": "task-1"
         }
       },
@@ -111,7 +112,13 @@
       "task_id": "task-1",
       "timestamp": "2026-09-12T00:00:00Z",
       "validated_input": {
-        "answer": "diagnosis"
+        "diagnosis": "The ORCHID-731 configuration revision changed CACHE_MODE from local to shared, causing the cache-related outage.",
+        "evidence": [
+          {
+            "excerpt": "ORCHID-731 fixture",
+            "path": "evidence.txt"
+          }
+        ]
       }
     }
   ],
@@ -121,6 +128,29 @@
   "extension_discovery": false,
   "fixture_provider": "tests/fixtures/pi-faux-provider.ts",
   "pi_version": "0.85.1",
+  "submission": {
+    "agent_id": "pi-agent",
+    "condition": "C1",
+    "diagnosis": "The ORCHID-731 configuration revision changed CACHE_MODE from local to shared, causing the cache-related outage.",
+    "evidence": [
+      {
+        "excerpt": "ORCHID-731 fixture",
+        "path": "evidence.txt"
+      }
+    ],
+    "run_id": "pi-smoke-run",
+    "schema_version": 1,
+    "seed": 1,
+    "submission_id": "sha256:1236c18abd11b2da68efda994e57de353b2aabe9056c34a11eb8dedc3d18d533",
+    "submission_sha256": "1236c18abd11b2da68efda994e57de353b2aabe9056c34a11eb8dedc3d18d533",
+    "task_id": "task-1",
+    "timestamp": "2026-09-12T00:00:00Z",
+    "token_usage": {
+      "source": "controller_runtime_accounting",
+      "tool_calls": 4,
+      "total_tokens": 420
+    }
+  },
   "tool_events": [
     {
       "is_error": false,

@@ -150,8 +150,13 @@ controller-issued credential; those fields are never accepted in tool input.
 The service reads task fixtures from a controller-selected `TaskCatalog` and
 the board service is the only code that holds `BoardStore`. Task paths are
 relative and bounded, queries are literal and bounded, and submissions are
-idempotent per run/agent. Every accepted or rejected authenticated invocation
-is written to that agent's `tool_calls.jsonl` artifact with validated input,
+structured as a diagnosis plus fixture-backed evidence references and are
+idempotent per run/agent. Each accepted submission is persisted as
+`task_submission.json` beside the invocation audit, including the
+controller-derived run/agent/task identity, timestamp, trusted runtime token
+and tool-call counters, and a stable content hash. Every accepted or rejected
+authenticated invocation is written to that agent's `tool_calls.jsonl` artifact
+with validated input,
 result or error, timestamp, run ID, and agent ID. Credential values are
 redacted and are never written to the log.
 
@@ -179,7 +184,9 @@ The runnable CLI wires the same service whenever `runtime run` receives
 `--extension`. Use `--task-root` to select the controller-owned task fixture
 and `--board-database` to select a private shared board database; without the
 latter, C1/C2 use a private database under the run directory. C0 does not
-open a board database.
+open a board database. A `task-1` run without `--task-root` materializes only
+the authenticated agent's Task 1 evidence bundle and attaches the deterministic
+Task 1 diagnosis validator before accepting `task_submit`.
 
 The production service endpoint is a private Unix socket mounted only at the
 extension endpoint. The managed test environment denies Unix pathname socket
