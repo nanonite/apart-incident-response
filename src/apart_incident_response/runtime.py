@@ -1441,7 +1441,7 @@ def build_pi_command(
     if resolved_extension is not None:
         extension_mount = "/experiment/extensions"
         insert_at = sandbox_command.index("--chdir")
-        sandbox_command[insert_at:insert_at] = [
+        extension_mounts = [
             "--dir",
             "/experiment",
             "--dir",
@@ -1450,6 +1450,13 @@ def build_pi_command(
             str(resolved_extension.parent),
             extension_mount,
         ]
+        if pi_root is not None and (pi_root / "node_modules").is_dir():
+            extension_mounts.extend([
+                "--ro-bind",
+                str(pi_root / "node_modules"),
+                "/experiment/node_modules",
+            ])
+        sandbox_command[insert_at:insert_at] = extension_mounts
         command = [
             part.replace(str(resolved_extension), f"{extension_mount}/{resolved_extension.name}")
             for part in command

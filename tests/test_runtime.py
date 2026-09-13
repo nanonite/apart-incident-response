@@ -194,6 +194,7 @@ class RuntimeContractTests(unittest.TestCase):
             root = Path(temp)
             pi_root = root / "pi"
             (pi_root / "packages/coding-agent").mkdir(parents=True)
+            (pi_root / "node_modules").mkdir()
             (pi_root / "packages/coding-agent/package.json").write_text(
                 json.dumps({"version": "0.83.0"}), encoding="utf-8"
             )
@@ -216,6 +217,7 @@ class RuntimeContractTests(unittest.TestCase):
                 command = build_pi_command(config, self.identity(), workspace, extension)
             self.assertNotIn(str(auth_file), command)
             self.assertIn(str(extension.parent), command)
+            self.assertIn("/experiment/node_modules", command)
             self.assertEqual(command[command.index("--extension") + 1], "/experiment/extensions/experiment.ts")
             self.assertIn("--no-builtin-tools", command)
 
@@ -666,6 +668,8 @@ class RuntimeContractTests(unittest.TestCase):
         self.assertEqual(config.model, "openai-codex/gpt-5.6-luna")
         self.assertEqual(config.pi_auth_file_env, "APART_PI_AUTH_FILE")
         self.assertEqual(config.pi_auth_store_env, "APART_PI_AUTH_STORE")
+        self.assertEqual(config.per_agent_token_budget, 16_000)
+        self.assertEqual(config.aggregate_token_budget, 48_000)
         self.assertTrue(config.isolation.model_network)
         self.assertEqual(config.isolation.model_hosts, ("chatgpt.com",))
         self.assertEqual(config.isolation.oauth_hosts, ("auth.openai.com",))
