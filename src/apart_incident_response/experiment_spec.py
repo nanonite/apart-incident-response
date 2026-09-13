@@ -185,6 +185,18 @@ class ExperimentSpec:
     seeds: tuple[int, ...] = (1,)
 
     def __post_init__(self) -> None:
+        # ``Condition`` is a string enum, so a plain "C0" would compare equal to
+        # the member and pass validation, then fail later where the member API
+        # is used. Coerce once here, so the rest of the module may assume
+        # members, and reject an unknown name as a specification error.
+        try:
+            object.__setattr__(
+                self,
+                "conditions",
+                tuple(Condition(condition) for condition in self.conditions),
+            )
+        except (TypeError, ValueError) as exc:
+            raise ExperimentSpecError(f"unknown condition: {exc}") from exc
         violations = self._violations()
         if violations:
             joined = "; ".join(violations)

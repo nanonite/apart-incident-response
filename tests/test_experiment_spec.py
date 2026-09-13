@@ -135,6 +135,18 @@ class ShapeTests(unittest.TestCase):
         with self.assertRaisesRegex(ExperimentSpecError, "unknown capability profile"):
             spec(agents=(first_agent(capability_profile="root-v1"), second_agent()))
 
+    def test_accepts_condition_names_and_normalizes_them(self):
+        normalized = spec(conditions=("C0", "C1"))
+        self.assertEqual(normalized.conditions, (Condition.C0, Condition.C1))
+        self.assertEqual(normalized.to_dict()["conditions"], ["C0", "C1"])
+        self.assertEqual(
+            ExperimentSpec.from_mapping(normalized.to_dict()).sha256, normalized.sha256
+        )
+
+    def test_rejects_unknown_condition_name(self):
+        with self.assertRaises(ExperimentSpecError):
+            spec(conditions=("C0", "C9"))
+
     def test_rejects_unordered_or_duplicate_conditions(self) -> None:
         for conditions in (
             (Condition.C1, Condition.C0),
