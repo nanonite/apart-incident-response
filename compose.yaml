@@ -40,6 +40,7 @@ services:
       APART_PI_AUTH_FILE: /run/secrets/pi-auth.json
       APART_PI_AUTH_STORE: /controller-state/codex-auth.json
       APART_OPENCODE_API_KEY_FILE: /run/secrets/opencode-key
+      APART_OPENROUTER_API_KEY_FILE: /run/secrets/openrouter-key
     volumes:
       - type: bind
         source: ./runs

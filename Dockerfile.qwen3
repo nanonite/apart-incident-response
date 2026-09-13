@@ -29,6 +29,7 @@ RUN pip install --no-cache-dir --upgrade pip \
 COPY config/qwen3-8b.json ./config/qwen3-8b.json
 COPY src ./src
 COPY scripts/ollama_goal_inference.py ./scripts/ollama_goal_inference.py
+COPY scripts/openrouter_goal_inference.py ./scripts/openrouter_goal_inference.py
 COPY scripts/qwen3_full_logits.py ./scripts/qwen3_full_logits.py
 COPY scripts/qwen3_goal.py ./scripts/qwen3_goal.py
 

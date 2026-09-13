@@ -117,12 +117,16 @@ class ControlledExperimentTests(unittest.TestCase):
                 for name in ("board_events.jsonl", "metrics.json", "uptake.json", "replay.json"):
                     self.assertTrue((artifact_dir / name).exists(), name)
                 agent_artifact = run.artifact_root / "agents" / "agent-1" / "artifacts"
-                for name in ("events.json", "response.json", "final_response.txt", "agent_telemetry.json", "result.json", "tool_calls.jsonl", "task_submission.json", "timeline.json"):
+                for name in ("events.json", "response.json", "final_response.txt", "agent_telemetry.json", "result.json", "tool_calls.jsonl", "task_submission.json", "timeline.json", "probability_artifacts.json"):
                     self.assertTrue((agent_artifact / name).exists(), name)
                 condition_index = json.loads((run.artifact_root / "index.json").read_text())
                 self.assertEqual(condition_index["run"]["condition"], run.condition.value)
                 self.assertEqual(condition_index["agents"]["agent-1"]["status"], "completed")
                 self.assertEqual(condition_index["agents"]["agent-1"]["timeline"]["path"], "agents/agent-1/artifacts/timeline.json")
+                self.assertEqual(
+                    condition_index["agents"]["agent-1"]["probability_artifacts"]["path"],
+                    "agents/agent-1/artifacts/probability_artifacts.json",
+                )
             triplet_document = json.loads((Path(temporary) / "test-triplet.json").read_text())
             self.assertEqual(
                 triplet_document["artifacts"]["conditions"]["C1"]["agents"]["agent-1"],

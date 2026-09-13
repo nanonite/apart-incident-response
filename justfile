@@ -54,6 +54,9 @@ container-anchor output="t1-container" seeds="1" model="": setup
     if [[ "$selected_model" == opencode-go/* ]]; then
         : "${APART_OPENCODE_API_KEY_FILE:?set APART_OPENCODE_API_KEY_FILE to a private OpenCode key file}"
         mount_args+=(--volume "$APART_OPENCODE_API_KEY_FILE:/run/secrets/opencode-key:ro")
+    elif [[ "$selected_model" == openrouter/* ]]; then
+        : "${APART_OPENROUTER_API_KEY_FILE:?set APART_OPENROUTER_API_KEY_FILE to a private OpenRouter key file}"
+        mount_args+=(--volume "$APART_OPENROUTER_API_KEY_FILE:/run/secrets/openrouter-key:ro")
     else
         : "${APART_PI_AUTH_FILE:?set APART_PI_AUTH_FILE to a private Pi/Codex auth file}"
         mount_args+=(--volume "$APART_PI_AUTH_FILE:/run/secrets/pi-auth.json:ro")

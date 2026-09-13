@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Dispatch the compatible Ollama logprob and full-logits Qwen3 modes."""
+"""Dispatch the compatible Ollama, OpenRouter, and full-logits goal modes."""
 
 from __future__ import annotations
 
@@ -9,19 +9,22 @@ import sys
 
 
 SOURCE_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(SOURCE_ROOT / "src"))
 sys.path.insert(0, str(SOURCE_ROOT / "scripts"))
 
 from ollama_goal_inference import main as ollama_main  # noqa: E402
+from openrouter_goal_inference import main as openrouter_main  # noqa: E402
 from qwen3_full_logits import main as full_logits_main  # noqa: E402
 
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--mode", choices=("logprobs", "full-logits"), required=True)
+    parser.add_argument("--mode", choices=("logprobs", "openrouter", "full-logits"), required=True)
     parser.add_argument("--prompt")
     parser.add_argument("--prompt-file", type=Path)
     parser.add_argument("--model")
     parser.add_argument("--host", default="http://localhost:11434")
+    parser.add_argument("--endpoint", default="https://openrouter.ai/api/v1/chat/completions")
     parser.add_argument("--checkpoint-id", default="Qwen/Qwen3-8B")
     parser.add_argument("--checkpoint-revision", default="47719a242beab8f9aecc40ce3928b034dd5dd559")
     parser.add_argument("--revision")
@@ -32,6 +35,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--think", action="store_true")
     parser.add_argument("--top-logprobs", type=int, default=5)
     parser.add_argument("--num-predict", type=int, default=128)
+    parser.add_argument("--max-tokens", type=int, default=512)
     parser.add_argument("--max-new-tokens", type=int, default=128)
     parser.add_argument("--max-seq-length", type=int, default=4096)
     parser.add_argument("--top-p", type=float, default=0.8)
@@ -65,6 +69,12 @@ def _forward_args(args: argparse.Namespace) -> list[str]:
             "--top-logprobs", str(args.top_logprobs),
             "--num-predict", str(args.num_predict),
         ))
+    elif args.mode == "openrouter":
+        forwarded.extend((
+            "--endpoint", args.endpoint,
+            "--top-logprobs", str(args.top_logprobs),
+            "--max-tokens", str(args.max_tokens),
+        ))
     else:
         _add(forwarded, "--revision", args.revision)
         forwarded.extend(("--max-new-tokens", str(args.max_new_tokens), "--max-seq-length", str(args.max_seq_length)))
@@ -78,9 +88,19 @@ def _forward_args(args: argparse.Namespace) -> list[str]:
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     if args.output is None:
-        directory = "logprobs" if args.mode == "logprobs" else "full-logits"
-        args.output = Path("runs/qwen3-8b") / directory / f"seed-{args.seed}"
-    return ollama_main(_forward_args(args)) if args.mode == "logprobs" else full_logits_main(_forward_args(args))
+        if args.mode == "openrouter":
+            args.output = Path("runs/openrouter/logprobs") / f"seed-{args.seed}"
+        else:
+            directory = "logprobs" if args.mode == "logprobs" else "full-logits"
+            args.output = Path("runs/qwen3-8b") / directory / f"seed-{args.seed}"
+    forwarded = _forward_args(args)
+    if args.mode == "logprobs":
+        return ollama_main(forwarded)
+    if args.mode == "openrouter":
+        if args.think:
+            parser.error("--think is only supported by the Ollama mode")
+        return openrouter_main(forwarded)
+    return full_logits_main(forwarded)
 
 
 if __name__ == "__main__":

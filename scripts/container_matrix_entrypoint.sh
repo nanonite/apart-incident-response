@@ -35,6 +35,16 @@ if [ "$key_path" = "/run/secrets/opencode-key" ] && [ -f "$key_path" ]; then
     export APART_OPENCODE_API_KEY_FILE=/run/controller-secrets/opencode-key
     staged_key=/run/controller-secrets/opencode-key
 fi
+openrouter_key_path="${APART_OPENROUTER_API_KEY_FILE:-}"
+if [ "$openrouter_key_path" = "/run/secrets/openrouter-key" ] && [ -f "$openrouter_key_path" ]; then
+    umask 077
+    mkdir -p /run/controller-secrets
+    chmod 0700 /run/controller-secrets
+    cp "$openrouter_key_path" /run/controller-secrets/openrouter-key
+    chmod 0600 /run/controller-secrets/openrouter-key
+    export APART_OPENROUTER_API_KEY_FILE=/run/controller-secrets/openrouter-key
+    staged_key=/run/controller-secrets/openrouter-key
+fi
 
 cleanup() {
     if [ -n "$staged_key" ]; then

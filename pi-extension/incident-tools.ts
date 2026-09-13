@@ -18,6 +18,7 @@ const opencodeUserAgent = process.env.APART_OPENCODE_USER_AGENT;
 const condition = process.env.APART_CONDITION;
 const capabilityProfile = process.env.APART_CAPABILITY_PROFILE ?? "task-diagnostic-v1";
 const hasTaskQuery = capabilityProfile === "task-diagnostic-v1";
+const OPENROUTER_TOP_LOGPROBS = 5;
 
 if (condition !== "C0" && condition !== "C1" && condition !== "C2") {
 	throw new Error("APART_CONDITION must be C0, C1, or C2");
@@ -142,7 +143,33 @@ function result(value: unknown) {
 	};
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 export default function (pi: ExtensionAPI) {
+	if (modelProvider === "openrouter") {
+		// The OpenRouter provider is OpenAI-compatible, so this public payload hook
+		// adds the narrow request fields needed by the per-turn capture in Pi's
+		// streaming adapter. It leaves stream, tools, retries, and all other Pi
+		// request fields untouched.
+		pi.on("before_provider_request", (event) => {
+			if (!isRecord(event.payload)) return;
+			const provider = isRecord(event.payload.provider) ? event.payload.provider : {};
+			return {
+				...event.payload,
+				logprobs: true,
+				top_logprobs: OPENROUTER_TOP_LOGPROBS,
+				provider: {
+					...provider,
+					order: ["openai"],
+					allow_fallbacks: false,
+					require_parameters: true,
+				},
+			};
+		});
+	}
+
 	if (modelProvider === "opencode-go") {
 		if (!opencodeSession || !opencodeUserAgent) {
 			throw new Error("OpenCode Go session headers are unavailable");

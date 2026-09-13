@@ -1,0 +1,23 @@
+{
+  "id": "gen-openrouter-fixture-missing-001",
+  "object": "chat.completion",
+  "created": 1721260800,
+  "model": "openai/gpt-4o-mini",
+  "provider": "OpenAI",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Paris."
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 5,
+    "completion_tokens": 2,
+    "total_tokens": 7
+  }
+}

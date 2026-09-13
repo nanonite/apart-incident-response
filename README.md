@@ -137,6 +137,40 @@ x-opencode-session value derived from its run and agent identity and a
 distinct User-Agent; the existing per-agent and aggregate token/tool-call
 limits remain in force.
 
+OpenRouter uses Pi's built-in `openrouter` provider. Select a model with its
+full provider/model slug, such as `openrouter/openai/gpt-4o-mini`:
+
+```bash
+export APART_PI_ROOT="$PWD/pi"
+export APART_OPENROUTER_API_KEY_FILE="$HOME/.config/openrouter/api-key"
+PYTHONPATH=src python scripts/run_experiment.py \
+  --real-anchor --model openrouter/openai/gpt-4o-mini --seeds 1 \
+  --output runs/openrouter
+```
+
+The controller reads the private key file, stages it only in the run-local Pi
+auth file, and removes it after the run. A controller-only `OPENROUTER_API_KEY`
+environment value is also supported. OpenRouter selection allows only
+`openrouter.ai:443` through the model relay and removes the Codex OAuth and
+OpenCode hosts. See [`docs/pi-provider-paths.md`](docs/pi-provider-paths.md)
+for the container command and the verified logprob request contract. For a
+prompt-only OpenRouter probability capture, use the shared one-shot dispatcher
+with the dedicated controller environment variable:
+
+```bash
+export OPENROUTER_API_KEY='provided-outside-the-repository'
+PYTHONPATH=src python scripts/qwen3_goal.py --mode openrouter \
+  --model openrouter/openai/gpt-4o-mini \
+  --prompt-file prompts/task-1.txt --seed 1 --temperature 0 \
+  --top-logprobs 5 --max-tokens 512 \
+  --output runs/openrouter/logprobs/seed-1
+```
+
+The adapter sends one non-streaming chat-completions request, requires the
+provider to preserve logprob parameters, validates the returned token array,
+and writes a sanitized response plus a `partial-token-probability-v1`
+artifact. Missing or malformed probabilities produce `failure.json`.
+
 The `run` command writes metadata, raw JSONL, stderr, parsed events, the final
 response, budget usage, and exit status under the agent artifact directory.
 Experiment output under `runs/` is intentionally versioned for sharing between

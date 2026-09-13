@@ -260,6 +260,11 @@ class ExperimentController:
                 "token_overlap_alone_is_not_uptake": True,
                 "task_success_is_separate_from_uptake": True,
             },
+            "artifact_contract": {
+                "agent_timeline_pattern": "agents/{agent_id}/artifacts/timeline.json",
+                "agent_probability_pattern": "agents/{agent_id}/artifacts/probability_artifacts.json",
+                "probability_schema": "agent-turn-probability-v1 / partial-token-probability-v1",
+            },
         }
 
     @staticmethod

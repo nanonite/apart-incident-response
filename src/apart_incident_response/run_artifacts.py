@@ -7,6 +7,13 @@ import json
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
+from .probability_artifacts import (
+    ProbabilityArtifactError,
+    build_probability_artifact,
+    replay_partial_entropy,
+    unavailable_probability_artifact,
+)
+
 
 _SENSITIVE_KEY_PARTS = (
     "api_key",
@@ -137,6 +144,154 @@ def _assistant_messages(event: Mapping[str, Any]) -> list[dict[str, Any]]:
     return messages
 
 
+def _probability_capture(event: Mapping[str, Any]) -> Mapping[str, Any] | None:
+    """Find the provider capture attached to an assistant event."""
+
+    candidates: list[Any] = [event]
+    message = event.get("message")
+    if isinstance(message, Mapping):
+        candidates.append(message)
+    for candidate in candidates:
+        for field in ("probabilityCapture", "probability_capture"):
+            capture = candidate.get(field)
+            if isinstance(capture, Mapping):
+                return capture
+    return None
+
+
+def _probability_turn_kind(event: Mapping[str, Any]) -> str:
+    message = event.get("message")
+    content = message.get("content") if isinstance(message, Mapping) else event.get("content")
+    if isinstance(content, str):
+        return "text"
+    if isinstance(event.get("text"), str) and not isinstance(content, list):
+        return "text"
+    types = {
+        item.get("type")
+        for item in content
+        if isinstance(item, Mapping) and isinstance(item.get("type"), str)
+    } if isinstance(content, list) else set()
+    if "toolCall" in types or "tool_call" in types:
+        return "tool_call"
+    if "thinking" in types:
+        return "reasoning"
+    if "text" in types:
+        return "text"
+    return "unsupported"
+
+
+def _probability_provenance(capture: Mapping[str, Any]) -> dict[str, Any]:
+    provider = capture.get("provider")
+    model = capture.get("model")
+    parameters = capture.get("parameters")
+    return {
+        "provider": provider if isinstance(provider, str) and provider else "unknown",
+        "model": model if isinstance(model, str) and model else "unknown",
+        "parameters": dict(parameters) if isinstance(parameters, Mapping) else {},
+    }
+
+
+def _build_probability_artifacts(events: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """Normalize provider captures once per assistant turn and make them replayable."""
+
+    turns: list[dict[str, Any]] = []
+    for source_sequence, event in enumerate(events, start=1):
+        event_type = event.get("type")
+        message = event.get("message")
+        is_assistant = (
+            isinstance(message, Mapping) and message.get("role") == "assistant"
+        ) or (event_type == "assistant_message")
+        if not is_assistant or event_type not in {"message_end", "assistant_message"}:
+            continue
+        capture = _probability_capture(event)
+        if capture is None:
+            provenance = {
+                "provider": message.get("provider", "unknown")
+                if isinstance(message, Mapping) else "unknown",
+                "model": message.get("model", "unknown")
+                if isinstance(message, Mapping) else "unknown",
+                "parameters": {},
+            }
+            records = None
+            declared_status = "unavailable"
+            reason = "provider did not expose probability capture for this assistant turn"
+            capture = {}
+        else:
+            provenance = _probability_provenance(capture)
+            records = capture.get("token_records")
+            declared_status = capture.get("status")
+            reason = capture.get("missing_data_reason")
+        if not isinstance(reason, str) or not reason.strip():
+            reason = None
+        if not isinstance(records, list) or not records:
+            probability = unavailable_probability_artifact(
+                provenance,
+                reason=reason or "provider omitted probability records for this assistant turn",
+            )
+            capture_status = "unavailable"
+        else:
+            try:
+                probability = build_probability_artifact(records, provenance=provenance)
+                capture_status = declared_status if declared_status in {"complete", "partial"} else "complete"
+                if capture_status == "partial" and reason:
+                    probability["capture_status"] = "partial"
+                    probability["capture_missing_data_reason"] = reason
+            except (ProbabilityArtifactError, TypeError, ValueError) as exc:
+                reason = f"provider probability records were unusable ({type(exc).__name__})"
+                probability = unavailable_probability_artifact(provenance, reason=reason)
+                capture_status = "unavailable"
+        try:
+            replay = replay_partial_entropy(probability)
+        except ProbabilityArtifactError as exc:
+            replay = {"status": "failed", "error": f"replay failed ({type(exc).__name__})"}
+        request_id = capture.get("request_id")
+        if not isinstance(request_id, str) and isinstance(message, Mapping):
+            request_id = message.get("responseId")
+        turns.append({
+            "source_sequence": source_sequence,
+            "event_type": event.get("type", "unknown"),
+            "kind": _probability_turn_kind(event),
+            "status": capture_status,
+            "provider": provenance["provider"],
+            "model": provenance["model"],
+            "request_id": request_id if isinstance(request_id, str) else None,
+            "session_id": capture.get("session_id") if isinstance(capture.get("session_id"), str) else None,
+            "probability_artifact": probability,
+            "replay": replay,
+        })
+
+    kinds = ("text", "tool_call", "reasoning", "unsupported")
+    by_kind: dict[str, dict[str, int]] = {}
+    for kind in kinds:
+        matching = [turn for turn in turns if turn["kind"] == kind]
+        by_kind[kind] = {
+            "turns": len(matching),
+            "complete": sum(turn["status"] == "complete" for turn in matching),
+            "partial": sum(turn["status"] == "partial" for turn in matching),
+            "unavailable": sum(turn["status"] == "unavailable" for turn in matching),
+            "tokens": sum(
+                turn["probability_artifact"].get("coverage", {}).get("token_count", 0)
+                for turn in matching
+            ),
+        }
+    return {
+        "schema_version": 1,
+        "artifact_schema": "agent-turn-probability-v1",
+        "turns": turns,
+        "coverage": {
+            "turns": len(turns),
+            "complete": sum(turn["status"] == "complete" for turn in turns),
+            "partial": sum(turn["status"] == "partial" for turn in turns),
+            "unavailable": sum(turn["status"] == "unavailable" for turn in turns),
+            "tokens": sum(
+                turn["probability_artifact"].get("coverage", {}).get("token_count", 0)
+                for turn in turns
+            ),
+            "by_kind": by_kind,
+        },
+    }
+
+
 def _artifact_links(root: Path, agent_dir: Path) -> dict[str, dict[str, Any]]:
     artifact_dir = agent_dir / "artifacts"
     names = (
@@ -151,6 +306,7 @@ def _artifact_links(root: Path, agent_dir: Path) -> dict[str, dict[str, Any]]:
         "tool_calls.jsonl",
         "task_submission.json",
         "timeline.json",
+        "probability_artifacts.json",
     )
     return {
         name: {"path": _relative(root, artifact_dir / name), "present": (artifact_dir / name).is_file()}
@@ -233,6 +389,10 @@ def build_agent_timeline(
     for sequence, entry in enumerate(entries):
         entry["sequence"] = sequence
 
+    probability_artifacts = _build_probability_artifacts(
+        [item for item in events if isinstance(item, Mapping)]
+    )
+
     usage_reports = [
         {
             "source_sequence": index,
@@ -283,6 +443,11 @@ def build_agent_timeline(
             "turns": safe_telemetry.get("turn_count"),
         },
         "artifacts": _artifact_links(root, agent_dir),
+        "probability_artifacts": {
+            "path": _relative(root, artifact_dir / "probability_artifacts.json"),
+            "present": (artifact_dir / "probability_artifacts.json").is_file(),
+            "coverage": probability_artifacts["coverage"],
+        },
         "entries": safe_entries,
         "event_order": {
             "pi_events": "events.json order, preserved by source_sequence",
@@ -291,6 +456,9 @@ def build_agent_timeline(
         },
     }
     if persist and agent_dir.is_dir():
+        _write_json(artifact_dir / "probability_artifacts.json", sanitize_artifact(probability_artifacts, secrets))
+        timeline["probability_artifacts"]["present"] = True
+        timeline["artifacts"]["probability_artifacts.json"]["present"] = True
         _write_json(artifact_dir / "timeline.json", timeline)
     return timeline
 
@@ -341,6 +509,18 @@ def write_condition_index(
                 "failure_reasons": ["agent artifact directory is missing"],
                 "usage": {},
                 "artifacts": {},
+                "probability_artifacts": {
+                    "path": _relative(root, root / "agents" / agent_id / "artifacts" / "probability_artifacts.json"),
+                    "present": False,
+                    "coverage": {
+                        "turns": 0,
+                        "complete": 0,
+                        "partial": 0,
+                        "unavailable": 0,
+                        "tokens": 0,
+                        "by_kind": {},
+                    },
+                },
                 "entries": [],
                 "event_order": {},
             }
@@ -358,6 +538,7 @@ def write_condition_index(
                 "present": (root / "agents" / agent_id / "artifacts" / "timeline.json").is_file(),
             },
             "artifacts": timeline.get("artifacts", {}),
+            "probability_artifacts": timeline.get("probability_artifacts", {}),
             "usage": timeline.get("usage", {}),
         }
     controller_errors = results_document.get("controller_errors", []) if isinstance(results_document, Mapping) else []
@@ -382,6 +563,11 @@ def write_condition_index(
         "status": status,
         "prompt": sanitize_artifact(manifest.get("prompt"), secrets),
         "agents": agents,
+        "probability_coverage": {
+            agent_id: details.get("probability_artifacts", {}).get("coverage", {})
+            for agent_id, details in agents.items()
+            if isinstance(details, Mapping)
+        },
         "failure_reasons": failure_reasons,
         "artifacts": {
             "manifest": {"path": "manifest.json", "present": (root / "manifest.json").is_file()},
@@ -410,9 +596,17 @@ def artifact_links_for_run(run_root: Path | str, matrix_root: Path | str) -> dic
         and isinstance(details.get("timeline"), Mapping)
         and isinstance(details["timeline"].get("path"), str)
     }
+    probability_links = {
+        agent_id: f"{relative_root}/{details['probability_artifacts']['path']}"
+        for agent_id, details in agents.items()
+        if isinstance(details, Mapping)
+        and isinstance(details.get("probability_artifacts"), Mapping)
+        and isinstance(details["probability_artifacts"].get("path"), str)
+    }
     return {
         "index": f"{relative_root}/index.json",
         "agents": agent_links,
+        "probability_artifacts": probability_links,
     }
 
 

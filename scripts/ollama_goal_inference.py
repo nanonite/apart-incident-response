@@ -34,6 +34,12 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
+from apart_incident_response.probability_artifacts import (
+    ProbabilityArtifactError,
+    build_probability_artifact,
+    normalize_token_probability,
+)
+
 DEFAULT_HOST = "http://localhost:11434"
 DEFAULT_MODEL = "qwen3:8b"
 DEFAULT_CHECKPOINT_ID = "Qwen/Qwen3-8B"
@@ -110,18 +116,32 @@ def _per_token_entropy(logprob: float, top_logprobs: list[dict[str, object]]) ->
     this surface, so we report the top-K entropy (a lower bound) alongside the
     log probability of the token that was actually sampled.
     """
-    tokens = [{"logprob": logprob}] + [
-        {"logprob": float(item["logprob"])} for item in top_logprobs
-    ]
-    max_logprob = max(t["logprob"] for t in tokens)
-    probs = [math.exp(t["logprob"] - max_logprob) for t in tokens]
-    total = sum(probs)
-    normalized = [p / total for p in probs]
-    entropy = -sum(p * math.log2(p) for p in normalized if p > 0)
+    # The historical helper is kept for the Qwen tests and callers that pass
+    # only logprobs. Real provider records go through the shared normalizer,
+    # which uses token text to remove a repeated sampled alternative.
+    record = {
+        "token": "__sampled__",
+        "logprob": logprob,
+        "top_logprobs": [
+            {
+                "token": item.get("token", f"__alternative_{index}__"),
+                "logprob": item.get("logprob"),
+            }
+            for index, item in enumerate(top_logprobs)
+        ],
+    }
+    normalized = normalize_token_probability(record)
+    entropy = normalized["entropy"]
     return {
         "sampled_logprob": float(logprob),
-        "sampled_prob": math.exp(float(logprob)),
-        "top_k_entropy_bits": round(entropy, 6),
+        "sampled_prob": float(normalized["sampled_probability"]),
+        "top_k_entropy_bits": round(float(entropy["partial_entropy_bits"]), 6),
+        "partial_entropy_bits": round(float(entropy["partial_entropy_bits"]), 6),
+        "residual_bucket_entropy_bits": round(
+            float(entropy["residual_bucket_entropy_bits"]), 6
+        ),
+        "covered_mass": round(float(normalized["covered_mass"]), 6),
+        "residual_mass": round(float(normalized["residual_mass"]), 6),
     }
 
 
@@ -129,17 +149,27 @@ def _summarize(logprobs: list[dict[str, object]]) -> dict[str, float]:
     if not logprobs:
         return {"token_count": 0}
     surprise_bits = 0.0
-    top_k_entropy_bits = 0.0
+    partial_entropy_bits = 0.0
+    residual_bucket_entropy_bits = 0.0
     for entry in logprobs:
         lp = float(entry["logprob"])
         surprise_bits += -lp / math.log(2)
-        top_k_entropy_bits += float(entry["_entropy"]["top_k_entropy_bits"])
+        partial_entropy_bits += float(entry["_entropy"]["partial_entropy_bits"])
+        residual_bucket_entropy_bits += float(
+            entry["_entropy"]["residual_bucket_entropy_bits"]
+        )
     return {
         "token_count": len(logprobs),
         "total_surprise_bits": round(surprise_bits, 6),
         "mean_surprise_bits": round(surprise_bits / len(logprobs), 6),
-        "total_top_k_entropy_bits": round(top_k_entropy_bits, 6),
-        "mean_top_k_entropy_bits": round(top_k_entropy_bits / len(logprobs), 6),
+        "total_top_k_entropy_bits": round(partial_entropy_bits, 6),
+        "mean_top_k_entropy_bits": round(partial_entropy_bits / len(logprobs), 6),
+        "total_partial_entropy_bits": round(partial_entropy_bits, 6),
+        "mean_partial_entropy_bits": round(partial_entropy_bits / len(logprobs), 6),
+        "total_residual_bucket_entropy_bits": round(residual_bucket_entropy_bits, 6),
+        "mean_residual_bucket_entropy_bits": round(
+            residual_bucket_entropy_bits / len(logprobs), 6
+        ),
     }
 
 
@@ -190,14 +220,36 @@ def main(argv: list[str] | None = None) -> int:
             seed=args.seed,
         )
 
-        raw_logprobs = response.get("logprobs") or []
+        raw_logprobs = response.get("logprobs")
+        if raw_logprobs is None:
+            raise ProbabilityArtifactError("provider omitted logprobs")
+        if not isinstance(raw_logprobs, list):
+            raise ProbabilityArtifactError("provider logprobs must be an array")
         enriched: list[dict[str, object]] = []
         for entry in raw_logprobs:
             item = dict(entry)
-            item["_entropy"] = _per_token_entropy(
-                float(item["logprob"]), item.get("top_logprobs") or []
-            )
+            normalized = normalize_token_probability(item)
+            item["_entropy"] = {
+                **normalized["entropy"],
+                "covered_mass": normalized["covered_mass"],
+                "residual_mass": normalized["residual_mass"],
+            }
             enriched.append(item)
+
+        probability_artifact = build_probability_artifact(
+            raw_logprobs,
+            provenance={
+                "provider": "ollama",
+                "model": args.model,
+                "parameters": {
+                    "top_logprobs": args.top_logprobs,
+                    "num_predict": args.num_predict,
+                    "temperature": args.temperature,
+                    "think": args.think,
+                    "seed": args.seed,
+                },
+            },
+        )
 
         artifact = {
             "schema_version": 1,
@@ -225,6 +277,7 @@ def main(argv: list[str] | None = None) -> int:
             "eval_count": response.get("eval_count"),
             "total_duration": response.get("total_duration"),
             "logprobs": enriched,
+            "probability_artifact": probability_artifact,
             "summary": _summarize(enriched),
         }
 

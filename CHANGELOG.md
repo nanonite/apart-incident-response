@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- Attach per-turn logprobs and coverage to agent artifacts (#99)
+- Capture OpenRouter token probabilities at the Pi provider boundary (#98)
+- Add OpenRouter one-shot goal inference with saved logprobs (#96)
+- Define shared partial-probability artifacts and entropy calculations (#95)
+- Add OpenRouter as an isolated Pi experiment endpoint (#97)
 - Persist and organize experiment run logs in workspace (#73)
 - Fail fast on uninitialized Pi submodule in Docker build (#75)
 - Add local Qwen3-8B logprobs data path for entropy metrics (#72)
@@ -32,4 +37,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix board IPC integration and CLI tool wiring (#58)
 
 ### Changed
+- Confirm OpenRouter logprob support for a pinned model and route (#93)
 - Run single-agent task calibration (#47)

@@ -1,9 +1,10 @@
 # Pi provider paths and execution boundaries
 
-The experiment controller launches pinned Pi 0.85.1. `openai-codex` and
-`opencode-go` are **Pi model providers**. Neither path runs the Codex CLI or
-OpenCode CLI as an experimental agent. The outer Codex session, if used to start
-Docker, is a separate process with a separate permissions policy.
+The experiment controller launches pinned Pi 0.85.1. `openai-codex`,
+`opencode-go`, and `openrouter` are **Pi model providers**. Neither path runs
+the Codex CLI or OpenCode CLI as an experimental agent. The outer Codex
+session, if used to start Docker, is a separate process with a separate
+permissions policy.
 
 ```mermaid
 flowchart TD
@@ -12,8 +13,10 @@ flowchart TD
     B --> P[Pi 0.85.1 with constrained incident-tools extension]
     P -->|openai-codex model| R[Controller HTTPS relay]
     P -->|opencode-go model| R
+    P -->|openrouter model| R
     R -->|Codex mode: chatgpt.com:443; OAuth: auth.openai.com:443| C[OpenAI/Codex service]
     R -->|OpenCode Go mode: opencode.ai:443| G[OpenCode Go service]
+    R -->|OpenRouter mode: openrouter.ai:443| OR[OpenRouter service]
 ```
 
 | Setting | Codex model path | OpenCode Go model path |
@@ -23,6 +26,56 @@ flowchart TD
 | Child egress | HTTPS relay to `chatgpt.com:443` and `auth.openai.com:443` | HTTPS relay to `opencode.ai:443` only; Codex OAuth egress is removed |
 | Provider identity | Pi's built-in `openai-codex` adapter | Pi's built-in `opencode-go` adapter, with a stable per-agent `x-opencode-session` value and provider User-Agent |
 | Experimental controls | Same C0/C1/C2 controller, task fixtures, constrained tools, per-agent/aggregate budgets, and artifact schema | Same controls; select the model with `--model` and compare only under a matched triplet contract |
+
+OpenRouter is selected with a full provider/model slug such as
+`openrouter/openai/gpt-4o-mini`. The controller reads the dedicated
+`APART_OPENROUTER_API_KEY_FILE` file (or the controller-only
+`OPENROUTER_API_KEY` fallback), stages an `openrouter` entry in the run-local
+Pi auth file, and removes it during cleanup. The child receives neither the
+key nor its source path. OpenRouter runs allow only `openrouter.ai:443`; the
+Codex OAuth hosts and the OpenCode host are removed when the provider is
+selected. The provider-specific `models.json` override keeps each agent's
+configured `maxTokens` envelope.
+
+The current OpenRouter catalog lists `openai/gpt-4o-mini` with `logprobs` and
+`top_logprobs` support. Its chat-completions endpoint is
+`https://openrouter.ai/api/v1/chat/completions`; `top_logprobs` accepts 0–20
+and requires `logprobs: true`. Requests that depend on these fields must set
+the provider preference `require_parameters: true` so routing cannot silently
+drop them. The sanitized request and response fixtures are recorded in
+[`tests/fixtures/openrouter-chat-completion-request.json`](../tests/fixtures/openrouter-chat-completion-request.json),
+[`tests/fixtures/openrouter-chat-completion-logprobs.json`](../tests/fixtures/openrouter-chat-completion-logprobs.json),
+and [`tests/fixtures/openrouter-chat-completion-missing-logprobs.json`](../tests/fixtures/openrouter-chat-completion-missing-logprobs.json).
+The one-shot path uses `stream: false` so the complete response can be
+validated before it is retained. OpenRouter supports streaming and tool calls,
+but a stream or tool turn without a complete text probability array is marked
+unavailable; the controller never fabricates token probabilities. The fixture
+records top alternatives only; it does not represent a full raw vocabulary-logit
+distribution.
+
+For multi-turn Pi runs, the `openai-completions` adapter hook is based on the
+root-pinned submodule revision `71dca871b` and collects OpenRouter
+`choice.logprobs.content` records from
+each streamed assistant turn. It attaches them as `probabilityCapture` with the
+response ID, Pi session ID, provider/model, and an explicit `complete`,
+`partial`, or `unavailable` status. The controller writes the normalized form
+to each agent's `probability_artifacts.json`; tool-call turns preserve their
+ordinary tool events and receive an unavailable record when the provider sends
+no text logprobs. The controller extension sets the same request fields through
+Pi's maintained `before_provider_request` hook.
+
+For a controlled container pilot, use a private key file outside the
+repository:
+
+```bash
+export APART_OPENROUTER_API_KEY_FILE="$HOME/.config/openrouter/api-key"
+just container-anchor output=openrouter-container seeds="1" \
+  model=openrouter/openai/gpt-4o-mini
+```
+
+The outer container controller mounts that file read-only, copies it to a
+controller-owned 0600 path, and cleans the copy on exit. Pi still runs inside
+its private Bubblewrap namespace and uses the provider relay.
 
 The agent process has a private network namespace and reaches only the
 controller's allowlisted HTTPS relay. Its filesystem mounts and task/board

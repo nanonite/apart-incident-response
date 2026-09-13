@@ -1,0 +1,20 @@
+{
+  "model": "openai/gpt-4o-mini",
+  "messages": [
+    {
+      "role": "user",
+      "content": "What is the capital of France? Reply with one word."
+    }
+  ],
+  "stream": false,
+  "logprobs": true,
+  "top_logprobs": 5,
+  "max_tokens": 2,
+  "temperature": 0,
+  "seed": 1,
+  "provider": {
+    "order": ["openai"],
+    "allow_fallbacks": false,
+    "require_parameters": true
+  }
+}
