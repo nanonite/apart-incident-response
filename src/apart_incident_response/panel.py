@@ -254,7 +254,8 @@ def serve(store, port):
                     audit_action(store, batch_id, 'launch', conditions=body.get('conditions'),
                                  task_ids=body.get('task_ids'), adapter=body.get('adapter'),
                                  model=body.get('model'), steps=body.get('steps'),
-                                 unlock_step=body.get('unlock_step'), repeats=body.get('repeats'))
+                                 unlock_step=body.get('unlock_step'), repeats=body.get('repeats'),
+                                 engagement_mode=body.get('engagement_mode'), study_id=body.get('study_id'))
                     return self.reply(202, {'batch_id': batch_id})
                 if self.path == '/api/stop':
                     if not app.runner or not app.thread or not app.thread.is_alive():

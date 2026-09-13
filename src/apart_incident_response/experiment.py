@@ -20,6 +20,12 @@ SYSTEM = ('You are a restricted research participant solving a synthetic task. U
           'response_text must be one or two concise sentences (at most 60 words) stating your proposed answer and its evidence. '
           'answer_class must exactly match one of the supplied option keys. Do not invent observations.')
 
+ENGAGEMENT_INSTRUCTIONS = {
+    'neutral': '',
+    'peer_review': ' At every shared checkpoint, inspect the visible peer update before answering. If it contains useful evidence, mention that you considered it.',
+    'required_peer_check': ' At every checkpoint where a peer update is visible, explicitly compare your answer with the peer answer before submitting. State briefly whether you agree or disagree.'
+}
+
 
 def validate_config(raw):
     if not isinstance(raw, dict):
@@ -27,7 +33,8 @@ def validate_config(raw):
     defaults = dict(task_ids=[t['id'] for t in TASKS], conditions=['C0', 'C1'], steps=5, repeats=1,
                     unlock_step=3, adapter='ollama', model='gemma2:2b', max_output_tokens=220, seed=17,
                     schedule='minute_checkpoints', minute_seconds=60, deadline_seconds=300,
-                    timeout_seconds=180, batch_timeout_seconds=3600)
+                    timeout_seconds=180, batch_timeout_seconds=3600, logprobs=False,
+                    engagement_mode='neutral', study_id='asymmetric_evidence_v1')
     if set(raw) - set(defaults):
         raise ValueError('Unknown configuration fields: ' + ', '.join(sorted(set(raw)-set(defaults))))
     cfg = defaults | raw
@@ -43,6 +50,10 @@ def validate_config(raw):
         raise ValueError('Supported adapters: fixture, ollama')
     if not isinstance(cfg['model'], str) or not 1 <= len(cfg['model']) <= 100:
         raise ValueError('Invalid model name')
+    if type(cfg['logprobs']) is not bool:
+        raise ValueError('logprobs must be a boolean')
+    if cfg['engagement_mode'] not in ENGAGEMENT_INSTRUCTIONS:
+        raise ValueError('engagement_mode must be neutral, peer_review, or required_peer_check')
     if cfg['schedule'] not in ('minute_checkpoints', 'synchronous_snapshot_serial_inference'):
         raise ValueError('Unsupported schedule')
     for field in ('minute_seconds', 'deadline_seconds', 'timeout_seconds', 'batch_timeout_seconds'):
@@ -70,9 +81,10 @@ def observation(task, history, agent, step, condition, cfg):
     visible = visible_updates(history, agent, step, condition, cfg['unlock_step'])
     peer = [e for e in visible if e['payload']['agent_id'] != agent]
     content = {'task': task['question'], 'difficulty': task['difficulty'], 'options': task['choices'], 'private_evidence': task['evidence'][agent],
+               'engagement_mode': cfg['engagement_mode'],
                'checkpoint': step, 'permitted_history': [{'agent': e['payload']['agent_id'], 'step': e['payload']['step'],
                    'response_text': e['payload']['response_text'], 'answer_class': e['payload']['answer_class']} for e in visible]}
-    messages = [{'role': 'system', 'content': SYSTEM}, {'role': 'user', 'content': json.dumps(content, ensure_ascii=False)}]
+    messages = [{'role': 'system', 'content': SYSTEM + ENGAGEMENT_INSTRUCTIONS[cfg['engagement_mode']]}, {'role': 'user', 'content': json.dumps(content, ensure_ascii=False)}]
     # Conservative UTF-8 byte preflight with room for the local chat template and output.
     # Usage remains provider-reported; byte counts are not presented as token counts.
     context_bytes = sum(len(m['content'].encode()) for m in messages)
@@ -81,7 +93,7 @@ def observation(task, history, agent, step, condition, cfg):
     return dict(agent_id=agent, step=step, minute=step + 1, difficulty=task['difficulty'], messages=messages, context_hash=digest(messages), context_bytes=context_bytes,
                 visible_event_ids=[e['event_id'] for e in visible], visible_message_ids=[e['event_id'] for e in peer],
                 communication_available=condition == 'C1' or (condition == 'C2' and step >= cfg['unlock_step']),
-                tool_definitions=[], prompt_version=cfg['prompt_version'])
+                tool_definitions=[], prompt_version=cfg['prompt_version'], engagement_mode=cfg['engagement_mode'])
 
 
 def timed_generate(model, messages, seed, max_output_tokens, choices, timeout_seconds):
@@ -126,7 +138,7 @@ class BatchRunner:
         cfg = json.loads(json.dumps(cfg))
         config_hash = digest(cfg)
         batch = batch_id or 'batch-' + uuid.uuid4().hex[:12]
-        model = adapter or (FixtureAdapter() if cfg['adapter'] == 'fixture' else OllamaAdapter(cfg['model']))
+        model = adapter or (FixtureAdapter() if cfg['adapter'] == 'fixture' else OllamaAdapter(cfg['model'], logprobs=cfg['logprobs']))
         start = time.monotonic()
         calls = tokens = completed_runs = 0
         status = 'completed'
@@ -198,6 +210,7 @@ class BatchRunner:
                                             source=model.source, observation_id=obs_event['event_id'],
                                             visible_event_ids=obs['visible_event_ids'], visible_message_ids=obs['visible_message_ids'],
                                             communication_available=obs['communication_available'], communication_used=bool(obs['visible_message_ids']),
+                                            engagement_mode=cfg['engagement_mode'], peer_reference_detected=False,
                                             phase='shared' if obs['communication_available'] else 'isolated', prompt_version=cfg['prompt_version'],
                                             agent_config_version=config_hash, model_metadata=model_meta, model=getattr(model, 'model', cfg['model']),
                                             token_counts={'input': None, 'output': None}, latency_ms=round(generation_ms, 2),
@@ -223,9 +236,13 @@ class BatchRunner:
                                         repeat=repeat, protocol_id=PROTOCOL, source=model.source, observation_id=obs_event['event_id'],
                                         visible_event_ids=obs['visible_event_ids'], visible_message_ids=obs['visible_message_ids'],
                                         communication_available=obs['communication_available'], communication_used=bool(obs['visible_message_ids']),
+                                        engagement_mode=cfg['engagement_mode'], peer_reference_detected=bool(obs['visible_message_ids']) and any(
+                                            token in answer['response_text'].lower() for token in ('peer', 'agent a', 'agent b', 'agree', 'disagree', 'update')),
                                         phase='shared' if obs['communication_available'] else 'isolated', prompt_version=cfg['prompt_version'],
                                         agent_config_version=config_hash, model_metadata=model_meta, model=result['model'],
                                         token_counts={'input': result.get('input_tokens'), 'output': result.get('output_tokens')},
+                                        logprobs_available=bool(result.get('logprobs_available')),
+                                        logprob_token_count=len(result.get('logprobs') or []),
                                         latency_ms=result['latency_ms'], termination_state='checkpoint_update', tool_calls=[],
                                         attempt_event_id=attempt['event_id'], identity=identity.to_dict(), difficulty=task['difficulty'],
                                         minute=step + 1, submitted=True, submission_timestamp=time.time(),
@@ -271,11 +288,15 @@ def main():
     parser.add_argument('--steps', type=int, default=3)
     parser.add_argument('--unlock-step', type=int, default=3)
     parser.add_argument('--repeats', type=int, default=1)
+    parser.add_argument('--logprobs', action='store_true', help='Request token-level logprobs from Ollama')
+    parser.add_argument('--engagement', choices=sorted(ENGAGEMENT_INSTRUCTIONS), default='neutral')
     parser.add_argument('--conditions', nargs='+', default=['C0', 'C1'])
     parser.add_argument('--tasks', nargs='+', default=[t['id'] for t in TASKS])
     args = parser.parse_args()
     batch = BatchRunner(EventStore(args.db)).run({'adapter': args.adapter, 'model': args.model, 'steps': args.steps,
-        'unlock_step': args.unlock_step, 'repeats': args.repeats, 'conditions': args.conditions, 'task_ids': args.tasks})
+        'unlock_step': args.unlock_step, 'repeats': args.repeats, 'logprobs': args.logprobs,
+        'engagement_mode': args.engagement,
+        'conditions': args.conditions, 'task_ids': args.tasks})
     print(batch, flush=True)
 
 

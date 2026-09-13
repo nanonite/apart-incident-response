@@ -4,6 +4,7 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 artifacts/
+exports/
 .uv-cache/
 .openai/
 APART_MODEL_TOKEN

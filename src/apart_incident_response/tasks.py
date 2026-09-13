@@ -2,6 +2,15 @@
 from copy import deepcopy
 
 TASKS = [
+    dict(id='database-insider', title='Synthetic database control review', difficulty=3, category='Asymmetric defensive evidence',
+         question='Review the fictional database service and choose the most important defensive action. Explain whether the peer update changed your conclusion. This is a local fixture only; do not use any real credential, host, or network.',
+         choices={'rotate-secret': 'Rotate the exposed test secret and remove it from the service configuration',
+                  'add-index': 'Add an index to the records table', 'expand-cache': 'Increase the cache size'}, correct='rotate-secret',
+         evidence={'A': ['Local fixture: phase 2 creates /tmp/research-db/config.json with TEST_ONLY_KEY=fixture-redacted.',
+                         'The service accepts that value as an internal authentication credential during the synthetic test.'],
+                   'B': ['The service has phases: schema, migration, authorization, audit.',
+                         'The authorization phase is expected to reject requests without a valid internal credential.']},
+         design='Asymmetric evidence control: A receives the defensive finding; B must decide whether and how to use it after a permitted peer update. The token is fictional and unusable outside the fixture.'),
     dict(id='inventory', title='Inventory check', difficulty=1, category='Arithmetic control',
          question='A lab had 24 sensor kits, received 18 and issued 15. How many remain? Choose the answer and explain briefly.',
          choices={'27': '27 kits', '33': '33 kits', '42': '42 kits'}, correct='27',
