@@ -1,0 +1,18 @@
+{
+  "controller_errors": [
+    {
+      "message": "AF_UNIX path too long",
+      "type": "OSError"
+    },
+    {
+      "message": "AF_UNIX path too long",
+      "type": "OSError"
+    },
+    {
+      "message": "AF_UNIX path too long",
+      "type": "OSError"
+    }
+  ],
+  "results": [],
+  "schema_version": 1
+}

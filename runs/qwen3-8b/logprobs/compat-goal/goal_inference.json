@@ -1,0 +1,544 @@
+{
+  "schema_version": 1,
+  "run_class": "goal_inference",
+  "experimental_data": true,
+  "run_id": "seed-1",
+  "checkpoint": {
+    "model_id": "Qwen/Qwen3-8B",
+    "revision": "47719a242beab8f9aecc40ce3928b034dd5dd559",
+    "ollama_model": "qwen3:8b"
+  },
+  "model": "qwen3:8b",
+  "prompt": {
+    "text": "The capital of France is",
+    "sha256": "bbaff4d2ecd5892d4a442b0f53131641bf6e6f284761dd20fc0664bc97145762"
+  },
+  "parameters": {
+    "top_logprobs": 5,
+    "num_predict": 128,
+    "temperature": 0.0,
+    "think": false,
+    "seed": 1
+  },
+  "response": "The capital of France is Paris.",
+  "thinking": "",
+  "done_reason": "stop",
+  "prompt_eval_count": 21,
+  "eval_count": 8,
+  "total_duration": 116217719,
+  "logprobs": [
+    {
+      "token": "The",
+      "logprob": -0.00015343412815127522,
+      "bytes": [
+        84,
+        104,
+        101
+      ],
+      "top_logprobs": [
+        {
+          "token": "The",
+          "logprob": -0.00015343412815127522,
+          "bytes": [
+            84,
+            104,
+            101
+          ]
+        },
+        {
+          "token": "Paris",
+          "logprob": -8.782837867736816,
+          "bytes": [
+            80,
+            97,
+            114,
+            105,
+            115
+          ]
+        },
+        {
+          "token": "巴黎",
+          "logprob": -18.799219131469727,
+          "bytes": [
+            229,
+            183,
+            180,
+            233,
+            187,
+            142
+          ]
+        },
+        {
+          "token": "Par",
+          "logprob": -19.159496307373047,
+          "bytes": [
+            80,
+            97,
+            114
+          ]
+        },
+        {
+          "token": "France",
+          "logprob": -19.279050827026367,
+          "bytes": [
+            70,
+            114,
+            97,
+            110,
+            99,
+            101
+          ]
+        }
+      ],
+      "_entropy": {
+        "sampled_logprob": -0.00015343412815127522,
+        "sampled_prob": 0.9998465776422626,
+        "top_k_entropy_bits": 1.001082
+      }
+    },
+    {
+      "token": " capital",
+      "logprob": 0,
+      "bytes": [
+        32,
+        99,
+        97,
+        112,
+        105,
+        116,
+        97,
+        108
+      ],
+      "top_logprobs": [
+        {
+          "token": " capital",
+          "logprob": 0,
+          "bytes": [
+            32,
+            99,
+            97,
+            112,
+            105,
+            116,
+            97,
+            108
+          ]
+        },
+        {
+          "token": "capital",
+          "logprob": -25.37207794189453,
+          "bytes": [
+            99,
+            97,
+            112,
+            105,
+            116,
+            97,
+            108
+          ]
+        },
+        {
+          "token": " Capital",
+          "logprob": -28.263046264648438,
+          "bytes": [
+            32,
+            67,
+            97,
+            112,
+            105,
+            116,
+            97,
+            108
+          ]
+        },
+        {
+          "token": " answer",
+          "logprob": -29.39569091796875,
+          "bytes": [
+            32,
+            97,
+            110,
+            115,
+            119,
+            101,
+            114
+          ]
+        },
+        {
+          "token": " capitalized",
+          "logprob": -31.105884552001953,
+          "bytes": [
+            32,
+            99,
+            97,
+            112,
+            105,
+            116,
+            97,
+            108,
+            105,
+            122,
+            101,
+            100
+          ]
+        }
+      ],
+      "_entropy": {
+        "sampled_logprob": 0.0,
+        "sampled_prob": 1.0,
+        "top_k_entropy_bits": 1.0
+      }
+    },
+    {
+      "token": " of",
+      "logprob": 0,
+      "bytes": [
+        32,
+        111,
+        102
+      ],
+      "top_logprobs": [
+        {
+          "token": " of",
+          "logprob": 0,
+          "bytes": [
+            32,
+            111,
+            102
+          ]
+        },
+        {
+          "token": " của",
+          "logprob": -21.505157470703125,
+          "bytes": [
+            32,
+            99,
+            225,
+            187,
+            167,
+            97
+          ]
+        },
+        {
+          "token": "ของ",
+          "logprob": -28.617416381835938,
+          "bytes": [
+            224,
+            184,
+            130,
+            224,
+            184,
+            173,
+            224,
+            184,
+            135
+          ]
+        },
+        {
+          "token": " city",
+          "logprob": -31.612194061279297,
+          "bytes": [
+            32,
+            99,
+            105,
+            116,
+            121
+          ]
+        },
+        {
+          "token": "of",
+          "logprob": -34.33586120605469,
+          "bytes": [
+            111,
+            102
+          ]
+        }
+      ],
+      "_entropy": {
+        "sampled_logprob": 0.0,
+        "sampled_prob": 1.0,
+        "top_k_entropy_bits": 1.0
+      }
+    },
+    {
+      "token": " France",
+      "logprob": 0,
+      "bytes": [
+        32,
+        70,
+        114,
+        97,
+        110,
+        99,
+        101
+      ],
+      "top_logprobs": [
+        {
+          "token": " France",
+          "logprob": 0,
+          "bytes": [
+            32,
+            70,
+            114,
+            97,
+            110,
+            99,
+            101
+          ]
+        },
+        {
+          "token": "法国",
+          "logprob": -24.053775787353516,
+          "bytes": [
+            230,
+            179,
+            149,
+            229,
+            155,
+            189
+          ]
+        },
+        {
+          "token": "France",
+          "logprob": -25.302715301513672,
+          "bytes": [
+            70,
+            114,
+            97,
+            110,
+            99,
+            101
+          ]
+        },
+        {
+          "token": " Spain",
+          "logprob": -30.262285232543945,
+          "bytes": [
+            32,
+            83,
+            112,
+            97,
+            105,
+            110
+          ]
+        },
+        {
+          "token": " Italy",
+          "logprob": -30.462350845336914,
+          "bytes": [
+            32,
+            73,
+            116,
+            97,
+            108,
+            121
+          ]
+        }
+      ],
+      "_entropy": {
+        "sampled_logprob": 0.0,
+        "sampled_prob": 1.0,
+        "top_k_entropy_bits": 1.0
+      }
+    },
+    {
+      "token": " is",
+      "logprob": 0,
+      "bytes": [
+        32,
+        105,
+        115
+      ],
+      "top_logprobs": [
+        {
+          "token": " is",
+          "logprob": 0,
+          "bytes": [
+            32,
+            105,
+            115
+          ]
+        },
+        {
+          "token": "是",
+          "logprob": -28.502803802490234,
+          "bytes": [
+            230,
+            152,
+            175
+          ]
+        },
+        {
+          "token": " là",
+          "logprob": -31.1947021484375,
+          "bytes": [
+            32,
+            108,
+            195,
+            160
+          ]
+        },
+        {
+          "token": "は",
+          "logprob": -34.09146499633789,
+          "bytes": [
+            227,
+            129,
+            175
+          ]
+        },
+        {
+          "token": " adalah",
+          "logprob": -35.605255126953125,
+          "bytes": [
+            32,
+            97,
+            100,
+            97,
+            108,
+            97,
+            104
+          ]
+        }
+      ],
+      "_entropy": {
+        "sampled_logprob": 0.0,
+        "sampled_prob": 1.0,
+        "top_k_entropy_bits": 1.0
+      }
+    },
+    {
+      "token": " Paris",
+      "logprob": -0.0030132585670799017,
+      "bytes": [
+        32,
+        80,
+        97,
+        114,
+        105,
+        115
+      ],
+      "top_logprobs": [
+        {
+          "token": " Paris",
+          "logprob": -0.0030132585670799017,
+          "bytes": [
+            32,
+            80,
+            97,
+            114,
+            105,
+            115
+          ]
+        },
+        {
+          "token": " **",
+          "logprob": -5.806254863739014,
+          "bytes": [
+            32,
+            42,
+            42
+          ]
+        },
+        {
+          "token": "巴黎",
+          "logprob": -17.249740600585938,
+          "bytes": [
+            229,
+            183,
+            180,
+            233,
+            187,
+            142
+          ]
+        },
+        {
+          "token": "Paris",
+          "logprob": -17.292949676513672,
+          "bytes": [
+            80,
+            97,
+            114,
+            105,
+            115
+          ]
+        },
+        {
+          "token": " Par",
+          "logprob": -21.97041130065918,
+          "bytes": [
+            32,
+            80,
+            97,
+            114
+          ]
+        }
+      ],
+      "_entropy": {
+        "sampled_logprob": -0.0030132585670799017,
+        "sampled_prob": 0.9969912767400215,
+        "top_k_entropy_bits": 1.01479
+      }
+    },
+    {
+      "token": ".",
+      "logprob": 0,
+      "bytes": [
+        46
+      ],
+      "top_logprobs": [
+        {
+          "token": ".",
+          "logprob": 0,
+          "bytes": [
+            46
+          ]
+        },
+        {
+          "token": ",",
+          "logprob": -27.794204711914062,
+          "bytes": [
+            44
+          ]
+        },
+        {
+          "token": ".\n\n",
+          "logprob": -28.985794067382812,
+          "bytes": [
+            46,
+            10,
+            10
+          ]
+        },
+        {
+          "token": ".|",
+          "logprob": -30.0228214263916,
+          "bytes": [
+            46,
+            124
+          ]
+        },
+        {
+          "token": ".\"",
+          "logprob": -30.070552825927734,
+          "bytes": [
+            46,
+            34
+          ]
+        }
+      ],
+      "_entropy": {
+        "sampled_logprob": 0.0,
+        "sampled_prob": 1.0,
+        "top_k_entropy_bits": 1.0
+      }
+    }
+  ],
+  "summary": {
+    "token_count": 7,
+    "total_surprise_bits": 0.004569,
+    "mean_surprise_bits": 0.000653,
+    "total_top_k_entropy_bits": 7.015872,
+    "mean_top_k_entropy_bits": 1.002267
+  }
+}

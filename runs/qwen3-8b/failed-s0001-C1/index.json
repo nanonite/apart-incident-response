@@ -1,0 +1,257 @@
+{
+  "agents": {
+    "agent-1": {
+      "artifacts": {
+        "agent_telemetry.json": {
+          "path": "agents/agent-1/artifacts/agent_telemetry.json",
+          "present": false
+        },
+        "events.json": {
+          "path": "agents/agent-1/artifacts/events.json",
+          "present": false
+        },
+        "final_response.txt": {
+          "path": "agents/agent-1/artifacts/final_response.txt",
+          "present": false
+        },
+        "metadata.json": {
+          "path": "agents/agent-1/artifacts/metadata.json",
+          "present": false
+        },
+        "response.json": {
+          "path": "agents/agent-1/artifacts/response.json",
+          "present": false
+        },
+        "result.json": {
+          "path": "agents/agent-1/artifacts/result.json",
+          "present": false
+        },
+        "stderr.log": {
+          "path": "agents/agent-1/artifacts/stderr.log",
+          "present": false
+        },
+        "stdout.jsonl": {
+          "path": "agents/agent-1/artifacts/stdout.jsonl",
+          "present": false
+        },
+        "task_submission.json": {
+          "path": "agents/agent-1/artifacts/task_submission.json",
+          "present": false
+        },
+        "timeline.json": {
+          "path": "agents/agent-1/artifacts/timeline.json",
+          "present": false
+        },
+        "tool_calls.jsonl": {
+          "path": "agents/agent-1/artifacts/tool_calls.jsonl",
+          "present": false
+        }
+      },
+      "failure_reasons": [],
+      "identity": {
+        "agent_id": "agent-1"
+      },
+      "status": "missing",
+      "timeline": {
+        "path": "agents/agent-1/artifacts/timeline.json",
+        "present": true
+      },
+      "usage": {
+        "provider_tokens": null,
+        "tool_calls": null,
+        "turns": null
+      }
+    },
+    "agent-2": {
+      "artifacts": {
+        "agent_telemetry.json": {
+          "path": "agents/agent-2/artifacts/agent_telemetry.json",
+          "present": false
+        },
+        "events.json": {
+          "path": "agents/agent-2/artifacts/events.json",
+          "present": false
+        },
+        "final_response.txt": {
+          "path": "agents/agent-2/artifacts/final_response.txt",
+          "present": false
+        },
+        "metadata.json": {
+          "path": "agents/agent-2/artifacts/metadata.json",
+          "present": false
+        },
+        "response.json": {
+          "path": "agents/agent-2/artifacts/response.json",
+          "present": false
+        },
+        "result.json": {
+          "path": "agents/agent-2/artifacts/result.json",
+          "present": false
+        },
+        "stderr.log": {
+          "path": "agents/agent-2/artifacts/stderr.log",
+          "present": false
+        },
+        "stdout.jsonl": {
+          "path": "agents/agent-2/artifacts/stdout.jsonl",
+          "present": false
+        },
+        "task_submission.json": {
+          "path": "agents/agent-2/artifacts/task_submission.json",
+          "present": false
+        },
+        "timeline.json": {
+          "path": "agents/agent-2/artifacts/timeline.json",
+          "present": false
+        },
+        "tool_calls.jsonl": {
+          "path": "agents/agent-2/artifacts/tool_calls.jsonl",
+          "present": false
+        }
+      },
+      "failure_reasons": [],
+      "identity": {
+        "agent_id": "agent-2"
+      },
+      "status": "missing",
+      "timeline": {
+        "path": "agents/agent-2/artifacts/timeline.json",
+        "present": true
+      },
+      "usage": {
+        "provider_tokens": null,
+        "tool_calls": null,
+        "turns": null
+      }
+    },
+    "agent-3": {
+      "artifacts": {
+        "agent_telemetry.json": {
+          "path": "agents/agent-3/artifacts/agent_telemetry.json",
+          "present": false
+        },
+        "events.json": {
+          "path": "agents/agent-3/artifacts/events.json",
+          "present": false
+        },
+        "final_response.txt": {
+          "path": "agents/agent-3/artifacts/final_response.txt",
+          "present": false
+        },
+        "metadata.json": {
+          "path": "agents/agent-3/artifacts/metadata.json",
+          "present": false
+        },
+        "response.json": {
+          "path": "agents/agent-3/artifacts/response.json",
+          "present": false
+        },
+        "result.json": {
+          "path": "agents/agent-3/artifacts/result.json",
+          "present": false
+        },
+        "stderr.log": {
+          "path": "agents/agent-3/artifacts/stderr.log",
+          "present": false
+        },
+        "stdout.jsonl": {
+          "path": "agents/agent-3/artifacts/stdout.jsonl",
+          "present": false
+        },
+        "task_submission.json": {
+          "path": "agents/agent-3/artifacts/task_submission.json",
+          "present": false
+        },
+        "timeline.json": {
+          "path": "agents/agent-3/artifacts/timeline.json",
+          "present": false
+        },
+        "tool_calls.jsonl": {
+          "path": "agents/agent-3/artifacts/tool_calls.jsonl",
+          "present": false
+        }
+      },
+      "failure_reasons": [],
+      "identity": {
+        "agent_id": "agent-3"
+      },
+      "status": "missing",
+      "timeline": {
+        "path": "agents/agent-3/artifacts/timeline.json",
+        "present": true
+      },
+      "usage": {
+        "provider_tokens": null,
+        "tool_calls": null,
+        "turns": null
+      }
+    }
+  },
+  "artifacts": {
+    "budget": {
+      "path": "budget.json",
+      "present": true
+    },
+    "manifest": {
+      "path": "manifest.json",
+      "present": true
+    },
+    "metrics": {
+      "path": "artifacts/metrics.json",
+      "present": true
+    },
+    "replay": {
+      "path": "artifacts/replay.json",
+      "present": true
+    },
+    "results": {
+      "path": "results.json",
+      "present": true
+    }
+  },
+  "failure_reasons": [
+    {
+      "agent_id": "agent-1",
+      "reason": "agent status: missing"
+    },
+    {
+      "agent_id": "agent-2",
+      "reason": "agent status: missing"
+    },
+    {
+      "agent_id": "agent-3",
+      "reason": "agent status: missing"
+    },
+    {
+      "reason": {
+        "message": "AF_UNIX path too long",
+        "type": "OSError"
+      },
+      "source": "controller"
+    },
+    {
+      "reason": {
+        "message": "AF_UNIX path too long",
+        "type": "OSError"
+      },
+      "source": "controller"
+    },
+    {
+      "reason": {
+        "message": "AF_UNIX path too long",
+        "type": "OSError"
+      },
+      "source": "controller"
+    }
+  ],
+  "prompt": "Diagnose the incident described by the evidence assigned to you. Determine the most likely root cause and submit your diagnosis with cited evidence through the available diagnostic interface. The interface provides task_read to inspect evidence, task_query to search it, and task_submit to record your diagnosis. Return a concise final explanation after submitting.",
+  "run": {
+    "condition": "C1",
+    "run_class": "experimental",
+    "run_id": "s0001-C1",
+    "seed": 1,
+    "triplet_id": "s0001"
+  },
+  "schema_version": 1,
+  "status": "failed"
+}
