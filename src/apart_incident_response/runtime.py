@@ -1511,6 +1511,22 @@ def _persistence_failure_diagnostic(error: BaseException) -> str:
     return f"OAuth credential persistence failed ({type(error).__name__})"
 
 
+def _submission_finalization_failure_diagnostic(error: BaseException) -> str:
+    """Describe submission finalization failure without copying artifact data."""
+
+    return f"Task submission finalization failed ({type(error).__name__})"
+
+
+def _merge_persistence_diagnostics(
+    first: str | None, second: str | None
+) -> str | None:
+    if first is None:
+        return second
+    if second is None:
+        return first
+    return f"{first}; {second}"
+
+
 def _message_key(message: Mapping[str, Any]) -> str:
     timestamp = message.get("timestamp")
     if isinstance(timestamp, (int, float)) and not isinstance(timestamp, bool):
@@ -1953,11 +1969,19 @@ class AgentRun:
                 # The submission may have raced the stdout event that reports
                 # its tool call. Finalize after the child and selector have
                 # fully drained so the artifact carries complete usage.
-                self.tool_service.finalize_runtime_usage(self.identity)
+                try:
+                    self.tool_service.finalize_runtime_usage(self.identity)
+                except Exception as exc:
+                    # A malformed or unavailable submission artifact must not
+                    # erase the run's exit status or prevent result.json from
+                    # being written. Keep the diagnostic type-only because
+                    # the exception may contain paths or sensitive data.
+                    persistence_failure = _submission_finalization_failure_diagnostic(exc)
             result = self._finish(
                 status, exit_code, started_at, _utc_now(), started_clock,
                 final_response, failure_reason, command, events,
                 agent_tokens_used, agent_tool_calls_used,
+                persistence_failure=persistence_failure,
             )
             (artifact_dir / "stdout.jsonl").write_text("".join(stdout_lines), encoding="utf-8")
             (artifact_dir / "stderr.log").write_text("".join(stderr_lines), encoding="utf-8")
@@ -1969,13 +1993,14 @@ class AgentRun:
                 # An existing run exception/result must not be masked by a
                 # defensive accounting or cleanup path.
                 pass
+            auth_persistence_failure: str | None = None
             try:
                 _persist_auth_stage(auth_stage)
             except Exception as exc:
                 # Keep the diagnostic deliberately class-only: exception
                 # messages can contain paths or provider data and must never
                 # expose a credential in the artifact.
-                persistence_failure = _persistence_failure_diagnostic(exc)
+                auth_persistence_failure = _persistence_failure_diagnostic(exc)
             try:
                 self._cleanup_staged_auth()
             except Exception:
@@ -2000,14 +2025,16 @@ class AgentRun:
                     auth_stage.release()
                 except Exception:
                     pass
-            if persistence_failure is not None and result is not None:
-                result.persistence_failure = persistence_failure
+            if auth_persistence_failure is not None and result is not None:
+                result.persistence_failure = _merge_persistence_diagnostics(
+                    result.persistence_failure, auth_persistence_failure
+                )
                 if result.status is ExitStatus.COMPLETED:
                     result.status = ExitStatus.FAILED
                 result.failure_reason = (
-                    f"{result.failure_reason}; {persistence_failure}"
+                    f"{result.failure_reason}; {result.persistence_failure}"
                     if result.failure_reason
-                    else persistence_failure
+                    else result.persistence_failure
                 )
                 try:
                     self._write_json(
@@ -2079,6 +2106,7 @@ class AgentRun:
         events: list[dict[str, Any]],
         tokens_used: int,
         tool_calls_used: int,
+        persistence_failure: str | None = None,
     ) -> RunResult:
         result = RunResult(
             identity=self.identity,
@@ -2095,6 +2123,7 @@ class AgentRun:
             workspace=str(self.workspace.root),
             artifact_dir=str(self.workspace.artifact_dir),
             events=events,
+            persistence_failure=persistence_failure,
         )
         (self.workspace.artifact_dir / "events.json").write_text(
             json.dumps(events, indent=2, sort_keys=True) + "\n", encoding="utf-8"

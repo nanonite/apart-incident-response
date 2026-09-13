@@ -552,6 +552,68 @@ class RuntimeContractTests(unittest.TestCase):
             self.assertEqual(result.status.value, "failed")
             fake_proxy.stop.assert_called_once()
 
+    def test_submission_finalization_failure_preserves_completed_result(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            fake_agent = root / "complete_agent.py"
+            fake_agent.write_text(
+                textwrap.dedent(
+                    """
+                    import json
+                    print(json.dumps({"type": "message_end", "message": {
+                        "role": "assistant",
+                        "content": [{"type": "text", "text": "completed"}],
+                        "usage": {"totalTokens": 1},
+                        "stopReason": "stop",
+                    }}), flush=True)
+                    """
+                ),
+                encoding="utf-8",
+            )
+
+            class FinalizationFailureService:
+                def update_runtime_usage(self, identity, total_tokens, tool_calls):
+                    return None
+
+                def issue_credential(self, identity):
+                    return "opaque-credential"
+
+                def finalize_runtime_usage(self, identity):
+                    raise ValueError("invalid task_submission artifact path")
+
+            identity = self.identity()
+            workspace = create_isolated_workspace(root / "runs", identity)
+            config = self.config(
+                launch_command=(sys.executable, str(fake_agent)),
+                isolation=IsolationPolicy(sandbox="none", allow_unsafe_for_tests=True),
+                per_agent_token_budget=10,
+                per_agent_tool_call_budget=1,
+                aggregate_token_budget=10,
+                aggregate_tool_call_budget=1,
+                timeout_seconds=2,
+            )
+            result = AgentRun(
+                config,
+                identity,
+                workspace,
+                SystemBudget(10, 1),
+                FinalizationFailureService(),
+            ).run("complete")
+
+            self.assertEqual(result.status.value, "completed")
+            self.assertEqual(result.exit_code, 0)
+            self.assertEqual(
+                result.persistence_failure,
+                "Task submission finalization failed (ValueError)",
+            )
+            saved = json.loads((workspace.artifact_dir / "result.json").read_text())
+            self.assertEqual(saved["status"], "completed")
+            self.assertEqual(saved["exit_code"], 0)
+            self.assertEqual(
+                saved["persistence_failure"],
+                "Task submission finalization failed (ValueError)",
+            )
+
     def test_auth_cleanup_handles_lock_file_symlink_and_directory(self):
         with tempfile.TemporaryDirectory() as temp:
             identity = self.identity()
