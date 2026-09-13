@@ -1,0 +1,22 @@
+services:
+  runtime:
+    image: apart-incident-response:local
+    build:
+      context: .
+      target: runtime
+    environment:
+      APART_PI_ROOT: /opt/pi
+      APART_PI_AUTH_FILE: /run/secrets/pi-auth.json
+    volumes:
+      - type: bind
+        source: ./artifacts
+        target: /app/artifacts
+    # bubblewrap creates the inner agent namespaces. The agent still receives
+    # only the read-only paths explicitly assembled by the Python controller.
+    cap_add:
+      - SYS_ADMIN
+      - NET_ADMIN
+    security_opt:
+      - seccomp=unconfined
+      - apparmor=unconfined
+    command: ["validate-config", "config/runtime.json"]

@@ -142,6 +142,10 @@ class RuntimeContractTests(unittest.TestCase):
             self.assertIn("--setenv", command)
             identity_index = command.index("APART_RUN_ID")
             self.assertEqual(command[identity_index + 1], "run-001")
+            if Path("/usr").is_dir():
+                self.assertIn("/usr", command)
+            if Path("/lib").exists():
+                self.assertIn("/lib", command)
 
     def test_bubblewrap_namespace_failure_is_explicit_and_fail_closed(self):
         reason = _bubblewrap_failure_reason(
