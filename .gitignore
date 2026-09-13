@@ -15,3 +15,8 @@ ollama-models/
 experiments/
 Experiments/Experiment-1/batches/
 Experiments/Experiment-1/fixture/
+
+# Per-agent home scratch state (e.g. a bun install cache) staged fresh into
+# every isolated agent sandbox by the controller. Not experiment data - the
+# real artifacts live in each agent's artifacts/ directory.
+runs/**/agents/*/home/
