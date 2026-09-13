@@ -121,6 +121,9 @@ limits remain in force.
 
 The `run` command writes metadata, raw JSONL, stderr, parsed events, the final
 response, budget usage, and exit status under the agent artifact directory.
+Experiment output under `runs/` is intentionally versioned for sharing between
+workers; event, message, tool, and usage data is retained exactly, with only
+credential-shaped fields and known secret values redacted.
 
 ## Controlled n-agent experiment controller
 

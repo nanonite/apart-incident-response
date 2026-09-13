@@ -1,0 +1,196 @@
+{
+  "claim_scope": "descriptive pilot evidence only",
+  "experimental_data": true,
+  "run_class": "experimental",
+  "schema_version": 1,
+  "triplets": [
+    {
+      "conditions": [
+        "C0",
+        "C1",
+        "C2"
+      ],
+      "metrics": {
+        "C0": {
+          "U": 0.0,
+          "agent_count": 3,
+          "aggregate_token_budget": 48000,
+          "board_bytes_read": 0,
+          "board_bytes_written": 0,
+          "board_reads_R": 0,
+          "board_writes_W": 0,
+          "completed_agents": 0,
+          "cross_agent_messages_X": 0,
+          "evidence_to_message_opportunities": 0,
+          "failures": [
+            {
+              "agent_id": "agent-1",
+              "reason": "agent exceeded per-agent token budget; provider usage exceeded its claimed envelope (token overage=86, tool-call overage=0)",
+              "status": "budget_exhausted"
+            },
+            {
+              "agent_id": "agent-2",
+              "reason": "agent exceeded per-agent token budget; provider usage exceeded its claimed envelope (token overage=2089, tool-call overage=0)",
+              "status": "budget_exhausted"
+            },
+            {
+              "agent_id": "agent-3",
+              "reason": "agent exceeded per-agent token budget; provider usage exceeded its claimed envelope (token overage=323, tool-call overage=0)",
+              "status": "budget_exhausted"
+            }
+          ],
+          "mean_uptake_latency_seconds": null,
+          "message_read_ratio_M": 0.0,
+          "message_to_answer_opportunities": 0,
+          "pilot_claim_scope": "descriptive; no causal or inferential claim from this metric alone",
+          "schema_version": 1,
+          "submitted_agents": 0,
+          "success_per_1000_tokens": 0.0,
+          "task_success": false,
+          "task_success_rate": 0.0,
+          "total_tokens": 50498,
+          "total_tool_calls": 43,
+          "total_turns": 30,
+          "transformation_events": [],
+          "transformation_opportunities": 0,
+          "transformation_rate": 0.0,
+          "uptake": [],
+          "uptake_defined": false,
+          "uptake_definition": "recipient use after a prior board read of a seeded-token message from another agent",
+          "uptake_events": 0,
+          "uptake_latency_seconds": [],
+          "uptake_opportunities": 0,
+          "uptake_outcomes": [],
+          "uptake_recipients": 0,
+          "validator_outcomes": [],
+          "wall_clock_seconds": 67.283528
+        },
+        "C1": {
+          "U": 0.0,
+          "agent_count": 3,
+          "aggregate_token_budget": 48000,
+          "board_bytes_read": 0,
+          "board_bytes_written": 0,
+          "board_reads_R": 0,
+          "board_writes_W": 0,
+          "completed_agents": 0,
+          "coordination_overhead": {
+            "extra_board_reads_vs_baseline": 0,
+            "extra_board_writes_vs_baseline": 0,
+            "extra_tokens_vs_baseline": -426,
+            "extra_tool_calls_vs_baseline": 10
+          },
+          "cross_agent_messages_X": 0,
+          "evidence_to_message_opportunities": 0,
+          "failures": [
+            {
+              "agent_id": "agent-1",
+              "reason": "agent exceeded per-agent token budget; provider usage exceeded its claimed envelope (token overage=1386, tool-call overage=0)",
+              "status": "budget_exhausted"
+            },
+            {
+              "agent_id": "agent-2",
+              "reason": "agent exceeded per-agent token budget; provider usage exceeded its claimed envelope (token overage=677, tool-call overage=0)",
+              "status": "budget_exhausted"
+            },
+            {
+              "agent_id": "agent-3",
+              "reason": "agent exceeded per-agent token budget; provider usage exceeded its claimed envelope (token overage=9, tool-call overage=0)",
+              "status": "budget_exhausted"
+            }
+          ],
+          "mean_uptake_latency_seconds": null,
+          "message_read_ratio_M": 0.0,
+          "message_to_answer_opportunities": 0,
+          "pilot_claim_scope": "descriptive; no causal or inferential claim from this metric alone",
+          "schema_version": 1,
+          "submitted_agents": 0,
+          "success_per_1000_tokens": 0.0,
+          "task_success": false,
+          "task_success_rate": 0.0,
+          "total_tokens": 50072,
+          "total_tool_calls": 53,
+          "total_turns": 26,
+          "transformation_events": [],
+          "transformation_opportunities": 0,
+          "transformation_rate": 0.0,
+          "uptake": [],
+          "uptake_defined": false,
+          "uptake_definition": "recipient use after a prior board read of a seeded-token message from another agent",
+          "uptake_events": 0,
+          "uptake_latency_seconds": [],
+          "uptake_opportunities": 0,
+          "uptake_outcomes": [],
+          "uptake_recipients": 0,
+          "validator_outcomes": [],
+          "wall_clock_seconds": 61.824161
+        },
+        "C2": {
+          "U": 0.0,
+          "agent_count": 3,
+          "aggregate_token_budget": 48000,
+          "board_bytes_read": 0,
+          "board_bytes_written": 0,
+          "board_reads_R": 1,
+          "board_writes_W": 0,
+          "completed_agents": 0,
+          "coordination_overhead": {
+            "extra_board_reads_vs_baseline": 1,
+            "extra_board_writes_vs_baseline": 0,
+            "extra_tokens_vs_baseline": 1558,
+            "extra_tool_calls_vs_baseline": 12
+          },
+          "cross_agent_messages_X": 0,
+          "evidence_to_message_opportunities": 0,
+          "failures": [
+            {
+              "agent_id": "agent-1",
+              "reason": "agent exceeded per-agent token budget; provider usage exceeded its claimed envelope (token overage=2791, tool-call overage=0)",
+              "status": "budget_exhausted"
+            },
+            {
+              "agent_id": "agent-2",
+              "reason": "agent exceeded per-agent token budget; provider usage exceeded its claimed envelope (token overage=719, tool-call overage=0)",
+              "status": "budget_exhausted"
+            },
+            {
+              "agent_id": "agent-3",
+              "reason": "agent exceeded per-agent token budget; provider usage exceeded its claimed envelope (token overage=546, tool-call overage=0)",
+              "status": "budget_exhausted"
+            }
+          ],
+          "mean_uptake_latency_seconds": null,
+          "message_read_ratio_M": 0.0,
+          "message_to_answer_opportunities": 0,
+          "pilot_claim_scope": "descriptive; no causal or inferential claim from this metric alone",
+          "schema_version": 1,
+          "submitted_agents": 0,
+          "success_per_1000_tokens": 0.0,
+          "task_success": false,
+          "task_success_rate": 0.0,
+          "total_tokens": 52056,
+          "total_tool_calls": 55,
+          "total_turns": 31,
+          "transformation_events": [],
+          "transformation_opportunities": 0,
+          "transformation_rate": 0.0,
+          "uptake": [],
+          "uptake_defined": false,
+          "uptake_definition": "recipient use after a prior board read of a seeded-token message from another agent",
+          "uptake_events": 0,
+          "uptake_latency_seconds": [],
+          "uptake_opportunities": 0,
+          "uptake_outcomes": [],
+          "uptake_recipients": 0,
+          "validator_outcomes": [],
+          "wall_clock_seconds": 49.855843
+        }
+      },
+      "run_ids": [
+        "s0001-C0",
+        "s0001-C1",
+        "s0001-C2"
+      ]
+    }
+  ]
+}

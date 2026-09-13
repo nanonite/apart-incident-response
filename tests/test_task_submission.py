@@ -121,6 +121,16 @@ class TaskSubmissionTests(unittest.TestCase):
         })
         self.assertEqual(final["submission_sha256"], provisional["submission_sha256"])
 
+    def test_rejected_diagnosis_reports_missing_terms(self):
+        self.service.update_runtime_usage(self.identity, 42, 3)
+        arguments = self.arguments()
+        arguments["diagnosis"] = "The configuration change broke the cache."
+        response = self.submit(arguments)
+        self.assertFalse(response["ok"])
+        self.assertEqual(response["error"]["code"], "invalid_arguments")
+        for term in ("orchid-731", "cache_mode", "local", "shared", "outage"):
+            self.assertIn(term, response["error"]["message"])
+
     def test_conflicting_second_submission_is_rejected(self):
         self.service.update_runtime_usage(self.identity, 42, 3)
         self.assertTrue(self.submit()["ok"])

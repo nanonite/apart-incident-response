@@ -187,6 +187,8 @@ class ControlledExperimentTests(unittest.TestCase):
             self.assertEqual(index["agents"]["agent-1"]["status"], "failed")
             self.assertEqual(timeline["failure_reasons"], ["agent exited after partial answer"])
             self.assertEqual(timeline["usage"]["provider_tokens"], 7)
+            self.assertEqual(timeline["reported_usage"][0]["usage"]["totalTokens"], 7)
+            self.assertEqual(timeline["tool_summary"]["by_operation"]["task_read"]["failed"], 1)
             self.assertEqual([entry["kind"] for entry in timeline["entries"]], ["prompt", "assistant_message", "pi_event", "tool_call"])
             self.assertEqual(timeline["entries"][1]["usage"]["totalTokens"], 7)
             self.assertEqual(timeline["entries"][3]["operation"], "task_read")

@@ -233,6 +233,26 @@ def build_agent_timeline(
     for sequence, entry in enumerate(entries):
         entry["sequence"] = sequence
 
+    usage_reports = [
+        {
+            "source_sequence": index,
+            "event_type": event.get("type", "unknown"),
+            "timestamp": event.get("timestamp") or event.get("observed_at"),
+            "usage": _event_usage(event),
+        }
+        for index, event in enumerate((item for item in events if isinstance(item, Mapping)), start=1)
+        if _event_usage(event) is not None
+    ]
+    by_operation: dict[str, dict[str, int]] = {}
+    for audit in audits:
+        operation = str(audit.get("operation", "unknown"))
+        counts = by_operation.setdefault(operation, {"calls": 0, "succeeded": 0, "failed": 0})
+        counts["calls"] += 1
+        response = audit.get("response")
+        if isinstance(response, Mapping) and response.get("ok") is True:
+            counts["succeeded"] += 1
+        else:
+            counts["failed"] += 1
     safe_entries = sanitize_artifact(entries, secrets)
     safe_result = sanitize_artifact(result, secrets) if isinstance(result, Mapping) else {}
     safe_telemetry = sanitize_artifact(telemetry, secrets) if isinstance(telemetry, Mapping) else {}
@@ -252,6 +272,11 @@ def build_agent_timeline(
         "status": status,
         "prompt": sanitize_artifact(prompt, secrets),
         "failure_reasons": list(dict.fromkeys(failure_reasons)),
+        "reported_usage": sanitize_artifact(usage_reports, secrets),
+        "tool_summary": sanitize_artifact({
+            "total_calls": len(audits),
+            "by_operation": by_operation,
+        }, secrets),
         "usage": {
             "provider_tokens": safe_result.get("tokens_used", safe_telemetry.get("provider_tokens")),
             "tool_calls": safe_result.get("tool_calls_used", safe_telemetry.get("tool_call_count")),

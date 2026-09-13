@@ -187,12 +187,19 @@ class TaskToolService:
         }
         if definition.answer_validator is not None:
             validation = definition.answer_validator(diagnosis)
+            missing_terms = tuple(getattr(validation, "missing_terms", ()))
             validator_record.update({
                 "accepted": bool(getattr(validation, "accepted", False)),
-                "missing_terms": list(getattr(validation, "missing_terms", ())),
+                "missing_terms": list(missing_terms),
             })
             if not getattr(validation, "accepted", False):
-                raise ToolValidationError("diagnosis failed the authenticated task validator")
+                if missing_terms:
+                    detail = "; ".join(str(term) for term in missing_terms)
+                else:
+                    detail = "the diagnosis did not satisfy the task validator"
+                raise ToolValidationError(
+                    f"diagnosis rejected by the task validator (missing or incorrect: {detail})"
+                )
         evidence = self._validate_evidence(definition, arguments.get("evidence"))
         safe_diagnosis = self._redact(diagnosis, credential)
         safe_evidence = self._redact(evidence, credential)
