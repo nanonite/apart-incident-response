@@ -8,21 +8,16 @@ FROM oven/bun:${BUN_VERSION}-slim AS bun
 
 FROM node:${NODE_VERSION}-bookworm-slim AS pi-build
 
-RUN apt-get update \
-    && apt-get install --no-install-recommends --yes \
-        bash \
-        ca-certificates \
-        git \
-        ripgrep \
-    && rm -rf /var/lib/apt/lists/*
-
 COPY --from=bun /usr/local/bin/bun /usr/local/bin/bun
 
 WORKDIR /opt/pi
 
 COPY pi ./
-RUN npm ci --ignore-scripts \
-    && npm --prefix packages/ai run generate-models
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --omit=dev --ignore-scripts \
+    && npm --prefix packages/ai run generate-models \
+    && find packages -type d -name src -exec sh -c \
+        'package="${1%/src}"; ln -s src "$package/dist"' _ {} \;
 
 FROM python:${PYTHON_VERSION}-slim-bookworm AS base
 
@@ -51,12 +46,14 @@ COPY pi-extension ./pi-extension
 COPY tests ./tests
 RUN python -m unittest discover -s tests -v
 
-FROM test AS runtime
+FROM base AS runtime
 
 LABEL org.opencontainers.image.title="Apart incident response runtime" \
       org.opencontainers.image.description="Capability-restricted runtime for the accidental-coordination experiment"
 
-COPY --from=pi-build /opt/pi /opt/pi
+COPY --from=pi-build /opt/pi/package.json /opt/pi/package-lock.json /opt/pi/
+COPY --from=pi-build /opt/pi/node_modules /opt/pi/node_modules
+COPY --from=pi-build /opt/pi/packages /opt/pi/packages
 
 RUN mkdir -p /app/artifacts
 
@@ -67,6 +64,8 @@ FROM runtime AS pi-smoke
 
 ENV APART_PI_ROOT=/opt/pi
 
+COPY pi-extension ./pi-extension
+COPY tests/fixtures/pi-faux-provider.ts ./tests/fixtures/pi-faux-provider.ts
 COPY scripts/pi_extension_smoke.py ./scripts/pi_extension_smoke.py
 RUN python scripts/pi_extension_smoke.py --output /tmp/pi-extension-smoke-trace.json
 
@@ -86,10 +85,7 @@ RUN apt-get update \
         texlive-plain-generic \
         texlive-pictures \
         texlive-science \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN apt-get update \
-    && apt-get install --no-install-recommends --yes tipa \
+        tipa \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app/report

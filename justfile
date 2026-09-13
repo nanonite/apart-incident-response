@@ -1,7 +1,16 @@
 default: test
 
 setup:
-    UV_CACHE_DIR=.uv-cache uv sync
+    git submodule update --init --recursive
+
+build: setup
+    docker compose build runtime
 
 test: setup
-    if command -v bwrap >/dev/null 2>&1; then ./scripts/test; else nix develop --command ./scripts/test; fi
+    docker build --target test --output type=cacheonly .
+
+pi-smoke: setup
+    docker build --target pi-smoke --output type=cacheonly .
+
+report: setup
+    docker build --target report --output type=cacheonly .
