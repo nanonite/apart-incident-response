@@ -20,21 +20,22 @@ async function load(){
   let data;
   if(ui.live){const r=await fetch('/api/state'+(ui.batch?'?batch='+encodeURIComponent(ui.batch):''));if(!r.ok)throw new Error('Live server unavailable');data=await r.json();}
   else return;
-  ui.key=data.session_key;ui.data=data;ui.batch=data.batch?.id||null;render();
+  ui.key=data.session_key;ui.data=data;ui.batch=data.batch?.id||ui.batch;render();
  }catch(err){
   if(!ui.data){try{const r=await fetch('demo.json');if(!r.ok)throw err;ui.data=await r.json();ui.live=false;ui.batch=ui.data.batch?.id;render();notice('Portable snapshot. Browse recorded results and download responses. Start the local panel to launch experiments or import output.');}catch{notice('No data available. Start the local panel with the command in README.md.');$('connection').textContent='Not connected';}}
   else{$('connection').textContent='Connection interrupted';}
  }finally{ui.busy=false;}
 }
 function renderLiveShowcase(){
- const host=$('live-grid'); if(!host)return; const steps=cfg().steps||5; host.replaceChildren();
+ const host=$('live-grid'); if(!host)return; const steps=cfg().steps||5;const condition=(cfg().conditions||[])[0];$('recorded-condition-label').textContent=`${condition||'No condition'} · first configured condition`; host.replaceChildren();
  for(const agent of ['A','B']){const card=el('div','live-agent');card.append(el('h3','',`Agent ${agent}`));const row=el('div','live-minutes');
-  for(let s=0;s<steps;s++){const u=updates().find(e=>e.payload.task_id===ui.task&&e.payload.agent_id===agent&&e.payload.step===s&&((e.payload.repeat??0)===ui.repeat));const p=u?.payload;const score=evaluator(u);const chip=el('div','live-minute '+(u?'submitted':'missing'));chip.append(el('strong','',`m${s+1}`),el('span','',p?.answer_class||'stalled'),el('small','',p?(p.upload_within_deadline?'on time':'late'):'—'));if(score)chip.title=`score ${score.score}`;row.append(chip);}card.append(row);host.append(card);}
- const layers=$('communication-layers');if(layers){layers.replaceChildren(el('strong','',`Communication layers · unlock marker at minute ${(cfg().unlock_step??3)+1}`));for(const c of (cfg().conditions||[]))layers.append(el('span','layer '+c,`${c}: ${names[c]}`));}
+  for(let s=0;s<steps;s++){const u=updates().find(e=>e.payload.task_id===ui.task&&e.payload.condition_id===condition&&e.payload.agent_id===agent&&e.payload.step===s&&((e.payload.repeat??0)===ui.repeat));const p=u?.payload;const score=evaluator(u);const chip=el('div','live-minute '+(u?'submitted':'missing'));chip.append(el('strong','',`t${s+1}`),el('span','',p?.answer_class||(u?'stalled':'pending')),el('small','',p?(p.upload_within_deadline?'on time':'late'):'—'));if(score)chip.title=`score ${score.score}`;row.append(chip);}card.append(row);host.append(card);}
+ const layers=$('communication-layers');if(layers){layers.replaceChildren(el('strong','',`Communication layers · unlock marker at checkpoint ${(cfg().unlock_step??3)+1}`));for(const c of (cfg().conditions||[]))layers.append(el('span','layer '+c,`${c}: ${names[c]}`));}
  const dm=$('difficulty-metrics');if(dm){dm.replaceChildren(el('strong','', 'Accuracy and entropy by difficulty'));for(const m of (ui.data.difficulty_metrics||[])){dm.append(el('span','metric-chip',`D${m.difficulty}: ${m.accuracy==null?'—':(m.accuracy*100).toFixed(0)+'%'} · H ${m.mean_entropy_bits==null?'—':m.mean_entropy_bits.toFixed(2)}`));}}
 }
 function render(){
  const d=ui.data,b=d.batch;
+ LiveActivityPanel.render(d,ui.live);
  $('connection').textContent=ui.live?'Local observer · live':'Recorded snapshot';
  $('batch-select').replaceChildren(...(d.batches||[]).map(b=>{const o=el('option','',`${b.id} · ${b.source} · ${b.status}`);o.value=b.id;o.selected=b.id===ui.batch;return o;}));
  $('batch-select').disabled=!ui.live;
@@ -50,9 +51,9 @@ function render(){
  for(const e of generations){if(typeof e.payload.input_tokens==='number'||typeof e.payload.output_tokens==='number'){hasTokens=true;tokenCount+=(e.payload.input_tokens||0)+(e.payload.output_tokens||0);}}
  $('stat-tokens').textContent=hasTokens?format(tokenCount):'—';
  $('stat-cost').textContent=source==='local_model'?'Local inference · API cost $0':source==='fixture'?'Fixture data · no inference':'Cost not verified';
- const active=(d.batches||[]).some(x=>x.status==='running');const staleServer=ui.live&&d.server?.api_version!=='response-panel-v2';$('start').disabled=!ui.live||active||staleServer;$('stop').hidden=!d.can_stop;
+ const active=Boolean(d.can_stop)||(d.batches||[]).some(x=>x.status==='running');const staleServer=ui.live&&d.server?.api_version!=='response-panel-v3';$('start').disabled=!ui.live||active||staleServer;$('stop').hidden=!d.can_stop;
  if(staleServer){$('connection').textContent='Panel restart required';notice('This panel server is older than the interface. Stop it with Ctrl+C, restart the panel from this checkout, and reload this page. Recorded data remains available.');}
- const banner=$('active-run-banner');if(banner){if(active){banner.textContent=`ACTIVE RUN · ${cfg().study_id||'response dynamics'} · ${cfg().steps||5} minutes · ${cfg().repeats||1} repeat(s) · engagement: ${cfg().engagement_mode||'neutral'} · every update is logged.`;banner.className='active-run-banner active';}else{banner.textContent=`${b?.status==='completed'?'LAST RUN COMPLETE':'No active run'} · choose a study preset, then inspect minutes, peer visibility, and audit events here.`;banner.className='active-run-banner';}}
+ const banner=$('active-run-banner');if(banner){if(active){banner.textContent=`ACTIVE RUN · ${cfg().study_id||'response dynamics'} · ${cfg().steps||5} checkpoints · ${cfg().deadline_seconds||300}s task-run budget · ${cfg().repeats||1} repeat(s) · engagement: ${cfg().engagement_mode||'neutral'}`;banner.className='active-run-banner active';}else{banner.textContent=`${b?.status==='completed'?'LAST RUN COMPLETE':'No active run'} · choose a study preset, then inspect responses, peer visibility, and audit events here.`;banner.className='active-run-banner';}}
  $('import-file').disabled=!ui.live;
  if(!$('task-select').dataset.filled){for(const t of d.tasks||[]){const o=el('option','',t.title);o.value=t.id;$('task-select').append(o);}$('task-select').dataset.filled='true';}
  const knownTasks=[...(d.tasks||[])];for(const r of runs){if(!knownTasks.some(t=>t.id===r.task_id))knownTasks.push({id:r.task_id,title:r.task_id,difficulty:'?',category:'Imported task',question:'Original task definition was not supplied.',design:'External responses; context and visibility may be incomplete.'});}
@@ -99,16 +100,16 @@ function renderEntropy(){const rows=(ui.data.metrics||[]).filter(m=>m.task_id===
 function renderLog(){const filter=$('event-filter').value;const runIds=new Set(ui.data.runs.filter(r=>r.task_id===ui.task).map(r=>r.id));const events=ui.data.events.filter(e=>(!e.run_id||runIds.has(e.run_id))&&(filter==='all'||e.kind===filter));$('event-log').replaceChildren(...events.slice().reverse().map(e=>{const row=el('details','event'),summary=el('summary');summary.append(el('code','',`#${e.seq}`),el('strong','',e.kind.replaceAll('_',' ')),el('span','muted',`${e.payload.agent_id||e.payload.recipient||''} ${Number.isInteger(e.payload.step)?'· t'+e.payload.step:''}`),el('span','muted',new Date(e.timestamp).toLocaleTimeString()));row.append(summary);row.ontoggle=()=>{if(row.open&&!row.querySelector('pre'))row.append(el('pre','',JSON.stringify(e,null,2)));};return row;}));}
 function renderToggles(){for(const t of document.querySelectorAll('[data-pref]'))t.checked=!!ui.prefs[t.dataset.pref];}
 function renderMinuteBar(){
- const steps=cfg().steps||3,us=updates(),bar=$('minute-bar');let current=-1;
+ const activity=ui.data.live_activity;const run=activity?.run;const steps=cfg().steps||3,us=updates().filter(e=>!run||e.run_id===run.id),bar=$('minute-bar');let current=-1;
  const b=ui.data.batch||{};
- if(String(b.status||'').startsWith('running')&&b.timestamp){const start=new Date(b.timestamp).getTime();current=Math.max(0,Math.min(steps-1,Math.floor((Date.now()-start)/60000)));}
+ if(b.status==='running'&&run?.status==='running'&&Number.isInteger(activity.step))current=activity.step;
  bar.replaceChildren(...Array.from({length:steps},(_,i)=>{const agents=new Set(us.filter(e=>e.payload.step===i).map(e=>e.payload.agent_id));const both=agents.size>=2;
   const chip=el('button','minute-chip'+(both?' done':agents.size?' partial':'')+(i===ui.step?' selected':'')+(current===i?' live':''));chip.type='button';
   chip.append(el('span','',`t${i+1}`),el('small','',both?'both':agents.size?[...agents].join('&'):'—'));
-  chip.title=`Minute ${i+1}: ${both?'both agents submitted':agents.size?'1 of 2 submitted':'no submission'}${current===i?' · live now':''}`;
+  chip.title=`Checkpoint ${i+1}: ${both?'both agents submitted':agents.size?'1 of 2 submitted':'no submission'}${current===i?' · live now':''}`;
   chip.onclick=()=>{ui.step=i;render();};return chip;}));
- const state=$('minute-state');if(state)state.textContent=current>=0?`minute ${current+1} of ${steps} running`:`${steps} minute${steps===1?'':'s'} per run`;
- const clock=$('run-clock');if(clock){if(current>=0&&b.timestamp){const elapsed=Math.max(0,(Date.now()-new Date(b.timestamp).getTime())/1000);const remain=Math.max(0,(cfg().minute_seconds||60)-elapsed% (cfg().minute_seconds||60));clock.textContent=`elapsed ${Math.floor(elapsed/60)}:${String(Math.floor(elapsed%60)).padStart(2,'0')} · ${Math.ceil(remain)}s left`;}else clock.textContent='run idle';}
+ const state=$('minute-state');if(state)state.textContent=current>=0?`checkpoint ${current+1} of ${steps} running`:`${steps} checkpoints per run`;
+ const clock=$('run-clock');if(clock){if(current>=0&&activity.run_started_at){const elapsed=Math.max(0,(Date.now()-new Date(activity.run_started_at).getTime())/1000);clock.textContent=`task run elapsed ${Math.floor(elapsed/60)}:${String(Math.floor(elapsed%60)).padStart(2,'0')}`;}else clock.textContent='run idle';}
 }
 function renderAudit(){const list=$('audit-list');if(!list)return;const trail=ui.data.audit||[];list.replaceChildren(...trail.slice().reverse().map(a=>{const li=el('li','');li.append(el('code','',a.action.replaceAll('_',' ')),el('span','muted',new Date(a.timestamp).toLocaleTimeString()));const detail={...a};delete detail.action;delete detail.timestamp;delete detail.seq;delete detail.event_id;li.append(el('span','',JSON.stringify(detail).slice(0,200)));return li;}));if(!trail.length)list.append(el('li','muted','No researcher actions recorded yet.'));
 }
@@ -155,7 +156,7 @@ function download(name,text,type='application/json'){const url=URL.createObjectU
 function responseRecords(){const es=ui.data.events;return updates().map(e=>({...e.payload,event_id:e.event_id,timestamp:e.timestamp,observation:es.find(o=>o.event_id===e.payload.observation_id)?.payload||null,evaluator:evaluator(e)||null}));}
 function exportResponses(){download('responses.jsonl',responseRecords().map(r=>JSON.stringify(r)).join('\n')+'\n','application/x-ndjson');}
 function exportBundle(){if(ui.live){window.location.href='/api/export?batch='+encodeURIComponent(ui.batch);}else{download('apart-research-snapshot.json',JSON.stringify(ui.data,null,2));}}
-function estimate(){const count=$('task-select').value==='all'?(ui.data?.tasks?.length||6):$('task-select').value==='asymmetric'?ASYMMETRIC_TASKS.length:1;const n=count*$('conditions').value.split(',').length*Number($('steps').value)*Number($('repeats').value)*2;$('run-estimate').textContent=`${n} requested updates · ${$('steps').value} minutes × ${$('repeats').value} repeats · ${$('adapter').value==='fixture'?'fixture, no LLM':'local inference'}`;}
+function estimate(){const count=$('task-select').value==='all'?(ui.data?.tasks?.length||6):$('task-select').value==='asymmetric'?ASYMMETRIC_TASKS.length:1;const n=count*$('conditions').value.split(',').length*Number($('steps').value)*Number($('repeats').value)*2;$('run-estimate').textContent=`${n} requested updates · ${$('steps').value} checkpoints × ${$('repeats').value} repeats · ${$('adapter').value==='fixture'?'fixture, no LLM':'local inference'}`;}
 $('run-form').onchange=estimate;
 $('run-form').onsubmit=async e=>{e.preventDefault();try{const taskIds=$('task-select').value==='all'?ui.data.tasks.map(t=>t.id):$('task-select').value==='asymmetric'?ASYMMETRIC_TASKS:[$('task-select').value];const data=await post('/api/run',{task_ids:taskIds,conditions:$('conditions').value.split(','),steps:Number($('steps').value),repeats:Number($('repeats').value),unlock_step:Number($('unlock').value),adapter:$('adapter').value,model:$('model').value,engagement_mode:$('engagement').value,study_id:'asymmetric_evidence_v1'});ui.batch=data.batch_id;ui.step=0;ui.repeat=0;notice('Batch started. Minute updates, peer visibility, engagement mode, and audit events are being recorded.');setTimeout(load,200);}catch(err){notice(err.message);}};
 $('stop').onclick=async()=>{try{await post('/api/stop',{});notice('Stop requested. The in-flight response will be retained; no next request will start.');}catch(err){notice(err.message);}};

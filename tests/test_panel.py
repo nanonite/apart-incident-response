@@ -1,6 +1,8 @@
 import json
 import tempfile
 import unittest
+import io
+import zipfile
 from pathlib import Path
 
 from apart_incident_response import panel
@@ -23,6 +25,61 @@ def run_events(data, run):
 
 
 class PanelStateTests(unittest.TestCase):
+    def test_live_request_is_generating_and_queued_without_invented_answers(self):
+        with tempfile.TemporaryDirectory() as directory:
+            store = EventStore(Path(directory) / 'events.sqlite')
+            store.append('live', 'batch_started', {'config': {}})
+            store.append('live', 'run_started', {'task_id': 'inventory', 'condition_id': 'C0', 'repeat': 0}, 'run')
+            for agent in ('A', 'B'):
+                store.append('live', 'agent_observation', {'agent_id': agent, 'step': 0, 'messages': [],
+                    'visible_message_ids': [], 'communication_available': False}, 'run')
+            started = store.append('live', 'generation_started', {'agent_id': 'A', 'step': 0}, 'run')
+            live = panel.state(store)['live_activity']
+            self.assertEqual(live['agents']['A']['state'], 'generating')
+            self.assertEqual(live['agents']['A']['last_event_id'], started['event_id'])
+            self.assertEqual(live['agents']['B']['state'], 'queued')
+            self.assertEqual(live['agents']['A']['updates'], [])
+            self.assertFalse(live['exports']['ready'])
+            self.assertEqual(live['shared_history'], [])
+            store.append('live', 'run_finished', {'status': 'stopped'}, 'run')
+            store.append('live', 'batch_finished', {'status': 'stopped'})
+            live = panel.state(store)['live_activity']
+            self.assertEqual(live['agents']['A']['state'], 'interrupted')
+            self.assertEqual(live['agents']['B']['state'], 'interrupted')
+            self.assertTrue(live['exports']['ready'])
+            self.assertEqual(live['exports']['bundle_url'], '/api/export?batch=live')
+
+    def test_live_shared_history_contains_only_delivered_peer_responses(self):
+        temp, store, _ = batch_store()
+        self.addCleanup(temp.cleanup)
+        data = panel.state(store)
+        for condition in ('C0', 'C1', 'C2'):
+            run = next(r for r in data['runs'] if r['condition_id'] == condition)
+            scoped = run_events(data, run)
+            live = panel.live_activity(scoped, data['batch'], [run])
+            self.assertEqual(live['run']['id'], run['id'])
+            if condition == 'C0':
+                self.assertEqual(live['shared_history'], [])
+            else:
+                self.assertEqual(len(live['shared_history']), 2)
+                self.assertTrue(all(message['step'] == 0 for message in live['shared_history']))
+                self.assertTrue(all('evaluator' not in message and 'private_evidence' not in message for message in live['shared_history']))
+                self.assertEqual(live['shared_history'][0]['visible_to'], ['B'])
+                self.assertEqual(live['shared_history'][1]['visible_to'], ['A'])
+            self.assertEqual(len(live['agents']['A']['updates']), 2)
+            self.assertIn('evaluator', live['agents']['A']['updates'][0])
+
+    def test_finished_batch_exports_include_events_responses_and_metrics(self):
+        temp, store, _ = batch_store()
+        self.addCleanup(temp.cleanup)
+        data = panel.state(store)
+        self.assertTrue(data['live_activity']['exports']['ready'])
+        data['session_key'] = 'must-not-export'
+        with zipfile.ZipFile(io.BytesIO(panel.bundle(data))) as archive:
+            self.assertTrue({'events.jsonl', 'responses.jsonl', 'metrics.jsonl', 'manifest.json'} <= set(archive.namelist()))
+            self.assertNotIn('session_key', json.loads(archive.read('manifest.json')))
+            self.assertEqual(len(archive.read('responses.jsonl').splitlines()), 12)
+
     def test_panel_launch_accepts_ui_engagement_fields(self):
         with tempfile.TemporaryDirectory() as directory:
             store = EventStore(Path(directory) / 'events.sqlite')

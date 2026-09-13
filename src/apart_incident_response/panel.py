@@ -10,7 +10,7 @@ import uuid
 import zipfile
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, urlencode, urlparse
 
 from .analysis import analyze, summarize
 from .events import EventStore
@@ -19,7 +19,63 @@ from .importing import import_jsonl
 from .tasks import public_tasks
 
 ROOT = Path(__file__).resolve().parents[2]
-PANEL_API_VERSION = 'response-panel-v2'
+PANEL_API_VERSION = 'response-panel-v3'
+
+
+def live_activity(events, batch, runs):
+    """Researcher projection of recorded activity; never supplied to agents."""
+    finished = any(e['kind'] == 'batch_finished' for e in events)
+    running = [r for r in runs if r['status'] == 'running']
+    run = (running[-1] if running and not finished else runs[-1]) if runs else None
+    scoped = [e for e in events if run and e['run_id'] == run['id']]
+    by_id = {e['event_id']: e for e in scoped}
+    evaluations = {e['payload']['update_id']: e['payload'] for e in scoped if e['kind'] == 'evaluator_result'}
+    step = max((e['payload']['step'] for e in scoped if type(e['payload'].get('step')) is int), default=None)
+    agents = {}
+    visible_to = {}
+    terminal = finished or bool(run and run['status'] != 'running')
+    for agent in ('A', 'B'):
+        own = [e for e in scoped if e['payload'].get('agent_id') == agent]
+        observations = [e for e in own if e['kind'] == 'agent_observation']
+        observation = observations[-1] if observations else None
+        for event_id in (observation or {}).get('payload', {}).get('visible_message_ids', []):
+            visible_to.setdefault(event_id, []).append(agent)
+        transitions = [e for e in own if e['kind'] in ('agent_observation', 'generation_started', 'generation_result', 'task_update', 'minute_violation')]
+        last = transitions[-1] if transitions else None
+        state_name = 'waiting'
+        if last:
+            state_name = {'agent_observation': 'queued', 'generation_started': 'generating',
+                          'generation_result': 'validating', 'minute_violation': 'stalled', 'task_update': 'submitted'}[last['kind']]
+            if last['kind'] == 'task_update' and last['payload'].get('termination_state') == 'stalled_no_generation':
+                state_name = 'stalled'
+        if terminal and state_name not in ('submitted', 'stalled'):
+            state_name = 'interrupted' if last else 'not_started'
+        transcript = [dict(e['payload'], event_id=e['event_id'], timestamp=e['timestamp'],
+                           evaluator=evaluations.get(e['event_id'])) for e in own if e['kind'] == 'task_update']
+        agents[agent] = {'state': state_name, 'step': (last or {}).get('payload', {}).get('step'),
+                         'last_event_id': last['event_id'] if last else None,
+                         'state_since': last['timestamp'] if last else None,
+                         'observation': observation['payload'] if observation else None,
+                         'updates': transcript}
+    # Only peer responses actually included in the latest observations belong here.
+    # Private task bundles and researcher annotations are excluded.
+    shared = [dict(event_id=e['event_id'], timestamp=e['timestamp'], agent_id=e['payload']['agent_id'],
+                   step=e['payload']['step'], response_text=e['payload']['response_text'], visible_to=visible_to[event_id])
+              for event_id in visible_to for e in [by_id.get(event_id)] if e and e['kind'] == 'task_update']
+    shared.sort(key=lambda e: (e['step'], e['agent_id']))
+    query = urlencode({'batch': batch['id']}) if batch else ''
+    return {'batch_status': batch['status'] if batch else 'idle', 'run': run, 'step': step,
+            'run_started_at': next((e['timestamp'] for e in scoped if e['kind'] == 'run_started'), None),
+            'run_finished_at': next((e['timestamp'] for e in scoped if e['kind'] == 'run_finished'),
+                                    next((e['timestamp'] for e in events if e['kind'] == 'batch_finished'), None)),
+            'last_event_at': events[-1]['timestamp'] if events else None, 'agents': agents,
+            'shared_history': shared,
+            'feed': [dict(event_id=e['event_id'], timestamp=e['timestamp'], kind=e['kind'],
+                          step=e['payload'].get('step'), agent_id=e['payload'].get('agent_id') or e['payload'].get('recipient'),
+                          detail=e['payload'].get('message') or e['payload'].get('reason') or e['payload'].get('status'))
+                     for e in events if (run and e['run_id'] == run['id']) or not e['run_id']][-40:],
+            'exports': {'ready': finished, 'bundle_url': '/api/export?' + query if finished else None,
+                        'responses_url': '/api/responses?' + query if finished else None}}
 
 
 def state(store, selected=None):
@@ -52,7 +108,7 @@ def state(store, selected=None):
             'tasks':public_tasks(), 'batches':list(reversed(batches)),
             'batch':batch, 'runs':runs, 'events':events, 'metrics':metrics,
             'difficulty_metrics': sorted(by_difficulty.values(), key=lambda x: (x['difficulty'] is None, x['difficulty'])),
-            'audit':research_actions(all_events)}
+            'audit':research_actions(all_events), 'live_activity': live_activity(events, batch, runs)}
 
 
 def report_markdown(data):
@@ -231,6 +287,7 @@ def serve(store, port):
                 if not data['batch']:
                     return self.reply(404, {'error':'Batch not found'})
                 audit_action(store, data['batch']['id'], 'export_bundle', batches=1)
+                data = state(store, data['batch']['id'])
                 return self.reply(200, bundle(data), 'application/zip','apart-research-bundle.zip')
             if parsed.path == '/api/responses':
                 data = ''.join(json.dumps(r,ensure_ascii=False)+'\n' for r in responses(state(store,selected)['events'])).encode()

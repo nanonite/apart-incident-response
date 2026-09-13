@@ -7,11 +7,11 @@ upload time, and how Ollama / `gemma2:2b` plugs in.
 
 ## 1. What we do to the task (question → data, end to end)
 
-1. `tasks.py` defines 5 **synthetic, offline** tasks, difficulty 1–5, each with:
+1. `tasks.py` defines 6 **synthetic, offline** tasks, difficulty 1–5, including the asymmetric database review, each with:
    - `question` displayed to both agents,
    - `choices` (option keys), `correct` key, per-agent private `evidence` (`A`, `B`),
    - `design` note explaining why it is a good control/intervention task.
-2. The runner (`experiment.py`) builds a **per-agent observation** each minute/step: private evidence only (+
+2. The runner (`experiment.py`) builds a **per-agent observation** each checkpoint: private evidence only (+
    peer responses when communication is visible under C1/C2), a context hash, and a byte preflight.
 3. Each agent returns a **TaskUpdate** with exactly `response_text` + `answer_class` (JSON schema enforced
    for Ollama via `format`).
@@ -19,8 +19,9 @@ upload time, and how Ollama / `gemma2:2b` plugs in.
    (exact option match, `evaluator_version='exact-option-v1'`), plus the expected class and scoring scope.
 5. Everything lands in the append-only, hash-chained `events` SQLite store. Analysis never imports runtime.
 
-Current status: this pipeline exists and is exercised end-to-end only through manual runs — there is no
-automated test driving `BatchRunner` with the fixture adapter yet (tests stop at the runtime contract).
+Verified 2026-09-13: fixture protocol, analysis, and panel tests exercise the runner automatically.
+The full suite passed 156 tests with two optional skips. HTTP smoke checks covered live generation
+status, C0 isolation, C2 projections, ZIP/JSONL downloads, export auditing, and hash-chain integrity.
 
 ## 2. How we test the evals
 
@@ -36,39 +37,43 @@ automated test driving `BatchRunner` with the fixture adapter yet (tests stop at
 
 ## 3. Why "force output what agents have already thought each minute" doesn't work today
 
-The instruction "submit at every checkpoint, even if unchanged" is only a **prompt line** (`SYSTEM`), not an
-enforced protocol. Concretely, from `experiment.py` / `adapters.py`:
+The controller records submissions, but checkpoints are not paced to wall-clock minutes. Concretely:
 
-1. **Step ≠ minute.** `steps` are logical checkpoints (default 3, range 2–8). Nothing binds a step to a 60 s
-   grid, so there is no wall-clock cadence to "force."
-2. **No per-minute budget.** A single generation has `timeout_seconds=180` and can output up to
-   `max_output_tokens` (default 220) at `num_ctx=8192`; one call can run well over a minute. The only hard
-   limits are `batch_timeout_seconds=3600` and `max_total_tokens`. There is no run-level 5-minute audit.
+1. **Step ≠ minute.** Config defaults to five logical checkpoints (CLI currently defaults to three).
+   Nothing waits for a 60-second boundary; C2 step 3 means checkpoint 4, not necessarily elapsed 3:01.
+2. **Request and run budgets exist.** Each controller wait is limited by the smaller of
+   `timeout_seconds` and `minute_seconds` (defaults 180 and 60). The 300-second run budget is checked
+   at checkpoint boundaries; an in-flight request can carry execution past that boundary. This is
+   not a strict five-minute wall-clock cutoff or guaranteed cancellation of model computation.
 3. **The old path had missing updates on failure.** The minute protocol now records a `minute_violation`
    and a degenerate `task_update` (`stalled_no_generation`) when the controller deadline is missed, so
    researchers can distinguish a failed submission from an absent record.
 4. **Serially generated.** Agent A then Agent B are executed sequentially per step; their real wall-clock
    times differ, so both agents are not guaranteed to land in the same minute bucket.
-5. **No degenerate/stalled update type.** There is no event such as `minute_no_submission` /
-   `stalled_update`, so frequency/entropy estimates can't distinguish "agents disagreed" from "agent never
-   answered this minute."
+5. **Stopped runs can remain incomplete.** Stop requests, run-budget exits, and resource errors can
+   leave unattempted checkpoints. Reports must distinguish these from attempted, stalled submissions.
 
-Effect: the "each minute, both agents submit" property is not measurable or attributable, and entropy
-proxies systematically skip missing minutes (biasing comparisons).
+Effect: current timestamps support request-duration auditing, not an enforced minute cadence. Missing
+and stalled observations require explicit accounting when comparing answer distributions.
 
 ## 4. How we plan to measure and enforce task upload time (≤ 5 min)
 
-Proposed addition to `experiment.py` config (additive, defaults that keep old runs valid):
+Current additive configuration and recorded fields:
 
-- `schedule='minute_checkpoints'`, `minute_seconds=60`, `deadline_seconds=300` (audited task ≤ 5 min).
-- `steps` default **5**; C2 unlock at **step 3 = start of minute 4 (3:01)**; measure minutes 4–5.
-- **Enforcement:** per-minute deadline check around each generation; when exceeded, append a
+- `schedule='minute_checkpoints'`, `minute_seconds=60`, `deadline_seconds=300` (budgets, not fixed pacing).
+- `steps` default **5**; C2 unlock at **step 3 = checkpoint 4**; compare checkpoints before/after unlock.
+- **Enforcement:** request timeout around each generation; when exceeded, append a
   `minute_violation` event **and** a degenerate `task_update` (`termination_state='stalled_no_generation'`)
-  with `response_text` empty + `submitted=True`, so the grid stays intact (every agent × every minute).
+  with `response_text` empty + `submitted=True`, recording attempted failures without inventing responses.
 - **Measurement recorded per run:** `minute` (=`step+1`) in payload, per-run `elapsed_seconds`, per-minute
-  `minute_elapsed_ms`, submission timestamps, `upload_within_deadline` bool.
+  `minute_elapsed_ms`, submission timestamps, `upload_within_deadline` bool. Existing update
+  `elapsed_seconds` is batch-relative; the dashboard derives run elapsed time from stored run timestamps.
 - **Provenance:** `difficulty` added to observation and `task_update` payloads so analysis and the panel can
   slice by difficulty without importing the runtime.
+
+The live panel shows A/B queued, generating, validating, submitted, or stalled status, completed
+responses, exact supplied contexts, permitted peer history, and recent events. Terminal batches expose
+ZIP and response-JSONL download links. These researcher views never become agent inputs.
 
 ## 5. How we measure the agent task (and how we inform the team)
 

@@ -133,6 +133,8 @@ Extend `tests/` with automated tests for the pieces you touch, fixture-first:
 
 ## Files changed in the verified implementation
 
+Live-observability update (2026-09-13): changed `panel.py`, `tests/test_panel.py`, `dashboard/dist/{index.html,app.js,styles.css,demo.json}` and added `dashboard/dist/activity.js`. Updated this note, `task-schedule-decision-report.md`, the dashboard design note, and asymmetric study instructions. The portable snapshot was regenerated from verified stored Ollama data; its previous copy is backed up under `artifacts/panel-live-backup`. No harness, runtime, visibility, or model-adapter behavior changed. The UI distinguishes discrete checkpoints from actual elapsed time and provides terminal-batch log downloads. Validation: 156 tests passed with two optional skips; live HTTP and download smoke checks passed.
+
 Integration update (2026-09-13): merged upstream runtime development, added panel API identification and a stale-server launch guard, and verified the combined suite (153 tests, 2 optional Qwen3 tests skipped) plus HTTP launch/audit/C2 projections. Integration edits: `panel.py`, `app.js`, `tests/test_panel.py`, `README.md`, `.gitignore`, `chainlink-breakdown-plan.md`, and this note. `runtime.py` and `tests/test_runtime.py` match upstream unchanged. Recorded SQLite logs passed hash-chain verification and were not rewritten.
 
 Changed: `src/apart_incident_response/tasks.py`, `experiment.py`, `analysis.py`, `importing.py`, `panel.py`,

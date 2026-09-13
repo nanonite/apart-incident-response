@@ -2,6 +2,8 @@
 
 Date: 2026-09-13. This plan is additive to the response-dynamics protocol and the current local panel.
 
+Implemented live observability: a dedicated top-level Live run pane follows the active run from stored events, showing A/B request states, exact supplied contexts, response transcripts, permitted peer history, request/run elapsed time, and activity events. Completed or stopped batches expose ZIP and JSONL downloads. The adapter returns complete responses, not streaming tokens. Checkpoint labels and actual elapsed time are displayed separately; the current runner has time budgets but no fixed one-minute pacing.
+
 Companion to `docs/task-schedule-decision-report.md` and `docs/codex-prompt-task-schedule-dashboard.md`.
 Scope: design of the explanatory panel (web), the "single shared log" picture, a visual of what each
 agent internally receives, and a list of small experiments to run the two-agent system. All dashboard
