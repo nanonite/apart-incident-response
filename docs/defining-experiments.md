@@ -47,6 +47,15 @@ construction, so a broken experiment cannot reach a run:
 | At least two agents, unique ids, resolvable capability profiles | Fails closed rather than silently running a degenerate cell |
 | Conditions unique and ordered `C0, C1, C2`; seeds unique and positive | Keeps paired triplets comparable across arms |
 
+## Choosing acceptance terms
+
+List only what the *evidence* has to supply. A term that the statement already
+provides is present in no agent's context, so it satisfies the interdependence
+check for free and hides a self-sufficient agent. The current Task 1 fixture is
+the worked example: with all five validator terms, including `outage`, which
+only the statement supplies, the specification is accepted; with the four terms
+the evidence must supply, it is rejected because `agent-2` holds them all.
+
 ## Layout
 
 `write_experiment(spec, root)` creates the experiment's own folder, `0700`:
