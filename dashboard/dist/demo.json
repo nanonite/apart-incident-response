@@ -2,8 +2,8 @@
   "schema_version": "1.1",
   "mode": "snapshot",
   "server": {
-    "api_version": "response-panel-v5",
-    "pid": 17,
+    "api_version": "response-panel-v6",
+    "pid": 22,
     "source_root": "/home/asperjasp/Documents/1_Projects/Aisafety/apart-incident-response"
   },
   "tasks": [
@@ -13868,6 +13868,36 @@
       "seq": 1080,
       "previous_hash": "ad4a18cfec1a7220378c6bbc3ff1309ac1b584e87ace91e65e3fbd176e49fa22",
       "hash": "79b1d7eff4faab61fd5b44d108600abfd510d5888919f22251d9db7c51c15f92"
+    },
+    {
+      "batch_id": "batch-experiment-1-demo-20260913",
+      "event_id": "1f0a16d33c48422a82153f4f94e25bb1",
+      "kind": "researcher_action",
+      "payload": {
+        "action": "snapshot_written",
+        "path": "dashboard/dist/demo.json"
+      },
+      "run_id": null,
+      "schema_version": "1.0",
+      "timestamp": "2026-09-13T23:10:06.468761+00:00",
+      "seq": 1082,
+      "previous_hash": "da4192eea951e036bf9f3ee51f104fd5da5318c3ea3fe8192abcb713ca795f0a",
+      "hash": "b2384ad3a948940ae374c95576cd5488df3af742008acb46a21f00d60fa51fb2"
+    },
+    {
+      "batch_id": "batch-experiment-1-demo-20260913",
+      "event_id": "7249d9cb146f41d48970c7d4a484cbf8",
+      "kind": "researcher_action",
+      "payload": {
+        "action": "snapshot_written",
+        "path": "dashboard/dist/demo.json"
+      },
+      "run_id": null,
+      "schema_version": "1.0",
+      "timestamp": "2026-09-13T23:11:12.720788+00:00",
+      "seq": 1083,
+      "previous_hash": "b2384ad3a948940ae374c95576cd5488df3af742008acb46a21f00d60fa51fb2",
+      "hash": "999f3203a463bbbc8680c576b10decb2fb1edfca87ec32cc1e852853baa34efa"
     }
   ],
   "metrics": [
@@ -14948,6 +14978,30 @@
       "event_id": "506e7c8d015f4385824e416415083526",
       "batch_id": "batch-experiment-1-demo-20260913",
       "timestamp": "2026-09-13T21:41:57.856779+00:00"
+    },
+    {
+      "action": "export_bundle",
+      "source": "ui_export_fix",
+      "seq": 1081,
+      "event_id": "c99e950f28764d499f706b593166cff8",
+      "batch_id": "batch-c1ccbf12516e",
+      "timestamp": "2026-09-13T21:42:44.057510+00:00"
+    },
+    {
+      "action": "snapshot_written",
+      "path": "dashboard/dist/demo.json",
+      "seq": 1082,
+      "event_id": "1f0a16d33c48422a82153f4f94e25bb1",
+      "batch_id": "batch-experiment-1-demo-20260913",
+      "timestamp": "2026-09-13T23:10:06.468761+00:00"
+    },
+    {
+      "action": "snapshot_written",
+      "path": "dashboard/dist/demo.json",
+      "seq": 1083,
+      "event_id": "7249d9cb146f41d48970c7d4a484cbf8",
+      "batch_id": "batch-experiment-1-demo-20260913",
+      "timestamp": "2026-09-13T23:11:12.720788+00:00"
     }
   ],
   "live_activity": {
@@ -15023,7 +15077,7 @@
     "step": 4,
     "run_started_at": "2026-09-13T21:28:56.045971+00:00",
     "run_finished_at": "2026-09-13T21:28:56.138757+00:00",
-    "last_event_at": "2026-09-13T21:41:57.856779+00:00",
+    "last_event_at": "2026-09-13T21:28:56.140974+00:00",
     "agents": {
       "A": {
         "state": "submitted",
@@ -16119,22 +16173,6 @@
     ],
     "feed": [
       {
-        "event_id": "0185892cf2f04247a4f8e8edfe85a078",
-        "timestamp": "2026-09-13T21:28:56.077274+00:00",
-        "kind": "agent_observation",
-        "step": 2,
-        "agent_id": "B",
-        "detail": null
-      },
-      {
-        "event_id": "b6bfc7c27d1f4a1eba79294529440e7d",
-        "timestamp": "2026-09-13T21:28:56.078469+00:00",
-        "kind": "agent_observation",
-        "step": 2,
-        "agent_id": "A",
-        "detail": null
-      },
-      {
         "event_id": "f08bc564bc2a4a1fb03e0440c6894250",
         "timestamp": "2026-09-13T21:28:56.079925+00:00",
         "kind": "generation_started",
@@ -16433,6 +16471,22 @@
       {
         "event_id": "506e7c8d015f4385824e416415083526",
         "timestamp": "2026-09-13T21:41:57.856779+00:00",
+        "kind": "researcher_action",
+        "step": null,
+        "agent_id": null,
+        "detail": null
+      },
+      {
+        "event_id": "1f0a16d33c48422a82153f4f94e25bb1",
+        "timestamp": "2026-09-13T23:10:06.468761+00:00",
+        "kind": "researcher_action",
+        "step": null,
+        "agent_id": null,
+        "detail": null
+      },
+      {
+        "event_id": "7249d9cb146f41d48970c7d4a484cbf8",
+        "timestamp": "2026-09-13T23:11:12.720788+00:00",
         "kind": "researcher_action",
         "step": null,
         "agent_id": null,

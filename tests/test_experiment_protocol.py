@@ -1,6 +1,7 @@
 import tempfile
 import time
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 from apart_incident_response.events import EventStore
@@ -22,6 +23,36 @@ class ExperimentProtocolTests(unittest.TestCase):
         cfg = validate_config({'adapter': 'fixture'})
         self.assertEqual((cfg['steps'], cfg['unlock_step'], cfg['schedule']), (5, 3, 'minute_checkpoints'))
         self.assertEqual((cfg['minute_seconds'], cfg['deadline_seconds']), (60, 300))
+
+    def test_nonfinite_budgets_are_rejected(self):
+        for value in (float('inf'), float('nan')):
+            with self.assertRaises(ValueError):
+                validate_config({'deadline_seconds': value})
+
+    def test_run_budget_limits_pending_generation_and_preserves_missingness(self):
+        with tempfile.TemporaryDirectory() as d:
+            store = EventStore(Path(d) / 'events.sqlite')
+            clock = [0.0]
+            def expired_generation(*args):
+                self.assertEqual(args[-1], 0.02)
+                clock[0] = 0.02
+                return None, 20.0, TimeoutError('generation deadline exceeded')
+            with patch('apart_incident_response.experiment.time.monotonic', side_effect=lambda: clock[0]), \
+                 patch('apart_incident_response.experiment.timed_generate', side_effect=expired_generation):
+                BatchRunner(store).run({'adapter': 'fixture', 'task_ids': ['inventory'],
+                    'conditions': ['C0'], 'steps': 5, 'unlock_step': 3,
+                    'deadline_seconds': 0.02, 'minute_seconds': 60}, adapter=SlowAdapter())
+            events = store.read()
+            requests = [e for e in events if e['kind'] == 'generation_started']
+            self.assertEqual(len(requests), 1)
+            self.assertLessEqual(requests[0]['payload']['request_deadline_seconds'], 0.02)
+            updates = [e for e in events if e['kind'] == 'task_update']
+            self.assertEqual(len(updates), 1)
+            self.assertEqual(updates[0]['payload']['termination_state'], 'stalled_no_generation')
+            self.assertIn('run_elapsed_seconds', updates[0]['payload'])
+            finished = next(e for e in events if e['kind'] == 'run_finished')
+            self.assertEqual(finished['payload']['status'], 'over_deadline')
+            self.assertEqual(events[-1]['payload']['status'], 'completed_with_errors')
 
     def test_engagement_mode_is_explicit_in_observation_and_update(self):
         with tempfile.TemporaryDirectory() as d:

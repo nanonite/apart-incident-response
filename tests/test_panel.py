@@ -25,6 +25,18 @@ def run_events(data, run):
 
 
 class PanelStateTests(unittest.TestCase):
+    def test_open_log_is_unverified_and_export_audit_does_not_reset_agent_clock(self):
+        with tempfile.TemporaryDirectory() as directory:
+            store = EventStore(Path(directory) / 'events.sqlite')
+            event = store.append('orphan', 'batch_started', {'config': {}})
+            panel.audit_action(store, 'orphan', 'export_bundle')
+            data = panel.App(store).snapshot()
+            self.assertEqual(data['execution']['state'], 'unverified')
+            self.assertFalse(data['can_stop'])
+            self.assertEqual(data['live_activity']['last_event_at'], event['timestamp'])
+            self.assertEqual(data['batch']['status'], 'running')
+            self.assertEqual(len(store.read()), 2)
+
     def test_live_request_is_generating_and_queued_without_invented_answers(self):
         with tempfile.TemporaryDirectory() as directory:
             store = EventStore(Path(directory) / 'events.sqlite')
@@ -85,6 +97,11 @@ class PanelStateTests(unittest.TestCase):
             self.assertEqual(manifest['export_metadata']['kind'], 'completed')
             self.assertIn('| Condition |', archive.read('report.md').decode())
             self.assertEqual(len(archive.read('responses.jsonl').splitlines()), 12)
+            grid = [json.loads(line) for line in archive.read('checkpoint-grid.jsonl').splitlines()]
+            self.assertEqual(len(grid), 12)
+            self.assertTrue(all(row['submission_status'] == 'valid' for row in grid))
+            self.assertTrue(all(row['context_hash'] for row in grid))
+            self.assertTrue(all(row['task_version'] and row['pair_id'] and row['seed'] == 17 for row in grid))
 
     def test_active_export_marks_partial_cutoff_and_does_not_invent_responses(self):
         with tempfile.TemporaryDirectory() as directory:

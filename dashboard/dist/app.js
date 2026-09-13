@@ -38,7 +38,7 @@ async function load(){
   render();
  }catch(err){
   if(!ui.data){try{const r=await fetch('demo.json');if(!r.ok)throw err;ui.data=await r.json();ui.live=false;ui.batch=ui.data.batch?.id;render();notice('Portable snapshot. Browse recorded results and download responses. Start the local panel to launch experiments or import output.');}catch{notice('No data available. Start the local panel with the command in README.md.');$('connection').textContent='Not connected';}}
-  else{$('connection').textContent='Connection interrupted';}
+  else{if(ui.data.batch?.status==='running'){ui.data.execution={state:'unverified',explanation:'Panel connection interrupted; worker activity cannot be verified.'};LiveActivityPanel.render(ui.data,ui.live);}$('connection').textContent='Connection interrupted';}
  }finally{ui.busy=false;}
 }
 function renderLiveShowcase(){
@@ -66,9 +66,9 @@ function render(){
  for(const e of generations){if(typeof e.payload.input_tokens==='number'||typeof e.payload.output_tokens==='number'){hasTokens=true;tokenCount+=(e.payload.input_tokens||0)+(e.payload.output_tokens||0);}}
  $('stat-tokens').textContent=hasTokens?format(tokenCount):'—';
  $('stat-cost').textContent=source==='local_model'?'Local inference · API cost $0':source==='fixture'?'Fixture data · no inference':'Cost not verified';
- const active=Boolean(d.can_stop)||(d.batches||[]).some(x=>x.status==='running');const staleServer=ui.live&&d.server?.api_version!=='response-panel-v5';$('start').disabled=!ui.live||active||staleServer;$('stop').hidden=!d.can_stop;
+ const active=Boolean(d.can_stop);const unresolved=(d.batches||[]).some(x=>x.status==='running');const staleServer=ui.live&&d.server?.api_version!=='response-panel-v6';$('start').disabled=!ui.live||active||unresolved||staleServer;$('stop').hidden=!d.can_stop;
  if(staleServer){$('connection').textContent='Panel restart required';notice('This panel server is older than the interface. Stop it with Ctrl+C, restart the panel from this checkout, and reload this page. Recorded data remains available.');}
- const banner=$('active-run-banner');if(banner){if(active){banner.textContent=`ACTIVE RUN · ${cfg().study_id||'response dynamics'} · ${cfg().steps||5} checkpoints · ${cfg().deadline_seconds||300}s task-run budget · ${cfg().repeats||1} repeat(s) · engagement: ${cfg().engagement_mode||'neutral'}`;banner.className='active-run-banner active';}else{banner.textContent=`${b?.status==='completed'?'LAST RUN COMPLETE':'No active run'} · choose a study preset, then inspect responses, peer visibility, and audit events here.`;banner.className='active-run-banner';}}
+ const banner=$('active-run-banner');if(banner){if(active){banner.textContent=`ACTIVE WORKER · ${cfg().study_id||'response dynamics'} · ${(cfg().conditions||[]).join(' / ')} · ${cfg().steps||5} checkpoints · ${cfg().deadline_seconds||300}s per task run · ${cfg().repeats||1} repeat(s)`;banner.className='active-run-banner active';}else if(unresolved){banner.textContent='UNRESOLVED RUN · no worker verified by this server. Export the partial log and inspect terminal events. To run a fresh pilot, use a separate database.';banner.className='active-run-banner';}else{banner.textContent=`${b?'BATCH ENDED · '+b.status:'No active run'} · next-run controls do not change recorded experiments.`;banner.className='active-run-banner';}}
  $('import-file').disabled=!ui.live;
  if(!$('task-select').dataset.filled){for(const t of d.tasks||[]){const o=el('option','',t.title);o.value=t.id;$('task-select').append(o);}$('task-select').dataset.filled='true';}
  const knownTasks=[...(d.tasks||[])];for(const r of runs){if(!knownTasks.some(t=>t.id===r.task_id))knownTasks.push({id:r.task_id,title:r.task_id,difficulty:'?',category:'Imported task',question:'Original task definition was not supplied.',design:'External responses; context and visibility may be incomplete.'});}
@@ -117,13 +117,13 @@ function renderToggles(){for(const t of document.querySelectorAll('[data-pref]')
 function renderMinuteBar(){
  const activity=ui.data.live_activity;const run=activity?.run;const steps=cfg().steps||3,us=updates().filter(e=>!run||e.run_id===run.id),bar=$('minute-bar');let current=-1;
  const b=ui.data.batch||{};
- if(b.status==='running'&&run?.status==='running'&&Number.isInteger(activity.step))current=activity.step;
+ if(ui.live&&ui.data.execution?.state==='verified_worker'&&b.status==='running'&&run?.status==='running'&&Number.isInteger(activity.step))current=activity.step;
  bar.replaceChildren(...Array.from({length:steps},(_,i)=>{const agents=new Set(us.filter(e=>e.payload.step===i).map(e=>e.payload.agent_id));const both=agents.size>=2;
   const chip=el('button','minute-chip'+(both?' done':agents.size?' partial':'')+(i===ui.step?' selected':'')+(current===i?' live':''));chip.type='button';
   chip.append(el('span','',`t${i+1}`),el('small','',both?'both':agents.size?[...agents].join('&'):'—'));
   chip.title=`Checkpoint ${i+1}: ${both?'both agents submitted':agents.size?'1 of 2 submitted':'no submission'}${current===i?' · live now':''}`;
   chip.onclick=()=>{ui.step=i;render();};return chip;}));
- const state=$('minute-state');if(state)state.textContent=current>=0?`checkpoint ${current+1} of ${steps} running`:`${steps} checkpoints per run`;
+ const state=$('minute-state');if(state)state.textContent=current>=0?`checkpoint ${current+1} of ${steps} running`:b.status==='running'?'Worker unverified · recorded checkpoints':`${steps} checkpoints per run`;
  const clock=$('run-clock');if(clock){if(current>=0&&activity.run_started_at){const elapsed=Math.max(0,(Date.now()-new Date(activity.run_started_at).getTime())/1000);clock.textContent=`task run elapsed ${Math.floor(elapsed/60)}:${String(Math.floor(elapsed%60)).padStart(2,'0')}`;}else clock.textContent='run idle';}
 }
 function renderAudit(){const list=$('audit-list');if(!list)return;const trail=ui.data.audit||[];list.replaceChildren(...trail.slice().reverse().map(a=>{const li=el('li','');li.append(el('code','',a.action.replaceAll('_',' ')),el('span','muted',new Date(a.timestamp).toLocaleTimeString()));const detail={...a};delete detail.action;delete detail.timestamp;delete detail.seq;delete detail.event_id;li.append(el('span','',JSON.stringify(detail).slice(0,200)));return li;}));if(!trail.length)list.append(el('li','muted','No researcher actions recorded yet.'));
@@ -200,7 +200,7 @@ async function exportReport(){if(ui.live)return downloadExport('report','experim
 function selectedTaskIds(){const value=$('task-select').value;return value==='all'?ui.data.tasks.map(t=>t.id):value==='asymmetric'?ASYMMETRIC_TASKS:value==='experiment1'?['locked-database']:[value];}
 function estimate(){const count=$('task-select').value==='all'?(ui.data?.tasks?.length||7):$('task-select').value==='asymmetric'?ASYMMETRIC_TASKS.length:1;const n=count*$('conditions').value.split(',').length*Number($('steps').value)*Number($('repeats').value)*2;$('run-estimate').textContent=`${n} requested updates · ${$('steps').value} checkpoints × ${$('repeats').value} repeats · ${$('adapter').value==='fixture'?'fixture, no LLM':'local inference'}`;}
 $('run-form').onchange=estimate;
-$('run-form').onsubmit=async e=>{e.preventDefault();try{const taskIds=selectedTaskIds();const data=await post('/api/run',{task_ids:taskIds,conditions:$('conditions').value.split(','),steps:Number($('steps').value),repeats:Number($('repeats').value),unlock_step:Number($('unlock').value),adapter:$('adapter').value,model:$('model').value,engagement_mode:$('engagement').value,shared_context_mode:$('shared-context').value,study_id:taskIds.includes('locked-database')?'locked_database_v1':'asymmetric_evidence_v1'});ui.batch=data.batch_id;ui.task=taskIds[0];ui.step=0;ui.repeat=0;notice('Batch started. Checkpoint updates, peer visibility, key insights, and audit events are being recorded.');setTimeout(load,200);}catch(err){notice(err.message);}};
+$('run-form').onsubmit=async e=>{e.preventDefault();try{const taskIds=selectedTaskIds();const data=await post('/api/run',{task_ids:taskIds,conditions:$('conditions').value.split(','),steps:Number($('steps').value),repeats:Number($('repeats').value),unlock_step:Number($('unlock').value),adapter:$('adapter').value,model:$('model').value,logprobs:$('logprobs').checked,engagement_mode:$('engagement').value,shared_context_mode:$('shared-context').value,study_id:taskIds.includes('locked-database')?'locked_database_v1':'asymmetric_evidence_v1'});ui.batch=data.batch_id;ui.task=taskIds[0];ui.step=0;ui.repeat=0;notice('Batch started. Checkpoint updates, peer visibility, key insights, and audit events are being recorded.');setTimeout(load,200);}catch(err){notice(err.message);}};
 $('stop').onclick=async()=>{try{await post('/api/stop',{});notice('Stop requested. The in-flight response will be retained; no next request will start.');}catch(err){notice(err.message);}};
 $('batch-select').onchange=()=>{ui.batch=$('batch-select').value;ui.repeat=0;load();};$('repeat-select').onchange=()=>{ui.repeat=Number($('repeat-select').value);renderComparison();};$('event-filter').onchange=renderLog;
 $('close-detail').onclick=()=>$('detail-dialog').close();

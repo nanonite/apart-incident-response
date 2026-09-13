@@ -1,5 +1,7 @@
 """Artifact-only analysis. No runtime imports or LLM calls."""
 import math
+import hashlib
+import json
 from collections import Counter, defaultdict
 
 
@@ -60,3 +62,86 @@ def summarize(events):
             elif e['kind'] == 'run_finished':
                 run.update(e['payload'])
     return batch, list(runs.values())
+
+
+def checkpoint_grid(events):
+    """Planned researcher rows, including missing cells; never fabricate agent events."""
+    batch, runs = summarize(events)
+    if not batch:
+        return []
+    cfg = batch.get('config', {})
+    observations = {e['event_id']: e for e in events if e['kind'] == 'agent_observation'}
+    evaluation = {e['payload']['update_id']: e for e in events if e['kind'] == 'evaluator_result'}
+    by_cell = {}
+    for e in events:
+        if e['kind'] == 'task_update':
+            by_cell.setdefault((e['run_id'], e['payload']['step'], e['payload']['agent_id']), []).append(e)
+    run_by_scenario = {(r['task_id'], r['condition_id'], r.get('repeat', 0)): r for r in runs}
+    rows = []
+    for task in cfg.get('task_ids', []):
+        for condition in cfg.get('conditions', []):
+            for repeat in range(cfg.get('repeats', 1)):
+                run = run_by_scenario.get((task, condition, repeat), {})
+                unlock_events = [e for e in events if e['run_id'] == run.get('id') and e['kind'] == 'communication_unlocked']
+                for step in range(cfg.get('steps', 0)):
+                    for agent in ('A', 'B'):
+                        cell = by_cell.get((run.get('id'), step, agent), [])
+                        update = cell[-1] if cell else {}
+                        p = update.get('payload', {})
+                        obs = observations.get(p.get('observation_id'), {})
+                        result = evaluation.get(update.get('event_id'), {})
+                        context = obs.get('payload', {}).get('messages')
+                        rows.append(dict(batch_id=batch['id'], run_id=run.get('id'), task_id=task,
+                            task_version=run.get('task_version'), pair_id=run.get('pair_id'), seed=run.get('seed'),
+                            difficulty=p.get('difficulty', run.get('task', {}).get('difficulty')),
+                            condition_id=condition, repeat=repeat, step=step, checkpoint=step+1, agent_id=agent,
+                            agent_role=p.get('agent_role', run.get('task', {}).get('agent_roles', {}).get(agent, 'solver')),
+                            run_status=run.get('status', 'not_started'), batch_status=batch['status'],
+                            submission_status='missing' if not cell else 'stalled' if p.get('termination_state') == 'stalled_no_generation' else 'valid',
+                            duplicate_count=max(0, len(cell)-1), source_event_ids=[e['event_id'] for e in cell],
+                            observation_id=obs.get('event_id'), evaluator_event_id=result.get('event_id'),
+                            response_text=p.get('response_text'), answer_class=p.get('answer_class'),
+                            candidate_key=p.get('candidate_key'), key_insights=p.get('key_insights'),
+                            score=result.get('payload', {}).get('score'),
+                            communication_available=p.get('communication_available'),
+                            visible_message_ids=p.get('visible_message_ids', []),
+                            planned_unlock_step=cfg.get('unlock_step') if condition == 'C2' else None,
+                            unlock_event_ids=[e['event_id'] for e in unlock_events if e['payload'].get('step', 0) <= step],
+                            phase=p.get('phase'), source=p.get('source', batch.get('source')), model=p.get('model', cfg.get('model')),
+                            config_version=p.get('agent_config_version', batch.get('config_hash')),
+                            prompt_version=p.get('prompt_version', cfg.get('prompt_version')),
+                            context_hash=hashlib.sha256(json.dumps(context, sort_keys=True).encode()).hexdigest() if context is not None else None,
+                            generation_event_id=p.get('attempt_event_id'), logprobs_available=p.get('logprobs_available', False),
+                            logprob_token_count=p.get('logprob_token_count', 0), timestamp=update.get('timestamp'),
+                            latency_ms=p.get('latency_ms'), run_elapsed_seconds=p.get('run_elapsed_seconds'),
+                            termination_state=p.get('termination_state'), done_reason=p.get('done_reason')))
+    return rows
+
+
+def intervention_changes(metrics, unlock_step):
+    """Signed descriptive proxy contrasts, not causal or semantic estimates."""
+    if type(unlock_step) is not int or unlock_step < 1:
+        return []
+    rows = []
+    strata = ('task_id', 'difficulty', 'agent_id', 'source', 'model', 'config_version', 'agent_role')
+    indexed = {(tuple(m.get(k) for k in strata), m['condition_id'], m['step']): m for m in metrics}
+    for (key, condition, step), after in indexed.items():
+        if condition != 'C2' or step != unlock_step:
+            continue
+        before = indexed.get((key, 'C2', step-1), {})
+        control_before = indexed.get((key, 'C0', step-1), {})
+        control_after = indexed.get((key, 'C0', step), {})
+        def difference(a, b):
+            return a['entropy_bits']-b['entropy_bits'] if a.get('entropy_bits') is not None and b.get('entropy_bits') is not None else None
+        delta = difference(after, before)
+        control = difference(control_after, control_before)
+        rows.append(dict(zip(strata, key), metric='answer_class_entropy_intervention_proxy', unit='bits',
+            before_step=step-1, after_step=step, before_entropy_bits=before.get('entropy_bits'),
+            after_entropy_bits=after.get('entropy_bits'), delta_bits=delta,
+            C0_delta_bits=control, difference_in_deltas_bits=delta-control if delta is not None and control is not None else None,
+            before_sample_count=before.get('sample_count', 0), after_sample_count=after.get('sample_count', 0),
+            status='descriptive' if delta is not None else 'insufficient_samples',
+            source_event_ids=list(dict.fromkeys(event_id for m in (before, after, control_before, control_after)
+                                               for event_id in m.get('source_event_ids', []))),
+            semantic_entropy_status='not_computed', causal_claim=False))
+    return rows

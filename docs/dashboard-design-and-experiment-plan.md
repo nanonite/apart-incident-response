@@ -2,6 +2,8 @@
 
 Date: 2026-09-13. This plan is additive to the response-dynamics protocol and the current local panel.
 
+Current implementation (2026-09-13): API v6 distinguishes a verified local worker from an unresolved logged run, and audit exports no longer reset the agent-progress clock. The next-run default is C0+C2, five logical checkpoints, two repeats, unlock at step 3/checkpoint 4. Checkpoints are not wall-clock minutes; earlier 3:01/minute-cadence proposals below are superseded. Requests are clipped to the remaining 300-second task-run budget. Missing future checkpoints remain explicit, and timeout does not guarantee provider compute cancellation. Exports add an artifact-only `checkpoint-grid.jsonl`. See [scheduled-unlock-pilot.md](scheduled-unlock-pilot.md) for the actual workflow and semantic-analysis limits.
+
 Navigation/export fix (2026-09-13): sidebar actions update the workspace title,
 select and focus the corresponding content, and hide unrelated live widgets.
 Compare shows responses/charts; Run inspector shows raw events; Research handoff
@@ -113,7 +115,7 @@ Run E1–E4 in CI (fixture). E5–E9 are the local `gemma2:2b` set. E10 is offli
 
 ## 7. Decisions to confirm
 
-1. Lock the minute defaults: `steps=5`, `unlock_step=3` (=3:01), `minute_seconds=60`, `deadline_seconds=300`.
+1. Current defaults: `steps=5`, `unlock_step=3` (checkpoint 4), request wait limit `minute_seconds=60`, task-run `deadline_seconds=300`; minute pacing is not implemented.
 2. Degenerate stalls: empty `response_text` + `submitted=true` (grid complete) vs omitting updates (today).
 3. Shared-log default view: single stream (today) or three-pane on/off toggle (recommended default off).
 4. Task-pool editing: read-only now with documented endpoint stub, or fully editable now.

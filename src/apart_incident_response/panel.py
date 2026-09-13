@@ -13,14 +13,14 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlencode, urlparse
 
-from .analysis import analyze, summarize
+from .analysis import analyze, summarize, checkpoint_grid, intervention_changes
 from .events import EventStore
 from .experiment import BatchRunner, validate_config
 from .importing import import_jsonl
 from .tasks import public_tasks
 
 ROOT = Path(__file__).resolve().parents[2]
-PANEL_API_VERSION = 'response-panel-v5'
+PANEL_API_VERSION = 'response-panel-v6'
 
 
 def live_activity(events, batch, runs):
@@ -76,7 +76,8 @@ def live_activity(events, batch, runs):
             'run_started_at': next((e['timestamp'] for e in scoped if e['kind'] == 'run_started'), None),
             'run_finished_at': next((e['timestamp'] for e in scoped if e['kind'] == 'run_finished'),
                                     next((e['timestamp'] for e in events if e['kind'] == 'batch_finished'), None)),
-            'last_event_at': events[-1]['timestamp'] if events else None, 'agents': agents,
+            'last_event_at': next((e['timestamp'] for e in reversed(events)
+                                  if e['kind'] != 'researcher_action'), None), 'agents': agents,
             'shared_history': shared, 'shared_key_insights': list(insights_by_source.values()),
             'feed': [dict(event_id=e['event_id'], timestamp=e['timestamp'], kind=e['kind'],
                           step=e['payload'].get('step'), agent_id=e['payload'].get('agent_id') or e['payload'].get('recipient'),
@@ -161,6 +162,18 @@ def report_markdown(data):
     for task_id, task in tasks.items():
         lines += ['', f"### {task.get('title', task_id)}", '',
                   f"Difficulty: {task.get('difficulty', 'unknown')}/5. " + task.get('question', 'Task text was not supplied.')]
+    lines += ['', '## Scheduled-unlock comparison', '']
+    cfg = batch.get('config', {})
+    if 'C2' not in cfg.get('conditions', []):
+        lines.append('This batch has no C2 intervention; C0/C1 comparisons cannot estimate a within-run unlock change.')
+    else:
+        lines += ['Signed answer-class entropy proxies only; evolving histories are not fixed-context semantic samples.', '',
+                  '| Task | Agent | Before step | After step | Delta bits | C0 delta bits |',
+                  '|---|---|---:|---:|---:|---:|']
+        for row in intervention_changes(data.get('metrics', []), cfg.get('unlock_step')):
+            delta = 'null' if row['delta_bits'] is None else f"{row['delta_bits']:.3f}"
+            control = 'null' if row['C0_delta_bits'] is None else f"{row['C0_delta_bits']:.3f}"
+            lines.append(f"| {row['task_id']} | {row['agent_id']} | {row['before_step']} | {row['after_step']} | {delta} | {control} |")
     cutoff = export['event_log_cutoff']
     lines += ['', '## Audit and source data', '',
               f"Cutoff event: `{cutoff.get('event_id', 'none')}` · sequence {cutoff.get('seq', 'none')}.",
@@ -238,6 +251,8 @@ def bundle(data):
         jl('events.jsonl', data['events'])
         jl('responses.jsonl', responses(data['events']))
         jl('metrics.jsonl', data['metrics'])
+        jl('checkpoint-grid.jsonl', checkpoint_grid(data['events']))
+        jl('intervention-proxy.jsonl', intervention_changes(data['metrics'], (data.get('batch') or {}).get('config', {}).get('unlock_step')))
         z.writestr('report.md', report_markdown(data))
         z.writestr('manifest.json', json.dumps({k:v for k,v in data.items() if k not in ('events','metrics','session_key')},ensure_ascii=False,indent=2))
         z.writestr('README.md', '''# Research handoff
@@ -245,6 +260,10 @@ def bundle(data):
 Events are the researcher-visible ground truth. Each response links to its exact supplied observation, evaluator and source events. See manifest.json for protocol, configuration, model provenance, task definitions and completion status.
 
 Start with report.md for a human-readable summary. manifest.json export_metadata records whether this is a partial or completed export and the exact last included event. An active-run download never includes later events or changes the agents' inputs.
+
+checkpoint-grid.jsonl is a derived planned task × condition × repeat × checkpoint × agent table. submission_status distinguishes missing, stalled, and valid records, including runs not started. Missing rows are researcher annotations, not fabricated agent outputs. Join generation_event_id to events.jsonl for raw model responses and any exposed token log-probabilities; join observation_id for the exact prompt. context_hash identifies identical supplied message contexts, not identical provider hidden state.
+
+intervention-proxy.jsonl records signed C2 entropy contrasts immediately around unlock and the corresponding C0 change, where available. It preserves source IDs and null for insufficient samples. These are descriptive answer-class proxies, not semantic entropy, statistical evidence, or causal influence.
 
 C0 is isolation; C1 shares previous-step responses; C2 unlocks earlier permitted responses at the configured step. Neither agent sees the other's current-step output. Private evidence and evaluator truth never enter shared history.
 
@@ -267,6 +286,21 @@ class App:
         self.runner = None
         self.thread = None
         self.batch_id = None
+
+    def snapshot(self, selected=None):
+        data = state(self.store, selected)
+        worker_alive = bool(self.thread and self.thread.is_alive())
+        batch = data.get('batch') or {}
+        owns_selected = worker_alive and batch.get('id') == self.batch_id
+        terminal = any(e['kind'] == 'batch_finished' for e in data['events'])
+        data['can_stop'] = worker_alive
+        data['execution'] = {'state': 'terminal' if terminal else 'verified_worker' if owns_selected
+                             else 'unverified' if batch else 'idle',
+                             'worker_batch_id': self.batch_id if worker_alive else None,
+                             'explanation': 'No batch_finished event. This server has no verified worker for this batch; '
+                             'a CLI or another server may own it. Request age is not model compute time.'
+                             if batch and not terminal and not owns_selected else None}
+        return data
 
     def launch(self, config):
         validate_config(config)
@@ -316,9 +350,8 @@ def serve(store, port):
             parsed = urlparse(self.path)
             selected = parse_qs(parsed.query).get('batch', [None])[0]
             if parsed.path == '/api/state':
-                data = state(store, selected)
+                data = app.snapshot(selected)
                 data['session_key'] = app.key
-                data['can_stop'] = bool(app.thread and app.thread.is_alive())
                 return self.reply(200, data)
             if parsed.path == '/api/projections':
                 try:

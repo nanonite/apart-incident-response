@@ -1,5 +1,7 @@
 # Decision report — task schedule, evals, measurement, and local inference
 
+Verified implementation update (2026-09-13): API v6 reports verified workers separately from open logs; exports add `checkpoint-grid.jsonl` with valid/stalled/missing cells and exact context/generation references. The UI defaults to C0+C2 with unlock at checkpoint 4, preserving A's private advantage in both conditions. Controller waits are bounded by the remaining run budget. Checkpoints are not minute-paced, and provider compute cancellation is not guaranteed. The current entropy remains an answer-class proxy; the paper's semantic estimator needs multiple fixed-context samples and a versioned equivalence rule. See [scheduled-unlock-pilot.md](scheduled-unlock-pilot.md).
+
 Status: working agreement, 2026-09-13. Active protocol: `response_dynamics_v1` (two agents, C0/C1/C2,
 append-only researcher log). This report captures what we do to tasks, how we evaluate and test them,
 why "forced output every minute" does not currently hold, how we plan to measure and enforce task

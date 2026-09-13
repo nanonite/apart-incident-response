@@ -64,6 +64,17 @@ async function main(){
  vm.runInContext('ui.live=true;ui.data=null;ui.batch=null;',context);
  await elements.get('export-top').onclick();
  assert.match(elements.get('notice').textContent,/No batch selected/);
+ for(const [id,value] of Object.entries({'task-select':'experiment1',conditions:'C0,C2',steps:'5',repeats:'2',unlock:'3',adapter:'ollama',model:'gemma2:2b',engagement:'neutral','shared-context':'key_insights_plus_history'}))elements.get(id).value=value;
+ elements.get('logprobs').checked=true;
+ vm.runInContext("post=async (route,config)=>{globalThis.launched={route,config};return {batch_id:'scheduled-batch'};};",context);
+ await elements.get('run-form').onsubmit({preventDefault(){}});
+ const cfg=JSON.parse(vm.runInContext('JSON.stringify(launched)',context));
+ assert.equal(cfg.route,'/api/run');
+ assert.deepEqual(cfg.config.conditions,['C0','C2']);
+ assert.deepEqual(cfg.config.task_ids,['locked-database']);
+ assert.equal(cfg.config.unlock_step,3);
+ assert.equal(cfg.config.logprobs,true);
+ assert.equal(cfg.config.repeats,2);
  console.log('Navigation focus, direct live ZIP/JSONL/Markdown downloads, errors and offline fallback passed.');
 }
 main().catch(error=>{console.error(error);process.exitCode=1;});

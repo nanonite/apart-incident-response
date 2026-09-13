@@ -2,6 +2,10 @@
 
 Date: 2026-09-13.
 
+Implementation update (2026-09-13): current protocol uses logical checkpoints, not enforced minute pacing. C0+C2 is the next-run UI default; step 3 means checkpoint 4. API v6 separates verified local workers from incomplete open logs. Remaining run/batch time bounds each request wait; missing unattempted outputs remain missing. The export adds `checkpoint-grid.jsonl` and the UI exposes optional token log-probability requests. Semantic entropy is not implemented. The earlier minute-cadence text below is a proposal and must not be mistaken for observed wall-clock behavior.
+
+Files changed in this round: `src/apart_incident_response/{experiment,panel,analysis}.py`, `dashboard/dist/{index.html,app.js,activity.js,demo.json}`, `tests/{test_experiment_protocol,test_panel,test_analysis}.py`, `tests/fixtures/{live_activity_toggle,dashboard_navigation_exports}.cjs`, `docs/scheduled-unlock-pilot.md`, and these three handoff documents. Runtime, `tests/test_runtime.py`, containment, model adapters, tasks, online bridges, C3, existing stored event rows, and preexisting user changes to `uv.lock`/`.chainlink/issues.db` remain untouched. Validation results are recorded in the pilot note when complete.
+
 Use this verbatim (or lightly trimmed) as the master prompt for a Codex agent. It starts with
 repository inspection so Codex does not rebuild what exists.
 

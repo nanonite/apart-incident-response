@@ -1,6 +1,7 @@
 """Fixed two-agent response protocol with synchronous visibility and bounded inference."""
 import argparse
 import json
+import math
 import queue
 import signal
 import subprocess
@@ -61,7 +62,7 @@ def validate_config(raw):
     if cfg['schedule'] not in ('minute_checkpoints', 'synchronous_snapshot_serial_inference'):
         raise ValueError('Unsupported schedule')
     for field in ('minute_seconds', 'deadline_seconds', 'timeout_seconds', 'batch_timeout_seconds'):
-        if type(cfg[field]) not in (int, float) or cfg[field] <= 0:
+        if type(cfg[field]) not in (int, float) or not math.isfinite(cfg[field]) or cfg[field] <= 0:
             raise ValueError(f'{field} must be positive')
     validate_task_pool()
     cfg['expected_updates'] = len(cfg['task_ids'])*len(cfg['conditions'])*cfg['steps']*cfg['repeats']*2
@@ -231,14 +232,23 @@ class BatchRunner:
                                     if self.stop.is_set():
                                         run_status = 'stopped'
                                         break
+                                    run_remaining = cfg['deadline_seconds'] - (time.monotonic() - run_start)
+                                    if run_remaining <= 0:
+                                        run_status = 'over_deadline'
+                                        self.store.append(batch, 'minute_violation', {'step': step, 'minute': step + 1,
+                                            'agent_id': agent, 'reason': 'run deadline exceeded',
+                                            'deadline_seconds': cfg['deadline_seconds']}, run)
+                                        break
                                     if time.monotonic()-start > cfg['batch_timeout_seconds'] or calls >= cfg['expected_updates'] or tokens + cfg['num_ctx'] > cfg['max_total_tokens']:
                                         raise ValueError('Batch resource budget exhausted')
                                     identity = AgentIdentity(run, agent, Condition(condition), task_id, run_seed)
+                                    remaining = min(float(cfg['timeout_seconds']), float(cfg['minute_seconds']),
+                                        run_remaining, cfg['batch_timeout_seconds'] - (time.monotonic() - start))
                                     self.store.append(batch, 'generation_started', {'step': step, 'agent_id': agent, 'observation_id': obs_event['event_id'],
-                                        'request_index': calls, 'max_output_tokens': cfg['max_output_tokens']}, run)
+                                        'request_index': calls, 'max_output_tokens': cfg['max_output_tokens'],
+                                        'request_deadline_seconds': remaining}, run)
                                     calls += 1
                                     minute_started = time.monotonic()
-                                    remaining = min(float(cfg['timeout_seconds']), float(cfg['minute_seconds']))
                                     content = json.loads(obs['messages'][-1]['content'])
                                     result, generation_ms, generation_error = timed_generate(
                                         model, obs['messages'], run_seed+step*2+(agent == 'B'), cfg['max_output_tokens'],
@@ -270,6 +280,7 @@ class BatchRunner:
                                             termination_state='stalled_no_generation', done_reason=reason, response_text='',
                                             answer_class=None, submitted=True, submission_timestamp=time.time(),
                                             elapsed_seconds=round(time.monotonic() - start, 3), minute_elapsed_ms=round((time.monotonic() - minute_started) * 1000, 2),
+                                            run_elapsed_seconds=round(time.monotonic() - run_start, 3),
                                             upload_within_deadline=False, tool_calls=[], identity=identity.to_dict())
                                         stalled.update(agent_role=obs['agent_role'], goal_owner=obs['goal_owner'],
                                             goal_submission=obs['agent_role'] == 'solver', shared_context_mode=cfg['shared_context_mode'],
@@ -293,6 +304,7 @@ class BatchRunner:
                                         attempt_event_id=attempt['event_id'], identity=identity.to_dict(), difficulty=task['difficulty'],
                                         minute=step + 1, submitted=True, submission_timestamp=time.time(),
                                         elapsed_seconds=round(time.monotonic() - start, 3),
+                                        run_elapsed_seconds=round(time.monotonic() - run_start, 3),
                                         minute_elapsed_ms=round((time.monotonic() - minute_started) * 1000, 2),
                                         upload_within_deadline=(time.monotonic() - minute_started) <= cfg['minute_seconds'],
                                         done_reason=result.get('done_reason'))
@@ -323,9 +335,12 @@ class BatchRunner:
                                         write_run_answer(fixture_directory, run, event, evaluation)
                                     self.store.append(batch, 'evaluator_result', dict(evaluation,
                                         update_id=event['event_id'], step=step, agent_id=agent), run)
-                                if run_status == 'stopped':
+                                if run_status in ('stopped', 'over_deadline'):
                                     break
                                 self.store.append(batch, 'checkpoint_committed', {'step': step, 'update_ids': [e['event_id'] for e in history if e['payload']['step'] == step]}, run)
+                                if time.monotonic() - run_start >= cfg['deadline_seconds']:
+                                    run_status = 'over_deadline'
+                                    break
                         except Exception as exc:
                             run_status = 'failed'
                             self.store.append(batch, 'run_error', {'error_type': type(exc).__name__, 'message': str(exc)[:1000]}, run)
@@ -339,10 +354,12 @@ class BatchRunner:
                                     evaluate_candidate(fixture, last_proposal['payload'].get('candidate_key') or ''), final=True)
                                 final_path = str(fixture_directory / 'runs' / run / 'final-answer.json')
                         self.store.append(batch, 'run_finished', {'status': run_status, 'updates': len(history),
+                            'elapsed_seconds': round(time.monotonic() - run_start, 3),
+                            'expected_updates': cfg['steps'] * 2,
                             'final_answer_path': final_path}, run)
                         if run_status == 'completed':
                             completed_runs += 1
-                        elif run_status == 'failed':
+                        elif run_status in ('failed', 'over_deadline'):
                             status = 'completed_with_errors'
                     if self.stop.is_set():
                         break

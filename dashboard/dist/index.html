@@ -7,15 +7,17 @@
   <div class="nav-label">WORKSPACE</div><button class="nav-button active" data-view="compare">◫ <span>Compare conditions</span></button><button class="nav-button" data-view="inspect">⌕ <span>Run inspector</span></button><button class="nav-button" data-view="export">↗ <span>Research handoff</span></button><button class="nav-button" data-view="sharedlog">◓ <span>Shared log</span></button>
   <div class="sidebar-separator"></div>
   <form id="run-form">
-    <div class="section-label">NEW EXPERIMENT <span>02 AGENTS</span></div>
+    <div class="section-label">NEXT EXPERIMENT <span>02 AGENTS</span></div>
     <label for="task-select">Task suite</label><select id="task-select"><option value="experiment1">Experiment 1 · B unlocks, A advises</option><option value="asymmetric">Asymmetric study · 3 tasks</option><option value="all">All task catalog</option></select>
-    <label for="conditions">Communication</label><select id="conditions"><option value="C0,C1">Isolation + shared</option><option value="C0,C1,C2">All three conditions</option><option value="C2">Scheduled unlock</option></select>
+    <label for="conditions">Communication</label><select id="conditions"><option value="C0,C2">Isolation + scheduled unlock</option><option value="C0,C1">Isolation + shared</option><option value="C0,C1,C2">All three conditions</option><option value="C2">Scheduled unlock</option></select>
     <div class="form-pair"><div><label for="steps">Checkpoints</label><input id="steps" type="number" min="2" max="8" value="5" required></div><div><label for="repeats">Repeats</label><input id="repeats" type="number" min="1" max="5" value="2" required></div></div>
     <label for="unlock">Unlock at step</label><input id="unlock" type="number" min="0" max="7" value="3" required>
+    <p class="side-note">Step 3 opens C2 at checkpoint 4, including earlier permitted peer updates. Checkpoints are not wall-clock minutes.</p>
     <label for="adapter">Generation source</label><select id="adapter"><option value="ollama">Local model · Ollama</option><option value="fixture">Synthetic fixture · no LLM</option></select>
     <label for="engagement">Peer engagement</label><select id="engagement"><option value="neutral">Neutral observation</option><option value="peer_review">Ask agent to review peer update</option><option value="required_peer_check">Require agree/disagree check</option></select>
     <label for="shared-context">Shared context</label><select id="shared-context"><option value="key_insights_plus_history">Key insights + full history</option><option value="full_history">Full history only</option></select>
     <label for="model">Model</label><input id="model" value="gemma2:2b" maxlength="100" required>
+    <label><input id="logprobs" type="checkbox"> Request token log-probabilities (if supported)</label>
     <button class="button primary" id="start" type="submit">▶ Run experiment</button><button class="button stop" id="stop" type="button" hidden>Stop after current request</button>
     <p class="side-note" id="run-estimate">60 updates · local inference</p>
   </form>
