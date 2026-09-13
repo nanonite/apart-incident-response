@@ -9,6 +9,13 @@ UV_CACHE_DIR=.uv-cache uv run env PYTHONPATH=src python -m unittest discover -s 
 UV_CACHE_DIR=.uv-cache uv run env PYTHONPATH=src python -m apart_incident_response.runtime validate-config config/runtime.json
 ```
 
+The report's `just` build and its LaTeX dependencies are reproducible through
+the workspace flake:
+
+```bash
+nix develop --command just --justfile report/justfile --working-directory report build
+```
+
 The runtime contract is in `config/runtime.json`. It pins the Pi CLI version,
 the `openai-codex/gpt-5.6-luna` model identifier at `xhigh` thinking level, per-agent and aggregate budgets,
 timeout, and the fixed C0/C1/C2 condition set. Set `APART_PI_ROOT` to a local checkout such as

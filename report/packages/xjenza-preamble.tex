@@ -11,7 +11,12 @@
 \usepackage{soul,hyphenat,longtable}
 \usepackage{algpseudocode}
 \usepackage{algorithm}
-\usepackage{textgreek, upgreek}% these should be before amssymb, amsthm and amsmath
+% textgreek requires an LGR font family that is not present in every TeX
+% distribution. Keep it available where supported without making the report
+% fail before \begin{document} elsewhere.
+\IfFileExists{LGRcmr.fd}{\usepackage{textgreek}}{}
+% upgreek is optional because it is not packaged by all TeX distributions.
+\IfFileExists{upgreek.sty}{\usepackage{upgreek}}{}
 \usepackage[T1]{tipa}
 \usepackage{amssymb,amsthm}
 \usepackage{relsize}
@@ -19,7 +24,7 @@
 \usepackage{siunitx}
 \usepackage[version=4]{mhchem}
 \usepackage{booktabs}
-\usepackage{balance}
+\IfFileExists{balance.sty}{\usepackage{balance}}{}
 \usepackage{enumitem}
 \usepackage{placeins}
 \setlist{noitemsep}
