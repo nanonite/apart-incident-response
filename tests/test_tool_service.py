@@ -458,10 +458,12 @@ class ToolServiceTests(unittest.TestCase):
                 self.assertEqual(len(audit_path.read_text().splitlines()), 3)
                 self.assertNotIn("APART_CONTROLLER_CREDENTIAL", audit_path.read_text())
                 submission = json.loads((workspace.artifact_dir / "task_submission.json").read_text())
-                self.assertEqual(submission["token_usage"]["source"], "controller_runtime_accounting")
-                self.assertGreaterEqual(submission["token_usage"]["tool_calls"], 0)
-                self.assertLessEqual(submission["token_usage"]["tool_calls"], result.tool_calls_used)
-                self.assertLessEqual(submission["token_usage"]["total_tokens"], result.tokens_used)
+                self.assertEqual(submission["token_usage"], {
+                    "source": "controller_runtime_accounting",
+                    "status": "final",
+                    "total_tokens": result.tokens_used,
+                    "tool_calls": result.tool_calls_used,
+                })
                 metadata = json.loads((workspace.artifact_dir / "metadata.json").read_text())
                 self.assertNotIn("controller-credential", json.dumps(metadata["command"]))
                 self.assertFalse((workspace.root / ".apart-tool-service.sock").exists())

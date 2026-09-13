@@ -195,6 +195,7 @@ class TaskToolService:
             "evidence": safe_evidence,
             "token_usage": {
                 "source": "controller_runtime_accounting",
+                "status": "provisional",
                 "total_tokens": runtime_usage.total_tokens,
                 "tool_calls": runtime_usage.tool_calls,
             },
@@ -217,6 +218,37 @@ class TaskToolService:
             self._write_submission(path, encoded)
             self._submissions[key] = digest
         return self._submission_response(identity, digest)
+
+    def finalize_submission_usage(
+        self, identity: AgentIdentity, runtime_usage: TrustedRuntimeUsage
+    ) -> None:
+        """Replace the submission-time usage snapshot after the run drains."""
+
+        if not isinstance(runtime_usage, TrustedRuntimeUsage):
+            raise ToolValidationError("trusted runtime usage is unavailable")
+        if self._artifact_root is None:
+            return
+        path = self._artifact_path(identity)
+        with self._lock:
+            if not path.exists():
+                return
+            self._read_existing_submission(path, identity)
+            try:
+                payload = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+                raise ToolValidationError("existing submission artifact is invalid") from exc
+            if not isinstance(payload, dict):
+                raise ToolValidationError("existing submission artifact is invalid")
+            payload["token_usage"] = {
+                "source": "controller_runtime_accounting",
+                "status": "final",
+                "total_tokens": runtime_usage.total_tokens,
+                "tool_calls": runtime_usage.tool_calls,
+            }
+            encoded = json.dumps(payload, ensure_ascii=False, sort_keys=True, indent=2) + "\n"
+            if len(encoded.encode("utf-8")) > MAX_SUBMISSION_BYTES:
+                raise ToolValidationError("submission exceeds the size limit")
+            self._write_submission(path, encoded)
 
     @staticmethod
     def _submission_response(identity: AgentIdentity, digest: str) -> dict[str, Any]:

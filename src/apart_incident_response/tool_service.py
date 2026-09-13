@@ -75,6 +75,13 @@ class ConstrainedToolService:
                 raise ToolValidationError("runtime usage cannot decrease")
             self._runtime_usage[key] = usage
 
+    def finalize_runtime_usage(self, identity: AgentIdentity) -> None:
+        """Finalize a submitted artifact using the controller's drained counters."""
+
+        usage = self._runtime_usage_for(identity)
+        if usage is not None:
+            self._task_service.finalize_submission_usage(identity, usage)
+
     def issue_credential(self, identity: AgentIdentity) -> str:
         return self.credentials.issue(identity)
 

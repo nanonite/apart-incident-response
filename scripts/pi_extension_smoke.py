@@ -135,6 +135,7 @@ def capture_trace() -> dict[str, Any]:
             credential_file.chmod(0o600)
             with ToolServiceSocketServer(service, root / ".apart-tool-service.sock", use_fifo=True) as server:
                 version, events = _run_pi(root, server, credential_file)
+            service.finalize_runtime_usage(identity)
             audit_path = root / "artifacts" / "pi-smoke-run" / "agents" / "pi-agent" / "artifacts" / "tool_calls.jsonl"
             audit = [json.loads(line) for line in audit_path.read_text(encoding="utf-8").splitlines()]
             tool_events = [
@@ -164,6 +165,7 @@ def capture_trace() -> dict[str, Any]:
             submission = json.loads(submission_path.read_text(encoding="utf-8"))
             if submission["token_usage"] != {
                 "source": "controller_runtime_accounting",
+                "status": "final",
                 "total_tokens": 420,
                 "tool_calls": 4,
             }:

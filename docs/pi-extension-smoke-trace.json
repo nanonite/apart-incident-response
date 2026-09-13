@@ -147,6 +147,7 @@
     "timestamp": "2026-09-12T00:00:00Z",
     "token_usage": {
       "source": "controller_runtime_accounting",
+      "status": "final",
       "tool_calls": 4,
       "total_tokens": 420
     }

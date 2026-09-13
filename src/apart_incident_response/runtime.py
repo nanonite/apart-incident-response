@@ -1910,6 +1910,11 @@ class AgentRun:
                         if failure_reason is None:
                             failure_reason = f"agent exited with status {exit_code}"
             settle_claim()
+            if self.tool_service is not None:
+                # The submission may have raced the stdout event that reports
+                # its tool call. Finalize after the child and selector have
+                # fully drained so the artifact carries complete usage.
+                self.tool_service.finalize_runtime_usage(self.identity)
             result = self._finish(
                 status, exit_code, started_at, _utc_now(), started_clock,
                 final_response, failure_reason, command, events,

@@ -158,7 +158,9 @@ and tool-call counters, and a stable content hash. Every accepted or rejected
 authenticated invocation is written to that agent's `tool_calls.jsonl` artifact
 with validated input,
 result or error, timestamp, run ID, and agent ID. Credential values are
-redacted and are never written to the log.
+redacted and are never written to the log. The submission-time usage record is
+marked `provisional`; `AgentRun` replaces it with `final` totals after the
+child output has been drained.
 
 The extension is [incident-tools.ts](pi-extension/incident-tools.ts). Pass it
 explicitly to `AgentRun.run()` together with a configured service:

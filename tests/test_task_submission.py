@@ -81,6 +81,7 @@ class TaskSubmissionTests(unittest.TestCase):
         self.assertEqual(artifact["evidence"][0]["line_start"], 2)
         self.assertEqual(artifact["token_usage"], {
             "source": "controller_runtime_accounting",
+            "status": "provisional",
             "total_tokens": 42,
             "tool_calls": 3,
         })
@@ -103,6 +104,22 @@ class TaskSubmissionTests(unittest.TestCase):
         second = self.submit()
         self.assertEqual(first, second)
         self.assertEqual(before, self.artifact_path().read_bytes())
+
+    def test_finalization_replaces_provisional_usage_with_drained_runtime_totals(self):
+        self.service.update_runtime_usage(self.identity, 42, 3)
+        self.assertTrue(self.submit()["ok"])
+        provisional = json.loads(self.artifact_path().read_text(encoding="utf-8"))
+        self.assertEqual(provisional["token_usage"]["status"], "provisional")
+        self.service.update_runtime_usage(self.identity, 55, 4)
+        self.service.finalize_runtime_usage(self.identity)
+        final = json.loads(self.artifact_path().read_text(encoding="utf-8"))
+        self.assertEqual(final["token_usage"], {
+            "source": "controller_runtime_accounting",
+            "status": "final",
+            "total_tokens": 55,
+            "tool_calls": 4,
+        })
+        self.assertEqual(final["submission_sha256"], provisional["submission_sha256"])
 
     def test_conflicting_second_submission_is_rejected(self):
         self.service.update_runtime_usage(self.identity, 42, 3)
