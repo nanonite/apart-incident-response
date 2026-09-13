@@ -1,2 +1,0 @@
-error rate rises only on requests touching the shared cache
-requests bypassing the cache remain within the normal range
