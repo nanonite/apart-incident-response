@@ -147,8 +147,11 @@ class ExperimentController:
     def _config_for_n(self, agent_count: int, model: str | None = None) -> RuntimeConfig:
         if agent_count not in self.protocol.supported_agent_counts:
             raise RuntimeConfigError(f"agent count {agent_count} is not predeclared")
-        token_budget = self.config.aggregate_token_budget // agent_count
-        tool_budget = self.config.aggregate_tool_call_budget // agent_count
+        # Per-agent envelope is pinned by config and held constant across swarm
+        # sizes so that varying agent_count studies coordination, not a shrinking
+        # per-agent budget. The aggregate ceiling scales up with agent_count instead.
+        token_budget = self.config.per_agent_token_budget
+        tool_budget = self.config.per_agent_tool_call_budget
         if token_budget <= 0 or tool_budget <= 0:
             raise RuntimeConfigError("aggregate budget cannot provide a positive envelope to every agent")
         selected_config = self.config if model is None else self.config.for_model(model)
@@ -157,6 +160,8 @@ class ExperimentController:
             agent_count=agent_count,
             per_agent_token_budget=token_budget,
             per_agent_tool_call_budget=tool_budget,
+            aggregate_token_budget=token_budget * agent_count,
+            aggregate_tool_call_budget=tool_budget * agent_count,
         )
 
     def _run_manifest(
