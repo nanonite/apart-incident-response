@@ -43,6 +43,7 @@ COPY src ./src
 FROM base AS test
 
 COPY pi-extension ./pi-extension
+COPY scripts/task_one_calibration.py ./scripts/task_one_calibration.py
 COPY tests ./tests
 RUN python -m unittest discover -s tests -v
 

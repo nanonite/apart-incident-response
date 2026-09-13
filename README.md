@@ -207,6 +207,21 @@ fixture FIFO and produce the audit evidence in
 [docs/pi-extension-smoke-trace.json](docs/pi-extension-smoke-trace.json). Run it
 with `just pi-smoke`.
 
+Before Task 2 work begins, regenerate the credential-free single-agent Task 1
+calibration with:
+
+```bash
+PYTHONPATH=src:. python scripts/task_one_calibration.py \
+  --output docs/task-one-calibration.json
+```
+
+It runs one deterministic fake agent per evidence bundle in C0, where only
+`task_read`, `task_query`, and `task_submit` are available. The records capture
+the prompt, bundle, tool and token counts, response, and validator result. The
+checked-in trace shows all three runs complete while no individual bundle passes
+the complete diagnosis validator. Calibration is diagnostic evidence and is not
+a fourth experimental condition.
+
 ## Docker
 
 The image build includes the pinned Pi submodule. After cloning without

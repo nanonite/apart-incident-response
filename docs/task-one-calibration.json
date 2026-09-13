@@ -1,0 +1,96 @@
+{
+  "calibration": true,
+  "condition": "C0",
+  "credential_free": true,
+  "model_request": false,
+  "purpose": "diagnostic calibration before Task 2; not a fourth experiment condition",
+  "records": [
+    {
+      "agent_id": "agent-1",
+      "available_tools": [
+        "task_read",
+        "task_query",
+        "task_submit"
+      ],
+      "board_tools_available": false,
+      "condition": "C0",
+      "evidence_bundle": "agent-1/application.log",
+      "prompt": "Diagnose the incident described by the evidence assigned to you. Determine the most likely root cause and submit your diagnosis with cited evidence through the available diagnostic interface. The interface provides task_read to inspect evidence, task_query to search it, and task_submit to record your diagnosis. Return a concise final explanation after submitting.",
+      "response": "2026-09-12T10:14:02Z ERROR request failures began immediately after config revision ORCHID-731.\nRequests without cache access remain healthy.\n",
+      "run_id": "cal-1-agent-1",
+      "seed": 1,
+      "status": "completed",
+      "task_id": "task-1",
+      "tokens_used": 1,
+      "tool_calls_used": 1,
+      "turns": 1,
+      "validator": {
+        "accepted": false,
+        "missing_terms": [
+          "cache_mode",
+          "local",
+          "shared",
+          "outage"
+        ]
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "available_tools": [
+        "task_read",
+        "task_query",
+        "task_submit"
+      ],
+      "board_tools_available": false,
+      "condition": "C0",
+      "evidence_bundle": "agent-2/deployment.txt",
+      "prompt": "Diagnose the incident described by the evidence assigned to you. Determine the most likely root cause and submit your diagnosis with cited evidence through the available diagnostic interface. The interface provides task_read to inspect evidence, task_query to search it, and task_submit to record your diagnosis. Return a concise final explanation after submitting.",
+      "response": "deployment revision: ORCHID-731\nCACHE_MODE changed from local to shared\n",
+      "run_id": "cal-1-agent-2",
+      "seed": 1,
+      "status": "completed",
+      "task_id": "task-1",
+      "tokens_used": 1,
+      "tool_calls_used": 1,
+      "turns": 1,
+      "validator": {
+        "accepted": false,
+        "missing_terms": [
+          "outage"
+        ]
+      }
+    },
+    {
+      "agent_id": "agent-3",
+      "available_tools": [
+        "task_read",
+        "task_query",
+        "task_submit"
+      ],
+      "board_tools_available": false,
+      "condition": "C0",
+      "evidence_bundle": "agent-3/metrics.txt",
+      "prompt": "Diagnose the incident described by the evidence assigned to you. Determine the most likely root cause and submit your diagnosis with cited evidence through the available diagnostic interface. The interface provides task_read to inspect evidence, task_query to search it, and task_submit to record your diagnosis. Return a concise final explanation after submitting.",
+      "response": "error rate rises only on requests touching the shared cache\nrequests bypassing the cache remain within the normal range\n",
+      "run_id": "cal-1-agent-3",
+      "seed": 1,
+      "status": "completed",
+      "task_id": "task-1",
+      "tokens_used": 1,
+      "tool_calls_used": 1,
+      "turns": 1,
+      "validator": {
+        "accepted": false,
+        "missing_terms": [
+          "orchid-731",
+          "cache_mode",
+          "local",
+          "outage"
+        ]
+      }
+    }
+  ],
+  "schema_version": 1,
+  "seed": 1,
+  "task_id": "task-1"
+}
