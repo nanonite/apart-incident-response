@@ -6,7 +6,9 @@ from __future__ import annotations
 import argparse
 from collections.abc import Mapping
 import json
+import os
 from pathlib import Path
+import stat
 import sys
 
 SOURCE_ROOT = Path(__file__).resolve().parents[1]
@@ -21,6 +23,23 @@ def _write(path: Path, payload: object) -> None:
     path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     path.chmod(0o600)
+
+
+def _execution_context() -> dict[str, object]:
+    """Record the controller launch boundary without recording secrets."""
+
+    socket_visible = any(
+        path.exists() and stat.S_ISSOCK(path.stat().st_mode)
+        for path in (Path("/run/docker.sock"), Path("/var/run/docker.sock"))
+    )
+    containerized = os.environ.get("APART_CONTAINERIZED") == "1"
+    return {
+        "controller": "docker-compose-matrix-service" if containerized else "host-process",
+        "containerized": containerized,
+        "docker_socket_visible_to_controller": socket_visible,
+        "docker_access_scope": "outer-controller-only",
+        "credentials_in_matrix_argv": False,
+    }
 
 
 def run_harness_check(output: Path) -> dict[str, object]:
@@ -50,6 +69,7 @@ def run_harness_check(output: Path) -> dict[str, object]:
         "schema_version": 1,
         "run_class": "harness_check",
         "experimental_data": False,
+        "execution_context": _execution_context(),
         "reason": "deterministic fake provider used for lifecycle, access, telemetry, and pairing checks",
         "triplets": [
             {
@@ -184,6 +204,7 @@ def run_real_anchor(
         "schema_version": 1,
         "run_class": "experimental",
         "experimental_data": validity["experimental_data"],
+        "execution_context": _execution_context(),
         "data_status": validity["data_status"],
         "claim_scope": (
             "descriptive pilot evidence only"

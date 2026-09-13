@@ -12,11 +12,53 @@ build: setup
 test: setup
     docker build --target test --output type=cacheonly .
 
+# Verify Docker from the trusted outer session before starting any controller.
+# This host-specific target is opt-in and does not affect other machines.
+docker-check:
+    docker info >/dev/null
+    @echo "Docker server reachable from the outer controller session"
+
 pi-smoke: setup
     docker build --target pi-smoke --output type=cacheonly .
 
 report: setup
     docker build --target report --output type=cacheonly .
+
+# Run the deterministic fake-provider lifecycle check in the container. This
+# host-specific target is opt-in, and produces harness evidence only; it is
+# never experimental model data.
+container-harness: setup
+    docker compose run --rm --build matrix --harness-check --output /app/runs/container-harness
+
+# Check the Docker and nested Bubblewrap boundaries without launching Pi or a
+# model. The JSON result is stored under the mounted workspace runs directory.
+container-isolation: setup
+    docker compose run --rm --build --entrypoint python matrix scripts/container_isolation_check.py --output /app/runs/container-isolation.json
+
+# Run the real C0/C1/C2 controller in the container. This host-specific target
+# is opt-in. The host credential is mounted read-only for the controller only;
+# it is never placed in argv.
+container-anchor output="t1-container" seeds="1" model="": setup
+    #!/usr/bin/env bash
+    set -euo pipefail
+    output="{{ output }}"; output="${output#output=}"
+    seeds="{{ seeds }}"; seeds="${seeds#seeds=}"
+    model="{{ model }}"; model="${model#model=}"
+    read -r -a seed_values <<< "$seeds"
+    args=(--real-anchor --seeds "${seed_values[@]}" --output "/app/runs/$output")
+    mount_args=()
+    selected_model="$model"
+    if [[ -n "$selected_model" ]]; then
+        args+=(--model "$selected_model")
+    fi
+    if [[ "$selected_model" == opencode-go/* ]]; then
+        : "${APART_OPENCODE_API_KEY_FILE:?set APART_OPENCODE_API_KEY_FILE to a private OpenCode key file}"
+        mount_args+=(--volume "$APART_OPENCODE_API_KEY_FILE:/run/secrets/opencode-key:ro")
+    else
+        : "${APART_PI_AUTH_FILE:?set APART_PI_AUTH_FILE to a private Pi/Codex auth file}"
+        mount_args+=(--volume "$APART_PI_AUTH_FILE:/run/secrets/pi-auth.json:ro")
+    fi
+    docker compose run --rm --build "${mount_args[@]}" matrix "${args[@]}"
 
 # Local Qwen3-8B (4-bit) model server for the one-shot /goal logprobs path.
 ollama-up:

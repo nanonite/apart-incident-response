@@ -22,6 +22,22 @@ timeout, and the fixed C0/C1/C2 condition set. The containerized launcher uses
 the pinned Pi checkout at `/opt/pi`. Each run receives a controller-issued identity and a private
 `artifacts/<run-id>/agents/<agent-id>/` directory.
 
+The real matrix must be launched from a dedicated trusted outer Codex session
+with explicit full host access. This is an opt-in launch choice for this
+repository; it does not change the global Codex default:
+
+```bash
+cd /path/to/apart-incident-response
+codex --sandbox danger-full-access --ask-for-approval never --cd "$PWD"
+```
+
+In that outer session, `just docker-check` verifies Docker access before any
+controller starts. Docker control belongs only to this outer session and the
+container controller; the Pi process never receives the Docker socket.
+This is a host-specific opt-in path for machines that provide a trusted
+full-access outer session. It is not required by, or enabled by default for,
+other machines using this repository.
+
 Task prompts are configured under the top-level `prompts` object by task ID.
 When a run omits `--prompt` and `--prompt-file`, the controller selects the
 configured prompt from the task ID and seed; condition is not part of that
@@ -97,6 +113,8 @@ run.
 OpenCode Go uses Pi 0.85.1's built-in opencode-go provider. The controller
 checks the pinned checkout for that provider and its session-header support
 before launch; it refuses a custom fallback when those sources are absent.
+The two Pi provider paths and their execution boundaries are compared in
+[`docs/pi-provider-paths.md`](docs/pi-provider-paths.md).
 The default Codex model and OAuth egress stay unchanged. Select OpenCode Go
 for a real run with a model override and a private key file outside the
 repository:
@@ -304,6 +322,55 @@ Build the runtime image and validate its pinned configuration:
 ```bash
 docker compose build
 docker compose run --rm runtime
+```
+
+The default `runtime` service only validates configuration. The dedicated
+`matrix` service runs the controller inside the image built from the pinned
+`pi` checkout. Run these commands from the trusted outer session above:
+The matrix service and its Just targets are opt-in; normal repository Docker
+commands do not start it or require full host access.
+
+```bash
+just docker-check
+just container-isolation
+just container-harness
+```
+
+`container-harness` writes deterministic, fake-provider checks under
+`runs/container-harness/`; it is harness evidence, never model data.
+`container-isolation` writes sanitized container and Bubblewrap namespace
+evidence to `runs/container-isolation.json`. Both commands fail if a Docker
+socket is visible inside the matrix container.
+
+For a real, explicitly authorized calibration or anchor, provide credentials
+from outside the repository. The Codex path mounts the source auth read-only;
+the controller-owned OAuth refresh state is kept in the named Docker volume
+`apart-incident-response-controller-auth-state`:
+
+```bash
+export APART_PI_AUTH_FILE="$HOME/.codex/auth.json"
+just container-anchor output=t1-container seeds="1"
+```
+
+The OpenCode Go path uses a private key file instead and stages it only for the
+controller. The entrypoint copies the read-only input to a controller-owned
+0600 path, and the runtime removes run-local staged credentials on exit:
+
+```bash
+export APART_OPENCODE_API_KEY_FILE="$HOME/.local/share/opencode/auth.json"
+just container-anchor output=opencode-go-container \
+  model=opencode-go/kimi-k2.6 seeds="1"
+```
+
+The `container-anchor` target never puts credential contents in arguments.
+Its `/app/runs` mount maps to the repository's `runs/` directory, so manifests,
+raw events, failures, usage, and derived telemetry remain available on the
+host. Use the existing host command only when intentionally running the
+controller outside Docker:
+
+```bash
+PYTHONPATH=src python scripts/run_experiment.py \
+  --real-anchor --seeds 1 --output runs/t1-host
 ```
 
 Docker also verifies the repository's build responsibilities directly:

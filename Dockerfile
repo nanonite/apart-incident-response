@@ -66,8 +66,12 @@ LABEL org.opencontainers.image.title="Apart incident response runtime" \
 COPY --from=pi-build /opt/pi/package.json /opt/pi/package-lock.json /opt/pi/
 COPY --from=pi-build /opt/pi/node_modules /opt/pi/node_modules
 COPY --from=pi-build /opt/pi/packages /opt/pi/packages
+COPY pi-extension ./pi-extension
+COPY scripts/container_isolation_check.py scripts/container_matrix_entrypoint.sh scripts/run_experiment.py ./scripts/
+COPY tests/fixtures/controlled_fake_agent.py ./tests/fixtures/controlled_fake_agent.py
 
-RUN mkdir -p /app/artifacts
+RUN chmod 0755 /app/scripts/container_matrix_entrypoint.sh \
+    && mkdir -p /app/artifacts /app/runs
 
 ENTRYPOINT ["/usr/bin/tini", "--", "python", "-m", "apart_incident_response.runtime"]
 CMD ["validate-config", "config/runtime.json"]

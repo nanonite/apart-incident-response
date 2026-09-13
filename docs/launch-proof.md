@@ -70,6 +70,36 @@ Only the sanitized summary and triplet metrics were retained at
 `runs/opencode-go/`; all raw provider workspaces and temporary auth copies
 were deleted.
 
+## Containerized Matrix Launch
+
+The reproducible outer launch path is intentionally separate from the managed
+Codex command sandbox. Start a dedicated trusted session with explicit full
+access, then verify Docker and the nested boundary before any provider run:
+
+```bash
+codex --sandbox danger-full-access --ask-for-approval never --cd "$PWD"
+just docker-check
+just container-isolation
+just container-harness
+```
+
+This is an opt-in launch path for the host that provides the trusted outer
+session, not a repository-wide default. Other machines can continue using the
+normal runtime validation, build, and test commands without full host access.
+
+`container-isolation` records the container marker, the absence of a Docker
+socket, and a distinct Bubblewrap network namespace. `container-harness`
+records the same controller artifacts under `/app/runs`, mapped to the host
+`runs/` directory, and labels the fake-provider result
+`experimental_data=false`. The matrix service has no Docker socket mount;
+Docker access is limited to the outer session and the controller process.
+
+The current managed session cannot provide Docker API access, so these
+container commands have not been executed here. No successful containerized
+or real-model evidence is claimed by this section until the commands complete
+in the dedicated outer context. The existing host-run live summaries above
+remain historical launch diagnostics and do not satisfy the real anchor gate.
+
 ## Workspace Layout
 
 Run data belongs under `runs/<experiment>/`. The captured deterministic results
