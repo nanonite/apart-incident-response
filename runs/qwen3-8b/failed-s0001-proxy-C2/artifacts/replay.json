@@ -1,0 +1,26 @@
+{
+  "events": [
+    {
+      "agent_id": "agent-1",
+      "final_response": null,
+      "source": "agent_result",
+      "status": "failed",
+      "timestamp": "2026-09-13T19:50:25.346451Z"
+    },
+    {
+      "agent_id": "agent-3",
+      "final_response": null,
+      "source": "agent_result",
+      "status": "failed",
+      "timestamp": "2026-09-13T19:50:25.348823Z"
+    },
+    {
+      "agent_id": "agent-2",
+      "final_response": null,
+      "source": "agent_result",
+      "status": "failed",
+      "timestamp": "2026-09-13T19:50:25.349759Z"
+    }
+  ],
+  "schema_version": 1
+}

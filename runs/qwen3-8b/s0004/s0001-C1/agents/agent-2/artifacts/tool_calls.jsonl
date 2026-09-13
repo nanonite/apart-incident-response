@@ -1,0 +1,1 @@
+{"agent_id": "agent-2", "condition": "C1", "operation": "task_query", "response": {"error": {"code": "invalid_arguments", "message": "path must be a relative POSIX path"}, "ok": false}, "run_id": "s0001-C1", "task_id": "task-1", "timestamp": "2026-09-13T20:59:41.841610Z", "validated_input": {"max_results": 5, "path": "/workspace/task", "query": "incident"}}

@@ -1,0 +1,1 @@
+The required tags (orchid-731, cache_mode, local, outage) were not found in the task files. The diagnosis includes the shared cache error from metrics.txt but cannot satisfy the validator's specific criteria. No further evidence is available to meet the required tags.

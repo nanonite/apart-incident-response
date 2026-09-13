@@ -1,0 +1,148 @@
+{
+  "events": [
+    {
+      "agent_id": "agent-1",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T20:58:57.903068Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "incident"
+      }
+    },
+    {
+      "agent_id": "agent-3",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T20:59:03.205352Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "incident"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T20:59:08.820672Z",
+      "validated_input": {
+        "max_results": 10,
+        "query": "incident error log problem failure"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "final_response": "No evidence matching \"incident\" was found in the task directory. Please provide the incident logs, error messages, or relevant files needed for diagnosis. Without evidence, a root cause analysis cannot be performed.",
+      "source": "agent_result",
+      "status": "completed",
+      "timestamp": "2026-09-13T20:59:11.685194Z"
+    },
+    {
+      "agent_id": "agent-3",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T20:59:13.239693Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "incident error failure problem"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "final_response": null,
+      "source": "agent_result",
+      "status": "completed",
+      "timestamp": "2026-09-13T20:59:15.201259Z"
+    },
+    {
+      "agent_id": "agent-3",
+      "condition": "C0",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "invalid_arguments",
+          "message": "path must be a relative POSIX path"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T20:59:17.501157Z",
+      "validated_input": {
+        "path": "/workspace/task"
+      }
+    },
+    {
+      "agent_id": "agent-3",
+      "condition": "C0",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T20:59:19.744207Z",
+      "validated_input": {
+        "path": "task"
+      }
+    },
+    {
+      "agent_id": "agent-3",
+      "final_response": "The evidence files are inaccessible due to permission restrictions. Without access to the task files or logs, a diagnosis cannot be performed. Please verify that the task has valid files and that you have read permissions for the specified paths. If this is a test scenario, ensure the files are properly attached to the task.",
+      "source": "agent_result",
+      "status": "completed",
+      "timestamp": "2026-09-13T20:59:24.706262Z"
+    }
+  ],
+  "schema_version": 1
+}

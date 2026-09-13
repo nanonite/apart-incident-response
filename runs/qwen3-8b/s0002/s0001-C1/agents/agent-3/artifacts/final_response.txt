@@ -1,0 +1,5 @@
+The authentication context does not grant access to files outside the task's sandboxed directory structure. Since no evidence was found via text search and file system access is restricted, I cannot diagnose the incident with available data.
+
+<diagnosis>
+Insufficient evidence available to determine the incident root cause. File system access and text search queries returned no actionable data within the authenticated task environment.
+</diagnosis>

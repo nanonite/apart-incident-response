@@ -1,0 +1,6 @@
+I need to diagnose the incident but currently lack specific evidence or context. Please provide:
+1. File paths containing incident data
+2. Specific error messages or logs
+3. Any relevant system states
+
+With this information, I can use task_read to inspect files, task_query to search for patterns, and task_submit to record a diagnosis with cited evidence.

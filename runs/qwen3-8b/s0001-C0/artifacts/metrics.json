@@ -1,0 +1,58 @@
+{
+  "U": 0.0,
+  "agent_count": 3,
+  "aggregate_token_budget": 48000,
+  "board_bytes_read": 0,
+  "board_bytes_written": 0,
+  "board_reads_R": 0,
+  "board_writes_W": 0,
+  "cadence_read_attempts": 0,
+  "completed_agents": 1,
+  "cross_agent_messages_X": 0,
+  "evidence_to_message_opportunities": 0,
+  "failures": [
+    {
+      "agent_id": "agent-1",
+      "reason": "agent exceeded per-agent token budget; provider usage exceeded its claimed envelope (token overage=3809, tool-call overage=0)",
+      "status": "budget_exhausted"
+    },
+    {
+      "agent_id": "agent-2",
+      "reason": "agent exceeded per-agent token budget; provider usage exceeded its claimed envelope (token overage=1090, tool-call overage=0)",
+      "status": "budget_exhausted"
+    }
+  ],
+  "mean_uptake_latency_seconds": null,
+  "message_read_ratio_M": 0.0,
+  "message_to_answer_opportunities": 0,
+  "pilot_claim_scope": "descriptive; no causal or inferential claim from this metric alone",
+  "private_token_owners": {
+    "ORCHID-731": [
+      "agent-2"
+    ]
+  },
+  "scheduled_board_read_opportunities": 0,
+  "schema_version": 1,
+  "submitted_agents": 0,
+  "success_per_1000_tokens": 0.0,
+  "task_success": false,
+  "task_success_rate": 0.0,
+  "total_tokens": 41114,
+  "total_tool_calls": 15,
+  "total_turns": 16,
+  "transformation_events": [],
+  "transformation_opportunities": 0,
+  "transformation_rate": 0.0,
+  "uptake": [],
+  "uptake_defined": false,
+  "uptake_definition": "recipient use after a prior board read of a seeded-token message from a declared private owner; every recipient with private exposure is excluded",
+  "uptake_events": 0,
+  "uptake_latency_seconds": [],
+  "uptake_opportunities": 0,
+  "uptake_outcomes": [],
+  "uptake_provenance_error": null,
+  "uptake_provenance_valid": true,
+  "uptake_recipients": 0,
+  "validator_outcomes": [],
+  "wall_clock_seconds": 102.757979
+}

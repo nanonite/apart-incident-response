@@ -1,0 +1,31 @@
+{
+  "ended_at": "2026-09-13T19:50:25.348823Z",
+  "event_counts": {
+    "agent_end": 1,
+    "agent_settled": 1,
+    "agent_start": 1,
+    "message_end": 2,
+    "message_start": 2,
+    "session": 1,
+    "turn_end": 1,
+    "turn_start": 1
+  },
+  "failure_reason": "Pi provider error: 403 status code (no body)",
+  "identity": {
+    "agent_id": "agent-3",
+    "capability_profile": "task-diagnostic-v1",
+    "condition": "C2",
+    "credential_id": "79584bb6fb8452a9e67d73f8ce58b32dbe94ead8dacf0014eb25c7f04adbacd9",
+    "run_id": "s0001-C2",
+    "seed": 1,
+    "task_id": "task-1"
+  },
+  "provider_started_at": "2026-09-13T19:50:24.194549Z",
+  "provider_tokens": 0,
+  "schema_version": 1,
+  "started_at": "2026-09-13T19:50:24.159368Z",
+  "status": "failed",
+  "tool_call_count": 0,
+  "turn_count": 1,
+  "wall_clock_seconds": 1.189803
+}

@@ -1,0 +1,1 @@
+{"agent_id": "agent-2", "condition": "C0", "operation": "task_query", "response": {"ok": true, "result": {"matches": [], "task_id": "task-1", "truncated": false}}, "run_id": "s0001-C0", "task_id": "task-1", "timestamp": "2026-09-13T20:59:08.820672Z", "validated_input": {"max_results": 10, "query": "incident error log problem failure"}}

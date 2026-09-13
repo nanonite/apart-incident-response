@@ -1,0 +1,1 @@
+No evidence matching "incident", "error", "exception", or "crash" was found in the task files. The task may be empty, or the incident description might reside in an untitled/unnamed file. Please verify file contents or provide specific paths for inspection.

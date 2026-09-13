@@ -1,0 +1,44 @@
+{
+  "ended_at": "2026-09-13T20:59:15.201259Z",
+  "event_counts": {
+    "agent_end": 1,
+    "agent_settled": 1,
+    "agent_start": 1,
+    "message_end": 4,
+    "message_start": 4,
+    "message_update": 527,
+    "session": 1,
+    "tool_execution_end": 1,
+    "tool_execution_start": 1,
+    "turn_end": 2,
+    "turn_start": 2
+  },
+  "failure_reason": null,
+  "identity": {
+    "agent_id": "agent-2",
+    "capability_profile": "task-diagnostic-v1",
+    "condition": "C0",
+    "credential_id": "a9dcea84b627b04017bb9956135f750ca8602c9d457440957c023c85228caa22",
+    "run_id": "s0001-C0",
+    "seed": 1,
+    "task_id": "task-1"
+  },
+  "logits": {
+    "channel_counts": {
+      "content": 31,
+      "reasoning": 520
+    },
+    "mean_surprise_bits": 0.164785,
+    "mean_top_k_entropy_bits": 1.105901,
+    "token_count": 551,
+    "turn_count": 1
+  },
+  "provider_started_at": "2026-09-13T20:58:49.022868Z",
+  "provider_tokens": 2462,
+  "schema_version": 1,
+  "started_at": "2026-09-13T20:58:48.979248Z",
+  "status": "completed",
+  "tool_call_count": 1,
+  "turn_count": 2,
+  "wall_clock_seconds": 26.231287
+}

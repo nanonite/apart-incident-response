@@ -1,0 +1,406 @@
+{
+  "events": [
+    {
+      "agent_id": "agent-1",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T20:44:49.435337Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "error incident log stack trace"
+      }
+    },
+    {
+      "agent_id": "agent-3",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "error": {
+          "code": "invalid_arguments",
+          "message": "path must be a relative POSIX path"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T20:44:58.189842Z",
+      "validated_input": {
+        "max_results": 5,
+        "path": "/workspace/task",
+        "query": "error incident failure"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T20:45:03.343075Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "incident"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C0",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "invalid_arguments",
+          "message": "path must be a relative POSIX path"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T20:45:10.698344Z",
+      "validated_input": {
+        "path": "/workspace/task/evidence.log"
+      }
+    },
+    {
+      "agent_id": "agent-3",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "error": {
+          "code": "invalid_arguments",
+          "message": "path contains an unsupported path component"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T20:45:22.579939Z",
+      "validated_input": {
+        "max_results": 5,
+        "path": "./",
+        "query": "error incident failure"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T20:45:24.057714Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "error log"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C0",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "invalid_arguments",
+          "message": "path contains an unsupported path component"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T20:45:27.437776Z",
+      "validated_input": {
+        "path": "./evidence.log"
+      }
+    },
+    {
+      "agent_id": "agent-3",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T20:45:34.010326Z",
+      "validated_input": {
+        "max_results": 5,
+        "path": "task",
+        "query": "error incident failure"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "error": {
+          "code": "invalid_arguments",
+          "message": "unsupported argument(s): max,results"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T20:45:36.158924Z",
+      "validated_input": {
+        "max,results": 5,
+        "query": "log"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C0",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "invalid_arguments",
+          "message": "path contains an unsupported path component"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T20:45:41.270996Z",
+      "validated_input": {
+        "path": "./logs/evidence.log"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T20:45:51.179435Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "log"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C0",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "invalid_arguments",
+          "message": "path must be a relative POSIX path"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T20:45:56.872031Z",
+      "validated_input": {
+        "path": "/workspace/task/evidence.log"
+      }
+    },
+    {
+      "agent_id": "agent-3",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "error": {
+          "code": "invalid_arguments",
+          "message": "path contains an unsupported path component"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T20:46:00.362035Z",
+      "validated_input": {
+        "max_results": 5,
+        "path": ".",
+        "query": "error incident failure"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C0",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "invalid_arguments",
+          "message": "path must be a relative POSIX path"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T20:46:03.769315Z",
+      "validated_input": {
+        "path": "/workspace/task/system.log"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C0",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T20:46:08.672923Z",
+      "validated_input": {
+        "path": "data/evidence.log"
+      }
+    },
+    {
+      "agent_id": "agent-3",
+      "final_response": "The provided path contains an unsupported component, which suggests the system enforces strict path formatting. Since all attempts to specify a valid path have failed, I'll proceed without a path parameter (though the tool requires it). This indicates a potential limitation in the tool's design or permissions. Please check if the path is valid or if the tool allows wildcard searches. If the issue persists, consult the system's documentation for allowed paths.",
+      "source": "agent_result",
+      "status": "completed",
+      "timestamp": "2026-09-13T20:46:14.172154Z"
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C0",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T20:46:15.150510Z",
+      "validated_input": {
+        "path": "system.log"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C0",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "invalid_arguments",
+          "message": "path must be a relative POSIX path"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T20:46:20.852739Z",
+      "validated_input": {
+        "path": "/workspace/task/system.log"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T20:46:22.984504Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "*"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C0",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T20:46:27.165164Z",
+      "validated_input": {
+        "path": "system.log"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "final_response": "The diagnostic interface indicates no files match the search criteria. Please verify the file paths or provide additional context about the incident's location (e.g., specific directories, log names, or error messages). Without access to the evidence files, a diagnosis cannot proceed.",
+      "source": "agent_result",
+      "status": "completed",
+      "timestamp": "2026-09-13T20:46:31.199320Z"
+    },
+    {
+      "agent_id": "agent-1",
+      "final_response": null,
+      "source": "agent_result",
+      "status": "budget_exhausted",
+      "timestamp": "2026-09-13T20:46:35.209576Z"
+    }
+  ],
+  "schema_version": 1
+}
