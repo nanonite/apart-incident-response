@@ -11,6 +11,9 @@ from datetime import datetime
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+from apart_incident_response.task_tools import TaskCatalog, TaskToolService
+from apart_incident_response.tool_credentials import ControllerCredentialAuthority
+from apart_incident_response.tool_service import ConstrainedToolService
 from apart_incident_response.runtime import (
     AgentIdentity,
     AgentRun,
@@ -414,6 +417,56 @@ class RuntimeContractTests(unittest.TestCase):
             self.assertTrue((workspace.artifact_dir / "events.json").exists())
             saved = json.loads((workspace.artifact_dir / "result.json").read_text(encoding="utf-8"))
             self.assertEqual(saved["status"], "completed")
+
+    def test_controller_credential_is_redacted_from_agent_artifacts(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            secret = "controller-secret-for-runtime"
+            fake_agent = root / "credential_echo_agent.py"
+            fake_agent.write_text(
+                textwrap.dedent(
+                    """
+                    import json
+                    import os
+                    from pathlib import Path
+
+                    credential = Path(os.environ["APART_CONTROLLER_CREDENTIAL_FILE"]).read_text().strip()
+                    print(json.dumps({
+                        "type": "message_end",
+                        "message": {
+                            "role": "assistant",
+                            "content": [{"type": "text", "text": credential}],
+                            "usage": {"totalTokens": 1},
+                        },
+                    }), flush=True)
+                    """
+                ),
+                encoding="utf-8",
+            )
+
+            class FixedAuthority(ControllerCredentialAuthority):
+                def issue(self, identity):
+                    return secret
+
+            identity = self.identity(condition=Condition.C1)
+            workspace = create_isolated_workspace(root / "runs", identity)
+            service = ConstrainedToolService(
+                TaskToolService(TaskCatalog({})),
+                credentials=FixedAuthority(),
+                artifact_root=root / "runs",
+            )
+            config = self.config(
+                launch_command=(sys.executable, str(fake_agent)),
+                per_agent_token_budget=10,
+                per_agent_tool_call_budget=2,
+                aggregate_token_budget=10,
+                aggregate_tool_call_budget=2,
+                timeout_seconds=2,
+            )
+            result = AgentRun(config, identity, workspace, SystemBudget(10, 2), service).run("diagnose")
+            self.assertEqual(result.status.value, "completed")
+            for artifact_path in workspace.artifact_dir.iterdir():
+                self.assertNotIn(secret.encode("utf-8"), artifact_path.read_bytes(), artifact_path.name)
 
     def test_opencode_key_is_staged_only_transiently_and_redacted_from_artifacts(self):
         with tempfile.TemporaryDirectory() as temp:

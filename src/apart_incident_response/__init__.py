@@ -33,6 +33,11 @@ _EXPERIMENT_EXPORTS = {
     "detect_uptake",
     "replay_trace",
     "write_derived_artifacts",
+    "artifact_links_for_run",
+    "build_agent_timeline",
+    "sanitize_artifact",
+    "triplet_artifact_links",
+    "write_condition_index",
     "Qwen3ArtifactError",
     "LoadedLogitsArtifact",
     "derive_entropy_from_tensor",
@@ -63,6 +68,10 @@ def __getattr__(name: str) -> Any:
             from . import telemetry
 
             value = getattr(telemetry, name)
+        elif name in {"artifact_links_for_run", "build_agent_timeline", "sanitize_artifact", "triplet_artifact_links", "write_condition_index"}:
+            from . import run_artifacts
+
+            value = getattr(run_artifacts, name)
         elif name in {
             "Qwen3ArtifactError", "LoadedLogitsArtifact", "derive_entropy_from_tensor",
             "entropy_from_rows", "load_full_logits_artifact", "replay_entropy",
@@ -121,6 +130,11 @@ __all__ = [
     "detect_uptake",
     "replay_trace",
     "write_derived_artifacts",
+    "artifact_links_for_run",
+    "build_agent_timeline",
+    "sanitize_artifact",
+    "triplet_artifact_links",
+    "write_condition_index",
     "Qwen3ArtifactError",
     "LoadedLogitsArtifact",
     "derive_entropy_from_tensor",

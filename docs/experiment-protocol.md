@@ -77,11 +77,25 @@ labeling.
 ## Artifacts and replay
 
 Every condition directory contains `manifest.json`, `budget.json`,
-`results.json`, an append-only `board.sqlite3` when applicable, controller
-`artifacts/board_events.jsonl`, derived `metrics.json`, `uptake.json`, and
-`replay.json`. Each agent directory contains the prompt/runtime metadata,
-raw Pi `stdout.jsonl` and `stderr.log`, parsed `events.json`, raw
+`results.json`, `index.json`, an append-only `board.sqlite3` when applicable,
+controller `artifacts/board_events.jsonl`, derived `metrics.json`,
+`uptake.json`, and `replay.json`. The condition index preserves run,
+condition, seed, prompt, status, failure reasons, and relative links for every
+assigned agent. Each agent directory contains prompt/runtime metadata,
+credential-redacted Pi `stdout.jsonl` and `stderr.log`, parsed `events.json`,
 `final_response.txt`, `response.json` with pinned deterministic tokenizer
 artifacts, `agent_telemetry.json`, tool audit events, submission and result
-artifacts. Fixture-driven calibration or harness-check runs carry
-`run_class=harness_check` and are never included as model data.
+artifacts, and a normalized `timeline.json`. The timeline keeps prompt,
+assistant messages, ordered Pi events, audited tool calls/results, reported
+per-turn usage, and failure reasons. The top-level `matrix.json` and triplet
+summary link to each condition index and each agent timeline, including failed
+runs. Inspect one agent with:
+
+```bash
+PYTHONPATH=src python scripts/inspect_run.py \
+  --run-root runs/t1/s0001-C1 --agent-id agent-1
+```
+
+Fixture-driven calibration or harness-check runs carry `run_class=harness_check`
+and are never included as model data. API keys and controller credentials are
+redacted before these retained artifacts are written.

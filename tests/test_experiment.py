@@ -11,6 +11,7 @@ from apart_incident_response.runtime import AgentIdentity, Condition, IsolationP
 from apart_incident_response.task_one import TASK_ONE_TOKEN, task_one_instance
 from apart_incident_response.tool_service import ConstrainedToolService
 from apart_incident_response.telemetry import compute_metrics, detect_uptake
+from apart_incident_response.run_artifacts import build_agent_timeline, write_condition_index
 from scripts.run_experiment import _matrix_validity
 
 
@@ -116,14 +117,80 @@ class ControlledExperimentTests(unittest.TestCase):
                 for name in ("board_events.jsonl", "metrics.json", "uptake.json", "replay.json"):
                     self.assertTrue((artifact_dir / name).exists(), name)
                 agent_artifact = run.artifact_root / "agents" / "agent-1" / "artifacts"
-                for name in ("events.json", "response.json", "final_response.txt", "agent_telemetry.json", "result.json", "tool_calls.jsonl", "task_submission.json"):
+                for name in ("events.json", "response.json", "final_response.txt", "agent_telemetry.json", "result.json", "tool_calls.jsonl", "task_submission.json", "timeline.json"):
                     self.assertTrue((agent_artifact / name).exists(), name)
+                condition_index = json.loads((run.artifact_root / "index.json").read_text())
+                self.assertEqual(condition_index["run"]["condition"], run.condition.value)
+                self.assertEqual(condition_index["agents"]["agent-1"]["status"], "completed")
+                self.assertEqual(condition_index["agents"]["agent-1"]["timeline"]["path"], "agents/agent-1/artifacts/timeline.json")
+            triplet_document = json.loads((Path(temporary) / "test-triplet.json").read_text())
+            self.assertEqual(
+                triplet_document["artifacts"]["conditions"]["C1"]["agents"]["agent-1"],
+                "test-triplet-C1/agents/agent-1/artifacts/timeline.json",
+            )
             self.assertEqual(
                 runs[1].metrics["uptake"][0]["provenance"],
                 "private-owner-board-sequence-to-later-recipient-event",
             )
             self.assertTrue(runs[1].metrics["uptake_provenance_valid"])
             self.assertTrue(all(not record["recipient_private_token_known"] for record in runs[1].metrics["uptake"]))
+
+    def test_failed_agent_timeline_retains_order_usage_tools_and_redacts_secrets(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "failed-C1"
+            artifact_dir = root / "agents" / "agent-1" / "artifacts"
+            artifact_dir.mkdir(parents=True)
+            secret = "controller-secret-for-test"
+            identity = AgentIdentity("failed-C1", "agent-1", Condition.C1, "task-1", 1)
+            (root / "manifest.json").write_text(json.dumps({
+                "run_id": "failed-C1",
+                "triplet_id": "failed-triplet",
+                "condition": "C1",
+                "seed": 1,
+                "run_class": "harness_check",
+                "prompt": "diagnose the incident",
+                "assignment": [{"agent_id": "agent-1"}],
+            }), encoding="utf-8")
+            (artifact_dir / "metadata.json").write_text(json.dumps({
+                "identity": identity.to_dict(),
+                "prompt": "diagnose the incident",
+                "started_at": "2026-09-13T00:00:00Z",
+            }), encoding="utf-8")
+            (artifact_dir / "events.json").write_text(json.dumps([
+                {"type": "message_end", "message": {"role": "assistant", "content": [{"type": "text", "text": f"partial answer {secret}"}], "usage": {"totalTokens": 7}}},
+                {"type": "tool_execution_start", "toolName": "task_read", "id": "read-1", "api_key": secret},
+            ]), encoding="utf-8")
+            (artifact_dir / "tool_calls.jsonl").write_text(json.dumps({
+                "timestamp": "2026-09-13T00:00:01Z",
+                "operation": "task_read",
+                "validated_input": {"path": ["application.log"]},
+                "response": {"ok": False, "credential": secret, "error": {"code": "stopped"}},
+            }) + "\n", encoding="utf-8")
+            (artifact_dir / "result.json").write_text(json.dumps({
+                "identity": identity.to_dict(),
+                "status": "failed",
+                "exit_code": 7,
+                "tokens_used": 7,
+                "tool_calls_used": 1,
+                "failure_reason": "agent exited after partial answer",
+            }), encoding="utf-8")
+            (artifact_dir / "agent_telemetry.json").write_text(json.dumps({
+                "status": "failed", "turn_count": 1, "provider_tokens": 7,
+                "failure_reason": "agent exited after partial answer",
+            }), encoding="utf-8")
+
+            index = write_condition_index(root, secrets=(secret,))
+            timeline = build_agent_timeline(root, "agent-1", secrets=(secret,))
+            encoded = json.dumps({"index": index, "timeline": timeline}, sort_keys=True)
+            self.assertNotIn(secret, encoded)
+            self.assertEqual(index["status"], "failed")
+            self.assertEqual(index["agents"]["agent-1"]["status"], "failed")
+            self.assertEqual(timeline["failure_reasons"], ["agent exited after partial answer"])
+            self.assertEqual(timeline["usage"]["provider_tokens"], 7)
+            self.assertEqual([entry["kind"] for entry in timeline["entries"]], ["prompt", "assistant_message", "pi_event", "tool_call"])
+            self.assertEqual(timeline["entries"][1]["usage"]["totalTokens"], 7)
+            self.assertEqual(timeline["entries"][3]["operation"], "task_read")
+            self.assertTrue((artifact_dir / "timeline.json").is_file())
 
     def test_n_two_and_n_three_use_one_shared_budget_and_isolated_assignments(self):
         with tempfile.TemporaryDirectory() as temporary:

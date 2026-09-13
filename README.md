@@ -143,12 +143,13 @@ PYTHONPATH=src python scripts/run_experiment.py \
 ```
 
 The command writes a condition directory and a paired triplet summary for each
-seed. It preserves raw Pi JSONL/stderr, parsed events, response/tokenizer
-artifacts, tool audits, board state/events, submissions, budget/failure data,
-and derived provenance/replay metrics. `U` requires a prior cross-agent board
-read followed by later recipient use of a seeded token; token overlap and task
-success are not substitutes for that trace. Five-seed output is descriptive
-pilot evidence only.
+seed. It preserves credential-redacted Pi JSONL/stderr, parsed events,
+response/tokenizer artifacts, tool audits, board state/events, submissions,
+budget/failure data, and derived provenance/replay metrics. `index.json` links
+the matrix through each condition to every agent `timeline.json`; inspect one agent with `PYTHONPATH=src python scripts/inspect_run.py --run-root <condition> --agent-id agent-1`. `U` requires a prior cross-agent board read followed by
+later recipient use of a seeded token; token overlap and task success are not
+substitutes for that trace. Five-seed output is descriptive pilot evidence
+only.
 
 The fake-provider commands are harness checks, never model data:
 

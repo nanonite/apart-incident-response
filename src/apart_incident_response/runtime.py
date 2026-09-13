@@ -1482,12 +1482,27 @@ def build_pi_command(
     resolved_tool_socket: Path | None = None
     if tool_socket is not None:
         resolved_tool_socket = tool_socket.expanduser().resolve()
+        if resolved_tool_socket.name != ".apart-tool-service.sock":
+            raise RuntimeConfigError("tool service socket must use the controller socket name")
         try:
             resolved_tool_socket.relative_to(workspace.root.resolve())
         except ValueError as exc:
-            raise RuntimeConfigError("tool service socket must be inside the agent workspace") from exc
-        if resolved_tool_socket.name != ".apart-tool-service.sock":
-            raise RuntimeConfigError("tool service socket must use the controller socket name")
+            transient_root = Path(tempfile.gettempdir()).resolve()
+            transient_parent = resolved_tool_socket.parent
+            try:
+                transient_parent.relative_to(transient_root)
+            except ValueError:
+                raise RuntimeConfigError("tool service socket must be inside the agent workspace or a private transient IPC directory") from exc
+            try:
+                transient_mode = stat.S_IMODE(transient_parent.stat().st_mode)
+            except OSError as stat_error:
+                raise RuntimeConfigError("tool service socket must use a private transient IPC directory") from stat_error
+            if (
+                transient_parent.parent != transient_root
+                or not transient_parent.name.startswith("apart-tool-")
+                or transient_mode != 0o700
+            ):
+                raise RuntimeConfigError("tool service socket must use a private transient IPC directory") from exc
     if config.isolation.sandbox == "none":
         return command
     bwrap = shutil.which("bwrap")
@@ -1906,6 +1921,7 @@ class AgentRun:
         claim: BudgetClaim | None = None
         proxy: _ModelEgressProxy | None = None
         tool_server: "ToolServiceSocketServer | None" = None
+        tool_ipc_dir: Path | None = None
         tool_environment: dict[str, str] = {}
         credential_file: Path | None = None
         auth_stage: _AuthStage | None = None
@@ -1939,14 +1955,20 @@ class AgentRun:
                 # The controller owns the counters that a task submission may
                 # record; initialize them before the child can call a tool.
                 self.tool_service.update_runtime_usage(self.identity, 0, 0)
+                tool_ipc_dir = Path(tempfile.mkdtemp(prefix="apart-tool-", dir=tempfile.gettempdir()))
+                tool_ipc_dir.chmod(0o700)
                 tool_server = ToolServiceSocketServer(
                     self.tool_service,
-                    self.workspace.root / ".apart-tool-service.sock",
+                    tool_ipc_dir / ".apart-tool-service.sock",
                     use_fifo=self.config.isolation.sandbox == "none",
                 )
                 try:
                     tool_server.start()
                     credential = self.tool_service.issue_credential(self.identity)
+                    secret_values = (credential,)
+                    add_redaction_secret = getattr(self.tool_service, "add_redaction_secret", None)
+                    if callable(add_redaction_secret):
+                        add_redaction_secret(credential)
                     credential_file = (
                         self.workspace.run_root
                         / f".apart-controller-credential-{self.identity.agent_id}"
@@ -1977,7 +1999,7 @@ class AgentRun:
                 proxy.start()
             provider_api_key = _resolve_provider_api_key(self.config)
             if provider_api_key is not None:
-                secret_values = (provider_api_key,)
+                secret_values = (*secret_values, provider_api_key)
                 if self.tool_service is not None:
                     self.tool_service.add_redaction_secret(provider_api_key)
             auth_stage = _prepare_auth_file(
@@ -2108,6 +2130,7 @@ class AgentRun:
                                 event = self._parse_event(line)
                                 if event is None:
                                     continue
+                                event.setdefault("observed_at", _utc_now())
                                 events.append(event)
                                 event_failure = _event_failure_reason(event)
                                 if event_failure is not None and failure_reason is None:
@@ -2228,6 +2251,11 @@ class AgentRun:
                 try:
                     tool_server.stop()
                 except Exception:
+                    pass
+            if tool_ipc_dir is not None:
+                try:
+                    shutil.rmtree(tool_ipc_dir)
+                except OSError:
                     pass
             if credential_file is not None:
                 try:

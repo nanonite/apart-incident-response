@@ -14,6 +14,7 @@ sys.path.insert(0, str(SOURCE_ROOT / "src"))
 
 from apart_incident_response.controller import ExperimentController  # noqa: E402
 from apart_incident_response.runtime import IsolationPolicy, RuntimeConfig  # noqa: E402
+from apart_incident_response.run_artifacts import triplet_artifact_links  # noqa: E402
 
 
 def _write(path: Path, payload: object) -> None:
@@ -55,6 +56,7 @@ def run_harness_check(output: Path) -> dict[str, object]:
                 "conditions": [run.condition.value for run in triplet],
                 "run_ids": [run.run_id for run in triplet],
                 "metrics": {run.condition.value: run.metrics for run in triplet},
+                "artifacts": triplet_artifact_links(triplet, output),
             }
             for triplet in triplets
         ],
@@ -194,6 +196,7 @@ def run_real_anchor(
                 "conditions": [run.condition.value for run in triplet],
                 "run_ids": [run.run_id for run in triplet],
                 "metrics": {run.condition.value: run.metrics for run in triplet},
+                "artifacts": triplet_artifact_links(triplet, output),
             }
             for triplet in triplets
         ],

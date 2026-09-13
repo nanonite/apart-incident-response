@@ -16,6 +16,7 @@ from .task_one import TaskOneInstance, task_one_bundle_for_agent, task_one_insta
 from .task_tools import TaskCatalog, TaskDefinition, TaskToolService
 from .tool_service import BoardToolService, ConstrainedToolService
 from .telemetry import JsonlEventLog, write_derived_artifacts
+from .run_artifacts import artifact_links_for_run, write_condition_index
 
 
 PROTOCOL_VERSION = "controlled-n-agent-c0-c1-c2-v1"
@@ -375,15 +376,18 @@ class ExperimentController:
             _write_json(run_root / "results.json", {"schema_version": 1, "results": results, "controller_errors": errors})
             metrics = write_derived_artifacts(run_root, (instance.token,), observation_window_turns=observation_window_turns)
             _write_json(run_root / "manifest.json", {**manifest, "budget_final": budget_snapshot, "result_count": len(results), "controller_errors": errors})
+            write_condition_index(run_root)
             return SwarmRun(identifier, triplet, selected_condition, seed, run_root, tuple(results), metrics)
         except Exception as exc:
-            _write_json(run_root / "controller_failure.json", {
+            controller_failure = {
                 "schema_version": 1,
                 "run_id": identifier,
                 "status": "controller_failure",
                 "error_type": type(exc).__name__,
                 "error": str(exc),
-            })
+            }
+            _write_json(run_root / "controller_failure.json", controller_failure)
+            write_condition_index(run_root, controller_failure=controller_failure)
             raise
         finally:
             if board_store is not None:
@@ -445,6 +449,15 @@ class ExperimentController:
             "run_ids": [run.run_id for run in runs],
             "primary_contrast": "C1 versus C2",
             "metrics": {run.condition.value: run.metrics for run in runs},
+            "artifacts": {
+                "conditions": {
+                    run.condition.value: {
+                        "run_id": run.run_id,
+                        **artifact_links_for_run(run.artifact_root, self.artifact_root),
+                    }
+                    for run in runs
+                },
+            },
             "pilot_claim_scope": "descriptive only",
         })
         return runs
