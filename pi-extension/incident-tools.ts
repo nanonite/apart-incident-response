@@ -147,6 +147,45 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+type ToolDefinition = { name: string; description: string; parameters: unknown };
+
+/**
+ * Ollama's Qwen3 modelfile template renders the OpenAI-style `tools` request
+ * field's function schema using Go's default struct stringification instead
+ * of JSON (ollama/ollama#14601, open as of this writing) - the model
+ * literally sees a malformed, non-JSON tool schema whenever `tools` is
+ * passed as an API parameter, which is exactly how Pi sends it. There is no
+ * client-side fix for the malformed field itself; this instead adds a
+ * redundant, correctly-formatted copy of the same schemas as plain text in
+ * the system message, in the Hermes/Qwen3-native <tools> format, so the
+ * model has at least one intact copy to read regardless of whether the
+ * native `tools` field renders correctly on a given Ollama version. This
+ * never removes or replaces the native `tools` field, so response-side
+ * tool-call parsing is unaffected either way.
+ */
+function injectCleanToolSchema(payload: unknown, definitions: readonly ToolDefinition[]): unknown {
+	if (definitions.length === 0 || !payload || typeof payload !== "object") return payload;
+	const messages = (payload as { messages?: unknown }).messages;
+	if (!Array.isArray(messages)) return payload;
+	const systemMessage = messages.find(
+		(message): message is { role: string; content: string } =>
+			typeof message === "object" &&
+			message !== null &&
+			(message as { role?: unknown }).role === "system" &&
+			typeof (message as { content?: unknown }).content === "string",
+	);
+	if (!systemMessage) return payload;
+	const toolLines = definitions
+		.map((tool) => JSON.stringify({ type: "function", function: tool }))
+		.join("\n");
+	systemMessage.content +=
+		"\n\n# Tools (verbatim copy, in case the tool definitions above rendered incorrectly)\n\n" +
+		"Your exact available functions, one complete JSON object per line:\n<tools>\n" +
+		toolLines +
+		"\n</tools>";
+	return payload;
+}
+
 export default function (pi: ExtensionAPI) {
 	if (modelProvider === "openrouter") {
 		// The OpenRouter provider is OpenAI-compatible, so this public payload hook
@@ -181,7 +220,14 @@ export default function (pi: ExtensionAPI) {
 		});
 	}
 
-	pi.registerTool({
+	const toolDefinitions: ToolDefinition[] = [];
+	function defineTool<T extends { name: string; description: string; parameters: unknown }>(config: T): T {
+		toolDefinitions.push({ name: config.name, description: config.description, parameters: config.parameters });
+		pi.registerTool(config as Parameters<typeof pi.registerTool>[0]);
+		return config;
+	}
+
+	defineTool({
 		name: "task_read",
 		label: "Read task file",
 		description:
@@ -199,7 +245,7 @@ export default function (pi: ExtensionAPI) {
 	});
 
 	if (hasTaskQuery) {
-		pi.registerTool({
+		defineTool({
 			name: "task_query",
 			label: "Query task files",
 			description:
@@ -218,7 +264,7 @@ export default function (pi: ExtensionAPI) {
 		});
 	}
 
-	pi.registerTool({
+	defineTool({
 		name: "task_submit",
 		label: "Submit task diagnosis",
 		description: "Submit one structured diagnosis with cited evidence for the authenticated task.",
@@ -240,9 +286,13 @@ export default function (pi: ExtensionAPI) {
 		},
 	});
 
+	if (modelProvider === "ollama") {
+		pi.on("before_provider_request", (event) => injectCleanToolSchema(event.payload, toolDefinitions));
+	}
+
 	if (condition === "C0") return;
 
-	pi.registerTool({
+	defineTool({
 		name: "board_read",
 		label: "Read message board",
 		description:
@@ -259,7 +309,7 @@ export default function (pi: ExtensionAPI) {
 		},
 	});
 
-	pi.registerTool({
+	defineTool({
 		name: "board_append",
 		label: "Append message",
 		// The service supplies run and agent identity from the credential.
