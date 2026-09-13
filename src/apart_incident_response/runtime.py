@@ -15,6 +15,7 @@ import fcntl
 import hashlib
 import hmac
 import json
+import math
 import os
 import re
 import select
@@ -37,7 +38,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from threading import Event, Lock, Thread
-from typing import Any, IO, Iterable, Iterator, Mapping, Sequence
+from typing import Any, Callable, IO, Iterable, Iterator, Mapping, Sequence
 
 from .task_prompts import DEFAULT_TASK_PROMPTS, TaskPromptCatalog, TaskPromptConfigError
 
@@ -91,6 +92,7 @@ _OLLAMA_PROXY_HOST = "127.0.0.1"
 _OLLAMA_PROXY_PORT = 11434
 _OLLAMA_PROXY_PATH = "/v1/chat/completions"
 _OLLAMA_DUMMY_API_KEY = "ollama-local"
+_OLLAMA_LOGPROBS_TOP_K = 5
 _DEFAULT_PROVIDER_USER_AGENT = "apart-incident-response/1"
 
 
@@ -1490,6 +1492,8 @@ def _prepare_model_limits(workspace: IsolatedWorkspace, config: RuntimeConfig) -
                             "maxTokens": config.per_agent_token_budget,
                             "samplingParams": {
                                 "think": config.thinking_level != "off",
+                                "logprobs": True,
+                                "top_logprobs": _OLLAMA_LOGPROBS_TOP_K,
                             },
                         }
                     },
@@ -1565,6 +1569,142 @@ def _resolve_launch_command(config: RuntimeConfig) -> tuple[list[str], Path | No
     return [part.replace("{pi_root}", str(pi_root)) for part in command], pi_root
 
 
+class _SseLogprobCapture:
+    """Extract per-token logprobs from a relayed OpenAI-style SSE response.
+
+    Reads the same bytes the proxy is already forwarding to the agent
+    unmodified; a parsing failure here must never affect the relayed stream,
+    so every entry point swallows malformed input instead of raising.
+    """
+
+    def __init__(self) -> None:
+        self._buffer = bytearray()
+        self._tokens: list[dict[str, Any]] = []
+
+    def feed(self, chunk: bytes) -> None:
+        self._buffer.extend(chunk)
+        while b"\n" in self._buffer:
+            line, _, rest = self._buffer.partition(b"\n")
+            self._buffer = bytearray(rest)
+            self._consume_line(line)
+
+    def _consume_line(self, line: bytes) -> None:
+        text = line.strip()
+        if not text.startswith(b"data:"):
+            return
+        payload = text[len(b"data:"):].strip()
+        if not payload or payload == b"[DONE]":
+            return
+        try:
+            event = json.loads(payload.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            return
+        try:
+            choices = event["choices"]
+            choice = choices[0]
+        except (KeyError, IndexError, TypeError):
+            return
+        delta = choice.get("delta") if isinstance(choice, Mapping) else None
+        channel = "content"
+        if isinstance(delta, Mapping) and delta.get("reasoning"):
+            channel = "reasoning"
+        logprobs = choice.get("logprobs") if isinstance(choice, Mapping) else None
+        entries = logprobs.get("content") if isinstance(logprobs, Mapping) else None
+        if not isinstance(entries, list):
+            return
+        for entry in entries:
+            if not isinstance(entry, Mapping):
+                continue
+            token = entry.get("token")
+            logprob = entry.get("logprob")
+            if not isinstance(token, str) or not isinstance(logprob, (int, float)):
+                continue
+            alternatives = [
+                {"token": item.get("token"), "logprob": item.get("logprob")}
+                for item in entry.get("top_logprobs") or []
+                if isinstance(item, Mapping)
+                and isinstance(item.get("token"), str)
+                and isinstance(item.get("logprob"), (int, float))
+            ]
+            self._tokens.append({
+                "token": token,
+                "logprob": float(logprob),
+                "channel": channel,
+                "top_logprobs": alternatives,
+            })
+
+    def finalize(self) -> dict[str, Any] | None:
+        if not self._tokens:
+            return None
+        return {"token_count": len(self._tokens), "tokens": self._tokens}
+
+
+def _top_k_entropy_bits(logprob: float, top_logprobs: list[Mapping[str, Any]]) -> float:
+    """Top-K entropy lower bound over the sampled token plus its alternatives.
+
+    Mirrors ``scripts/ollama_goal_inference.py``'s ``_per_token_entropy``: true
+    vocabulary entropy is unavailable from Ollama's logprobs surface, so this
+    renormalizes the sampled token and its reported alternatives into a
+    pseudo-distribution and reports Shannon entropy over that top-K pool.
+    """
+
+    logprobs = [logprob] + [
+        float(item["logprob"]) for item in top_logprobs if isinstance(item.get("logprob"), (int, float))
+    ]
+    max_logprob = max(logprobs)
+    probabilities = [math.exp(value - max_logprob) for value in logprobs]
+    total = sum(probabilities)
+    normalized = [probability / total for probability in probabilities]
+    return -sum(probability * math.log2(probability) for probability in normalized if probability > 0)
+
+
+def _summarize_agent_logits(logits_path: Path) -> dict[str, Any] | None:
+    """Fold a per-agent logits.jsonl capture into surprise/entropy summary stats."""
+
+    if not logits_path.is_file():
+        return None
+    turn_count = 0
+    token_count = 0
+    surprise_bits = 0.0
+    top_k_entropy_bits = 0.0
+    channel_counts: dict[str, int] = defaultdict(int)
+    try:
+        with logits_path.open("r", encoding="utf-8") as handle:
+            for line in handle:
+                stripped = line.strip()
+                if not stripped:
+                    continue
+                try:
+                    record = json.loads(stripped)
+                except json.JSONDecodeError:
+                    continue
+                tokens = record.get("tokens") if isinstance(record, Mapping) else None
+                if not isinstance(tokens, list) or not tokens:
+                    continue
+                turn_count += 1
+                for entry in tokens:
+                    if not isinstance(entry, Mapping):
+                        continue
+                    logprob = entry.get("logprob")
+                    if not isinstance(logprob, (int, float)):
+                        continue
+                    token_count += 1
+                    surprise_bits += -float(logprob) / math.log(2)
+                    top_k_entropy_bits += _top_k_entropy_bits(float(logprob), entry.get("top_logprobs") or [])
+                    channel_counts[str(entry.get("channel", "content"))] += 1
+    except OSError:
+        return None
+    if token_count == 0:
+        return None
+    return {
+        "turn_count": turn_count,
+        "token_count": token_count,
+        "channel_counts": dict(sorted(channel_counts.items())),
+        "mean_surprise_bits": round(surprise_bits / token_count, 6),
+        "mean_top_k_entropy_bits": round(top_k_entropy_bits / token_count, 6),
+    }
+
+
 class _ModelEgressProxy:
     """Host-side allowlisted relay for the isolated model process."""
 
@@ -1574,6 +1714,7 @@ class _ModelEgressProxy:
         allowed_hosts: Iterable[str],
         *,
         local_target: tuple[str, int] | None = None,
+        logits_sink: Path | None = None,
     ) -> None:
         self.socket_path = socket_path
         self.allowed_hosts = frozenset(host.lower() for host in allowed_hosts)
@@ -1584,6 +1725,9 @@ class _ModelEgressProxy:
             self.local_target = (host.lower().rstrip("."), port)
         else:
             self.local_target = None
+        self.logits_sink = logits_sink
+        self._logits_lock = Lock()
+        self._logits_sequence = 0
         self._listener: socket.socket | None = None
         self._stopping = Event()
         self._thread: Thread | None = None
@@ -1660,7 +1804,10 @@ class _ModelEgressProxy:
                 upstream = socket.create_connection(self.local_target, timeout=30)
                 try:
                     upstream.sendall(normalized_request + remainder)
-                    self._relay(client, upstream)
+                    capture = _SseLogprobCapture() if self.logits_sink is not None else None
+                    self._relay(client, upstream, on_right_chunk=capture.feed if capture else None)
+                    if capture is not None:
+                        self._write_logits_record(capture.finalize())
                 finally:
                     upstream.close()
                 return
@@ -1780,7 +1927,12 @@ class _ModelEgressProxy:
             pass
 
     @staticmethod
-    def _relay(left: socket.socket, right: socket.socket) -> None:
+    def _relay(
+        left: socket.socket,
+        right: socket.socket,
+        *,
+        on_right_chunk: Callable[[bytes], None] | None = None,
+    ) -> None:
         left.settimeout(None)
         right.settimeout(None)
         open_sockets = [left, right]
@@ -1798,7 +1950,29 @@ class _ModelEgressProxy:
                         pass
                     open_sockets.remove(source)
                     continue
+                if source is right and on_right_chunk is not None:
+                    try:
+                        on_right_chunk(payload)
+                    except Exception:
+                        # Best-effort telemetry capture must never interrupt
+                        # the relay the sandboxed agent depends on.
+                        on_right_chunk = None
                 destination.sendall(payload)
+
+    def _write_logits_record(self, record: dict[str, Any] | None) -> None:
+        if record is None or self.logits_sink is None:
+            return
+        try:
+            with self._logits_lock:
+                self._logits_sequence += 1
+                record = {"sequence": self._logits_sequence, "captured_at": _utc_now(), **record}
+                self.logits_sink.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+                with self.logits_sink.open("a", encoding="utf-8") as handle:
+                    handle.write(json.dumps(record, ensure_ascii=False) + "\n")
+                self.logits_sink.chmod(0o600)
+        except OSError:
+            # Logits capture is best-effort telemetry, never a run-blocking path.
+            pass
 
 
 def build_pi_command(
@@ -2404,6 +2578,7 @@ class AgentRun:
                         model_socket,
                         (),
                         local_target=(ollama_host, ollama_port),
+                        logits_sink=self.workspace.artifact_dir / "logits.jsonl",
                     )
                 else:
                     proxy = _ModelEgressProxy(
@@ -2845,6 +3020,7 @@ class AgentRun:
         event_counts: dict[str, int] = defaultdict(int)
         for event in safe_events:
             event_counts[str(event.get("type", "unknown"))] += 1
+        logits_summary = _summarize_agent_logits(self.workspace.artifact_dir / "logits.jsonl")
         self._write_json(self.workspace.artifact_dir / "agent_telemetry.json", {
             "schema_version": 1,
             "identity": self.identity.to_dict(),
@@ -2858,6 +3034,7 @@ class AgentRun:
             "provider_tokens": tokens_used,
             "wall_clock_seconds": round(time.monotonic() - started_clock, 6),
             "failure_reason": safe_failure_reason,
+            "logits": logits_summary,
         })
         (self.workspace.artifact_dir / "events.json").write_text(
             json.dumps(safe_events, indent=2, sort_keys=True) + "\n", encoding="utf-8"

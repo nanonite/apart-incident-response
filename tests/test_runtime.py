@@ -23,14 +23,16 @@ from apart_incident_response.runtime import (
     RuntimeConfigError,
     SystemBudget,
     _ModelEgressProxy,
+    _SseLogprobCapture,
     _bubblewrap_failure_reason,
     _model_request_metadata,
     _opencode_session_id,
     _prepare_auth_file,
     _prepare_model_limits,
-    _resolve_provider_api_key,
-    _resolve_auth_store,
     _resolve_auth_file,
+    _resolve_auth_store,
+    _resolve_provider_api_key,
+    _summarize_agent_logits,
     build_pi_command,
     create_isolated_workspace,
     load_identity,
@@ -306,6 +308,8 @@ class RuntimeContractTests(unittest.TestCase):
             self.assertEqual(provider["models"], [{"id": "qwen3:8b", "name": "Qwen3 8B 4-bit"}])
             self.assertEqual(provider["modelOverrides"]["qwen3:8b"]["maxTokens"], 17)
             self.assertFalse(provider["modelOverrides"]["qwen3:8b"]["samplingParams"]["think"])
+            self.assertTrue(provider["modelOverrides"]["qwen3:8b"]["samplingParams"]["logprobs"])
+            self.assertEqual(provider["modelOverrides"]["qwen3:8b"]["samplingParams"]["top_logprobs"], 5)
 
     def test_ollama_relay_allows_only_controller_selected_local_target(self):
         relay = _ModelEgressProxy(
@@ -333,6 +337,78 @@ class RuntimeContractTests(unittest.TestCase):
         self.assertFalse(relay._parse_local_request(
             b"POST /v1/chat/completions HTTP/1.1\r\nHost: chatgpt.com:443\r\n\r\n"
         ))
+
+    def test_sse_logprob_capture_extracts_tokens_across_chunk_boundaries(self):
+        capture = _SseLogprobCapture()
+        first_chunk = json.dumps({
+            "choices": [{
+                "delta": {"role": "assistant", "content": "", "reasoning": "Okay"},
+                "logprobs": {"content": [{
+                    "token": "Okay",
+                    "logprob": -0.0001,
+                    "top_logprobs": [
+                        {"token": "Okay", "logprob": -0.0001},
+                        {"token": "Alright", "logprob": -9.2},
+                    ],
+                }]},
+            }],
+        })
+        second_chunk = json.dumps({
+            "choices": [{
+                "delta": {"content": "done", "reasoning": ""},
+                "logprobs": {"content": [{"token": "done", "logprob": -0.5, "top_logprobs": []}]},
+            }],
+        })
+        # Split the SSE payload mid-line to exercise the buffering path, and
+        # include a heartbeat comment and the terminal marker, both of which
+        # must be ignored rather than raising.
+        raw = f"data: {first_chunk}\n\ndata: {second_chunk}\n\ndata: [DONE]\n\n".encode()
+        capture.feed(raw[:40])
+        capture.feed(raw[40:])
+        record = capture.finalize()
+        self.assertEqual(record["token_count"], 2)
+        self.assertEqual(record["tokens"][0]["channel"], "reasoning")
+        self.assertEqual(record["tokens"][0]["token"], "Okay")
+        self.assertEqual(record["tokens"][0]["top_logprobs"], [
+            {"token": "Okay", "logprob": -0.0001},
+            {"token": "Alright", "logprob": -9.2},
+        ])
+        self.assertEqual(record["tokens"][1]["channel"], "content")
+        self.assertEqual(record["tokens"][1]["token"], "done")
+
+    def test_sse_logprob_capture_ignores_malformed_and_non_data_lines(self):
+        capture = _SseLogprobCapture()
+        capture.feed(b": heartbeat\n\n")
+        capture.feed(b"data: not-json\n\n")
+        capture.feed(b"data: {\"choices\": []}\n\n")
+        capture.feed(b"data: [DONE]\n\n")
+        self.assertIsNone(capture.finalize())
+
+    def test_summarize_agent_logits_computes_surprise_and_entropy(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "logits.jsonl"
+            certain = {"token": "a", "logprob": 0.0, "channel": "content", "top_logprobs": []}
+            even_split = {
+                "token": "b",
+                "logprob": -0.6931471805599453,
+                "channel": "reasoning",
+                "top_logprobs": [{"token": "c", "logprob": -0.6931471805599453}],
+            }
+            path.write_text(
+                json.dumps({"tokens": [certain]}) + "\n" + json.dumps({"tokens": [even_split]}) + "\n",
+                encoding="utf-8",
+            )
+            summary = _summarize_agent_logits(path)
+        self.assertEqual(summary["turn_count"], 2)
+        self.assertEqual(summary["token_count"], 2)
+        self.assertEqual(summary["channel_counts"], {"content": 1, "reasoning": 1})
+        # certain token contributes 0 surprise bits; the 50/50 split contributes 1 bit.
+        self.assertAlmostEqual(summary["mean_surprise_bits"], 0.5, places=6)
+        # certain token has zero entropy; the even split has exactly 1 bit of entropy.
+        self.assertAlmostEqual(summary["mean_top_k_entropy_bits"], 0.5, places=6)
+
+    def test_summarize_agent_logits_missing_file_returns_none(self):
+        self.assertIsNone(_summarize_agent_logits(Path("/tmp/does-not-exist-logits.jsonl")))
 
     def test_unknown_ollama_tag_is_rejected(self):
         with self.assertRaises(RuntimeConfigError):
@@ -1005,8 +1081,8 @@ class RuntimeContractTests(unittest.TestCase):
         self.assertEqual(config.model, "openai-codex/gpt-5.6-luna")
         self.assertEqual(config.pi_auth_file_env, "APART_PI_AUTH_FILE")
         self.assertEqual(config.pi_auth_store_env, "APART_PI_AUTH_STORE")
-        self.assertEqual(config.per_agent_token_budget, 24_000)
-        self.assertEqual(config.aggregate_token_budget, 72_000)
+        self.assertEqual(config.per_agent_token_budget, 26_000)
+        self.assertEqual(config.aggregate_token_budget, 78_000)
         self.assertTrue(config.isolation.model_network)
         self.assertEqual(config.isolation.model_hosts, ("chatgpt.com",))
         self.assertEqual(config.isolation.oauth_hosts, ("auth.openai.com",))
