@@ -1,22 +1,20 @@
 [0] Config.pm:329> INFO - This is Biber 2.22
 [0] Config.pm:332> INFO - Logfile is 'main.blg'
-[47] biber:342> INFO - === Sat Sep 12, 2026, 18:22:48
-[57] Biber.pm:421> INFO - Reading 'main.bcf'
-[110] Biber.pm:999> INFO - Using all citekeys in bib section 0
-[125] Biber.pm:4487> INFO - Processing section 0
-[130] Biber.pm:4680> INFO - Looking for bibtex file 'references.bib' for section 0
-[131] bibtex.pm:1668> INFO - Reading ascii input as UTF-8
-[131] bibtex.pm:1713> INFO - LaTeX decoding ...
-[135] bibtex.pm:1519> INFO - Found BibTeX data source 'references.bib'
-[173] UCollate.pm:68> INFO - Overriding locale 'en-GB' defaults 'normalization = NFD' with 'normalization = prenormalized'
-[173] UCollate.pm:68> INFO - Overriding locale 'en-GB' defaults 'variable = shifted' with 'variable = non-ignorable'
-[173] Biber.pm:4307> INFO - Sorting list 'nyt/apasortcite//global/global/global' of type 'entry' with template 'nyt' and locale 'en-GB'
-[173] Biber.pm:4313> INFO - No sort tailoring available for locale 'en-GB'
-[182] UCollate.pm:68> INFO - Overriding locale 'en-GB' defaults 'variable = shifted' with 'variable = non-ignorable'
-[182] UCollate.pm:68> INFO - Overriding locale 'en-GB' defaults 'normalization = NFD' with 'normalization = prenormalized'
-[182] Biber.pm:4307> INFO - Sorting list 'nyt/global//global/global/global' of type 'entry' with template 'nyt' and locale 'en-GB'
-[182] Biber.pm:4313> INFO - No sort tailoring available for locale 'en-GB'
-[188] bbl.pm:676> INFO - Writing 'main.bbl' with encoding 'ascii'
-[191] bbl.pm:779> INFO - Output to main.bbl
-[191] Biber.pm:132> WARN - legacy month field 'July' in entry 'shannon1948mathematical' is not an integer - this will probably not sort properly.
-[191] Biber.pm:134> INFO - WARNINGS: 1
+[94] biber:342> INFO - === Sat Sep 12, 2026, 23:51:17
+[114] Biber.pm:421> INFO - Reading 'main.bcf'
+[217] Biber.pm:999> INFO - Using all citekeys in bib section 0
+[244] Biber.pm:4487> INFO - Processing section 0
+[255] Biber.pm:4680> INFO - Looking for bibtex file 'references.bib' for section 0
+[256] bibtex.pm:1668> INFO - Reading ascii input as UTF-8
+[256] bibtex.pm:1713> INFO - LaTeX decoding ...
+[269] bibtex.pm:1519> INFO - Found BibTeX data source 'references.bib'
+[444] UCollate.pm:68> INFO - Overriding locale 'en-GB' defaults 'variable = shifted' with 'variable = non-ignorable'
+[444] UCollate.pm:68> INFO - Overriding locale 'en-GB' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[444] Biber.pm:4307> INFO - Sorting list 'nyt/apasortcite//global/global/global' of type 'entry' with template 'nyt' and locale 'en-GB'
+[444] Biber.pm:4313> INFO - No sort tailoring available for locale 'en-GB'
+[484] UCollate.pm:68> INFO - Overriding locale 'en-GB' defaults 'variable = shifted' with 'variable = non-ignorable'
+[484] UCollate.pm:68> INFO - Overriding locale 'en-GB' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[484] Biber.pm:4307> INFO - Sorting list 'nyt/global//global/global/global' of type 'entry' with template 'nyt' and locale 'en-GB'
+[484] Biber.pm:4313> INFO - No sort tailoring available for locale 'en-GB'
+[507] bbl.pm:676> INFO - Writing 'main.bbl' with encoding 'ascii'
+[530] bbl.pm:779> INFO - Output to main.bbl
