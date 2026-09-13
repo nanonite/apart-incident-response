@@ -216,6 +216,19 @@ docker compose build
 docker compose run --rm runtime
 ```
 
+Docker also verifies the repository's build responsibilities directly:
+
+```bash
+# Python runtime contract and constrained-tool tests.
+docker build --target test .
+
+# Direct Pi 0.85.1 extension smoke test.
+docker build --target pi-smoke .
+
+# Rebuild report/main.pdf with the TeX and Biber toolchain.
+docker build --target report .
+```
+
 The build runs the unit test suite before producing the final image. The image
 contains Python 3.12, Bun, bubblewrap, CA certificates, `tini`, and a
 Linux-prepared copy of the pinned `pi` submodule at `/opt/pi`. Its dependencies

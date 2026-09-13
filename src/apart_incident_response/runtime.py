@@ -785,7 +785,12 @@ def _ensure_private_parent(path: Path, *, validate_existing: bool = True) -> Non
         if validate_existing:
             _validate_private_directory(parent, "OAuth store parent")
         return
-    parent.mkdir(mode=0o700, parents=True, exist_ok=False)
+    try:
+        parent.mkdir(mode=0o700, parents=True, exist_ok=False)
+    except FileExistsError:
+        # Another controller may have created the shared store parent after
+        # the existence check above. Validate it below before using it.
+        pass
     if validate_existing:
         _validate_private_directory(parent, "new OAuth store parent")
 
@@ -1419,7 +1424,17 @@ def build_pi_command(
             part.replace(str(resolved_extension), f"{extension_mount}/{resolved_extension.name}")
             for part in command
         ]
-    for runtime_path in ("/nix/store", "/run/current-system"):
+    # Bubblewrap starts from an empty tmpfs root. Expose only the immutable
+    # host runtime trees required to execute Bun/Python. The Nix paths cover
+    # NixOS, while /usr and the library trees cover Debian-based containers
+    # and conventional Linux hosts.
+    for runtime_path in (
+        "/usr",
+        "/lib",
+        "/lib64",
+        "/nix/store",
+        "/run/current-system",
+    ):
         path = Path(runtime_path)
         if path.exists():
             insert_at = sandbox_command.index("--chdir")
