@@ -6,6 +6,13 @@ token probabilities, so it cannot feed the response-state entropy metrics in
 one-shot `/goal` data path that substitutes a locally served Qwen3-8B (4-bit)
 whose token-level `logprobs` are captured per response.
 
+The companion Transformers/Unsloth path in
+[`qwen3_full_logits.py`](../scripts/qwen3_full_logits.py) uses the same pinned
+Qwen3-8B checkpoint metadata and prompt contract to capture the complete
+pre-sampling vocabulary distribution. It is isolated in
+[`Dockerfile.qwen3`](../Dockerfile.qwen3); it does not add ML dependencies to
+the remote-agent image.
+
 ## Model and server
 
 - **Model:** `qwen3:8b` (Qwen3-8B instruct, GGUF `Q4_K_M` 4-bit, 40k context).
@@ -32,16 +39,17 @@ user-to-agent follow-up, no tool loop), requests token logprobs with a
 just goal           # quick smoke: "The capital of France is"
 ```
 
-For experiment prompts, pass an explicit prompt file:
+For experiment prompts, pass an explicit prompt file through the shared mode
+dispatcher:
 
 ```console
-python3 scripts/ollama_goal_inference.py \
+python3 scripts/qwen3_goal.py --mode logprobs \
     --model qwen3:8b \
     --prompt-file prompts/task-1.txt \
     --top-logprobs 5 \
     --temperature 0 \
     --num-predict 512 \
-    --output artifacts/goal/qwen3-8b/seed-1
+    --output runs/qwen3-8b/logprobs/seed-1
 ```
 
 `--think` is off by default so the model emits the answer directly rather than
@@ -73,6 +81,45 @@ probabilities, not raw logits, and only the top-K alternatives, so the
 `top_k_entropy_bits` is a lower bound on true vocabulary entropy. Record it as
 such; do not compare it against a full-vocabulary entropy from another source.
 
+## Full-vocabulary logits mode
+
+The full-logits mode is the authoritative source for vocabulary entropy. It
+calls `FastLanguageModel.from_pretrained` with the revision in
+`config/qwen3-8b.json`, uses KV-cached Transformers generation with
+`output_logits=True`, and stores one raw pre-sampling row for every generated
+token:
+
+```console
+docker compose -f compose.qwen3.yaml run --rm qwen3 \
+    --mode full-logits \
+    --prompt "The capital of France is" \
+    --seed 1 \
+    --output runs/qwen3-8b/full-logits/seed-1
+```
+
+Each run contains:
+
+- `full-logits/logits.safetensors`, with `logits[generated_token, vocabulary]`
+  and `generated_token_ids` tensors;
+- `full-logits/metadata.json`, with model/tokenizer revisions, dtype, shape,
+  prompt hashes, decoding parameters, resource data, paths, checksums, and
+  raw-logit provenance;
+- `full-logits/generated.json`, with decoded IDs, thinking text, response text,
+  and the rendered prompt; and
+- `full-logits/entropy.json`, derived by applying full-vocabulary `log_softmax`
+  to the binary tensor and gathering the generated-token logprobs.
+
+Replay requires the same isolated runtime:
+
+```console
+python3 -c 'from apart_incident_response.qwen3_artifacts import replay_entropy; print(replay_entropy("runs/qwen3-8b/full-logits/seed-1"))'
+```
+
+The binary artifact's full-vocabulary entropy is not interchangeable with the
+Ollama top-K entropy lower bound above. Both artifacts retain the sampled-token
+logprob so parity can be checked without treating truncated top-K entropy as a
+full distribution.
+
 ## Replication notes
 
 - Hosts without an NVIDIA GPU drop `deploy.resources.reservations.devices` from
@@ -81,3 +128,7 @@ such; do not compare it against a full-vocabulary entropy from another source.
   across `compose down` and is not part of the Docker image.
 - The harness uses only the Python standard library, so it runs on the host
   without torch/transformers/vllm.
+- The Unsloth/Transformers image uses `./qwen3-cache` for weights and requires
+  the NVIDIA Container Toolkit for its compose GPU service. `--device auto`
+  fails explicitly without CUDA; use the Python entrypoint with
+  `--device cpu` only for an intentional, non-performance CPU validation.

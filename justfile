@@ -26,14 +26,34 @@ ollama-pull:
     docker compose exec ollama ollama pull qwen3:8b
 
 # Run one-shot /goal inference with token logprobs and dump the entropy artifact.
+
 goal-model := "qwen3:8b"
 goal-host := "http://localhost:11434"
-goal-output := "artifacts/goal/qwen3-8b"
+goal-output := "runs/qwen3-8b/logprobs/compat-goal"
 
 goal: ollama-pull
-    python3 scripts/ollama_goal_inference.py \
-        --host {{goal-host}} \
-        --model {{goal-model}} \
-        --prompt "The capital of France is" \
-        --num-predict 12 \
-        --output {{goal-output}}
+    just qwen mode=logprobs \
+        prompt="The capital of France is" \
+        host={{ goal-host }} \
+        model={{ goal-model }} \
+        output={{ goal-output }}
+
+# Run either the existing Ollama token-logprob mode or the full-vocabulary
+# Transformers/Unsloth mode. Empty output/model values use mode-specific
+
+# defaults; explicit values make paired prompts, seeds, and run IDs reproducible.
+qwen mode="logprobs" prompt="The capital of France is" seed="1" output="" model="" host="http://localhost:11434":
+    @mode="{{ mode }}"; mode="${mode#mode=}"; \
+    prompt="{{ prompt }}"; prompt="${prompt#prompt=}"; \
+    seed="{{ seed }}"; seed="${seed#seed=}"; \
+    output="{{ output }}"; output="${output#output=}"; \
+    model="{{ model }}"; model="${model#model=}"; \
+    host="{{ host }}"; host="${host#host=}"; \
+    set -- python3 scripts/qwen3_goal.py --mode "$mode" --prompt "$prompt" --seed "$seed" --host "$host"; \
+    if [ -n "$output" ]; then set -- "$@" --output "$output"; fi; \
+    if [ -n "$model" ]; then set -- "$@" --model "$model"; fi; \
+    "$@"
+
+# Build the isolated CUDA runtime; weights remain in the compose-mounted cache.
+qwen-runtime:
+    docker compose -f compose.qwen3.yaml build qwen3

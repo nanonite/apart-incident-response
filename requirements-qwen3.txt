@@ -1,0 +1,9 @@
+# Pinned local Qwen3-8B full-logits runtime. Keep this file separate from the
+# lightweight remote-agent runtime requirements.
+torch==2.10.0
+transformers==5.4.0
+unsloth==2026.3.18
+safetensors==0.8.0
+accelerate==1.15.0
+bitsandbytes==0.50.2
+peft==0.20.0

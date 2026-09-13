@@ -33,6 +33,21 @@ _EXPERIMENT_EXPORTS = {
     "detect_uptake",
     "replay_trace",
     "write_derived_artifacts",
+    "Qwen3ArtifactError",
+    "LoadedLogitsArtifact",
+    "derive_entropy_from_tensor",
+    "entropy_from_rows",
+    "load_full_logits_artifact",
+    "replay_entropy",
+    "validate_metadata",
+    "write_full_logits_artifact",
+    "Qwen3ModelBundle",
+    "Qwen3RuntimeConfig",
+    "Qwen3RuntimeError",
+    "cuda_status",
+    "dependency_versions",
+    "load_qwen3",
+    "resolve_device",
 }
 
 
@@ -48,6 +63,21 @@ def __getattr__(name: str) -> Any:
             from . import telemetry
 
             value = getattr(telemetry, name)
+        elif name in {
+            "Qwen3ArtifactError", "LoadedLogitsArtifact", "derive_entropy_from_tensor",
+            "entropy_from_rows", "load_full_logits_artifact", "replay_entropy",
+            "validate_metadata", "write_full_logits_artifact",
+        }:
+            from . import qwen3_artifacts
+
+            value = getattr(qwen3_artifacts, name)
+        elif name in {
+            "Qwen3ModelBundle", "Qwen3RuntimeConfig", "Qwen3RuntimeError", "cuda_status",
+            "dependency_versions", "load_qwen3", "resolve_device",
+        }:
+            from . import qwen3_runtime
+
+            value = getattr(qwen3_runtime, name)
         else:
             from . import controller
 
@@ -91,4 +121,19 @@ __all__ = [
     "detect_uptake",
     "replay_trace",
     "write_derived_artifacts",
+    "Qwen3ArtifactError",
+    "LoadedLogitsArtifact",
+    "derive_entropy_from_tensor",
+    "entropy_from_rows",
+    "load_full_logits_artifact",
+    "replay_entropy",
+    "validate_metadata",
+    "write_full_logits_artifact",
+    "Qwen3ModelBundle",
+    "Qwen3RuntimeConfig",
+    "Qwen3RuntimeError",
+    "cuda_status",
+    "dependency_versions",
+    "load_qwen3",
+    "resolve_device",
 ]

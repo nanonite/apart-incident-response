@@ -53,6 +53,7 @@ FROM base AS test
 
 COPY pi-extension ./pi-extension
 COPY scripts/task_one_calibration.py ./scripts/task_one_calibration.py
+COPY scripts/ollama_goal_inference.py scripts/qwen3_full_logits.py ./scripts/
 COPY tests ./tests
 RUN python -m unittest discover -s tests -v
 

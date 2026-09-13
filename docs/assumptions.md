@@ -1,7 +1,7 @@
 # Assumptions: local Qwen3-8B logprobs data path
 
 This document records the working assumptions behind the local-model data path
-added under issue #72. It is the single place to revisit when any assumption is
+added under issues #72 and #75. It is the single place to revisit when any assumption is
 violated or a downstream metric looks wrong. Where an assumption is a known
 simplification, it is marked **[LIMITATION]** so the reader knows it is a
 deliberate trade-off rather than an accident.
@@ -86,11 +86,27 @@ fall back to CPU; this is noted in `compose.yaml` but is not the tested path.
 stdlib-only so it runs on the host without torch/transformers/vllm. It therefore
 cannot expose raw logits; that is acceptable under A5.
 
+**Assumption A13.** The Transformers/Unsloth path uses the exact model and
+tokenizer revisions in `config/qwen3-8b.json`. The safetensors artifact records
+the revisions, quantization, runtime versions, prompt hashes, decoding settings,
+tensor shape/dtype, and checksums needed to identify a replay.
+
+**Assumption A14.** `output_logits=True` is the raw language-model-head output
+before Transformers sampling processors. The artifact stores those rows rather
+than the processed `scores` surface, and the generated token ID at each row is
+stored in the same binary file for exact sampled-token logprob parity.
+
+**Assumption A15. [LIMITATION]** Full-vocabulary entropy is measured on the
+selected quantized Qwen3 checkpoint. It is comparable across replayed runs with
+the same revision and runtime contract, but it is not automatically numerically
+identical to Ollama's GGUF path or to a different quantization.
+
 ## 6. Known limitations to revisit
 
-1. **Top-K only.** If a metric needs the full vocabulary distribution, switch
-   the serving layer to vLLM (`logprobs`/`prompt_logprobs` over the vocab) or a
-   transformers `output_scores=True` dump. This changes A5 and A12 together.
+1. **Top-K only in Ollama.** The Ollama compatibility path remains limited to a
+   top-K entropy lower bound. Full-vocabulary metrics must use the separate
+   Transformers/Unsloth safetensors path; do not substitute `output_scores` for
+   the raw `output_logits` artifact.
 2. **No prompt logprobs.** Only generated-token logprobs are captured. Input-side
    probabilities (e.g. how likely the model found each evidence token) are not
    available from Ollama's `/api/generate`.
@@ -104,6 +120,6 @@ cannot expose raw logits; that is acceptable under A5.
 
 ## 7. Sign-off
 
-Assumptions A1–A12 hold as of this commit. Any change to the model, quantization,
-server, or the logprobs interpretation should update this document and re-examine
-the marked limitations.
+Assumptions A1–A15 hold as of this commit. Any change to the model, quantization,
+server, artifact schema, or logits interpretation should update this document
+and re-examine the marked limitations.

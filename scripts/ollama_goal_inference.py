@@ -25,15 +25,19 @@ filesystem capabilities to the model. It is a deterministic single completion.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import sys
+import urllib.error
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
 DEFAULT_HOST = "http://localhost:11434"
 DEFAULT_MODEL = "qwen3:8b"
+DEFAULT_CHECKPOINT_ID = "Qwen/Qwen3-8B"
+DEFAULT_CHECKPOINT_REVISION = "47719a242beab8f9aecc40ce3928b034dd5dd559"
 
 
 def _read_prompt(path: Path) -> str:
@@ -41,6 +45,24 @@ def _read_prompt(path: Path) -> str:
     if "\x00" in text:
         raise ValueError(f"prompt file contains a NUL byte: {path}")
     return text
+
+
+def _write_failure(output: Path, *, run_id: str, error: Exception) -> None:
+    try:
+        output.mkdir(parents=True, exist_ok=True)
+        path = output / "failure.json"
+        path.write_text(json.dumps({
+            "schema_version": 1,
+            "run_class": "goal_inference",
+            "status": "failed",
+            "run_id": run_id,
+            "mode": "logprobs",
+            "error_type": type(error).__name__,
+            "error": str(error),
+        }, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        path.chmod(0o600)
+    except OSError:
+        return
 
 
 def _post_generate(
@@ -125,6 +147,8 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--host", default=DEFAULT_HOST, help="Ollama base URL")
     parser.add_argument("--model", default=DEFAULT_MODEL, help="Ollama model name")
+    parser.add_argument("--checkpoint-id", default=DEFAULT_CHECKPOINT_ID, help="Pinned logical checkpoint ID")
+    parser.add_argument("--checkpoint-revision", default=DEFAULT_CHECKPOINT_REVISION, help="Pinned checkpoint revision")
     parser.add_argument(
         "--prompt",
         help="Inline prompt text (mutually exclusive with --prompt-file)",
@@ -149,56 +173,71 @@ def main(argv: list[str] | None = None) -> int:
     if not args.prompt and not args.prompt_file:
         parser.error("one of --prompt or --prompt-file is required")
 
-    prompt = args.prompt if args.prompt is not None else _read_prompt(args.prompt_file)
-    response = _post_generate(
-        args.host,
-        args.model,
-        prompt,
-        top_logprobs=args.top_logprobs,
-        num_predict=args.num_predict,
-        temperature=args.temperature,
-        think=args.think,
-        seed=args.seed,
-    )
-
-    raw_logprobs = response.get("logprobs") or []
-    enriched: list[dict[str, object]] = []
-    for entry in raw_logprobs:
-        item = dict(entry)
-        item["_entropy"] = _per_token_entropy(
-            float(item["logprob"]), item.get("top_logprobs") or []
+    output = args.output.expanduser().resolve()
+    run_id = args.run_id or datetime.now(timezone.utc).isoformat()
+    try:
+        if args.top_logprobs < 0 or args.num_predict < 1:
+            raise ValueError("top-logprobs must be non-negative and num-predict must be positive")
+        prompt = args.prompt if args.prompt is not None else _read_prompt(args.prompt_file)
+        response = _post_generate(
+            args.host,
+            args.model,
+            prompt,
+            top_logprobs=args.top_logprobs,
+            num_predict=args.num_predict,
+            temperature=args.temperature,
+            think=args.think,
+            seed=args.seed,
         )
-        enriched.append(item)
 
-    artifact = {
-        "schema_version": 1,
-        "run_class": "goal_inference",
-        "experimental_data": True,
-        "run_id": args.run_id or datetime.now(timezone.utc).isoformat(),
-        "model": args.model,
-        "prompt": prompt,
-        "parameters": {
-            "top_logprobs": args.top_logprobs,
-            "num_predict": args.num_predict,
-            "temperature": args.temperature,
-            "think": args.think,
-            "seed": args.seed,
-        },
-        "response": response.get("response", ""),
-        "thinking": response.get("thinking", ""),
-        "done_reason": response.get("done_reason"),
-        "prompt_eval_count": response.get("prompt_eval_count"),
-        "eval_count": response.get("eval_count"),
-        "total_duration": response.get("total_duration"),
-        "logprobs": enriched,
-        "summary": _summarize(enriched),
-    }
+        raw_logprobs = response.get("logprobs") or []
+        enriched: list[dict[str, object]] = []
+        for entry in raw_logprobs:
+            item = dict(entry)
+            item["_entropy"] = _per_token_entropy(
+                float(item["logprob"]), item.get("top_logprobs") or []
+            )
+            enriched.append(item)
 
-    args.output.mkdir(parents=True, exist_ok=True)
-    out_path = args.output / "goal_inference.json"
-    out_path.write_text(
-        json.dumps(artifact, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-    )
+        artifact = {
+            "schema_version": 1,
+            "run_class": "goal_inference",
+            "experimental_data": True,
+            "run_id": run_id,
+            "checkpoint": {
+                "model_id": args.checkpoint_id,
+                "revision": args.checkpoint_revision,
+                "ollama_model": args.model,
+            },
+            "model": args.model,
+            "prompt": {"text": prompt, "sha256": hashlib.sha256(prompt.encode("utf-8")).hexdigest()},
+            "parameters": {
+                "top_logprobs": args.top_logprobs,
+                "num_predict": args.num_predict,
+                "temperature": args.temperature,
+                "think": args.think,
+                "seed": args.seed,
+            },
+            "response": response.get("response", ""),
+            "thinking": response.get("thinking", ""),
+            "done_reason": response.get("done_reason"),
+            "prompt_eval_count": response.get("prompt_eval_count"),
+            "eval_count": response.get("eval_count"),
+            "total_duration": response.get("total_duration"),
+            "logprobs": enriched,
+            "summary": _summarize(enriched),
+        }
+
+        output.mkdir(parents=True, exist_ok=True)
+        out_path = output / "goal_inference.json"
+        out_path.write_text(
+            json.dumps(artifact, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        )
+        out_path.chmod(0o600)
+    except (OSError, ValueError, TypeError, KeyError, json.JSONDecodeError, urllib.error.URLError) as exc:
+        _write_failure(output, run_id=run_id, error=exc)
+        print(json.dumps({"status": "failed", "run_id": run_id, "error": str(exc)}, indent=2))
+        return 2
     print(json.dumps({"artifact": str(out_path), "summary": artifact["summary"]}, indent=2))
     return 0
 
