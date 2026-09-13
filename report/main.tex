@@ -1,52 +1,39 @@
-\input{packages/xjenza-preamble.tex}
+\input{packages/preamble.tex}
 
 % Front matter
-\title{A very interesting scientific publication}
-\doi{10.7423/XJENZA.2022.x.xx}
-\articleType{Research Article}%Research Article, Review Article, Research Note, News Article...
-\author{J. Borg$^{1}$, J. Doe$^{2*}$ and J. Bloggs$^{2}$}
-\authorAnnotation{$^{1}$Department of Mathematics, Faculty of Science, University of Malta, Malta\\
-$^{2}$Department of Physics, Harvard University, Cambridge MA, US}
-\correspondanceName{J. Doe}
-\correspondanceMail{john.doe@harvard.edu}
+\title{Listening to the Collective: Entropy-Based Early Warning for Emergent Agent Communication}
+\shortTitle{Listening to the Collective}
+\track{Track: Containment Standards}
+\articleType{Research Report}
+% TODO: replace the placeholder authors, affiliations and contact
+\author{Author One$^{1*}$, Author Two$^{1}$ and Author Three$^{2}$}
+\authorAnnotation{$^{1}$Affiliation One, City, Country\\
+$^{2}$Affiliation Two, City, Country}
+\correspondenceName{Author One}
+\correspondenceMail{author.one@example.org}
+\keywords{AI safety, multi-agent systems, incident response, entropy, anomaly detection}
 
-% This goes in the header, in case the full title is too long
-\shortTitle{A very interesting scientific publication}
-
-\selfCitation{Borg, J. et al.\ (2022).\newblock {\em Xjenza Online}, \pageref{firstpage}--\pageref{lastPage}.}
+\selfCitation{One, A. et al.\ (2026).\newblock {\em AI Incident Response Sprint}, Apart Research, 1--\pageref{LastPage}.}
 
 % Bibliography file
 \addbibresource{references.bib}
 
-% Insert additional packages here
-\usepackage{lipsum}
-
-%%%%% Do not edit %%%%%
-\def\firstpage{1}
-\newcounter{pagna}
-\setcounter{pagna}{\firstpage}
-\setcounter{page}{\firstpage}
-%%%%%%%%%%%%%%%%%%%%%%%
-
 
 \begin{document}
-	\label{firstpage}
 
 	\abstrac{Hola}
 
 	\maketitle
-	
+
   \input{content/introduction.tex}
   \input{content/entropy.tex}
   \input{content/board_storage.tex}
-    
+  \input{content/limitations.tex}
+
     % List all citations
 	\nocite{*}
 	\printbibliography
-	
+
 	% Balance columns on last page
 \IfFileExists{balance.sty}{\balance}{}
-
-    % For header on first page
-	\label{lastPage}
 \end{document}
