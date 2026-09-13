@@ -13,6 +13,15 @@ COPY --from=bun /usr/local/bin/bun /usr/local/bin/bun
 WORKDIR /opt/pi
 
 COPY pi ./
+# Fail fast with an actionable message when the `pi` submodule has not been
+# checked out. A fresh clone leaves `pi/` empty; `COPY pi ./` then yields a
+# bare directory and `npm ci` fails with an unhelpful "no package.json" error.
+# The `just` recipes chain `setup` (git submodule update --init --recursive),
+# but a bare `docker compose build` must fail here, not silently upstream.
+RUN test -f package.json && test -f package-lock.json || \
+    (echo "pi submodule is not checked out" >&2; \
+     echo "run: just setup   (or: git submodule update --init --recursive)" >&2; \
+     exit 1)
 RUN --mount=type=cache,target=/root/.npm \
     npm ci --omit=dev --ignore-scripts \
     && npm --prefix packages/ai run generate-models \
