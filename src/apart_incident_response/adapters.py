@@ -6,6 +6,8 @@ import urllib.error
 import urllib.request
 from urllib.parse import urlparse
 
+from .task_updates import update_schema
+
 
 class OllamaAdapter:
     source = 'local_model'
@@ -38,8 +40,7 @@ class OllamaAdapter:
 
     def generate(self, messages, seed, max_output_tokens, choices):
         started = time.monotonic()
-        schema = {'type': 'object', 'properties': {'response_text': {'type': 'string'}, 'answer_class': {'type': 'string', 'enum': list(choices)}},
-                  'required': ['response_text', 'answer_class'], 'additionalProperties': False}
+        schema = update_schema(json.loads(messages[-1]['content']), choices)
         payload = {'model': self.model, 'messages': messages, 'format': schema, 'stream': False,
                     'options': {'temperature': 0.6, 'seed': seed, 'num_predict': max_output_tokens, 'num_ctx': 8192}, 'keep_alive': '10m'}
         if self.logprobs:
@@ -78,8 +79,25 @@ class FixtureAdapter:
         return {'adapter': self.model, 'model': self.model, 'transport': 'fixture'}
 
     def generate(self, messages, seed, max_output_tokens, choices):
-        context = messages[-1]['content']
+        context = json.loads(messages[-1]['content'])
         answer = list(choices)[seed % len(choices)]
-        raw = json.dumps({'response_text': f'Synthetic plumbing fixture: candidate {answer}. This is not a model generation.', 'answer_class': answer})
+        update = {'response_text': f'Synthetic plumbing fixture: candidate {answer}. This is not a model generation.', 'answer_class': answer}
+        contract = context.get('update_contract')
+        if contract in ('key-insights-v1', 'locked-database-v1'):
+            update['key_insights'] = []
+        if contract == 'locked-database-v1':
+            key = ''
+            if context['agent_role'] == 'feedback_only':
+                excerpt = context['private_evidence'][0].split(': ', 1)[1]
+                key = json.loads(excerpt)['unlock_key']
+                update.update(answer_class='feedback_only', candidate_key='', key_insights=[f'Synthetic unlock_key: {key}'],
+                              response_text=f'Synthetic plumbing fixture feedback: unlock_key={key}. Not a model generation.')
+            else:
+                import re
+                peer_text = json.dumps([e for e in context['permitted_history'] if e['agent'] == 'A'])
+                match = re.search(r'TEST_ONLY_E1_[a-f0-9]{24}', peer_text)
+                key = match.group() if match else ''
+                update.update(answer_class='unlocked' if key else 'locked', candidate_key=key)
+        raw = json.dumps(update)
         return {'raw_response': raw, 'model': self.model, 'input_tokens': None, 'output_tokens': None,
                 'latency_ms': 0, 'done_reason': 'fixture', 'provider_duration_ns': 0}

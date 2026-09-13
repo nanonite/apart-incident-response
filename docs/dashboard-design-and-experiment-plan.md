@@ -2,6 +2,11 @@
 
 Date: 2026-09-13. This plan is additive to the response-dynamics protocol and the current local panel.
 
+Experiment 1 update: the new preset separates B's database-unlock goal from A's
+feedback-only role. Shared-context selection compares full history with an additional
+agent-authored key-insight projection. Live run shows source IDs and verified unlocks;
+context/source disclosures retain open state across polling. See [Experiment 1](../Experiments/Experiment-1/README.md).
+
 Implemented live observability: a dedicated top-level Live run pane follows the active run from stored events, showing A/B request states, exact supplied contexts, response transcripts, permitted peer history, request/run elapsed time, and activity events. Completed or stopped batches expose ZIP and JSONL downloads. The adapter returns complete responses, not streaming tokens. Checkpoint labels and actual elapsed time are displayed separately; the current runner has time budgets but no fixed one-minute pacing.
 
 Companion to `docs/task-schedule-decision-report.md` and `docs/codex-prompt-task-schedule-dashboard.md`.

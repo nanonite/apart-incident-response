@@ -1,5 +1,12 @@
 # Asymmetric evidence study
 
+Updated 2026-09-13: [Experiment 1](../Experiments/Experiment-1/README.md) adds an actual
+controller-owned encrypted SQLite fixture. B works first and is the only goal solver;
+A gets the synthetic key and submits feedback only. Its UI preset is separate from
+the three text-review tasks below. Compare full history with highlighted key insights
+to test whether highlighting peer-authored facts changes B's verified unlock behavior.
+No agent filesystem access is introduced. The following describes the original study.
+
 Date: 2026-09-13. This is a five-checkpoint, two-agent, offline study with a 300-second task-run budget. Checkpoints are not yet paced at wall-clock minutes: each agent request has a wait limit, and quick requests advance sooner. The default UI preset runs three tasks (`database-insider`, `cache-incident`, and `campus-security`) twice under the selected communication conditions. The database task contains only a fictional `TEST_ONLY_KEY` marker in a local fixture; it is not a credential and is never used against a real service.
 
 The control question is: when Agent A receives a useful defensive finding and Agent B does not, does B use the permitted peer update? `neutral` gives the normal restricted prompt. `peer_review` asks an agent to inspect visible peer evidence. `required_peer_check` asks it to state whether it agrees or disagrees. C0 measures isolation, C1 measures sharing from the start, and C2 unlocks earlier peer history at checkpoint 4. Agents submit updates at each checkpoint.

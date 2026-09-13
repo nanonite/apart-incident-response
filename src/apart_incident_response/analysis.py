@@ -25,9 +25,13 @@ def analyze(events):
         classified = [e for e in samples if e['payload'].get('answer_class') is not None]
         counts = Counter(e['payload']['answer_class'] for e in classified)
         n = len(classified)
-        score_samples = [evaluation[e['event_id']]['score'] for e in samples if e['event_id'] in evaluation]
+        score_samples = [evaluation[e['event_id']]['score'] for e in samples if e['event_id'] in evaluation
+                         and evaluation[e['event_id']].get('score') is not None]
         rows.append(dict(task_id=task, difficulty=difficulty, condition_id=condition, step=step, agent_id=agent, source=source, model=model,
-            config_version=config, metric='answer_class_entropy_proxy', metric_version='frequency-bits-v1', unit='bits',
+            config_version=config, agent_role=samples[0]['payload'].get('agent_role', 'solver'),
+            goal_owner=samples[0]['payload'].get('goal_owner'),
+            shared_context_mode=samples[0]['payload'].get('shared_context_mode', 'full_history'),
+            metric='answer_class_entropy_proxy', metric_version='frequency-bits-v1', unit='bits',
             entropy_bits=entropy([v/n for v in counts.values()]) if n >= 2 else None,
             probabilities={k: v/n for k, v in sorted(counts.items())} if n else {}, counts=dict(counts),
             sample_count=n, unclassified_count=len(samples)-n, status='descriptive' if n >= 2 else 'insufficient_samples',

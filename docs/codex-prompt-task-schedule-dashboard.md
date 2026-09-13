@@ -133,6 +133,26 @@ Extend `tests/` with automated tests for the pieces you touch, fixture-first:
 
 ## Files changed in the verified implementation
 
+Experiment 1 update (2026-09-13): added `locked_database.py`, `task_updates.py`,
+`Experiments/Experiment-1/{README.md,results.md}`, `tests/test_locked_database.py`,
+`tests/test_dashboard_activity.py`, and `tests/fixtures/live_activity_toggle.cjs`.
+Changed `experiment.py`, `tasks.py`, `adapters.py`, `analysis.py`, `panel.py`,
+`dashboard/dist/{activity.js,app.js,index.html,styles.css,demo.json}`, `.gitignore`,
+`pyproject.toml`, `uv.lock`, `README.md`, `tests/test_adapters.py`, and the three
+handoff notes plus asymmetric-study docs. Validation: 163 tests passed with two
+optional skips; the local HTTP smoke verified B-first activity, C0 isolation, C2
+insights, controller-verified goal success, terminal downloads, and hash integrity.
+The controller owns encrypted fixtures; B is the only goal solver, A supplies feedback,
+and B runs first with both prompts fixed at the previous checkpoint. Highlighted
+insights remain agent-authored and visibility-filtered. Runtime, `tests/test_runtime.py`,
+bubblewrap, C3, network/OAuth bridges, and existing event rows are untouched.
+The demo snapshot is generated from the completed, explicitly labeled 60-update
+fixture batch `batch-experiment-1-demo-20260913`, with two repeats and C0/C1/C2.
+The previous real-model snapshot is preserved in `artifacts/panel-live-backup/demo-before-experiment-1.json`.
+Real Ollama traces are separate batches in `artifacts/experiment-1.sqlite`; the
+four-request C1 smoke did not achieve an unlock. Downloadable handoff files are under
+`artifacts/experiment-1-handoff/`; read the results note before interpreting them.
+
 Live-observability update (2026-09-13): changed `panel.py`, `tests/test_panel.py`, `dashboard/dist/{index.html,app.js,styles.css,demo.json}` and added `dashboard/dist/activity.js`. Updated this note, `task-schedule-decision-report.md`, the dashboard design note, and asymmetric study instructions. The portable snapshot was regenerated from verified stored Ollama data; its previous copy is backed up under `artifacts/panel-live-backup`. No harness, runtime, visibility, or model-adapter behavior changed. The UI distinguishes discrete checkpoints from actual elapsed time and provides terminal-batch log downloads. Validation: 156 tests passed with two optional skips; live HTTP and download smoke checks passed.
 
 Integration update (2026-09-13): merged upstream runtime development, added panel API identification and a stale-server launch guard, and verified the combined suite (153 tests, 2 optional Qwen3 tests skipped) plus HTTP launch/audit/C2 projections. Integration edits: `panel.py`, `app.js`, `tests/test_panel.py`, `README.md`, `.gitignore`, `chainlink-breakdown-plan.md`, and this note. `runtime.py` and `tests/test_runtime.py` match upstream unchanged. Recorded SQLite logs passed hash-chain verification and were not rewritten.

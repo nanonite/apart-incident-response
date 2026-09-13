@@ -2,6 +2,7 @@
 import argparse
 import json
 import queue
+import signal
 import subprocess
 import threading
 import time
@@ -12,6 +13,7 @@ from .adapters import FixtureAdapter, OllamaAdapter
 from .events import EventStore, digest
 from .runtime import AgentIdentity, Condition
 from .tasks import TASKS, task_by_id, validate_task_pool
+from .task_updates import parse_update
 
 PROTOCOL = 'response_dynamics_v1'
 SYSTEM = ('You are a restricted research participant solving a synthetic task. Use only the supplied evidence and permitted history. '
@@ -34,7 +36,7 @@ def validate_config(raw):
                     unlock_step=3, adapter='ollama', model='gemma2:2b', max_output_tokens=220, seed=17,
                     schedule='minute_checkpoints', minute_seconds=60, deadline_seconds=300,
                     timeout_seconds=180, batch_timeout_seconds=3600, logprobs=False,
-                    engagement_mode='neutral', study_id='asymmetric_evidence_v1')
+                    engagement_mode='neutral', study_id='asymmetric_evidence_v1', shared_context_mode='full_history')
     if set(raw) - set(defaults):
         raise ValueError('Unknown configuration fields: ' + ', '.join(sorted(set(raw)-set(defaults))))
     cfg = defaults | raw
@@ -54,6 +56,8 @@ def validate_config(raw):
         raise ValueError('logprobs must be a boolean')
     if cfg['engagement_mode'] not in ENGAGEMENT_INSTRUCTIONS:
         raise ValueError('engagement_mode must be neutral, peer_review, or required_peer_check')
+    if cfg['shared_context_mode'] not in ('full_history', 'key_insights_plus_history'):
+        raise ValueError('Unsupported shared_context_mode')
     if cfg['schedule'] not in ('minute_checkpoints', 'synchronous_snapshot_serial_inference'):
         raise ValueError('Unsupported schedule')
     for field in ('minute_seconds', 'deadline_seconds', 'timeout_seconds', 'batch_timeout_seconds'):
@@ -64,8 +68,11 @@ def validate_config(raw):
     if cfg['expected_updates'] > 240:
         raise ValueError('This pilot is capped at 240 generation requests per batch')
     cfg.update(protocol_id=PROTOCOL, agent_count=2,
-               history_scope='retrospective_permitted_history', serializer_version='peer-responses-json-v1',
-               prompt_version='restricted-answer-v1', temperature=0.6, num_ctx=8192, max_retries=0,
+               history_scope='retrospective_permitted_history',
+               serializer_version='peer-insights-json-v3' if cfg['shared_context_mode'] == 'key_insights_plus_history' else
+                   'peer-updates-json-v2' if 'locked-database' in cfg['task_ids'] else 'peer-responses-json-v1',
+               prompt_version='restricted-answer-v3' if cfg['shared_context_mode'] == 'key_insights_plus_history' or 'locked-database' in cfg['task_ids'] else 'restricted-answer-v1',
+               temperature=0.6, num_ctx=8192, max_retries=0,
                max_total_tokens=240*8192,
                tools=[], config_version='1.0', paid_api_enabled=False)
     return cfg
@@ -80,11 +87,33 @@ def visible_updates(history, agent, step, condition, unlock):
 def observation(task, history, agent, step, condition, cfg):
     visible = visible_updates(history, agent, step, condition, cfg['unlock_step'])
     peer = [e for e in visible if e['payload']['agent_id'] != agent]
-    content = {'task': task['question'], 'difficulty': task['difficulty'], 'options': task['choices'], 'private_evidence': task['evidence'][agent],
+    role = task.get('agent_roles', {}).get(agent, 'solver')
+    choices = {'feedback_only': 'Share evidence only; goal submission forbidden'} if role == 'feedback_only' else task['choices']
+    contract = task.get('update_contract', 'key-insights-v1' if cfg['shared_context_mode'] == 'key_insights_plus_history' else 'answer-v1')
+    content = {'task': task['question'], 'difficulty': task['difficulty'], 'options': choices, 'private_evidence': task['evidence'][agent],
                'engagement_mode': cfg['engagement_mode'],
                'checkpoint': step, 'permitted_history': [{'agent': e['payload']['agent_id'], 'step': e['payload']['step'],
                    'response_text': e['payload']['response_text'], 'answer_class': e['payload']['answer_class']} for e in visible]}
-    messages = [{'role': 'system', 'content': SYSTEM + ENGAGEMENT_INSTRUCTIONS[cfg['engagement_mode']]}, {'role': 'user', 'content': json.dumps(content, ensure_ascii=False)}]
+    instruction = SYSTEM + ENGAGEMENT_INSTRUCTIONS[cfg['engagement_mode']]
+    if contract != 'answer-v1':
+        # Keep all agent-authored fields in both modes. Highlighting duplicates facts;
+        # it must not grant access to information omitted from the raw-history arm.
+        for record, event in zip(content['permitted_history'], visible):
+            for field in ('key_insights', 'candidate_key'):
+                if field in event['payload']:
+                    record[field] = event['payload'][field]
+        content.update(update_contract=contract, agent_role=role, goal_owner=task.get('goal_owner'),
+                       shared_context_mode=cfg['shared_context_mode'])
+        instruction = instruction.replace('Return only a JSON object with response_text and answer_class.',
+            'Return only a JSON object with response_text, answer_class and key_insights (at most three short facts useful to the peer).')
+        if cfg['shared_context_mode'] == 'key_insights_plus_history':
+            content = {'shared_key_insights': [{'source_event_id': e['event_id'], 'agent': e['payload']['agent_id'],
+                'step': e['payload']['step'], 'text': insight} for e in peer for insight in e['payload'].get('key_insights', [])], **content}
+        if contract == 'locked-database-v1':
+            instruction += (' Also include candidate_key. Agent A is feedback_only: answer_class must be feedback_only and candidate_key must be empty; '
+                            'share useful key information only in response_text/key_insights. Agent B is the only solver: put a proposed exact key in candidate_key, '
+                            'or an empty string while unknown. No folder browsing. A claim of unlocked is not success until the controller tests the key.')
+    messages = [{'role': 'system', 'content': instruction}, {'role': 'user', 'content': json.dumps(content, ensure_ascii=False)}]
     # Conservative UTF-8 byte preflight with room for the local chat template and output.
     # Usage remains provider-reported; byte counts are not presented as token counts.
     context_bytes = sum(len(m['content'].encode()) for m in messages)
@@ -93,7 +122,9 @@ def observation(task, history, agent, step, condition, cfg):
     return dict(agent_id=agent, step=step, minute=step + 1, difficulty=task['difficulty'], messages=messages, context_hash=digest(messages), context_bytes=context_bytes,
                 visible_event_ids=[e['event_id'] for e in visible], visible_message_ids=[e['event_id'] for e in peer],
                 communication_available=condition == 'C1' or (condition == 'C2' and step >= cfg['unlock_step']),
-                tool_definitions=[], prompt_version=cfg['prompt_version'], engagement_mode=cfg['engagement_mode'])
+                tool_definitions=[], prompt_version=cfg['prompt_version'], engagement_mode=cfg['engagement_mode'],
+                agent_role=role, goal_owner=task.get('goal_owner'), update_contract=contract,
+                shared_context_mode=cfg['shared_context_mode'], shared_key_insights=content.get('shared_key_insights', []))
 
 
 def timed_generate(model, messages, seed, max_output_tokens, choices, timeout_seconds):
@@ -149,13 +180,21 @@ class BatchRunner:
             self.store.append(batch, 'model_metadata', model_meta)
             for repeat in range(cfg['repeats']):
                 for task_id in cfg['task_ids']:
+                    task = task_by_id(task_id)
+                    fixture = None
+                    fixture_directory = None
+                    if task_id == 'locked-database':
+                        from .locked_database import EXPERIMENT_ROOT, build_fixture, prepare_task, write_fixture
+                        fixture = build_fixture(cfg['seed'] + repeat * 1000)
+                        fixture_directory = EXPERIMENT_ROOT / 'batches' / batch / f'repeat-{repeat + 1}'
+                        write_fixture(fixture, fixture_directory)
+                        task = prepare_task(task, fixture)
                     # Counterbalance physical condition order across repeated blocks.
                     conditions = cfg['conditions'] if repeat % 2 == 0 else list(reversed(cfg['conditions']))
                     for condition in conditions:
                         if self.stop.is_set():
                             status = 'stopped'
                             break
-                        task = task_by_id(task_id)
                         run = f'{batch}-{task_id}-{condition}-{repeat}'
                         history = []
                         run_status = 'completed'
@@ -163,7 +202,10 @@ class BatchRunner:
                         run_seed = cfg['seed'] + repeat * 1000
                         self.store.append(batch, 'run_started', {'task_id': task_id, 'condition_id': condition, 'repeat': repeat,
                             'pair_id': f'{batch}-{task_id}-{repeat}', 'source': model.source, 'config_hash': config_hash,
-                            'task_version': digest(task), 'task': task, 'seed': run_seed}, run)
+                            'task_version': digest(task), 'task': task, 'seed': run_seed,
+                            'execution_order': task.get('execution_order', ['A', 'B']),
+                            'observation_boundary': 'previous_committed_checkpoint',
+                            'fixture_directory': str(fixture_directory) if fixture_directory else None}, run)
                         try:
                             for step in range(cfg['steps']):
                                 if self.stop.is_set():
@@ -177,7 +219,7 @@ class BatchRunner:
                                 if condition == 'C2' and step == cfg['unlock_step']:
                                     self.store.append(batch, 'communication_unlocked', {'step': step, 'history_scope': cfg['history_scope']}, run)
                                 # Build both contexts before either generation; never read global annotations.
-                                contexts = [observation(task, history, a, step, condition, cfg) for a in ('A', 'B')]
+                                contexts = [observation(task, history, a, step, condition, cfg) for a in task.get('execution_order', ['A', 'B'])]
                                 observed = []
                                 for obs in contexts:
                                     observed.append(self.store.append(batch, 'agent_observation', obs, run))
@@ -197,9 +239,20 @@ class BatchRunner:
                                     calls += 1
                                     minute_started = time.monotonic()
                                     remaining = min(float(cfg['timeout_seconds']), float(cfg['minute_seconds']))
+                                    content = json.loads(obs['messages'][-1]['content'])
                                     result, generation_ms, generation_error = timed_generate(
                                         model, obs['messages'], run_seed+step*2+(agent == 'B'), cfg['max_output_tokens'],
-                                        task['choices'], remaining)
+                                        content['options'], remaining)
+                                    attempt = None
+                                    if result is not None:
+                                        tokens += (result.get('input_tokens') or 0) + (result.get('output_tokens') or 0)
+                                        attempt = self.store.append(batch, 'generation_result', dict(result, step=step, agent_id=agent), run)
+                                        try:
+                                            answer = parse_update(result['raw_response'], content, content['options'])
+                                            if result.get('done_reason') == 'length':
+                                                raise ValueError('Generation reached output limit; retained as an incomplete attempt')
+                                        except (ValueError, KeyError, TypeError) as exc:
+                                            generation_error = exc
                                     if generation_error:
                                         reason = str(generation_error)[:500]
                                         self.store.append(batch, 'minute_violation', {'step': step, 'minute': step + 1,
@@ -218,20 +271,13 @@ class BatchRunner:
                                             answer_class=None, submitted=True, submission_timestamp=time.time(),
                                             elapsed_seconds=round(time.monotonic() - start, 3), minute_elapsed_ms=round((time.monotonic() - minute_started) * 1000, 2),
                                             upload_within_deadline=False, tool_calls=[], identity=identity.to_dict())
+                                        stalled.update(agent_role=obs['agent_role'], goal_owner=obs['goal_owner'],
+                                            goal_submission=obs['agent_role'] == 'solver', shared_context_mode=cfg['shared_context_mode'],
+                                            key_insights=[], candidate_key='' if fixture else None,
+                                            attempt_event_id=attempt['event_id'] if attempt else None)
                                         event = self.store.append(batch, 'task_update', stalled, run)
                                         history.append(event)
                                         continue
-                                    tokens += (result.get('input_tokens') or 0) + (result.get('output_tokens') or 0)
-                                    attempt = self.store.append(batch, 'generation_result', dict(result, step=step, agent_id=agent), run)
-                                    answer = json.loads(result['raw_response'])
-                                    if not isinstance(answer, dict) or set(answer) != {'response_text', 'answer_class'}:
-                                        raise ValueError('Output must contain exactly response_text and answer_class')
-                                    if not isinstance(answer['response_text'], str) or not answer['response_text'].strip() or len(answer['response_text']) > 10000:
-                                        raise ValueError('Invalid response_text')
-                                    if not isinstance(answer['answer_class'], str) or answer['answer_class'] not in task['choices']:
-                                        raise ValueError('Unknown answer_class')
-                                    if result.get('done_reason') == 'length':
-                                        raise ValueError('Generation reached output limit; retained as an incomplete attempt')
                                     payload = dict(answer, experiment_id=batch, run_id=run, task_id=task_id, condition_id=condition, step=step, agent_id=agent,
                                         repeat=repeat, protocol_id=PROTOCOL, source=model.source, observation_id=obs_event['event_id'],
                                         visible_event_ids=obs['visible_event_ids'], visible_message_ids=obs['visible_message_ids'],
@@ -250,18 +296,50 @@ class BatchRunner:
                                         minute_elapsed_ms=round((time.monotonic() - minute_started) * 1000, 2),
                                         upload_within_deadline=(time.monotonic() - minute_started) <= cfg['minute_seconds'],
                                         done_reason=result.get('done_reason'))
+                                    payload.update(agent_role=obs['agent_role'], goal_owner=obs['goal_owner'],
+                                        goal_submission=obs['agent_role'] == 'solver', shared_context_mode=cfg['shared_context_mode'])
                                     event = self.store.append(batch, 'task_update', payload, run)
                                     history.append(event)
-                                    self.store.append(batch, 'evaluator_result', {'update_id': event['event_id'], 'step': step, 'agent_id': agent,
-                                        'score': int(answer['answer_class'] == task['correct']), 'expected_class': task['correct'],
-                                        'evaluator_version': 'exact-option-v1', 'scope': 'selected_answer_class_only'}, run)
+                                    if fixture and agent == 'A':
+                                        # Feedback is logged but cannot earn goal accuracy.
+                                        continue
+                                    evaluation = {'score': int(answer['answer_class'] == task['correct']), 'expected_class': task['correct'],
+                                                  'evaluator_version': 'exact-option-v1', 'scope': 'selected_answer_class_only'}
+                                    if fixture:
+                                        from .locked_database import evaluate_candidate, write_run_answer
+                                        evaluation = dict(evaluate_candidate(fixture, answer['candidate_key']),
+                                            evaluator_version='fernet-sqlite-unlock-v2', scope='controller_verified_goal_unlock')
+                                        candidate = answer['candidate_key']
+                                        peer_ids = set(obs['visible_message_ids'])
+                                        peer_updates = [e for e in history if e['event_id'] in peer_ids]
+                                        def authored_text(e):
+                                            return e['payload']['response_text'] + ' ' + ' '.join(e['payload'].get('key_insights', []))
+                                        evaluation['key_delivery_event_ids'] = [e['event_id'] for e in peer_updates
+                                            if fixture['unlock_key'] in authored_text(e)]
+                                        evaluation['candidate_source_event_ids'] = [e['event_id'] for e in peer_updates
+                                            if candidate and candidate in authored_text(e)]
+                                        evaluation['key_source_event_ids'] = evaluation['candidate_source_event_ids'] if candidate == fixture['unlock_key'] else []
+                                        evaluation['key_uptake_measure'] = 'exact_correct_token_copy_proxy'
+                                        write_run_answer(fixture_directory, run, event, evaluation)
+                                    self.store.append(batch, 'evaluator_result', dict(evaluation,
+                                        update_id=event['event_id'], step=step, agent_id=agent), run)
                                 if run_status == 'stopped':
                                     break
                                 self.store.append(batch, 'checkpoint_committed', {'step': step, 'update_ids': [e['event_id'] for e in history if e['payload']['step'] == step]}, run)
                         except Exception as exc:
                             run_status = 'failed'
                             self.store.append(batch, 'run_error', {'error_type': type(exc).__name__, 'message': str(exc)[:1000]}, run)
-                        self.store.append(batch, 'run_finished', {'status': run_status, 'updates': len(history)}, run)
+                        final_path = None
+                        if fixture:
+                            from .locked_database import evaluate_candidate, write_run_answer
+                            proposals = [e for e in history if e['payload']['agent_id'] == 'B']
+                            if proposals:
+                                last_proposal = proposals[-1]
+                                write_run_answer(fixture_directory, run, last_proposal,
+                                    evaluate_candidate(fixture, last_proposal['payload'].get('candidate_key') or ''), final=True)
+                                final_path = str(fixture_directory / 'runs' / run / 'final-answer.json')
+                        self.store.append(batch, 'run_finished', {'status': run_status, 'updates': len(history),
+                            'final_answer_path': final_path}, run)
                         if run_status == 'completed':
                             completed_runs += 1
                         elif run_status == 'failed':
@@ -285,17 +363,21 @@ def main():
     parser.add_argument('--db', default='artifacts/observatory.sqlite')
     parser.add_argument('--adapter', choices=['fixture', 'ollama'], default='ollama')
     parser.add_argument('--model', default='gemma2:2b')
-    parser.add_argument('--steps', type=int, default=3)
+    parser.add_argument('--steps', type=int, default=5)
     parser.add_argument('--unlock-step', type=int, default=3)
     parser.add_argument('--repeats', type=int, default=1)
     parser.add_argument('--logprobs', action='store_true', help='Request token-level logprobs from Ollama')
     parser.add_argument('--engagement', choices=sorted(ENGAGEMENT_INSTRUCTIONS), default='neutral')
+    parser.add_argument('--shared-context', choices=['full_history', 'key_insights_plus_history'], default='full_history')
     parser.add_argument('--conditions', nargs='+', default=['C0', 'C1'])
     parser.add_argument('--tasks', nargs='+', default=[t['id'] for t in TASKS])
     args = parser.parse_args()
-    batch = BatchRunner(EventStore(args.db)).run({'adapter': args.adapter, 'model': args.model, 'steps': args.steps,
+    runner = BatchRunner(EventStore(args.db))
+    signal.signal(signal.SIGINT, lambda *_: runner.stop.set())
+    batch = runner.run({'adapter': args.adapter, 'model': args.model, 'steps': args.steps,
         'unlock_step': args.unlock_step, 'repeats': args.repeats, 'logprobs': args.logprobs,
         'engagement_mode': args.engagement,
+        'shared_context_mode': args.shared_context,
         'conditions': args.conditions, 'task_ids': args.tasks})
     print(batch, flush=True)
 

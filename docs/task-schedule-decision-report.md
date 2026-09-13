@@ -7,17 +7,26 @@ upload time, and how Ollama / `gemma2:2b` plugs in.
 
 ## 1. What we do to the task (question → data, end to end)
 
-1. `tasks.py` defines 6 **synthetic, offline** tasks, difficulty 1–5, including the asymmetric database review, each with:
+1. `tasks.py` defines 7 **synthetic, offline** tasks, difficulty 1–5, including the asymmetric database review and encrypted Experiment 1, each with:
    - `question` displayed to both agents,
    - `choices` (option keys), `correct` key, per-agent private `evidence` (`A`, `B`),
    - `design` note explaining why it is a good control/intervention task.
 2. The runner (`experiment.py`) builds a **per-agent observation** each checkpoint: private evidence only (+
    peer responses when communication is visible under C1/C2), a context hash, and a byte preflight.
-3. Each agent returns a **TaskUpdate** with exactly `response_text` + `answer_class` (JSON schema enforced
-   for Ollama via `format`).
+3. Each agent returns a strict **TaskUpdate**: `response_text` + `answer_class` for the
+   original raw-history tasks, plus `key_insights` in the insight contract and
+   `candidate_key` for Experiment 1 (JSON schema enforced for Ollama via `format`).
 4. The controller immediately appends an `evaluator_result`: `score = 1 if answer_class == correct`
    (exact option match, `evaluator_version='exact-option-v1'`), plus the expected class and scoring scope.
 5. Everything lands in the append-only, hash-chained `events` SQLite store. Analysis never imports runtime.
+
+Experiment 1 update (2026-09-13): B is the only goal solver and runs first; A receives
+the synthetic private JSON key and provides feedback only. The controller encrypts
+SQLite bytes and verifies B's candidate by decryption (`fernet-sqlite-unlock-v2`),
+without exposing file or network tools. Both shared-context modes retain the same
+agent-authored fields; one additionally highlights facts with source IDs. See
+[the task and output paths](../Experiments/Experiment-1/README.md) and
+[verified checks and model traces](../Experiments/Experiment-1/results.md).
 
 Verified 2026-09-13: fixture protocol, analysis, and panel tests exercise the runner automatically.
 The full suite passed 156 tests with two optional skips. HTTP smoke checks covered live generation
@@ -39,7 +48,7 @@ status, C0 isolation, C2 projections, ZIP/JSONL downloads, export auditing, and 
 
 The controller records submissions, but checkpoints are not paced to wall-clock minutes. Concretely:
 
-1. **Step ≠ minute.** Config defaults to five logical checkpoints (CLI currently defaults to three).
+1. **Step ≠ minute.** Config and CLI default to five logical checkpoints.
    Nothing waits for a 60-second boundary; C2 step 3 means checkpoint 4, not necessarily elapsed 3:01.
 2. **Request and run budgets exist.** Each controller wait is limited by the smaller of
    `timeout_seconds` and `minute_seconds` (defaults 180 and 60). The 300-second run budget is checked

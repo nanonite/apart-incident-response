@@ -3,7 +3,9 @@ name = "apart-incident-response"
 version = "0.1.0"
 description = "Controlled runtime for the accidental-coordination experiment"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "cryptography>=50.0.1",
+]
 
 [dependency-groups]
 dev = []

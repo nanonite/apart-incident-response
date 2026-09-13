@@ -19,7 +19,7 @@ from .importing import import_jsonl
 from .tasks import public_tasks
 
 ROOT = Path(__file__).resolve().parents[2]
-PANEL_API_VERSION = 'response-panel-v3'
+PANEL_API_VERSION = 'response-panel-v4'
 
 
 def live_activity(events, batch, runs):
@@ -33,6 +33,7 @@ def live_activity(events, batch, runs):
     step = max((e['payload']['step'] for e in scoped if type(e['payload'].get('step')) is int), default=None)
     agents = {}
     visible_to = {}
+    insights_by_source = {}
     terminal = finished or bool(run and run['status'] != 'running')
     for agent in ('A', 'B'):
         own = [e for e in scoped if e['payload'].get('agent_id') == agent]
@@ -40,6 +41,10 @@ def live_activity(events, batch, runs):
         observation = observations[-1] if observations else None
         for event_id in (observation or {}).get('payload', {}).get('visible_message_ids', []):
             visible_to.setdefault(event_id, []).append(agent)
+        for insight in (observation or {}).get('payload', {}).get('shared_key_insights', []):
+            key = (insight['source_event_id'], insight['text'])
+            entry = insights_by_source.setdefault(key, dict(insight, visible_to=[]))
+            entry['visible_to'].append(agent)
         transitions = [e for e in own if e['kind'] in ('agent_observation', 'generation_started', 'generation_result', 'task_update', 'minute_violation')]
         last = transitions[-1] if transitions else None
         state_name = 'waiting'
@@ -60,7 +65,9 @@ def live_activity(events, batch, runs):
     # Only peer responses actually included in the latest observations belong here.
     # Private task bundles and researcher annotations are excluded.
     shared = [dict(event_id=e['event_id'], timestamp=e['timestamp'], agent_id=e['payload']['agent_id'],
-                   step=e['payload']['step'], response_text=e['payload']['response_text'], visible_to=visible_to[event_id])
+                   step=e['payload']['step'], response_text=e['payload']['response_text'],
+                   key_insights=e['payload'].get('key_insights', []), candidate_key=e['payload'].get('candidate_key'),
+                   visible_to=visible_to[event_id])
               for event_id in visible_to for e in [by_id.get(event_id)] if e and e['kind'] == 'task_update']
     shared.sort(key=lambda e: (e['step'], e['agent_id']))
     query = urlencode({'batch': batch['id']}) if batch else ''
@@ -69,7 +76,7 @@ def live_activity(events, batch, runs):
             'run_finished_at': next((e['timestamp'] for e in scoped if e['kind'] == 'run_finished'),
                                     next((e['timestamp'] for e in events if e['kind'] == 'batch_finished'), None)),
             'last_event_at': events[-1]['timestamp'] if events else None, 'agents': agents,
-            'shared_history': shared,
+            'shared_history': shared, 'shared_key_insights': list(insights_by_source.values()),
             'feed': [dict(event_id=e['event_id'], timestamp=e['timestamp'], kind=e['kind'],
                           step=e['payload'].get('step'), agent_id=e['payload'].get('agent_id') or e['payload'].get('recipient'),
                           detail=e['payload'].get('message') or e['payload'].get('reason') or e['payload'].get('status'))
