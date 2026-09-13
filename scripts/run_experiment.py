@@ -15,7 +15,7 @@ SOURCE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SOURCE_ROOT / "src"))
 
 from apart_incident_response.controller import ExperimentController  # noqa: E402
-from apart_incident_response.runtime import IsolationPolicy, RuntimeConfig  # noqa: E402
+from apart_incident_response.runtime import IsolationPolicy, RuntimeConfig, RuntimeConfigError  # noqa: E402
 from apart_incident_response.run_artifacts import triplet_artifact_links  # noqa: E402
 from apart_incident_response.run_paths import RunDirectory, RunPathError, create_run_directory, validate_uuid4  # noqa: E402
 
@@ -264,15 +264,28 @@ def run_real_anchor(
         extension=SOURCE_ROOT / "pi-extension" / "incident-tools.ts",
         run_class="experimental",
     )
+    skipped_seeds: list[dict[str, object]] = []
     try:
         if agent_count is None:
             triplets = controller.run_anchor_matrix(seeds)
         else:
+            # Task 1's evidence-role rotation (task_one_bundle_for_agent) only
+            # guarantees every role is covered by a launched agent when
+            # agent_count == len(bundles) (3) or greater. At a smaller
+            # agent_count, some seeds rotate the private-token owner role out
+            # of the launched set entirely - a real, deterministic
+            # incompatibility (not a transient failure), so a triplet that
+            # hits it is skipped and recorded rather than aborting every
+            # remaining seed in the batch.
             selected_seeds = controller.protocol.anchor_seeds if seeds is None else tuple(seeds)
-            triplets = [
-                controller.run_triplet(seed=seed, triplet_id=f"s{seed:04d}", agent_count=agent_count)
-                for seed in selected_seeds
-            ]
+            triplets = []
+            for seed in selected_seeds:
+                try:
+                    triplets.append(
+                        controller.run_triplet(seed=seed, triplet_id=f"s{seed:04d}", agent_count=agent_count)
+                    )
+                except RuntimeConfigError as exc:
+                    skipped_seeds.append({"seed": seed, "reason": str(exc)})
     except Exception as exc:
         return _invocation_failure(invocation, exc, run_class="experimental")
     validity = _matrix_validity(triplets)
@@ -292,6 +305,7 @@ def run_real_anchor(
             else "non-experimental diagnostic; incomplete agent execution or controller evidence"
         ),
         "validity": validity,
+        "skipped_seeds": skipped_seeds,
         "triplets": [
             {
                 "conditions": [run.condition.value for run in triplet],
