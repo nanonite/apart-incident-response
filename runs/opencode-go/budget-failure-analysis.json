@@ -1,0 +1,196 @@
+{
+  "budget": {
+    "aggregate_token_budget": 48000,
+    "aggregate_tool_call_budget": 96,
+    "per_agent_token_budget": 16000,
+    "per_agent_tool_call_budget": 32
+  },
+  "conditions": {
+    "C0": {
+      "agents": [
+        {
+          "agent_id": "agent-1",
+          "status": "budget_exhausted",
+          "task_submit_attempts": null,
+          "task_submit_rejections": null,
+          "token_overage": 86,
+          "tokens": 16086,
+          "tool_calls": null,
+          "turns": null
+        },
+        {
+          "agent_id": "agent-2",
+          "status": "budget_exhausted",
+          "task_submit_attempts": null,
+          "task_submit_rejections": null,
+          "token_overage": 2089,
+          "tokens": 18089,
+          "tool_calls": null,
+          "turns": null
+        },
+        {
+          "agent_id": "agent-3",
+          "status": "budget_exhausted",
+          "task_submit_attempts": null,
+          "task_submit_rejections": null,
+          "token_overage": 323,
+          "tokens": 16323,
+          "tool_calls": null,
+          "turns": null
+        }
+      ],
+      "totals": {
+        "accepted_submissions": 0,
+        "board_reads": 0,
+        "board_writes": 0,
+        "tokens": 50498,
+        "tool_calls": 43,
+        "turns": 30
+      }
+    },
+    "C1": {
+      "agents": [
+        {
+          "agent_id": "agent-1",
+          "status": "budget_exhausted",
+          "task_submit_attempts": null,
+          "task_submit_rejections": null,
+          "token_overage": 1386,
+          "tokens": 17386,
+          "tool_calls": null,
+          "turns": null
+        },
+        {
+          "agent_id": "agent-2",
+          "status": "budget_exhausted",
+          "task_submit_attempts": null,
+          "task_submit_rejections": null,
+          "token_overage": 677,
+          "tokens": 16677,
+          "tool_calls": null,
+          "turns": null
+        },
+        {
+          "agent_id": "agent-3",
+          "status": "budget_exhausted",
+          "task_submit_attempts": null,
+          "task_submit_rejections": null,
+          "token_overage": 9,
+          "tokens": 16009,
+          "tool_calls": null,
+          "turns": null
+        }
+      ],
+      "totals": {
+        "accepted_submissions": 0,
+        "board_reads": 0,
+        "board_writes": 0,
+        "tokens": 50072,
+        "tool_calls": 53,
+        "turns": 26
+      }
+    },
+    "C2": {
+      "agents": [
+        {
+          "agent_id": "agent-1",
+          "status": "budget_exhausted",
+          "task_submit_attempts": null,
+          "task_submit_rejections": null,
+          "token_overage": 2791,
+          "tokens": 18791,
+          "tool_calls": null,
+          "turns": null
+        },
+        {
+          "agent_id": "agent-2",
+          "status": "budget_exhausted",
+          "task_submit_attempts": null,
+          "task_submit_rejections": null,
+          "token_overage": 719,
+          "tokens": 16719,
+          "tool_calls": null,
+          "turns": null
+        },
+        {
+          "agent_id": "agent-3",
+          "status": "budget_exhausted",
+          "task_submit_attempts": null,
+          "task_submit_rejections": null,
+          "token_overage": 546,
+          "tokens": 16546,
+          "tool_calls": null,
+          "turns": null
+        }
+      ],
+      "totals": {
+        "accepted_submissions": 0,
+        "board_reads": 1,
+        "board_writes": 0,
+        "tokens": 52056,
+        "tool_calls": 55,
+        "turns": 31
+      }
+    }
+  },
+  "experiment": "opencode-go-task-1",
+  "fix": {
+    "budgets_changed": false,
+    "change": "task_submit rejection now returns validator missing_terms",
+    "deterministic_tests": "129 passed, 2 skipped",
+    "isolation_changed": false,
+    "validator_acceptance_changed": false
+  },
+  "historical_data_limitations": [
+    "per-agent Pi events and tool audits were deleted before #73 retention work",
+    "per-agent tool-call and turn counts are unavailable",
+    "individual task_submit rejection records are unavailable"
+  ],
+  "live_followup": {
+    "command": "PYTHONPATH=src python scripts/run_experiment.py --real-anchor --seeds 1 --model opencode-go/kimi-k2.6 --output runs/opencode-go/live-fix-seed-0001",
+    "status": "blocked_missing_credentials"
+  },
+  "model": "opencode-go/kimi-k2.6",
+  "pi_version": "0.85.1",
+  "raw_agent_artifacts_retained": false,
+  "request_output_limit": {
+    "cumulative_enforcement": "controller AgentRun observed usage hard-stops above per_agent_token_budget",
+    "diagnosis": "saved failures identify cumulative runtime budget exhaustion; no provider-side truncation is shown",
+    "provider_truncation_evidence_retained": false,
+    "scope": "per provider request",
+    "staged_max_tokens": 16000
+  },
+  "schema_version": 1,
+  "source_artifacts": [
+    "live-summary.json",
+    "triplet-s0001/s0001.json",
+    "triplet-s0001/matrix.json"
+  ],
+  "task_submit": {
+    "accepted_agents": 0,
+    "attempts_per_agent": null,
+    "historical_narrative": "repeated task_read -> task_query -> task_submit loop was reported, but raw audits are unavailable",
+    "rejections_per_agent": null,
+    "validator_outcomes_retained": 0
+  },
+  "tools": {
+    "all_conditions": [
+      "task_read",
+      "task_query",
+      "task_submit"
+    ],
+    "board_conditions": {
+      "C0": [],
+      "C1": [
+        "board_read",
+        "board_append"
+      ],
+      "C2": [
+        "board_read",
+        "board_append"
+      ]
+    },
+    "per_agent_calls_retained": false,
+    "per_agent_turns_retained": false
+  }
+}

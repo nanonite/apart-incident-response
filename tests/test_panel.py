@@ -23,6 +23,20 @@ def run_events(data, run):
 
 
 class PanelStateTests(unittest.TestCase):
+    def test_panel_launch_accepts_ui_engagement_fields(self):
+        with tempfile.TemporaryDirectory() as directory:
+            store = EventStore(Path(directory) / 'events.sqlite')
+            app = panel.App(store)
+            batch_id = app.launch(dict(CONFIG, task_ids=['database-insider'], engagement_mode='peer_review',
+                                       study_id='asymmetric_evidence_v1'))
+            app.thread.join(timeout=10)
+            self.assertFalse(app.thread.is_alive())
+            data = panel.state(store, batch_id)
+            self.assertEqual(data['server']['api_version'], panel.PANEL_API_VERSION)
+            self.assertEqual(data['batch']['status'], 'completed')
+            self.assertEqual(data['batch']['config']['engagement_mode'], 'peer_review')
+            self.assertEqual(len([e for e in data['events'] if e['kind'] == 'task_update']), 12)
+
     def test_state_is_json_serializable_and_carries_audit_and_metrics(self):
         temp, store, _ = batch_store()
         self.addCleanup(temp.cleanup)

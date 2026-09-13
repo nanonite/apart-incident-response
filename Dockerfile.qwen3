@@ -1,0 +1,37 @@
+# syntax=docker/dockerfile:1.7
+
+# Separate CUDA image for the local Qwen3 full-logits path. The lightweight
+# remote-agent Dockerfile remains independent of CUDA and ML dependencies.
+FROM nvidia/cuda:13.0.0-runtime-ubuntu24.04
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    HF_HOME=/models/huggingface \
+    TRANSFORMERS_CACHE=/models/huggingface \
+    PYTHONPATH=/workspace/src
+
+RUN apt-get update \
+    && apt-get install --no-install-recommends --yes \
+        ca-certificates \
+        python3 \
+        python3-venv \
+    && rm -rf /var/lib/apt/lists/* \
+    && python3 -m venv /opt/qwen3-venv
+
+ENV PATH=/opt/qwen3-venv/bin:$PATH
+
+WORKDIR /workspace
+COPY requirements-qwen3.txt ./requirements-qwen3.txt
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements-qwen3.txt
+
+COPY config/qwen3-8b.json ./config/qwen3-8b.json
+COPY src ./src
+COPY scripts/ollama_goal_inference.py ./scripts/ollama_goal_inference.py
+COPY scripts/qwen3_full_logits.py ./scripts/qwen3_full_logits.py
+COPY scripts/qwen3_goal.py ./scripts/qwen3_goal.py
+
+RUN mkdir -p /workspace/runs/qwen3-8b /models/huggingface
+
+ENTRYPOINT ["python", "scripts/qwen3_goal.py"]

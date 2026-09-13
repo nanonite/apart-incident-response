@@ -1,0 +1,39 @@
+\input{packages/preamble.tex}
+
+% Front matter
+\title{Listening to the Collective: Entropy-Based Early Warning for Emergent Agent Communication}
+\shortTitle{Listening to the Collective}
+\track{Track: Containment Standards}
+\articleType{Research Report}
+% TODO: replace the placeholder authors, affiliations and contact
+\author{Author One$^{1*}$, Author Two$^{1}$ and Author Three$^{2}$}
+\authorAnnotation{$^{1}$Affiliation One, City, Country\\
+$^{2}$Affiliation Two, City, Country}
+\correspondenceName{Author One}
+\correspondenceMail{author.one@example.org}
+\keywords{AI safety, multi-agent systems, incident response, entropy, anomaly detection}
+
+\selfCitation{One, A. et al.\ (2026).\newblock {\em AI Incident Response Sprint}, Apart Research, 1--\pageref{LastPage}.}
+
+% Bibliography file
+\addbibresource{references.bib}
+
+
+\begin{document}
+
+	\abstrac{Hola}
+
+	\maketitle
+
+  \input{content/introduction.tex}
+  \input{content/entropy.tex}
+  %\input{content/board_storage.tex}
+  \input{content/limitations.tex}
+
+    % List all citations
+	\nocite{*}
+	\printbibliography
+
+	% Balance columns on last page
+\IfFileExists{balance.sty}{\balance}{}
+\end{document}

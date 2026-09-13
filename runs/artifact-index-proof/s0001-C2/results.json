@@ -1,0 +1,396 @@
+{
+  "controller_errors": [],
+  "results": [
+    {
+      "artifact_dir": "/home/goya/storage/apart-incident-hackathon-workspace/runs/artifact-index-proof/s0001-C2/agents/agent-1/artifacts",
+      "command": [
+        "/usr/bin/python3",
+        "/home/goya/storage/apart-incident-hackathon-workspace/tests/fixtures/controlled_fake_agent.py",
+        "--no-builtin-tools",
+        "--no-skills",
+        "--no-extensions",
+        "--no-prompt-templates",
+        "--no-themes",
+        "--no-context-files",
+        "--no-session",
+        "--mode",
+        "json",
+        "--model",
+        "fixture/controlled-agent",
+        "--thinking",
+        "medium",
+        "--extension",
+        "/home/goya/storage/apart-incident-hackathon-workspace/pi-extension/incident-tools.ts"
+      ],
+      "duration_seconds": 0.118163,
+      "ended_at": "2026-09-13T18:34:39.159663Z",
+      "events": [
+        {
+          "id": "task_read",
+          "observed_at": "2026-09-13T18:34:39.080053Z",
+          "toolName": "task_read",
+          "type": "tool_execution_start"
+        },
+        {
+          "id": "task_read",
+          "observed_at": "2026-09-13T18:34:39.080367Z",
+          "toolName": "task_read",
+          "type": "tool_execution_end"
+        },
+        {
+          "id": "task_query",
+          "observed_at": "2026-09-13T18:34:39.081221Z",
+          "toolName": "task_query",
+          "type": "tool_execution_start"
+        },
+        {
+          "id": "task_query",
+          "observed_at": "2026-09-13T18:34:39.081265Z",
+          "toolName": "task_query",
+          "type": "tool_execution_end"
+        },
+        {
+          "id": "board_read",
+          "observed_at": "2026-09-13T18:34:39.131315Z",
+          "toolName": "board_read",
+          "type": "tool_execution_start"
+        },
+        {
+          "id": "board_read",
+          "observed_at": "2026-09-13T18:34:39.132149Z",
+          "toolName": "board_read",
+          "type": "tool_execution_end"
+        },
+        {
+          "id": "board_read",
+          "observed_at": "2026-09-13T18:34:39.132914Z",
+          "toolName": "board_read",
+          "type": "tool_execution_start"
+        },
+        {
+          "id": "board_read",
+          "observed_at": "2026-09-13T18:34:39.132956Z",
+          "toolName": "board_read",
+          "type": "tool_execution_end"
+        },
+        {
+          "id": "board_read",
+          "observed_at": "2026-09-13T18:34:39.133686Z",
+          "toolName": "board_read",
+          "type": "tool_execution_start"
+        },
+        {
+          "id": "board_read",
+          "observed_at": "2026-09-13T18:34:39.133734Z",
+          "toolName": "board_read",
+          "type": "tool_execution_end"
+        },
+        {
+          "id": "task_submit",
+          "observed_at": "2026-09-13T18:34:39.148102Z",
+          "toolName": "task_submit",
+          "type": "tool_execution_start"
+        },
+        {
+          "id": "task_submit",
+          "observed_at": "2026-09-13T18:34:39.148160Z",
+          "toolName": "task_submit",
+          "type": "tool_execution_end"
+        },
+        {
+          "message": {
+            "content": [
+              {
+                "text": "The ORCHID-731 configuration revision changed CACHE_MODE from local to shared, causing the cache-related outage.",
+                "type": "text"
+              }
+            ],
+            "role": "assistant",
+            "stopReason": "stop",
+            "usage": {
+              "totalTokens": 10
+            }
+          },
+          "observed_at": "2026-09-13T18:34:39.150858Z",
+          "type": "message_end"
+        }
+      ],
+      "exit_code": 0,
+      "failure_reason": null,
+      "final_response": "The ORCHID-731 configuration revision changed CACHE_MODE from local to shared, causing the cache-related outage.",
+      "identity": {
+        "agent_id": "agent-1",
+        "capability_profile": "task-diagnostic-v1",
+        "condition": "C2",
+        "credential_id": "1e805471845a7dd31a4eb80f7b725cf08715777e7351202b6904aa8eb6e491e9",
+        "run_id": "s0001-C2",
+        "seed": 1,
+        "task_id": "task-1"
+      },
+      "persistence_failure": null,
+      "provider_started_at": "2026-09-13T18:34:39.064572Z",
+      "started_at": "2026-09-13T18:34:39.041557Z",
+      "status": "completed",
+      "tokens_used": 10,
+      "tool_calls_used": 4,
+      "workspace": "/home/goya/storage/apart-incident-hackathon-workspace/runs/artifact-index-proof/s0001-C2/agents/agent-1"
+    },
+    {
+      "artifact_dir": "/home/goya/storage/apart-incident-hackathon-workspace/runs/artifact-index-proof/s0001-C2/agents/agent-2/artifacts",
+      "command": [
+        "/usr/bin/python3",
+        "/home/goya/storage/apart-incident-hackathon-workspace/tests/fixtures/controlled_fake_agent.py",
+        "--no-builtin-tools",
+        "--no-skills",
+        "--no-extensions",
+        "--no-prompt-templates",
+        "--no-themes",
+        "--no-context-files",
+        "--no-session",
+        "--mode",
+        "json",
+        "--model",
+        "fixture/controlled-agent",
+        "--thinking",
+        "medium",
+        "--extension",
+        "/home/goya/storage/apart-incident-hackathon-workspace/pi-extension/incident-tools.ts"
+      ],
+      "duration_seconds": 0.140272,
+      "ended_at": "2026-09-13T18:34:39.181924Z",
+      "events": [
+        {
+          "id": "task_read",
+          "observed_at": "2026-09-13T18:34:39.073889Z",
+          "toolName": "task_read",
+          "type": "tool_execution_start"
+        },
+        {
+          "id": "task_read",
+          "observed_at": "2026-09-13T18:34:39.074389Z",
+          "toolName": "task_read",
+          "type": "tool_execution_end"
+        },
+        {
+          "id": "task_query",
+          "observed_at": "2026-09-13T18:34:39.074922Z",
+          "toolName": "task_query",
+          "type": "tool_execution_start"
+        },
+        {
+          "id": "task_query",
+          "observed_at": "2026-09-13T18:34:39.074943Z",
+          "toolName": "task_query",
+          "type": "tool_execution_end"
+        },
+        {
+          "id": "board_append",
+          "observed_at": "2026-09-13T18:34:39.103463Z",
+          "toolName": "board_append",
+          "type": "tool_execution_start"
+        },
+        {
+          "id": "board_append",
+          "observed_at": "2026-09-13T18:34:39.103499Z",
+          "toolName": "board_append",
+          "type": "tool_execution_end"
+        },
+        {
+          "id": "board_read",
+          "observed_at": "2026-09-13T18:34:39.153554Z",
+          "toolName": "board_read",
+          "type": "tool_execution_start"
+        },
+        {
+          "id": "board_read",
+          "observed_at": "2026-09-13T18:34:39.154372Z",
+          "toolName": "board_read",
+          "type": "tool_execution_end"
+        },
+        {
+          "id": "task_submit",
+          "observed_at": "2026-09-13T18:34:39.166122Z",
+          "toolName": "task_submit",
+          "type": "tool_execution_start"
+        },
+        {
+          "id": "task_submit",
+          "observed_at": "2026-09-13T18:34:39.166173Z",
+          "toolName": "task_submit",
+          "type": "tool_execution_end"
+        },
+        {
+          "message": {
+            "content": [
+              {
+                "text": "The ORCHID-731 configuration revision changed CACHE_MODE from local to shared, causing the cache-related outage.",
+                "type": "text"
+              }
+            ],
+            "role": "assistant",
+            "stopReason": "stop",
+            "usage": {
+              "totalTokens": 10
+            }
+          },
+          "observed_at": "2026-09-13T18:34:39.168886Z",
+          "type": "message_end"
+        }
+      ],
+      "exit_code": 0,
+      "failure_reason": null,
+      "final_response": "The ORCHID-731 configuration revision changed CACHE_MODE from local to shared, causing the cache-related outage.",
+      "identity": {
+        "agent_id": "agent-2",
+        "capability_profile": "task-diagnostic-v1",
+        "condition": "C2",
+        "credential_id": "82af3c6928596fae9d811a3b6647f0cac35763d05084bffec3388bf9585d336a",
+        "run_id": "s0001-C2",
+        "seed": 1,
+        "task_id": "task-1"
+      },
+      "persistence_failure": null,
+      "provider_started_at": "2026-09-13T18:34:39.058147Z",
+      "started_at": "2026-09-13T18:34:39.041681Z",
+      "status": "completed",
+      "tokens_used": 10,
+      "tool_calls_used": 5,
+      "workspace": "/home/goya/storage/apart-incident-hackathon-workspace/runs/artifact-index-proof/s0001-C2/agents/agent-2"
+    },
+    {
+      "artifact_dir": "/home/goya/storage/apart-incident-hackathon-workspace/runs/artifact-index-proof/s0001-C2/agents/agent-3/artifacts",
+      "command": [
+        "/usr/bin/python3",
+        "/home/goya/storage/apart-incident-hackathon-workspace/tests/fixtures/controlled_fake_agent.py",
+        "--no-builtin-tools",
+        "--no-skills",
+        "--no-extensions",
+        "--no-prompt-templates",
+        "--no-themes",
+        "--no-context-files",
+        "--no-session",
+        "--mode",
+        "json",
+        "--model",
+        "fixture/controlled-agent",
+        "--thinking",
+        "medium",
+        "--extension",
+        "/home/goya/storage/apart-incident-hackathon-workspace/pi-extension/incident-tools.ts"
+      ],
+      "duration_seconds": 0.123735,
+      "ended_at": "2026-09-13T18:34:39.165589Z",
+      "events": [
+        {
+          "id": "task_read",
+          "observed_at": "2026-09-13T18:34:39.080449Z",
+          "toolName": "task_read",
+          "type": "tool_execution_start"
+        },
+        {
+          "id": "task_read",
+          "observed_at": "2026-09-13T18:34:39.081367Z",
+          "toolName": "task_read",
+          "type": "tool_execution_end"
+        },
+        {
+          "id": "task_query",
+          "observed_at": "2026-09-13T18:34:39.081696Z",
+          "toolName": "task_query",
+          "type": "tool_execution_start"
+        },
+        {
+          "id": "task_query",
+          "observed_at": "2026-09-13T18:34:39.081719Z",
+          "toolName": "task_query",
+          "type": "tool_execution_end"
+        },
+        {
+          "id": "board_read",
+          "observed_at": "2026-09-13T18:34:39.131889Z",
+          "toolName": "board_read",
+          "type": "tool_execution_start"
+        },
+        {
+          "id": "board_read",
+          "observed_at": "2026-09-13T18:34:39.132754Z",
+          "toolName": "board_read",
+          "type": "tool_execution_end"
+        },
+        {
+          "id": "board_read",
+          "observed_at": "2026-09-13T18:34:39.133538Z",
+          "toolName": "board_read",
+          "type": "tool_execution_start"
+        },
+        {
+          "id": "board_read",
+          "observed_at": "2026-09-13T18:34:39.133581Z",
+          "toolName": "board_read",
+          "type": "tool_execution_end"
+        },
+        {
+          "id": "board_read",
+          "observed_at": "2026-09-13T18:34:39.134506Z",
+          "toolName": "board_read",
+          "type": "tool_execution_start"
+        },
+        {
+          "id": "board_read",
+          "observed_at": "2026-09-13T18:34:39.134548Z",
+          "toolName": "board_read",
+          "type": "tool_execution_end"
+        },
+        {
+          "id": "task_submit",
+          "observed_at": "2026-09-13T18:34:39.154217Z",
+          "toolName": "task_submit",
+          "type": "tool_execution_start"
+        },
+        {
+          "id": "task_submit",
+          "observed_at": "2026-09-13T18:34:39.154316Z",
+          "toolName": "task_submit",
+          "type": "tool_execution_end"
+        },
+        {
+          "message": {
+            "content": [
+              {
+                "text": "The ORCHID-731 configuration revision changed CACHE_MODE from local to shared, causing the cache-related outage.",
+                "type": "text"
+              }
+            ],
+            "role": "assistant",
+            "stopReason": "stop",
+            "usage": {
+              "totalTokens": 10
+            }
+          },
+          "observed_at": "2026-09-13T18:34:39.157043Z",
+          "type": "message_end"
+        }
+      ],
+      "exit_code": 0,
+      "failure_reason": null,
+      "final_response": "The ORCHID-731 configuration revision changed CACHE_MODE from local to shared, causing the cache-related outage.",
+      "identity": {
+        "agent_id": "agent-3",
+        "capability_profile": "task-diagnostic-v1",
+        "condition": "C2",
+        "credential_id": "c0571fadaf18d750c850149215348a73beb4f8c4d8bce38b1d9c6914ad0e8874",
+        "run_id": "s0001-C2",
+        "seed": 1,
+        "task_id": "task-1"
+      },
+      "persistence_failure": null,
+      "provider_started_at": "2026-09-13T18:34:39.064718Z",
+      "started_at": "2026-09-13T18:34:39.041896Z",
+      "status": "completed",
+      "tokens_used": 10,
+      "tool_calls_used": 4,
+      "workspace": "/home/goya/storage/apart-incident-hackathon-workspace/runs/artifact-index-proof/s0001-C2/agents/agent-3"
+    }
+  ],
+  "schema_version": 1
+}

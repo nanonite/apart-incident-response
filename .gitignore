@@ -9,3 +9,6 @@ exports/
 .openai/
 APART_MODEL_TOKEN
 APART_MODEL_TOKEN*
+qwen3-cache/
+ollama-models/
+experiments/

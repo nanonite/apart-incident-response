@@ -50,7 +50,8 @@ function render(){
  for(const e of generations){if(typeof e.payload.input_tokens==='number'||typeof e.payload.output_tokens==='number'){hasTokens=true;tokenCount+=(e.payload.input_tokens||0)+(e.payload.output_tokens||0);}}
  $('stat-tokens').textContent=hasTokens?format(tokenCount):'—';
  $('stat-cost').textContent=source==='local_model'?'Local inference · API cost $0':source==='fixture'?'Fixture data · no inference':'Cost not verified';
- const active=(d.batches||[]).some(x=>x.status==='running');$('start').disabled=!ui.live||active;$('stop').hidden=!d.can_stop;
+ const active=(d.batches||[]).some(x=>x.status==='running');const staleServer=ui.live&&d.server?.api_version!=='response-panel-v2';$('start').disabled=!ui.live||active||staleServer;$('stop').hidden=!d.can_stop;
+ if(staleServer){$('connection').textContent='Panel restart required';notice('This panel server is older than the interface. Stop it with Ctrl+C, restart the panel from this checkout, and reload this page. Recorded data remains available.');}
  const banner=$('active-run-banner');if(banner){if(active){banner.textContent=`ACTIVE RUN · ${cfg().study_id||'response dynamics'} · ${cfg().steps||5} minutes · ${cfg().repeats||1} repeat(s) · engagement: ${cfg().engagement_mode||'neutral'} · every update is logged.`;banner.className='active-run-banner active';}else{banner.textContent=`${b?.status==='completed'?'LAST RUN COMPLETE':'No active run'} · choose a study preset, then inspect minutes, peer visibility, and audit events here.`;banner.className='active-run-banner';}}
  $('import-file').disabled=!ui.live;
  if(!$('task-select').dataset.filled){for(const t of d.tasks||[]){const o=el('option','',t.title);o.value=t.id;$('task-select').append(o);}$('task-select').dataset.filled='true';}

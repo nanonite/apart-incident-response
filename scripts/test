@@ -2,4 +2,4 @@
 set -euo pipefail
 workspace_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$workspace_root"
-exec env UV_CACHE_DIR="$workspace_root/.uv-cache" uv run env PYTHONPATH=src python -m unittest discover -s tests -v
+exec docker build --target test --output type=cacheonly .

@@ -1,0 +1,18 @@
+{
+  "model_id": "Qwen/Qwen3-8B",
+  "revision": "47719a242beab8f9aecc40ce3928b034dd5dd559",
+  "tokenizer_revision": "47719a242beab8f9aecc40ce3928b034dd5dd559",
+  "ollama_model": "qwen3:8b",
+  "artifact_root": "runs/qwen3-8b",
+  "quantization": "4bit-bnb-on-cuda",
+  "runtime": {
+    "python": "3.12",
+    "torch": "2.10.0",
+    "transformers": "5.4.0",
+    "unsloth": "2026.3.18",
+    "safetensors": "0.8.0",
+    "accelerate": "1.15.0",
+    "bitsandbytes": "0.50.2",
+    "peft": "0.20.0"
+  }
+}

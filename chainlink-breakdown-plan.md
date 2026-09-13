@@ -2,6 +2,8 @@
 
 ## Protocol replacement
 
+Upstream runtime, Docker, Qwen3, and historical experiment tooling are retained during integration. Their board-read C2 condition is a legacy protocol and is not the scheduled-unlock C2 used by `response_dynamics_v1`. Do not pool their artifacts or enable their network/tool bridge in panel-controlled runs. The panel remains exactly two agents with §8 restrictions.
+
 [mvp-plan.md](mvp-plan.md) replaces the old three-agent protocol. Section 8 remains intact. C2 is scheduled unlock revealing earlier permitted peer updates plus future updates, not permanent own-entry reads. Use response_dynamics_v1 provenance to prevent historical label collisions.
 
 The existing Chainlink implementation tickets were drafted against the old protocol. Their historical wording is superseded; update acceptance criteria before executing them. Do not mark unimplemented features complete. Task/provider decisions and teammate ownership are still pending.

@@ -1,0 +1,61 @@
+\section{Entropy Framework}
+
+Introduced by Claude Shannon in 1948 \parencite{shannon1948mathematical}, entropy has become one of the cornerstones of information theory. It sets the fundamental limit of lossless data compression, which is attained in practice by source codes such as Huffman coding \parencite{shannon_encoding}; it serves as a summary statistic for detecting anomalies in network traffic, including distributed denial-of-service (DDoS) attacks \parencite{shannon_ddos}; and, more recently, it has become a key tool for estimating uncertainty and detecting hallucinations in LLMs \parencite{kuhn2023semantic, shannon_hallucination}. For a discrete random variable $X$ taking values $x_1, \ldots, x_n$, the entropy is defined as
+\begin{equation}
+  H(X) = - \sum_{i=1}^{n} p(x_i) \log_2 p(x_i),
+  \label{eq:shanon_entropy}
+\end{equation}
+where $p(x_i)$ is the probability of the event $X = x_i$, and the convention $0 \log_2 0 = 0$ is adopted. With the logarithm in base $2$, entropy is measured in bits. $H(X)$ quantifies the expected uncertainty (or surprise) associated with the outcome of $X$: it is zero when the outcome is certain, and it reaches its maximum value, $\log_2 n$, when all outcomes are equally likely \parencite{cover2006elements}.
+
+\subsection{Entropy of a single agent}
+
+For an LLM-based agent, the natural probability distribution is the model's distribution over the next token. At each generation step $t$, the model produces a vector of logits $z_t \in \mathbb{R}^{|V|}$ over the vocabulary $V$. Logits are unnormalised scores, not probabilities; the next-token distribution is obtained through the softmax function,
+\begin{equation}
+  p(v \mid x_{<t}) = \frac{\exp\left(z_{t,v} / T\right)}{\sum_{u \in V} \exp\left(z_{t,u} / T\right)},
+  \label{eq:softmax}
+\end{equation}
+where $x_{<t}$ denotes the context (prompt and previously generated tokens) and $T$ is the sampling temperature. Consequently, any entropy computed from this distribution depends on the chosen temperature. Two families of entropy measures can be built on top of these distributions:
+
+\begin{enumerate}
+  \item \textbf{Predictive entropy.} The token-level entropy
+  \begin{equation}
+    H_t = - \sum_{v \in V} p(v \mid x_{<t}) \log_2 p(v \mid x_{<t})
+    \label{eq:token_entropy}
+  \end{equation}
+  measures the model's uncertainty about the next token. At the sequence level, the predictive entropy of a response $s$ given an input $x$ is $H(S \mid x) = -\mathbb{E}_{s \sim p(\cdot \mid x)}\left[\log_2 p(s \mid x)\right]$, which is usually estimated by Monte Carlo sampling or approximated by aggregating the token-level entropies along a generated sequence \parencite{malinin2021uncertainty}. Because it operates directly on token probabilities, predictive entropy mixes semantic uncertainty with lexical and syntactic uncertainty: two phrasings of the same content count as different outcomes.
+  \item \textbf{Semantic entropy.} Semantic entropy was introduced to separate uncertainty about meaning from uncertainty about form, a separation that is crucial for applications such as hallucination detection \parencite{kuhn2023semantic, shannon_hallucination}. Instead of operating on individual tokens, it samples several complete responses to the same input, groups them into clusters of semantically equivalent answers (for example, using bidirectional entailment judged by a natural language inference model), and computes the entropy of the distribution over these meaning clusters. As a result, variation in wording that does not change the meaning of a response does not increase the entropy.
+\end{enumerate}
+
+In this work we adopt predictive entropy. Our working hypothesis is that, when two agents start to interact, the incorporation of content produced by another agent into an agent's context (with a different style, vocabulary and information) changes its next-token distributions, and that part of this signal lies precisely in the lexical and syntactic variation that semantic entropy is designed to discard. This choice has two caveats that must be controlled for in the experiments. First, predictive entropy is also sensitive to factors unrelated to communication, such as response length, prompt formatting and temperature, which can act as confounders. Second, many commercial APIs expose only the log-probabilities of the top-$k$ tokens rather than the full distribution, so Equation~\eqref{eq:token_entropy} can only be approximated, for instance by renormalising over the returned tokens or by bounding the contribution of the remaining probability mass.
+
+\subsection{Entropy of the multi-agent system}
+
+The quantities above are defined per agent and are therefore insufficient to describe the MAS as a whole. Let $X_1, \ldots, X_n$ be random variables describing the outputs of the $n$ agents in the system (for instance, their next-token or response distributions at a given time step $t$). The joint entropy of the system decomposes as
+\begin{equation}
+  H(X_1, X_2, \ldots, X_n) = \sum_{i=1}^{n} H(X_i) - TC(X_1; X_2; \ldots; X_n),
+  \label{eq:mas_entropy}
+\end{equation}
+where $TC(X_1; X_2; \ldots; X_n)$ is the total correlation \parencite{watanabe1960}, also known as multi-information. This expression is in fact the definition of total correlation, which quantifies the redundancy, or statistical dependence, shared among the agents. It satisfies $TC \geq 0$, and for $n = 2$ it reduces to the mutual information $I(X_1; X_2)$ \parencite{cover2006elements}. Intuitively, if the per-agent entropies were simply added, the information shared among interacting agents would be counted more than once, and the sum would overestimate the true uncertainty of the system; the total correlation term corrects for this overcounting. When the entropies are tracked over time, all terms in Equation~\eqref{eq:mas_entropy} are evaluated at the same step $t$.
+
+This decomposition contains one of the key details for using entropy to fingerprint the behaviour of a MAS. Two regimes can be distinguished:
+
+\begin{enumerate}
+  \item \textbf{Independent agents.} $TC = 0$ if and only if the variables $X_1, \ldots, X_n$ are mutually independent. In that case the system entropy equals the sum of the individual entropies, $H(X_1, \ldots, X_n) = \sum_i H(X_i)$.
+  \item \textbf{Coupled agents.} When agents exchange information, directly or through a shared resource, their outputs become statistically dependent, $TC > 0$, and the joint entropy falls below the sum of the individual entropies. This is the regime observed in the OpenAI--Hugging Face incident, where agents in separate evaluation runs, designed to be independent, coordinated through an improvised message board hosted on shared infrastructure \parencite{openai2026incident}.
+\end{enumerate}
+
+The gap $\sum_i H(X_i) - H(X_1, \ldots, X_n)$ is therefore a natural candidate signal for detecting communication. Note, however, that dependence does not imply communication: agents that share the same underlying model, system prompt or task can exhibit correlated outputs without exchanging any information, so the total correlation of a non-communicating baseline must be measured and subtracted. Moreover, estimating the joint entropy is considerably harder than estimating the marginal entropies, because the joint outcome space grows exponentially with the number of agents and the vocabulary size, and plug-in estimators are biased with limited samples. For completeness, in this project we compute both the sum of the individual entropies (the independence assumption) and an estimate of the $TC$ term. We restrict our operational analysis to a two-agent system ($n = 2$), where the total correlation $TC(X_1; X_2)$ reduces directly to the pairwise mutual information $I(X_1; X_2)$ \parencite{cover2006elements}.
+
+Specifically, for $n = 2$ agents, Equation~\eqref{eq:mas_entropy} becomes
+\begin{equation}
+  H(X_1, X_2) = H(X_1) + H(X_2) - I(X_1; X_2),
+  \label{eq:gibbs_shannon_two_agents}
+\end{equation}
+where each individual entropy $H(X_i) = -\sum_{k=1}^{20} p_i(x_k) \log_2 p_i(x_k)$ quantifies the local decision uncertainty of agent $i$ over its top-20 next-token distribution, renormalised with the softmax of Equation~\eqref{eq:softmax}. The interaction term $I(X_1; X_2)$ is the mutual information that couples the two agents,
+\begin{equation}
+  I(X_1; X_2) = \sum_{x_1 \in \mathcal{X}_1} \sum_{x_2 \in \mathcal{X}_2} p(x_1, x_2) \log_2 \left( \frac{p(x_1, x_2)}{p(x_1)\, p(x_2)} \right)
+  \label{eq:mutual_information}
+\end{equation}
+which is the Kullback--Leibler divergence $D_{\mathrm{KL}}$ between the joint distribution $p(x_1, x_2)$ and the product of the marginals $p(x_1)\,p(x_2)$ \parencite{cover2006elements}.
+
+Under this framework, if the two agents operate independently, $p(x_1, x_2) = p(x_1)\,p(x_2)$, so $I(X_1; X_2) = 0$ and the system entropy is purely additive, $H(X_1, X_2) = H(X_1) + H(X_2)$. Conversely, when the agents interact, align or exchange information, $p(x_1, x_2) \neq p(x_1)\,p(x_2)$ and the mutual information becomes positive, $I(X_1; X_2) > 0$. This term subtracts the uncertainty shared by the pair, so the joint entropy $H(X_1, X_2)$ falls below the sum of the individual entropies, reflecting the emerging order and statistical coupling of the two-agent collective \parencite{cover2006elements, watanabe1960}.

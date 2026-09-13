@@ -3,6 +3,7 @@ import argparse
 import io
 import json
 import mimetypes
+import os
 import secrets
 import threading
 import uuid
@@ -18,6 +19,7 @@ from .importing import import_jsonl
 from .tasks import public_tasks
 
 ROOT = Path(__file__).resolve().parents[2]
+PANEL_API_VERSION = 'response-panel-v2'
 
 
 def state(store, selected=None):
@@ -45,7 +47,9 @@ def state(store, selected=None):
         item['accuracy'] = sum(item['scores']) / len(item['scores']) if item['scores'] else None
         item['mean_entropy_bits'] = sum(item['entropy_bits']) / len(item['entropy_bits']) if item['entropy_bits'] else None
         del item['scores']; del item['entropy_bits']
-    return {'schema_version':'1.1', 'mode':'live', 'tasks':public_tasks(), 'batches':list(reversed(batches)),
+    return {'schema_version':'1.1', 'mode':'live',
+            'server': {'api_version': PANEL_API_VERSION, 'pid': os.getpid(), 'source_root': str(ROOT)},
+            'tasks':public_tasks(), 'batches':list(reversed(batches)),
             'batch':batch, 'runs':runs, 'events':events, 'metrics':metrics,
             'difficulty_metrics': sorted(by_difficulty.values(), key=lambda x: (x['difficulty'] is None, x['difficulty'])),
             'audit':research_actions(all_events)}

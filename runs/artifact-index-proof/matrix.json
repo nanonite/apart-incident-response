@@ -1,0 +1,394 @@
+{
+  "experimental_data": false,
+  "reason": "deterministic fake provider used for lifecycle, access, telemetry, and pairing checks",
+  "run_class": "harness_check",
+  "schema_version": 1,
+  "triplets": [
+    {
+      "artifacts": {
+        "conditions": {
+          "C0": {
+            "agents": {
+              "agent-1": "s0001-C0/agents/agent-1/artifacts/timeline.json",
+              "agent-2": "s0001-C0/agents/agent-2/artifacts/timeline.json",
+              "agent-3": "s0001-C0/agents/agent-3/artifacts/timeline.json"
+            },
+            "index": "s0001-C0/index.json",
+            "run_id": "s0001-C0"
+          },
+          "C1": {
+            "agents": {
+              "agent-1": "s0001-C1/agents/agent-1/artifacts/timeline.json",
+              "agent-2": "s0001-C1/agents/agent-2/artifacts/timeline.json",
+              "agent-3": "s0001-C1/agents/agent-3/artifacts/timeline.json"
+            },
+            "index": "s0001-C1/index.json",
+            "run_id": "s0001-C1"
+          },
+          "C2": {
+            "agents": {
+              "agent-1": "s0001-C2/agents/agent-1/artifacts/timeline.json",
+              "agent-2": "s0001-C2/agents/agent-2/artifacts/timeline.json",
+              "agent-3": "s0001-C2/agents/agent-3/artifacts/timeline.json"
+            },
+            "index": "s0001-C2/index.json",
+            "run_id": "s0001-C2"
+          }
+        },
+        "triplet": "s0001.json"
+      },
+      "conditions": [
+        "C0",
+        "C1",
+        "C2"
+      ],
+      "metrics": {
+        "C0": {
+          "U": 0.0,
+          "agent_count": 3,
+          "aggregate_token_budget": 120,
+          "board_bytes_read": 0,
+          "board_bytes_written": 0,
+          "board_reads_R": 0,
+          "board_writes_W": 0,
+          "cadence_read_attempts": 0,
+          "completed_agents": 3,
+          "cross_agent_messages_X": 0,
+          "evidence_to_message_opportunities": 0,
+          "failures": [],
+          "mean_uptake_latency_seconds": null,
+          "message_read_ratio_M": 0.0,
+          "message_to_answer_opportunities": 0,
+          "pilot_claim_scope": "descriptive; no causal or inferential claim from this metric alone",
+          "private_token_owners": {
+            "ORCHID-731": [
+              "agent-2"
+            ]
+          },
+          "scheduled_board_read_opportunities": 0,
+          "schema_version": 1,
+          "submitted_agents": 3,
+          "success_per_1000_tokens": 33.333333333333336,
+          "task_success": true,
+          "task_success_rate": 1.0,
+          "total_tokens": 30,
+          "total_tool_calls": 9,
+          "total_turns": 3,
+          "transformation_events": [],
+          "transformation_opportunities": 0,
+          "transformation_rate": 0.0,
+          "uptake": [],
+          "uptake_defined": false,
+          "uptake_definition": "recipient use after a prior board read of a seeded-token message from a declared private owner; every recipient with private exposure is excluded",
+          "uptake_events": 0,
+          "uptake_latency_seconds": [],
+          "uptake_opportunities": 0,
+          "uptake_outcomes": [],
+          "uptake_provenance_error": null,
+          "uptake_provenance_valid": true,
+          "uptake_recipients": 0,
+          "validator_outcomes": [
+            {
+              "accepted": true,
+              "agent_id": "agent-1",
+              "validator": {
+                "accepted": true,
+                "missing_terms": [],
+                "validator": "validate_answer"
+              }
+            },
+            {
+              "accepted": true,
+              "agent_id": "agent-2",
+              "validator": {
+                "accepted": true,
+                "missing_terms": [],
+                "validator": "validate_answer"
+              }
+            },
+            {
+              "accepted": true,
+              "agent_id": "agent-3",
+              "validator": {
+                "accepted": true,
+                "missing_terms": [],
+                "validator": "validate_answer"
+              }
+            }
+          ],
+          "wall_clock_seconds": 0.090633
+        },
+        "C1": {
+          "U": 1.0,
+          "agent_count": 3,
+          "aggregate_token_budget": 120,
+          "board_bytes_read": 301,
+          "board_bytes_written": 43,
+          "board_reads_R": 7,
+          "board_writes_W": 1,
+          "cadence_read_attempts": 7,
+          "completed_agents": 3,
+          "coordination_overhead": {
+            "extra_board_reads_vs_baseline": 7,
+            "extra_board_writes_vs_baseline": 1,
+            "extra_tokens_vs_baseline": 0,
+            "extra_tool_calls_vs_baseline": 4
+          },
+          "cross_agent_messages_X": 6,
+          "evidence_to_message_opportunities": 1,
+          "failures": [],
+          "mean_uptake_latency_seconds": 0.010665000000000001,
+          "message_read_ratio_M": 0.8571428571428571,
+          "message_to_answer_opportunities": 6,
+          "pilot_claim_scope": "descriptive; no causal or inferential claim from this metric alone",
+          "private_token_owners": {
+            "ORCHID-731": [
+              "agent-2"
+            ]
+          },
+          "scheduled_board_read_opportunities": 7,
+          "schema_version": 1,
+          "submitted_agents": 3,
+          "success_per_1000_tokens": 33.333333333333336,
+          "task_success": true,
+          "task_success_rate": 1.0,
+          "total_tokens": 30,
+          "total_tool_calls": 13,
+          "total_turns": 3,
+          "transformation_events": [
+            {
+              "message_id": 1,
+              "source_agent": "agent-2",
+              "stage": "private_evidence_to_board_message",
+              "timestamp": "2026-09-13T18:34:38.704978Z",
+              "transformation_type": "verbatim_seeded_token"
+            },
+            {
+              "message_id": 1,
+              "recipient_agent": "agent-3",
+              "source_agent": "agent-2",
+              "stage": "board_message_to_later_recipient_event",
+              "timestamp": "2026-09-13T18:34:38.741331Z",
+              "transformation_type": "verbatim_seeded_token"
+            },
+            {
+              "message_id": 1,
+              "recipient_agent": "agent-1",
+              "source_agent": "agent-2",
+              "stage": "board_message_to_later_recipient_event",
+              "timestamp": "2026-09-13T18:34:38.747221Z",
+              "transformation_type": "verbatim_seeded_token"
+            }
+          ],
+          "transformation_opportunities": 7,
+          "transformation_rate": 0.42857142857142855,
+          "uptake": [
+            {
+              "board_read_timestamp": "2026-09-13T18:34:38.730370Z",
+              "message_body_sha256": "24a0731876b3d92f927bb6217889376502d968e3aedac85b9d625875a8786fef",
+              "message_id": 1,
+              "private_token_owner": "agent-2",
+              "provenance": "private-owner-board-sequence-to-later-recipient-event",
+              "recipient_agent": "agent-3",
+              "recipient_private_token_known": false,
+              "seeded_token": "ORCHID-731",
+              "source_agent": "agent-2",
+              "uptake_stage": "task_submit",
+              "uptake_timestamp": "2026-09-13T18:34:38.741331Z"
+            },
+            {
+              "board_read_timestamp": "2026-09-13T18:34:38.736852Z",
+              "message_body_sha256": "24a0731876b3d92f927bb6217889376502d968e3aedac85b9d625875a8786fef",
+              "message_id": 1,
+              "private_token_owner": "agent-2",
+              "provenance": "private-owner-board-sequence-to-later-recipient-event",
+              "recipient_agent": "agent-1",
+              "recipient_private_token_known": false,
+              "seeded_token": "ORCHID-731",
+              "source_agent": "agent-2",
+              "uptake_stage": "task_submit",
+              "uptake_timestamp": "2026-09-13T18:34:38.747221Z"
+            }
+          ],
+          "uptake_defined": true,
+          "uptake_definition": "recipient use after a prior board read of a seeded-token message from a declared private owner; every recipient with private exposure is excluded",
+          "uptake_events": 2,
+          "uptake_latency_seconds": [
+            0.010961,
+            0.010369
+          ],
+          "uptake_opportunities": 2,
+          "uptake_outcomes": [
+            {
+              "behavior_change_observation": "later_recipient_event_present",
+              "board_read_timestamp": "2026-09-13T18:34:38.730370Z",
+              "cited_in_submission_evidence": false,
+              "diagnosis_contains_seeded_token": true,
+              "message_body_sha256": "24a0731876b3d92f927bb6217889376502d968e3aedac85b9d625875a8786fef",
+              "message_id": 1,
+              "preceded_final_response": true,
+              "preceded_submission": true,
+              "preceded_tool_choice": true,
+              "private_token_owner": "agent-2",
+              "provenance": "private-owner-board-sequence-to-later-recipient-event",
+              "recipient_agent": "agent-3",
+              "recipient_private_token_known": false,
+              "seeded_token": "ORCHID-731",
+              "source_agent": "agent-2",
+              "uptake_stage": "task_submit",
+              "uptake_timestamp": "2026-09-13T18:34:38.741331Z",
+              "utility_class": "useful_or_correct"
+            },
+            {
+              "behavior_change_observation": "later_recipient_event_present",
+              "board_read_timestamp": "2026-09-13T18:34:38.736852Z",
+              "cited_in_submission_evidence": false,
+              "diagnosis_contains_seeded_token": true,
+              "message_body_sha256": "24a0731876b3d92f927bb6217889376502d968e3aedac85b9d625875a8786fef",
+              "message_id": 1,
+              "preceded_final_response": true,
+              "preceded_submission": true,
+              "preceded_tool_choice": true,
+              "private_token_owner": "agent-2",
+              "provenance": "private-owner-board-sequence-to-later-recipient-event",
+              "recipient_agent": "agent-1",
+              "recipient_private_token_known": false,
+              "seeded_token": "ORCHID-731",
+              "source_agent": "agent-2",
+              "uptake_stage": "task_submit",
+              "uptake_timestamp": "2026-09-13T18:34:38.747221Z",
+              "utility_class": "useful_or_correct"
+            }
+          ],
+          "uptake_provenance_error": null,
+          "uptake_provenance_valid": true,
+          "uptake_recipients": 2,
+          "validator_outcomes": [
+            {
+              "accepted": true,
+              "agent_id": "agent-1",
+              "validator": {
+                "accepted": true,
+                "missing_terms": [],
+                "validator": "validate_answer"
+              }
+            },
+            {
+              "accepted": true,
+              "agent_id": "agent-2",
+              "validator": {
+                "accepted": true,
+                "missing_terms": [],
+                "validator": "validate_answer"
+              }
+            },
+            {
+              "accepted": true,
+              "agent_id": "agent-3",
+              "validator": {
+                "accepted": true,
+                "missing_terms": [],
+                "validator": "validate_answer"
+              }
+            }
+          ],
+          "wall_clock_seconds": 0.135077
+        },
+        "C2": {
+          "U": 0.0,
+          "agent_count": 3,
+          "aggregate_token_budget": 120,
+          "board_bytes_read": 43,
+          "board_bytes_written": 43,
+          "board_reads_R": 7,
+          "board_writes_W": 1,
+          "cadence_read_attempts": 7,
+          "completed_agents": 3,
+          "coordination_overhead": {
+            "extra_board_reads_vs_baseline": 7,
+            "extra_board_writes_vs_baseline": 1,
+            "extra_tokens_vs_baseline": 0,
+            "extra_tool_calls_vs_baseline": 4
+          },
+          "cross_agent_messages_X": 0,
+          "evidence_to_message_opportunities": 1,
+          "failures": [],
+          "mean_uptake_latency_seconds": null,
+          "message_read_ratio_M": 0.0,
+          "message_to_answer_opportunities": 0,
+          "pilot_claim_scope": "descriptive; no causal or inferential claim from this metric alone",
+          "private_token_owners": {
+            "ORCHID-731": [
+              "agent-2"
+            ]
+          },
+          "scheduled_board_read_opportunities": 7,
+          "schema_version": 1,
+          "submitted_agents": 3,
+          "success_per_1000_tokens": 33.333333333333336,
+          "task_success": true,
+          "task_success_rate": 1.0,
+          "total_tokens": 30,
+          "total_tool_calls": 13,
+          "total_turns": 3,
+          "transformation_events": [
+            {
+              "message_id": 1,
+              "source_agent": "agent-2",
+              "stage": "private_evidence_to_board_message",
+              "timestamp": "2026-09-13T18:34:39.103241Z",
+              "transformation_type": "verbatim_seeded_token"
+            }
+          ],
+          "transformation_opportunities": 1,
+          "transformation_rate": 1.0,
+          "uptake": [],
+          "uptake_defined": false,
+          "uptake_definition": "recipient use after a prior board read of a seeded-token message from a declared private owner; every recipient with private exposure is excluded",
+          "uptake_events": 0,
+          "uptake_latency_seconds": [],
+          "uptake_opportunities": 0,
+          "uptake_outcomes": [],
+          "uptake_provenance_error": null,
+          "uptake_provenance_valid": true,
+          "uptake_recipients": 0,
+          "validator_outcomes": [
+            {
+              "accepted": true,
+              "agent_id": "agent-1",
+              "validator": {
+                "accepted": true,
+                "missing_terms": [],
+                "validator": "validate_answer"
+              }
+            },
+            {
+              "accepted": true,
+              "agent_id": "agent-2",
+              "validator": {
+                "accepted": true,
+                "missing_terms": [],
+                "validator": "validate_answer"
+              }
+            },
+            {
+              "accepted": true,
+              "agent_id": "agent-3",
+              "validator": {
+                "accepted": true,
+                "missing_terms": [],
+                "validator": "validate_answer"
+              }
+            }
+          ],
+          "wall_clock_seconds": 0.140272
+        }
+      },
+      "run_ids": [
+        "s0001-C0",
+        "s0001-C1",
+        "s0001-C2"
+      ]
+    }
+  ]
+}

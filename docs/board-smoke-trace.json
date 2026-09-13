@@ -1,0 +1,82 @@
+{
+  "c1": {
+    "agent_1_append": {
+      "arguments": {
+        "message": "Agent 1: ORCHID-731"
+      },
+      "operation": "board_append",
+      "response": {
+        "ok": true,
+        "result": {
+          "agent_id": "agent-1",
+          "message_body": "Agent 1: ORCHID-731",
+          "message_size": 19,
+          "run_id": "run-c1",
+          "sequence_id": 1,
+          "server_timestamp": "2026-09-12T00:00:00Z"
+        }
+      }
+    },
+    "agent_2_read": {
+      "arguments": {
+        "limit": 10
+      },
+      "operation": "board_read",
+      "response": {
+        "ok": true,
+        "result": {
+          "has_more": false,
+          "messages": [
+            {
+              "agent_id": "agent-1",
+              "message_body": "Agent 1: ORCHID-731",
+              "message_size": 19,
+              "run_id": "run-c1",
+              "sequence_id": 1,
+              "server_timestamp": "2026-09-12T00:00:00Z"
+            }
+          ],
+          "next_cursor": 1
+        }
+      }
+    },
+    "agent_2_saw_agent_1": true
+  },
+  "c2": {
+    "agent_1_append": {
+      "arguments": {
+        "message": "Agent 1: C2-private"
+      },
+      "operation": "board_append",
+      "response": {
+        "ok": true,
+        "result": {
+          "agent_id": "agent-1",
+          "message_body": "Agent 1: C2-private",
+          "message_size": 19,
+          "run_id": "run-c2",
+          "sequence_id": 2,
+          "server_timestamp": "2026-09-12T00:00:00Z"
+        }
+      }
+    },
+    "agent_2_read": {
+      "arguments": {
+        "limit": 10
+      },
+      "operation": "board_read",
+      "response": {
+        "ok": true,
+        "result": {
+          "has_more": false,
+          "messages": [],
+          "next_cursor": 0
+        }
+      }
+    },
+    "agent_2_saw_agent_1": false
+  },
+  "credential_free": true,
+  "trace_version": 1,
+  "transport": "fixture-fifo"
+}

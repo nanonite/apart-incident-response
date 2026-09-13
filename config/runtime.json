@@ -3,19 +3,27 @@
     "version": "0.85.1",
     "model": "openai-codex/gpt-5.6-luna",
     "root_env": "APART_PI_ROOT",
+    "auth_file_env": "APART_PI_AUTH_FILE",
+    "auth_store_env": "APART_PI_AUTH_STORE",
+    "api_key_file_env": "APART_OPENCODE_API_KEY_FILE",
+    "api_key_env": "OPENCODE_API_KEY",
+    "provider_user_agent": "apart-incident-response/1",
     "launch_command": ["bun", "run", "{pi_root}/packages/coding-agent/src/cli.ts"],
     "thinking_level": "xhigh"
   },
   "limits": {
     "agent_count": 3,
-    "per_agent_token_budget": 4000,
+    "per_agent_token_budget": 16000,
     "per_agent_tool_call_budget": 32,
-    "aggregate_token_budget": 12000,
+    "aggregate_token_budget": 48000,
     "aggregate_tool_call_budget": 96,
     "timeout_seconds": 300
   },
   "isolation": {
     "sandbox": "bubblewrap",
+    "model_network": true,
+    "model_hosts": ["chatgpt.com"],
+    "oauth_hosts": ["auth.openai.com"],
     "network": false,
     "shared_filesystem": false,
     "shell": false,
@@ -23,5 +31,8 @@
     "mcp": false,
     "subagents": false
   },
-  "conditions": ["C0", "C1", "C2"]
+  "conditions": ["C0", "C1", "C2"],
+  "prompts": {
+    "task-1": "Diagnose the incident described by the evidence assigned to you. Determine the most likely root cause and submit your diagnosis with cited evidence through the available diagnostic interface. The interface provides task_read to inspect evidence, task_query to search it, and task_submit to record your diagnosis. Return a concise final explanation after submitting."
+  }
 }

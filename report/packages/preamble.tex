@@ -1,0 +1,79 @@
+%::::::::::::::::::::::::::--preamble.tex--::::::::::::::::::::::::::::::::::::::%
+%  Document class and common packages for the AI Incident Response Sprint report.
+
+\documentclass[twoside,a4paper,twocolumn]{article}
+\usepackage{packages/sprint-report}
+
+%--Fonts and encoding--:::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+\usepackage[T1]{fontenc}
+\usepackage[scale=1.03]{inconsolata}
+\usepackage[british]{babel}
+\usepackage{csquotes}
+% textgreek requires an LGR font family that is not present in every TeX
+% distribution. Keep it available where supported without making the report
+% fail before \begin{document} elsewhere.
+\IfFileExists{LGRcmr.fd}{\usepackage{textgreek}}{}
+% upgreek is optional because it is not packaged by all TeX distributions.
+\IfFileExists{upgreek.sty}{\usepackage{upgreek}}{}
+
+%--Maths--::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{siunitx}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+%--Figures and tables--:::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+\usepackage{graphicx,float,epstopdf}
+\usepackage{subcaption}
+\usepackage{dblfloatfix,placeins}
+\usepackage{tabularx,multirow,longtable,booktabs}
+\usepackage[table,xcdraw]{xcolor}
+
+%--Layout--:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+\usepackage{calc,setspace,relsize}
+\usepackage[compact]{titlesec}
+\IfFileExists{balance.sty}{\usepackage{balance}}{}
+\usepackage{enumitem}
+\setlist{noitemsep}
+\setlist[itemize]{noitemsep,topsep=0pt,parsep=0pt,partopsep=0pt}
+
+%--Bibliography (biblatex-apa, biber backend)--:::::::::::::::::::::::::::::::::
+\usepackage[isbn=false,url=false,doi=false,eprint=false,maxcitenames=1,uniquelist=false,sorting=nyt,backend=biber,style=apa,texencoding=ascii]{biblatex}
+\AtEveryBibitem{% suppress month and day
+  \clearfield{month}
+  \clearfield{day}
+}
+\DeclareLanguageMapping{british}{british-apa}
+\setlength\bibhang{2em}
+% Remove 'n.d.' from misc entries without a year field
+\DeclareLabeldate[misc]{%
+	\field{year}
+}
+
+%--Hyperlinks and cross-references (load last)--:::::::::::::::::::::::::::::::
+\usepackage[
+    colorlinks,
+    linkcolor=blue!80!black,
+    citecolor=red!80!black,
+    urlcolor=blue!80!black,
+    bookmarks,
+    bookmarksopen,
+    bookmarksdepth=3,
+    pdfstartview={XYZ null null null}]{hyperref}
+\usepackage[nameinlink,noabbrev]{cleveref}
+\usepackage[all]{hypcap}
+
+%--Typography--:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+% Montserrat for bold text
+\let\oldtextbf\textbf
+\renewcommand{\textbf}[1]{{\sprintfont\oldtextbf{#1}}}
+
+% Section headers
+\titleformat{\section}{\sprintfont\large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\sprintfont\normalsize\bfseries}{\thesubsection}{1em}{}
+
+% Paragraph spacing
+\parindent 10pt
+\parskip 0pt
+
+%::::::::::::::::::::::::::--End of preamble.tex--:::::::::::::::::::::::::::::%
