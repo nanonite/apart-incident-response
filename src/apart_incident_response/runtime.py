@@ -1998,6 +1998,39 @@ class _ModelEgressProxy:
             pass
 
 
+def _system_prompt_addition(condition: Condition) -> str:
+    """Condition-scoped tool-usage guidance appended to Pi's system prompt.
+
+    This is a separate channel from the shared task prompt in
+    config/runtime.json, which must stay byte-identical across C0/C1/C2 for
+    the controller's matched-triplet contract (TaskPromptCatalog.prompt_for
+    deliberately excludes condition). Tool availability - and so guidance
+    about which tools exist and how to use them - already legitimately
+    varies by condition; board tools simply aren't registered for C0.
+    """
+
+    base = (
+        'task_read and task_query take a bare relative filename with no leading '
+        'slash and no directory prefix (e.g. "notes.txt"). task_query is a '
+        "literal, case-insensitive substring search, not fuzzy or keyword "
+        "matching - prefer exact short words you expect verbatim in the file. "
+        "If a call is rejected for being outside your permission set, the error "
+        "names the exact file(s) you may read; use that name on your next call "
+        "instead of guessing again."
+    )
+    if condition is Condition.C0:
+        return base
+    return base + (
+        " You also have board_read and board_append to coordinate with the "
+        "other agents working this same incident. Call board_read before "
+        "submitting your diagnosis, and again if your own evidence seems "
+        "incomplete - another agent may already have the missing piece. Call "
+        "board_append as soon as you find something concrete, not only after "
+        "you have fully solved the task; it is the only channel other agents "
+        "can see."
+    )
+
+
 def build_pi_command(
     config: RuntimeConfig,
     identity: AgentIdentity,
@@ -2045,6 +2078,7 @@ def build_pi_command(
     )
     if resolved_extension is not None:
         command.extend(["--extension", str(resolved_extension)])
+        command.extend(["--append-system-prompt", _system_prompt_addition(identity.condition)])
     resolved_tool_socket: Path | None = None
     if tool_socket is not None:
         resolved_tool_socket = tool_socket.expanduser().resolve()

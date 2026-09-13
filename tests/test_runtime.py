@@ -480,6 +480,32 @@ class RuntimeContractTests(unittest.TestCase):
             self.assertIn("--extension", command)
             self.assertEqual(command[command.index("--extension") + 1], str(extension))
 
+    def test_system_prompt_addition_is_condition_scoped(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            extension = root / "tools" / "experiment.ts"
+            extension.parent.mkdir()
+            extension.write_text("export default {};", encoding="utf-8")
+            config = self.config(isolation=IsolationPolicy(sandbox="none", allow_unsafe_for_tests=True))
+            for condition, mentions_board in (
+                (Condition.C0, False), (Condition.C1, True), (Condition.C2, True),
+            ):
+                with self.subTest(condition=condition):
+                    workspace = create_isolated_workspace(
+                        root / "runs" / condition.value, self.identity("agent-1", condition)
+                    )
+                    command = build_pi_command(config, self.identity("agent-1", condition), workspace, extension)
+                    self.assertIn("--append-system-prompt", command)
+                    addition = command[command.index("--append-system-prompt") + 1]
+                    self.assertIn("bare relative filename", addition)
+                    self.assertEqual("board_read" in addition, mentions_board)
+
+    def test_system_prompt_addition_absent_without_extension(self):
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = create_isolated_workspace(Path(temp), self.identity())
+            command = build_pi_command(self.config(), self.identity(), workspace)
+            self.assertNotIn("--append-system-prompt", command)
+
     def test_bubblewrap_mounts_extension_and_auth_without_host_paths_in_pi_argv(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
