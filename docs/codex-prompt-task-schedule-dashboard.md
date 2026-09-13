@@ -133,6 +133,18 @@ Extend `tests/` with automated tests for the pieces you touch, fixture-first:
 
 ## Files changed in the verified implementation
 
+Navigation/export fix (2026-09-13): changed `panel.py`, `tests/test_panel.py`,
+`tests/test_dashboard_activity.py`, `dashboard/dist/{app.js,activity.js,index.html,styles.css,demo.json}`,
+this note, and `dashboard-design-and-experiment-plan.md`. Added
+`tests/fixtures/dashboard_navigation_exports.cjs`. Sidebar actions focus distinct
+views, header export downloads directly, and live ZIP/JSONL/Markdown downloads
+report errors. Bundles include a human-readable `report.md` and explicit partial
+or completed cutoff metadata. Verified: 165 tests passed with two optional skips;
+local HTTP checks covered partial/completed ZIPs, JSONL, Markdown, and export auditing.
+No harness, runtime, agent configuration, or visibility policy changed; existing
+event rows were not rewritten. The real Ollama handoff ZIP now includes `report.md`;
+its previous ZIP is preserved under `artifacts/experiment-1-handoff/`.
+
 Experiment 1 update (2026-09-13): added `locked_database.py`, `task_updates.py`,
 `Experiments/Experiment-1/{README.md,results.md}`, `tests/test_locked_database.py`,
 `tests/test_dashboard_activity.py`, and `tests/fixtures/live_activity_toggle.cjs`.

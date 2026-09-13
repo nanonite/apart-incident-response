@@ -2,7 +2,7 @@
   "schema_version": "1.1",
   "mode": "snapshot",
   "server": {
-    "api_version": "response-panel-v4",
+    "api_version": "response-panel-v5",
     "pid": 17,
     "source_root": "/home/asperjasp/Documents/1_Projects/Aisafety/apart-incident-response"
   },
@@ -13838,6 +13838,36 @@
       "seq": 1077,
       "previous_hash": "5eed89c7a2c2a04b2cdd5193618068c2c5a43642b3b2821d4c957db18ffa522a",
       "hash": "05e4994caade7894ad26531318df954ad28ff696843f33747a3eafe07084f80f"
+    },
+    {
+      "batch_id": "batch-experiment-1-demo-20260913",
+      "event_id": "d0e50ad72e62418894ca75f827e7d450",
+      "kind": "researcher_action",
+      "payload": {
+        "action": "export_bundle",
+        "source": "development_handoff"
+      },
+      "run_id": null,
+      "schema_version": "1.0",
+      "timestamp": "2026-09-13T21:29:12.201164+00:00",
+      "seq": 1079,
+      "previous_hash": "23e06d411f0ffada78581dd0922fdac7d761b0906afa2107310f76a3ca25a850",
+      "hash": "ad4a18cfec1a7220378c6bbc3ff1309ac1b584e87ace91e65e3fbd176e49fa22"
+    },
+    {
+      "batch_id": "batch-experiment-1-demo-20260913",
+      "event_id": "506e7c8d015f4385824e416415083526",
+      "kind": "researcher_action",
+      "payload": {
+        "action": "snapshot_written",
+        "path": "dashboard/dist/demo.json"
+      },
+      "run_id": null,
+      "schema_version": "1.0",
+      "timestamp": "2026-09-13T21:41:57.856779+00:00",
+      "seq": 1080,
+      "previous_hash": "ad4a18cfec1a7220378c6bbc3ff1309ac1b584e87ace91e65e3fbd176e49fa22",
+      "hash": "79b1d7eff4faab61fd5b44d108600abfd510d5888919f22251d9db7c51c15f92"
     }
   ],
   "metrics": [
@@ -14894,6 +14924,30 @@
       "event_id": "a9318b9251554a02a4da7998343c38f9",
       "batch_id": "batch-experiment-1-demo-20260913",
       "timestamp": "2026-09-13T21:29:11.798806+00:00"
+    },
+    {
+      "action": "export_bundle",
+      "source": "development_handoff",
+      "seq": 1078,
+      "event_id": "5854808f9c41443d805b37f3c1f32dc5",
+      "batch_id": "batch-c1ccbf12516e",
+      "timestamp": "2026-09-13T21:29:12.157110+00:00"
+    },
+    {
+      "action": "export_bundle",
+      "source": "development_handoff",
+      "seq": 1079,
+      "event_id": "d0e50ad72e62418894ca75f827e7d450",
+      "batch_id": "batch-experiment-1-demo-20260913",
+      "timestamp": "2026-09-13T21:29:12.201164+00:00"
+    },
+    {
+      "action": "snapshot_written",
+      "path": "dashboard/dist/demo.json",
+      "seq": 1080,
+      "event_id": "506e7c8d015f4385824e416415083526",
+      "batch_id": "batch-experiment-1-demo-20260913",
+      "timestamp": "2026-09-13T21:41:57.856779+00:00"
     }
   ],
   "live_activity": {
@@ -14969,7 +15023,7 @@
     "step": 4,
     "run_started_at": "2026-09-13T21:28:56.045971+00:00",
     "run_finished_at": "2026-09-13T21:28:56.138757+00:00",
-    "last_event_at": "2026-09-13T21:29:11.798806+00:00",
+    "last_event_at": "2026-09-13T21:41:57.856779+00:00",
     "agents": {
       "A": {
         "state": "submitted",
@@ -16065,22 +16119,6 @@
     ],
     "feed": [
       {
-        "event_id": "fc63841335ad42bb966c4e12f8e2fd12",
-        "timestamp": "2026-09-13T21:28:56.074723+00:00",
-        "kind": "task_update",
-        "step": 1,
-        "agent_id": "A",
-        "detail": null
-      },
-      {
-        "event_id": "2b16954866dc4700ae79b44a066cdb76",
-        "timestamp": "2026-09-13T21:28:56.076096+00:00",
-        "kind": "checkpoint_committed",
-        "step": 1,
-        "agent_id": null,
-        "detail": null
-      },
-      {
         "event_id": "0185892cf2f04247a4f8e8edfe85a078",
         "timestamp": "2026-09-13T21:28:56.077274+00:00",
         "kind": "agent_observation",
@@ -16383,10 +16421,28 @@
         "step": null,
         "agent_id": null,
         "detail": null
+      },
+      {
+        "event_id": "d0e50ad72e62418894ca75f827e7d450",
+        "timestamp": "2026-09-13T21:29:12.201164+00:00",
+        "kind": "researcher_action",
+        "step": null,
+        "agent_id": null,
+        "detail": null
+      },
+      {
+        "event_id": "506e7c8d015f4385824e416415083526",
+        "timestamp": "2026-09-13T21:41:57.856779+00:00",
+        "kind": "researcher_action",
+        "step": null,
+        "agent_id": null,
+        "detail": null
       }
     ],
     "exports": {
       "ready": true,
+      "available": true,
+      "partial": false,
       "bundle_url": "/api/export?batch=batch-experiment-1-demo-20260913",
       "responses_url": "/api/responses?batch=batch-experiment-1-demo-20260913"
     }

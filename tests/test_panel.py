@@ -40,6 +40,8 @@ class PanelStateTests(unittest.TestCase):
             self.assertEqual(live['agents']['B']['state'], 'queued')
             self.assertEqual(live['agents']['A']['updates'], [])
             self.assertFalse(live['exports']['ready'])
+            self.assertTrue(live['exports']['available'])
+            self.assertTrue(live['exports']['partial'])
             self.assertEqual(live['shared_history'], [])
             store.append('live', 'run_finished', {'status': 'stopped'}, 'run')
             store.append('live', 'batch_finished', {'status': 'stopped'})
@@ -47,6 +49,7 @@ class PanelStateTests(unittest.TestCase):
             self.assertEqual(live['agents']['A']['state'], 'interrupted')
             self.assertEqual(live['agents']['B']['state'], 'interrupted')
             self.assertTrue(live['exports']['ready'])
+            self.assertFalse(live['exports']['partial'])
             self.assertEqual(live['exports']['bundle_url'], '/api/export?batch=live')
 
     def test_live_shared_history_contains_only_delivered_peer_responses(self):
@@ -76,9 +79,29 @@ class PanelStateTests(unittest.TestCase):
         self.assertTrue(data['live_activity']['exports']['ready'])
         data['session_key'] = 'must-not-export'
         with zipfile.ZipFile(io.BytesIO(panel.bundle(data))) as archive:
-            self.assertTrue({'events.jsonl', 'responses.jsonl', 'metrics.jsonl', 'manifest.json'} <= set(archive.namelist()))
-            self.assertNotIn('session_key', json.loads(archive.read('manifest.json')))
+            self.assertTrue({'events.jsonl', 'responses.jsonl', 'metrics.jsonl', 'manifest.json', 'report.md'} <= set(archive.namelist()))
+            manifest = json.loads(archive.read('manifest.json'))
+            self.assertNotIn('session_key', manifest)
+            self.assertEqual(manifest['export_metadata']['kind'], 'completed')
+            self.assertIn('| Condition |', archive.read('report.md').decode())
             self.assertEqual(len(archive.read('responses.jsonl').splitlines()), 12)
+
+    def test_active_export_marks_partial_cutoff_and_does_not_invent_responses(self):
+        with tempfile.TemporaryDirectory() as directory:
+            store = EventStore(Path(directory) / 'events.sqlite')
+            last = store.append('live', 'batch_started', {'source': 'local_model', 'config': {}})
+            data = panel.state(store)
+            with zipfile.ZipFile(io.BytesIO(panel.bundle(data))) as archive:
+                manifest = json.loads(archive.read('manifest.json'))
+                meta = manifest['export_metadata']
+                self.assertEqual(meta['kind'], 'partial')
+                self.assertEqual(meta['batch_status'], 'running')
+                self.assertEqual(meta['event_log_cutoff']['event_id'], last['event_id'])
+                self.assertEqual(meta['event_log_cutoff']['hash'], last['hash'])
+                self.assertEqual(meta['response_count'], 0)
+                self.assertEqual(archive.read('responses.jsonl'), b'')
+                self.assertIn('**partial**', archive.read('report.md').decode())
+            self.assertEqual(len(store.read()), 1)
 
     def test_panel_launch_accepts_ui_engagement_fields(self):
         with tempfile.TemporaryDirectory() as directory:

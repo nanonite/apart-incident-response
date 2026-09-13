@@ -2,6 +2,14 @@
 
 Date: 2026-09-13. This plan is additive to the response-dynamics protocol and the current local panel.
 
+Navigation/export fix (2026-09-13): sidebar actions update the workspace title,
+select and focus the corresponding content, and hide unrelated live widgets.
+Compare shows responses/charts; Run inspector shows raw events; Research handoff
+shows imports/downloads; Shared log shows Global/A/B projections with repeat labels.
+The header Export traces action downloads directly. Active-run ZIPs are partial
+snapshots with explicit cutoff/provenance; completed ZIPs also include `report.md`.
+Live response JSONL and Markdown downloads use the local API and display failures.
+
 Experiment 1 update: the new preset separates B's database-unlock goal from A's
 feedback-only role. Shared-context selection compares full history with an additional
 agent-authored key-insight projection. Live run shows source IDs and verified unlocks;

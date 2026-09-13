@@ -8,6 +8,7 @@ import secrets
 import threading
 import uuid
 import zipfile
+from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlencode, urlparse
@@ -19,7 +20,7 @@ from .importing import import_jsonl
 from .tasks import public_tasks
 
 ROOT = Path(__file__).resolve().parents[2]
-PANEL_API_VERSION = 'response-panel-v4'
+PANEL_API_VERSION = 'response-panel-v5'
 
 
 def live_activity(events, batch, runs):
@@ -81,8 +82,9 @@ def live_activity(events, batch, runs):
                           step=e['payload'].get('step'), agent_id=e['payload'].get('agent_id') or e['payload'].get('recipient'),
                           detail=e['payload'].get('message') or e['payload'].get('reason') or e['payload'].get('status'))
                      for e in events if (run and e['run_id'] == run['id']) or not e['run_id']][-40:],
-            'exports': {'ready': finished, 'bundle_url': '/api/export?' + query if finished else None,
-                        'responses_url': '/api/responses?' + query if finished else None}}
+            'exports': {'ready': finished, 'available': bool(batch), 'partial': not finished,
+                        'bundle_url': '/api/export?' + query if batch else None,
+                        'responses_url': '/api/responses?' + query if batch else None}}
 
 
 def state(store, selected=None):
@@ -120,8 +122,24 @@ def state(store, selected=None):
 
 def report_markdown(data):
     batch = data.get('batch') or {}
+    export = data.get('export_metadata') or export_metadata(data)
     lines = [f"# Experiment report: {batch.get('id', 'unknown')}", '',
              f"Status: **{batch.get('status', 'unknown')}**", '',
+             f"Export: **{export['kind']}** · captured {export['captured_at']}.", '',
+             f"Source: **{batch.get('source', 'unknown')}** · {export['response_count']} recorded updates.", '',
+             'Running-batch exports contain only events recorded at the stated cutoff; later responses are excluded.', '',
+             'Fixture data is deterministic plumbing, not model evidence. Entropy below is an answer-class proxy, not semantic entropy.', '',
+             '| Condition | Scored checkpoints | Mean task score |',
+             '|---|---:|---:|']
+    run_conditions = {r['id']: r['condition_id'] for r in data.get('runs', [])}
+    condition_scores = {}
+    for event in data.get('events', []):
+        if event['kind'] == 'evaluator_result' and event['payload'].get('score') is not None:
+            condition = run_conditions.get(event.get('run_id'), 'unknown')
+            condition_scores.setdefault(condition, []).append(event['payload']['score'])
+    for condition, scores in sorted(condition_scores.items()):
+        lines.append(f"| {condition} | {len(scores)} | {sum(scores)/len(scores):.3f} |")
+    lines += ['', 'Scores pool recorded, scored checkpoints; they are not per-run success rates. Feedback-only agents receive no goal score.', '',
              '| Difficulty | Rows | Accuracy | Mean answer-class entropy (bits) |',
              '|---:|---:|---:|---:|']
     for row in data.get('difficulty_metrics', []):
@@ -131,8 +149,38 @@ def report_markdown(data):
     warnings = [e for e in data.get('events', []) if e.get('kind') == 'minute_violation' or
                 (e.get('kind') == 'task_update' and e.get('payload', {}).get('termination_state') == 'stalled_no_generation')]
     lines += ['', f"Warnings: **{len(warnings)}** minute violations or stalled submissions.",
-              '', 'Metrics are derived from stored events and never fed back into a running agent.']
+              '', 'Metrics are derived from stored events and never fed back into a running agent.', '',
+              '## Task and configuration', '',
+              f"Model: `{batch.get('config', {}).get('model', 'unknown')}`. "
+              f"Checkpoints: {batch.get('config', {}).get('steps', 'unknown')}. "
+              f"Unlock step: {batch.get('config', {}).get('unlock_step', 'unknown')}."]
+    tasks = {}
+    for run in data.get('runs', []):
+        task = run.get('task') or {}
+        tasks.setdefault(run['task_id'], task)
+    for task_id, task in tasks.items():
+        lines += ['', f"### {task.get('title', task_id)}", '',
+                  f"Difficulty: {task.get('difficulty', 'unknown')}/5. " + task.get('question', 'Task text was not supplied.')]
+    cutoff = export['event_log_cutoff']
+    lines += ['', '## Audit and source data', '',
+              f"Cutoff event: `{cutoff.get('event_id', 'none')}` · sequence {cutoff.get('seq', 'none')}.",
+              '', 'Use events.jsonl for raw events, responses.jsonl for exact agent contexts and evaluator results, '
+              'metrics.jsonl for source_event_ids, and manifest.json for configuration, source versions, and export metadata.',
+              '', 'Incomplete/stalled submissions remain explicit. No causal influence or semantic entropy is claimed.']
     return '\n'.join(lines) + '\n'
+
+
+def export_metadata(data):
+    """Cutoff/provenance for a frozen researcher download, including partial batches."""
+    batch = data.get('batch') or {}
+    events = data.get('events', [])
+    terminal = any(e['kind'] == 'batch_finished' for e in events)
+    last = events[-1] if events else {}
+    return {'kind': 'completed' if terminal else 'partial',
+            'captured_at': datetime.now(timezone.utc).isoformat(),
+            'batch_status': batch.get('status', 'unknown'), 'source': batch.get('source', 'unknown'),
+            'event_count': len(events), 'response_count': sum(e['kind'] == 'task_update' for e in events),
+            'event_log_cutoff': {k: last[k] for k in ('event_id', 'seq', 'timestamp', 'hash') if k in last}}
 
 
 def responses(events):
@@ -182,6 +230,7 @@ def projection_step(events, step, agent_order=('A', 'B')):
 
 
 def bundle(data):
+    data = dict(data, export_metadata=export_metadata(data))
     output = io.BytesIO()
     with zipfile.ZipFile(output,'w',zipfile.ZIP_DEFLATED) as z:
         def jl(name, values):
@@ -189,16 +238,19 @@ def bundle(data):
         jl('events.jsonl', data['events'])
         jl('responses.jsonl', responses(data['events']))
         jl('metrics.jsonl', data['metrics'])
+        z.writestr('report.md', report_markdown(data))
         z.writestr('manifest.json', json.dumps({k:v for k,v in data.items() if k not in ('events','metrics','session_key')},ensure_ascii=False,indent=2))
         z.writestr('README.md', '''# Research handoff
 
 Events are the researcher-visible ground truth. Each response links to its exact supplied observation, evaluator and source events. See manifest.json for protocol, configuration, model provenance, task definitions and completion status.
 
+Start with report.md for a human-readable summary. manifest.json export_metadata records whether this is a partial or completed export and the exact last included event. An active-run download never includes later events or changes the agents' inputs.
+
 C0 is isolation; C1 shares previous-step responses; C2 unlocks earlier permitted responses at the configured step. Neither agent sees the other's current-step output. Private evidence and evaluator truth never enter shared history.
 
 Sources: local_model/remote_model = actual inference; fixture = deterministic non-LLM plumbing data; imported = user-supplied, unverified provenance. Failed/incomplete records are not silently filled.
 
-metrics.jsonl contains per-agent cross-run ANSWER-CLASS ENTROPY PROXIES in bits for the finite task options. It is NOT entailment-based semantic entropy and is not a causal metric. Fewer than two classified samples yields null, not zero. Repetitions and agents are not independent observations. Correctness scores assess the selected option, not the quality of the full explanation.
+metrics.jsonl contains per-agent cross-run ANSWER-CLASS ENTROPY PROXIES in bits for the finite task options. It is NOT entailment-based semantic entropy and is not a causal metric. Fewer than two classified samples yields null, not zero. Repetitions and agents are not independent observations. Exact-option scores assess the selected option. Experiment 1 instead verifies B's proposed key by decrypting synthetic SQLite data; A's feedback receives no goal score. Neither evaluator grades explanation quality.
 
 For semantic entropy, cluster response_text (or a versioned answer extraction) using an explicitly validated equivalence rule. Preserve source_event_ids and grouping scope. Different evolving histories are not identical fixed-checkpoint contexts. No analysis is fed back to the agents.
 
@@ -297,7 +349,11 @@ def serve(store, port):
                 data = state(store, data['batch']['id'])
                 return self.reply(200, bundle(data), 'application/zip','apart-research-bundle.zip')
             if parsed.path == '/api/responses':
-                data = ''.join(json.dumps(r,ensure_ascii=False)+'\n' for r in responses(state(store,selected)['events'])).encode()
+                snapshot = state(store, selected)
+                if not snapshot['batch']:
+                    return self.reply(404, {'error':'Batch not found'})
+                audit_action(store, snapshot['batch']['id'], 'export_responses', response_count=sum(e['kind']=='task_update' for e in snapshot['events']))
+                data = ''.join(json.dumps(r,ensure_ascii=False)+'\n' for r in responses(snapshot['events'])).encode()
                 return self.reply(200,data,'application/x-ndjson','responses.jsonl')
             path = (static / ('index.html' if parsed.path == '/' else parsed.path.lstrip('/'))).resolve()
             if static.resolve() not in path.parents or not path.is_file():

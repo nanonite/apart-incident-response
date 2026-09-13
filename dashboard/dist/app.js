@@ -13,14 +13,29 @@ function notice(text){$('notice').textContent=text;$('notice').hidden=!text;}
 function format(value){return typeof value==='number'?value.toLocaleString():'—';}
 function cfg(){return ui.data?.batch?.config||{};}
 function updates(){return (ui.data?.events||[]).filter(e=>e.kind==='task_update');}
-function chooseView(view){ui.view=view;for(const v of ['compare','inspect','export','sharedlog'])$(v+'-view').hidden=v!==view;document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));if(view==='inspect')renderLog();if(view==='sharedlog')renderSharedLog();}
+const VIEW_TITLES={compare:'Compare conditions',inspect:'Run inspector',export:'Research handoff',sharedlog:'Shared log'};
+function applyView(){
+ document.body.dataset.workspaceView=ui.view;
+ for(const view of Object.keys(VIEW_TITLES))$(view+'-view').hidden=view!==ui.view;
+ document.querySelectorAll('[data-view]').forEach(button=>{const selected=button.dataset.view===ui.view;button.classList.toggle('active',selected);if(selected)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
+ $('workspace-title').textContent=VIEW_TITLES[ui.view];
+}
+function chooseView(view){
+ if(!Object.hasOwn(VIEW_TITLES,view))return;
+ ui.view=view;applyView();
+ if(ui.data){if(view==='inspect')renderLog();if(view==='sharedlog')renderSharedLog();if(view==='export')renderExportStatus();}
+ const section=$(view+'-view');section.tabIndex=-1;section.focus({preventScroll:true});section.scrollIntoView({block:'start'});
+}
 async function load(){
  if(ui.busy)return;ui.busy=true;
  try{
   let data;
   if(ui.live){const r=await fetch('/api/state'+(ui.batch?'?batch='+encodeURIComponent(ui.batch):''));if(!r.ok)throw new Error('Live server unavailable');data=await r.json();}
   else return;
-  ui.key=data.session_key;ui.data=data;ui.batch=data.batch?.id||ui.batch;render();
+  const switched=ui.data?.batch?.id!==data.batch?.id;
+  ui.key=data.session_key;ui.data=data;ui.batch=data.batch?.id||ui.batch;
+  if(switched&&data.runs?.length&&!data.runs.some(run=>run.task_id===ui.task)){ui.task=data.live_activity?.run?.task_id||data.runs[0].task_id;ui.selectedRun=null;ui.step=0;}
+  render();
  }catch(err){
   if(!ui.data){try{const r=await fetch('demo.json');if(!r.ok)throw err;ui.data=await r.json();ui.live=false;ui.batch=ui.data.batch?.id;render();notice('Portable snapshot. Browse recorded results and download responses. Start the local panel to launch experiments or import output.');}catch{notice('No data available. Start the local panel with the command in README.md.');$('connection').textContent='Not connected';}}
   else{$('connection').textContent='Connection interrupted';}
@@ -51,7 +66,7 @@ function render(){
  for(const e of generations){if(typeof e.payload.input_tokens==='number'||typeof e.payload.output_tokens==='number'){hasTokens=true;tokenCount+=(e.payload.input_tokens||0)+(e.payload.output_tokens||0);}}
  $('stat-tokens').textContent=hasTokens?format(tokenCount):'—';
  $('stat-cost').textContent=source==='local_model'?'Local inference · API cost $0':source==='fixture'?'Fixture data · no inference':'Cost not verified';
- const active=Boolean(d.can_stop)||(d.batches||[]).some(x=>x.status==='running');const staleServer=ui.live&&d.server?.api_version!=='response-panel-v4';$('start').disabled=!ui.live||active||staleServer;$('stop').hidden=!d.can_stop;
+ const active=Boolean(d.can_stop)||(d.batches||[]).some(x=>x.status==='running');const staleServer=ui.live&&d.server?.api_version!=='response-panel-v5';$('start').disabled=!ui.live||active||staleServer;$('stop').hidden=!d.can_stop;
  if(staleServer){$('connection').textContent='Panel restart required';notice('This panel server is older than the interface. Stop it with Ctrl+C, restart the panel from this checkout, and reload this page. Recorded data remains available.');}
  const banner=$('active-run-banner');if(banner){if(active){banner.textContent=`ACTIVE RUN · ${cfg().study_id||'response dynamics'} · ${cfg().steps||5} checkpoints · ${cfg().deadline_seconds||300}s task-run budget · ${cfg().repeats||1} repeat(s) · engagement: ${cfg().engagement_mode||'neutral'}`;banner.className='active-run-banner active';}else{banner.textContent=`${b?.status==='completed'?'LAST RUN COMPLETE':'No active run'} · choose a study preset, then inspect responses, peer visibility, and audit events here.`;banner.className='active-run-banner';}}
  $('import-file').disabled=!ui.live;
@@ -63,7 +78,7 @@ function render(){
  const repeats=[...new Set(runs.filter(r=>r.task_id===ui.task).map(r=>r.repeat??0))].sort((a,b)=>a-b);
  if(!repeats.includes(ui.repeat))ui.repeat=repeats[0]??0;
  $('repeat-select').replaceChildren(...(repeats.length?repeats:[0]).map(r=>{const o=el('option','',String(r+1));o.value=r;o.selected=r===ui.repeat;return o;}));
- ui.step=Math.min(ui.step,(cfg().steps||3)-1);renderToggles();renderMinuteBar();renderComparison();renderChart();renderEntropy();renderLiveShowcase();renderAudit();if(ui.view==='inspect')renderLog();if(ui.view==='sharedlog')renderSharedLog();
+ ui.step=Math.min(ui.step,(cfg().steps||3)-1);renderToggles();renderMinuteBar();renderComparison();renderChart();renderEntropy();renderLiveShowcase();renderAudit();renderExportStatus();applyView();if(ui.view==='inspect')renderLog();if(ui.view==='sharedlog')renderSharedLog();
  $('last-updated').textContent=`${ui.live?'OBSERVED':'RECORDED'} ${d.events.length?new Date(d.events.at(-1).timestamp).toLocaleTimeString():'—'} · ${d.events.length} EVENTS`;
 }
 function renderTimeline(){const steps=cfg().steps||3;$('timeline').replaceChildren(...Array.from({length:steps},(_,i)=>{const unlock=(cfg().conditions||[]).includes('C2')&&cfg().unlock_step===i;const b=el('button','step'+(i===ui.step?' selected':'')+(unlock?' intervention':''),String(i).padStart(2,'0'));b.setAttribute('aria-pressed',String(i===ui.step));b.append(el('span','',unlock?'C2 UNLOCK':i===0?'INITIAL':'UPDATE'));b.onclick=()=>{ui.step=i;render();};return b;}));}
@@ -138,7 +153,7 @@ async function renderSharedLog(){
  if(ui.view!=='sharedlog')return;
  const token=++ui.projectionToken;
  const sel=$('projection-run');const runs=ui.data.runs.filter(r=>r.task_id===ui.task);
- sel.replaceChildren(...runs.map(r=>{const o=el('option','',`${r.condition_id} · ${r.status}`);o.value=r.id;o.selected=r.id===ui.selectedRun;return o;}));
+ sel.replaceChildren(...runs.map(r=>{const o=el('option','',`${r.condition_id} · repeat ${(r.repeat??0)+1} · ${r.status}`);o.value=r.id;o.selected=r.id===ui.selectedRun;return o;}));
  if(!runs.length){renderPane($('pane-global'),[]);renderPane($('pane-A'),[]);renderPane($('pane-B'),[]);$('projection-unlock').textContent='';$('projection-note').textContent='';return;}
  const runId=sel.value||runs[0].id;ui.selectedRun=runId;
  const scoped=ui.data.events.filter(e=>e.run_id===runId||!e.run_id);
@@ -152,10 +167,36 @@ function detail(event){const p=event.payload,obs=ui.data.events.find(e=>e.event_
  if(obs?.messages)for(const m of obs.messages){body.append(el('span','badge',m.role),el('pre','',m.content));}else body.append(el('p','muted','Context was not supplied. It has not been inferred or fabricated.'));
  body.append(el('h3','','Delivered peer event IDs'),el('pre','',JSON.stringify(p.visible_message_ids||[],null,2)),el('h3','','Full TaskUpdate'),el('pre','',JSON.stringify(p,null,2)));$('detail-dialog').showModal();}
 async function post(path,body){const r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json','X-Session-Key':ui.key},body:JSON.stringify(body)});const data=await r.json();if(!r.ok)throw new Error(data.error||'Request failed');return data;}
-function download(name,text,type='application/json'){const url=URL.createObjectURL(new Blob([text],{type}));const a=el('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+function downloadBlob(name,blob){const url=URL.createObjectURL(blob);const a=el('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
+function download(name,text,type='application/json'){downloadBlob(name,new Blob([text],{type}));}
 function responseRecords(){const es=ui.data.events;return updates().map(e=>({...e.payload,event_id:e.event_id,timestamp:e.timestamp,observation:es.find(o=>o.event_id===e.payload.observation_id)?.payload||null,evaluator:evaluator(e)||null}));}
-function exportResponses(){download('responses.jsonl',responseRecords().map(r=>JSON.stringify(r)).join('\n')+'\n','application/x-ndjson');}
-function exportBundle(){if(ui.live){window.location.href='/api/export?batch='+encodeURIComponent(ui.batch);}else{download('apart-research-snapshot.json',JSON.stringify(ui.data,null,2));}}
+let exportBusy=false;
+let exportMessage='';
+function renderExportStatus(){
+ const batch=ui.data?.batch;const available=Boolean(batch&&ui.batch);
+ for(const id of ['export-top','download-bundle','download-responses','download-report']){const button=$(id);button.disabled=!available||exportBusy;button.setAttribute('aria-busy',String(exportBusy));}
+ const status=$('export-status');if(!status)return;
+ status.textContent=exportMessage||(available?`${batch.id} · ${batch.source} · ${batch.status}. ${ui.live?'ZIP includes report.md, events, responses, metrics, and provenance.':'Portable snapshot: JSON and JSONL downloads; start the local panel for a ZIP.'} ${batch.status==='running'?'Download now for a partial snapshot of recorded events; download again after completion.':''}`:'Select a recorded batch or launch an experiment to export its traces.');
+ $('download-bundle').textContent=ui.live?'↓ Download research bundle · ZIP':'↓ Download batch snapshot · JSON';
+ $('export-top').textContent=ui.live?'↓ Export traces · ZIP':'↓ Export snapshot · JSON';
+}
+async function downloadExport(route,name,type){
+ if(exportBusy)return;
+ if(!ui.data?.batch||!ui.batch){notice('No batch selected. Launch or select an experiment before exporting.');return;}
+ const batch=ui.batch;const partial=ui.data.batch.status==='running';exportBusy=true;exportMessage='Preparing download…';renderExportStatus();
+ try{
+  const response=await fetch('/api/'+route+'?batch='+encodeURIComponent(batch),{cache:'no-store'});
+  if(!response.ok){let message='Export failed ('+response.status+').';try{message=(await response.json()).error||message;}catch{}throw new Error(message);}
+  if(!(response.headers.get('Content-Type')||'').includes(type))throw new Error('The panel returned an unexpected file type. Restart the local panel and retry.');
+  const blob=await response.blob();downloadBlob(name,blob);
+  exportMessage=`Downloaded ${name} for ${batch}${partial?' · partial snapshot; later events are excluded':''}.`;
+  notice(exportMessage);
+ }catch(error){exportMessage='Download failed: '+error.message;notice(exportMessage);}
+ finally{exportBusy=false;renderExportStatus();}
+}
+async function exportResponses(){if(ui.live)return downloadExport('responses','responses.jsonl','application/x-ndjson');if(!ui.data?.batch)return notice('No batch available.');download('responses.jsonl',responseRecords().map(r=>JSON.stringify(r)).join('\n')+'\n','application/x-ndjson');}
+async function exportBundle(){if(ui.live)return downloadExport('export','apart-research-bundle.zip','application/zip');if(!ui.data?.batch)return notice('No batch available.');download('apart-research-snapshot.json',JSON.stringify(ui.data,null,2));}
+async function exportReport(){if(ui.live)return downloadExport('report','experiment-report.md','text/markdown');notice('Start the local panel for the Markdown report; the snapshot and response JSONL can be downloaded here.');}
 function selectedTaskIds(){const value=$('task-select').value;return value==='all'?ui.data.tasks.map(t=>t.id):value==='asymmetric'?ASYMMETRIC_TASKS:value==='experiment1'?['locked-database']:[value];}
 function estimate(){const count=$('task-select').value==='all'?(ui.data?.tasks?.length||7):$('task-select').value==='asymmetric'?ASYMMETRIC_TASKS.length:1;const n=count*$('conditions').value.split(',').length*Number($('steps').value)*Number($('repeats').value)*2;$('run-estimate').textContent=`${n} requested updates · ${$('steps').value} checkpoints × ${$('repeats').value} repeats · ${$('adapter').value==='fixture'?'fixture, no LLM':'local inference'}`;}
 $('run-form').onchange=estimate;
@@ -167,7 +208,8 @@ $('play').onclick=()=>{if(ui.replay){clearInterval(ui.replay);ui.replay=null;$('
 for(const b of document.querySelectorAll('[data-view]'))b.onclick=()=>chooseView(b.dataset.view);
 for(const t of document.querySelectorAll('[data-pref]'))t.onchange=()=>{ui.prefs[t.dataset.pref]=t.checked;savePrefs();render();};
 $('projection-run').onchange=()=>{ui.selectedRun=$('projection-run').value;renderSharedLog();};
-$('export-top').onclick=()=>chooseView('export');$('download-bundle').onclick=exportBundle;$('download-responses').onclick=exportResponses;$('sample-download').onclick=()=>download('input-example.jsonl',JSON.stringify(example)+'\n','application/x-ndjson');
-if(!$('download-report')){const reportButton=el('button','button light','↓ Download Markdown report');reportButton.id='download-report';reportButton.onclick=()=>{if(ui.live)window.location.href='/api/report?batch='+encodeURIComponent(ui.batch||'');else download('experiment-report.md','Open the local panel to generate a report.','text/markdown');};$('download-bundle').after(reportButton);}
+$('export-top').onclick=exportBundle;$('download-bundle').onclick=exportBundle;$('download-responses').onclick=exportResponses;$('sample-download').onclick=()=>download('input-example.jsonl',JSON.stringify(example)+'\n','application/x-ndjson');
+const reportButton=el('button','button light','↓ Download Markdown report');reportButton.id='download-report';reportButton.onclick=exportReport;$('download-bundle').after(reportButton);
+const exportStatus=el('p','export-status');exportStatus.id='export-status';exportStatus.setAttribute('role','status');exportStatus.setAttribute('aria-live','polite');$('export-view').prepend(exportStatus);
 $('import-file').onchange=async()=>{const file=$('import-file').files[0];if(!file)return;try{if(file.size>10_000_000)throw new Error('File must be under 10 MB');const data=await post('/api/import',{jsonl:await file.text()});ui.batch=data.batch_id;ui.repeat=0;ui.step=0;notice('Output imported with external, unverified provenance. Missing contexts and scores stay unknown.');await load();}catch(err){notice(err.message);}finally{$('import-file').value='';}};
-estimate();load();setInterval(load,1800);
+applyView();renderExportStatus();estimate();load();setInterval(load,1800);
