@@ -109,3 +109,28 @@ qwen mode="logprobs" prompt="The capital of France is" seed="1" output="" model=
 # Build the isolated CUDA runtime; weights remain in the compose-mounted cache.
 qwen-runtime:
     docker compose -f compose.qwen3.yaml build qwen3
+
+# Run the real C0/C1/C2 anchor matrix against local Ollama Qwen3-8B inside the
+# same containerized `runtime` image used everywhere else (bun, bubblewrap,
+# and the pi checkout are already baked in, so no host bun/bwrap install is
+# needed). Expects an Ollama server already serving qwen3:8b and reachable at
+# `ollama-host` (a plain `ollama serve` on the host works with the default;
+# this does not start the compose `ollama` service, which lives on a
+# different network). `--network host` lets the container reach that host
+# port directly. Container output is written root-owned, so ownership is
+# handed back to the calling user afterward.
+qwen3-experiment output="runs/qwen3-8b/manual" seeds="1" ollama-host="http://localhost:11434": build
+    docker run --rm --network host \
+        --cap-add SYS_ADMIN --cap-add NET_ADMIN \
+        --security-opt seccomp=unconfined --security-opt apparmor=unconfined \
+        -e APART_PI_ROOT=/opt/pi \
+        -e OLLAMA_HOST={{ ollama-host }} \
+        -v "$(pwd)/scripts:/app/scripts" \
+        -v "$(pwd)/pi-extension:/app/pi-extension" \
+        -v "$(pwd)/config:/app/config" \
+        -v "$(pwd)/runs:/app/runs" \
+        --entrypoint python \
+        apart-incident-response:local scripts/run_experiment.py \
+        --real-anchor --model ollama/qwen3:8b --seeds {{ seeds }} --output {{ output }}
+    docker run --rm -v "$(pwd)/runs:/runs" alpine chown -R "$(id -u):$(id -g)" /runs
+    find {{ output }} -type d -name home -exec rm -rf {} +

@@ -206,6 +206,33 @@ Experiment output under `runs/` is intentionally versioned for sharing between
 workers; event, message, tool, and usage data is retained exactly, with only
 credential-shaped fields and known secret values redacted.
 
+### Running the real anchor matrix against local Ollama (Qwen3-8B)
+
+Pi's launch command executes `bun run {pi_root}/packages/coding-agent/src/cli.ts`
+directly, so every agent process needs a `bun` binary on its sandboxed `PATH`
+regardless of which model it calls. Rather than installing `bun`/`bubblewrap`
+on the host, run the anchor matrix inside the same containerized `runtime`
+image used for `just build`/`just test` — it already bundles `bun`,
+`bubblewrap`, and the pinned `pi` checkout:
+
+```bash
+ollama serve &            # or an already-running Ollama install
+ollama pull qwen3:8b
+just qwen3-experiment output=runs/qwen3-8b/s0001 seeds=1
+```
+
+`just qwen3-experiment` builds the `runtime` image, then runs it with
+`--network host` so the container can reach the host's Ollama endpoint
+directly (`ollama-host` defaults to `http://localhost:11434`; override it if
+Ollama listens elsewhere), plus the `SYS_ADMIN`/`NET_ADMIN` capabilities and
+relaxed seccomp/AppArmor profile Bubblewrap needs to create its own nested
+namespaces from inside a container. `scripts/`, `pi-extension/`, `config/`,
+and `runs/` are bind-mounted over the image's baked-in copies so config edits
+and script changes don't require a rebuild. Because the container runs as
+root, output under `runs/` is briefly root-owned; the recipe hands ownership
+back to the invoking user with a throwaway `alpine` container once the run
+finishes.
+
 ## Controlled n-agent experiment controller
 
 The controller in [controller.py](src/apart_incident_response/controller.py)
@@ -214,8 +241,10 @@ implements the versioned protocol in
 threaded, isolated `AgentRun` per agent, gives every condition triplet the same
 prompt/fixture/model/n/timeout/aggregate budget, and owns one board database
 per non-C0 swarm. The aggregate budget is reserved atomically before provider
-launch; for n variations the per-agent envelope is the integer division of the
-same aggregate ceiling.
+launch; the per-agent envelope is pinned from configuration and held constant
+across n variations, and the aggregate ceiling scales up as `per_agent_token_budget
+* agent_count` so a larger swarm is not confounded with a smaller per-agent
+share.
 
 Run a real Task 1 pilot only after configuring the Pi root and controller-owned
 OAuth store described above:
