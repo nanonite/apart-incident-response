@@ -139,7 +139,7 @@ def main() -> int:
     mode.add_argument("--harness-check", action="store_true")
     mode.add_argument("--harness-factors", action="store_true")
     mode.add_argument("--real-anchor", action="store_true")
-    parser.add_argument("--output", type=Path, default=SOURCE_ROOT / "artifacts" / "experiments")
+    parser.add_argument("--output", type=Path, default=SOURCE_ROOT / "runs" / "t1")
     parser.add_argument("--seeds", type=int, nargs="+", default=[1])
     args = parser.parse_args()
     if args.harness_check:

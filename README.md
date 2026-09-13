@@ -114,7 +114,7 @@ OAuth store described above:
 ```bash
 PYTHONPATH=src python scripts/run_experiment.py \
   --real-anchor --seeds 1 2 3 4 5 \
-  --output artifacts/experiments/task-1-anchor
+  --output runs/t1
 ```
 
 The command writes a condition directory and a paired triplet summary for each
