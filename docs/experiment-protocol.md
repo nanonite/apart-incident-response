@@ -27,7 +27,9 @@ The anchor uses Task 1, `n=3`, the configured model, the
 window, and seeds `1,2,3,4,5`. Each agent receives one role from the same
 three-way split-evidence fixture. Seed one retains `ORCHID-731` for continuity
 with the calibration fixture; other seeds get deterministic derived tokens and
-fixture hashes.
+fixture hashes. In an experimental instance the seeded token is present in
+exactly one private evidence role; the manifest records its owner and excludes
+that owner from recipient uptake attribution.
 
 The aggregate budget is claimed atomically before each provider launch. The
 per-agent envelope is the aggregate ceiling divided by `n`, with the integer
@@ -35,7 +37,19 @@ remainder unallocated. Timeouts, launch errors, provider errors, budget
 overages, and missing submissions remain in raw artifacts and are not silently
 dropped or imputed. A five-seed cell is descriptive pilot evidence, not a
 confirmatory sample; no causal, significance, or general performance claim is
-made from it.
+made from it. Matrix validity is execution integrity, not task success: the
+matrix is labeled experimental data when every C0/C1/C2 run has the expected
+agent count from its manifest, one completed raw result per assigned agent, and
+no controller error. Agents may therefore finish without diagnosing or
+submitting; those task outcomes remain separate success metrics. Missing or
+failed executions remain valuable diagnostics but are explicitly labeled
+non-experimental with their failure reasons.
+
+Agents are submitted through the controller's thread pool and may overlap.
+OAuth staging takes only a short store lock before launch; rotated credentials
+are persisted under a separate revision-checked lock after the provider exits.
+`provider_started_at` and `ended_at` in each result make the actual execution
+overlap auditable.
 
 ## Predeclared factor variations
 
@@ -51,11 +65,14 @@ One factor changes per triplet:
 
 Capability profiles only alter explicitly exposed task tools. They cannot add
 shell, network, subprocess, MCP, subagent, shared-filesystem, or another
-cross-agent channel. Transformation frequency is measured from timestamped
-private-evidence-to-board-message and board-read-to-later-event edges; the
-window changes the denominator and observation opportunity, not the prompt's
-collaboration objective. Model tiers require live access validation before
-their triplets are eligible for experimental labeling.
+cross-agent channel. Transformation cadence is enforced at the controller
+board-read boundary: the first read attempt and then every Nth attempt per
+agent is a scheduled visibility opportunity; skipped reads return no messages
+and remain in raw telemetry. Metrics count scheduled reads and messages
+actually delivered, then derive later-event opportunities from those events;
+the cadence factor is not a denominator-only multiplier. Model tiers require
+live access validation before their triplets are eligible for experimental
+labeling.
 
 ## Artifacts and replay
 

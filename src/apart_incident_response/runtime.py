@@ -670,7 +670,7 @@ def _resolve_auth_file(config: RuntimeConfig) -> Path | None:
 
 @dataclass
 class _AuthStage:
-    """A run-local auth copy and its controller-owned persistence lease."""
+    """A run-local auth copy and its optional controller-owned persistence lease."""
 
     target: Path
     store: Path | None
@@ -1677,6 +1677,7 @@ class RunResult:
     artifact_dir: str
     events: list[dict[str, Any]] = field(default_factory=list)
     persistence_failure: str | None = None
+    provider_started_at: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         result = asdict(self)
@@ -1794,7 +1795,6 @@ class AgentRun:
                 _resolve_auth_file(self.config),
                 self.workspace,
                 self.config,
-                hold_lock=True,
             )
             command = build_pi_command(
                 self.config,
@@ -1842,6 +1842,7 @@ class AgentRun:
                 return result
 
             try:
+                provider_started_at = _utc_now()
                 process = subprocess.Popen(
                     command,
                     stdin=subprocess.PIPE,
@@ -1998,6 +1999,7 @@ class AgentRun:
                 final_response, failure_reason, command, events,
                 agent_tokens_used, agent_tool_calls_used,
                 persistence_failure=persistence_failure,
+                provider_started_at=provider_started_at,
             )
             (artifact_dir / "stdout.jsonl").write_text("".join(stdout_lines), encoding="utf-8")
             (artifact_dir / "stderr.log").write_text("".join(stderr_lines), encoding="utf-8")
@@ -2124,6 +2126,7 @@ class AgentRun:
         tokens_used: int,
         tool_calls_used: int,
         persistence_failure: str | None = None,
+        provider_started_at: str | None = None,
     ) -> RunResult:
         result = RunResult(
             identity=self.identity,
@@ -2141,6 +2144,7 @@ class AgentRun:
             artifact_dir=str(self.workspace.artifact_dir),
             events=events,
             persistence_failure=persistence_failure,
+            provider_started_at=provider_started_at,
         )
         response_text = final_response or ""
         response_bytes = response_text.encode("utf-8")
@@ -2174,6 +2178,7 @@ class AgentRun:
             "schema_version": 1,
             "identity": self.identity.to_dict(),
             "started_at": started_at,
+            "provider_started_at": provider_started_at,
             "ended_at": ended_at,
             "status": status.value,
             "event_counts": dict(sorted(event_counts.items())),

@@ -3,8 +3,18 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import os
 from pathlib import Path
+import time
+
+
+def token_for_seed(seed: int) -> str:
+    if seed == 1:
+        return "ORCHID-731"
+    digest = hashlib.sha256(f"task-1\0{seed}".encode("utf-8")).digest()
+    value = 100 + int.from_bytes(digest[:4], "big") % 900
+    return f"ORCHID-{value:03d}"
 
 
 def call(operation: str, arguments: dict[str, object]) -> dict[str, object]:
@@ -30,12 +40,21 @@ def main() -> int:
     agent_id = os.environ["APART_AGENT_ID"]
     role = int(agent_id.rsplit("-", 1)[-1])
     content = call("task_read", {"path": ["application.log", "deployment.txt", "metrics.txt"][(role + seed - 2) % 3]})
-    token = "ORCHID-731"
+    token = token_for_seed(seed)
     call("task_query", {"query": token})
     if condition != "C0":
-        call("board_append", {"message": f"{agent_id} observed seeded evidence {token}"})
-        call("board_read", {"limit": 50})
-    diagnosis = "The ORCHID-731 configuration revision changed CACHE_MODE from local to shared, causing the cache-related outage."
+        private_token_owner = token in str(content.get("content", ""))
+        if private_token_owner:
+            call("board_append", {"message": f"{agent_id} observed seeded evidence {token}"})
+            time.sleep(0.05)
+        else:
+            time.sleep(0.05)
+            for _ in range(3):
+                board = call("board_read", {"limit": 50})
+                messages = board.get("messages", [])
+        if private_token_owner:
+            call("board_read", {"limit": 50})
+    diagnosis = f"The {token} configuration revision changed CACHE_MODE from local to shared, causing the cache-related outage."
     call("task_submit", {
         "diagnosis": diagnosis,
         "evidence": [{"path": Path(content.get("path", "application.log")).name, "excerpt": content.get("content", "").splitlines()[0]}],

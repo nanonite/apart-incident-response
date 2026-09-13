@@ -29,6 +29,8 @@ from .tool_contract import (
     ToolServiceError,
     ToolUnavailableError,
     ToolValidationError,
+    exact_keys,
+    optional_positive_int,
     validate_object,
 )
 from .tool_credentials import ControllerCredentialAuthority
@@ -47,7 +49,10 @@ class ConstrainedToolService:
         artifact_root: Path | str | os.PathLike[str] | None = None,
         clock: Callable[[], str] = _utc_now,
         telemetry: Callable[[Mapping[str, Any]], None] | None = None,
+        board_read_interval: int = 1,
     ) -> None:
+        if isinstance(board_read_interval, bool) or not isinstance(board_read_interval, int) or board_read_interval < 1:
+            raise ToolValidationError("board_read_interval must be a positive integer")
         self.credentials = credentials or ControllerCredentialAuthority()
         self._task_service = task_service
         self._board_service = board_service
@@ -55,6 +60,9 @@ class ConstrainedToolService:
         self._telemetry = telemetry
         self._runtime_usage: dict[tuple[str, str], TrustedRuntimeUsage] = {}
         self._runtime_lock = threading.Lock()
+        self._board_read_interval = board_read_interval
+        self._board_read_attempts: dict[tuple[str, str], int] = {}
+        self._board_read_lock = threading.Lock()
         if artifact_root is not None:
             self._task_service.configure_submission_artifacts(artifact_root, clock)
         self._audit = (
@@ -152,6 +160,7 @@ class ConstrainedToolService:
             if isinstance(message, Mapping)
         ]
         append_result = result if operation == "board_append" and isinstance(result, Mapping) else {}
+        cadence = result.get("cadence") if operation == "board_read" and isinstance(result, Mapping) else None
         event: dict[str, Any] = {
             "schema_version": 1,
             "timestamp": self._clock(),
@@ -167,6 +176,7 @@ class ConstrainedToolService:
             "bytes_written": int(append_result.get("message_size") or 0),
             "message_id": append_result.get("sequence_id"),
             "message": arguments.get("message") if operation == "board_append" and isinstance(arguments, Mapping) else None,
+            "cadence": dict(cadence) if isinstance(cadence, Mapping) else None,
             "ok": bool(response.get("ok")),
         }
         if not response.get("ok"):
@@ -214,10 +224,46 @@ class ConstrainedToolService:
         if self._board_service is None:
             raise ToolUnavailableError("board service is not mounted")
         if operation == "board_read":
-            return self._board_service.read(identity, arguments)
+            return self._board_read(identity, arguments)
         if operation == "board_append":
             return self._board_service.append(identity, arguments)
         raise ToolValidationError("unsupported tool")
+
+    def _board_read(
+        self, identity: AgentIdentity, arguments: Mapping[str, Any]
+    ) -> dict[str, Any]:
+        """Expose board messages only on scheduled controller-owned read slots."""
+
+        if self._board_service is None:
+            raise ToolUnavailableError("board service is not mounted")
+        exact_keys(arguments, {"after_sequence_id", "limit"})
+        cursor = arguments.get("after_sequence_id", 0)
+        if isinstance(cursor, bool) or not isinstance(cursor, int) or cursor < 0:
+            raise ToolValidationError("after_sequence_id must be a non-negative integer")
+        optional_positive_int(arguments, "limit", 20, MAX_READ_MESSAGES)
+        key = (identity.run_id, identity.agent_id)
+        with self._board_read_lock:
+            attempt = self._board_read_attempts.get(key, 0) + 1
+            self._board_read_attempts[key] = attempt
+        scheduled = (attempt - 1) % self._board_read_interval == 0
+        cadence = {
+            "interval": self._board_read_interval,
+            "attempt": attempt,
+            "scheduled_opportunity": scheduled,
+        }
+        if not scheduled:
+            return {
+                "messages": [],
+                "next_cursor": cursor,
+                "has_more": True,
+                "cadence": {**cadence, "messages_delivered": 0},
+            }
+        result = self._board_service.read(identity, arguments)
+        result["cadence"] = {
+            **cadence,
+            "messages_delivered": len(result.get("messages", [])),
+        }
+        return result
 
     def _runtime_usage_for(self, identity: AgentIdentity) -> TrustedRuntimeUsage | None:
         with self._runtime_lock:

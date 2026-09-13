@@ -82,11 +82,23 @@ class TaskOneInstance:
             raise ValueError(f"unknown Task 1 difficulty: {self.difficulty}")
         if len(self.bundles) != 3:
             raise ValueError("Task 1 instances require exactly three evidence roles")
+        private_token_owners = [
+            bundle.agent_id
+            for bundle in self.bundles
+            if self.token.casefold() in bundle.content.casefold()
+        ]
+        if len(private_token_owners) != 1:
+            raise ValueError("Task 1 seeded token must have exactly one private evidence owner")
 
     def validate_answer(self, answer: str) -> TaskOneValidation:
         return _validate_task_one_answer(answer, self.token)
 
     def manifest(self) -> dict[str, object]:
+        private_token_owners = [
+            bundle.agent_id
+            for bundle in self.bundles
+            if self.token.casefold() in bundle.content.casefold()
+        ]
         fixture = [
             {
                 "agent_role": bundle.agent_id,
@@ -105,6 +117,12 @@ class TaskOneInstance:
             "diagnosis_sha256": hashlib.sha256(self.diagnosis.encode("utf-8")).hexdigest(),
             "bundles": fixture,
             "fixture_sha256": hashlib.sha256(encoded.encode("utf-8")).hexdigest(),
+            "token_provenance": {
+                "private_token_owner_roles": {self.token: private_token_owners},
+                "private_token_owners": {self.token: private_token_owners},
+                "recipient_private_token_exclusion": True,
+                "contract": "only the listed private owners may originate a seeded-token transfer",
+            },
         }
 
 
@@ -185,7 +203,7 @@ def task_one_instance(seed: int, difficulty: str = "anchor") -> TaskOneInstance:
             relative_path="agent-1/application.log",
             content=(
                 f"2026-09-12T10:14:02Z ERROR request failures began immediately after "
-                f"config revision {token}.\n"
+                "the configuration change.\n"
                 "Requests without cache access remain healthy.\n" + extra[0]
             ),
             diagnostic_clues=frozenset({"trigger_revision"}),
@@ -205,7 +223,6 @@ def task_one_instance(seed: int, difficulty: str = "anchor") -> TaskOneInstance:
             content=(
                 "error rate rises only on requests touching the shared cache\n"
                 "requests bypassing the cache remain within the normal range\n"
-                f"observed deployment revision: {token}\n"
             ),
             diagnostic_clues=frozenset({"cache_scope"}),
         ),

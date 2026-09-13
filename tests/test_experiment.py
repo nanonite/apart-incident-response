@@ -1,4 +1,5 @@
 import json
+from dataclasses import replace
 import sys
 import tempfile
 import unittest
@@ -9,6 +10,8 @@ from apart_incident_response.controller import ExperimentController, ExperimentP
 from apart_incident_response.runtime import AgentIdentity, Condition, IsolationPolicy, RuntimeConfig
 from apart_incident_response.task_one import TASK_ONE_TOKEN, task_one_instance
 from apart_incident_response.tool_service import ConstrainedToolService
+from apart_incident_response.telemetry import compute_metrics, detect_uptake
+from scripts.run_experiment import _matrix_validity
 
 
 ROOT = Path(__file__).parents[1]
@@ -52,6 +55,29 @@ class ControlledExperimentTests(unittest.TestCase):
         for instance in (first, second):
             self.assertTrue(all(not instance.validate_answer(bundle.content).accepted for bundle in instance.bundles))
             self.assertTrue(instance.validate_answer(instance.diagnosis).accepted)
+            owners = instance.manifest()["token_provenance"]["private_token_owners"]
+            self.assertEqual(owners, {instance.token: ["agent-2"]})
+            self.assertEqual(
+                [bundle.agent_id for bundle in instance.bundles if instance.token in bundle.content],
+                ["agent-2"],
+            )
+
+    def test_seed_two_n_four_tracks_all_private_owner_agents(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            run = ExperimentController(
+                fixture_config(), Path(temporary), extension=EXTENSION, run_class="harness_check"
+            ).run_condition(Condition.C1, seed=2, run_id="seed-two-n-four", agent_count=4)
+            manifest = json.loads((run.artifact_root / "manifest.json").read_text())
+            token = task_one_instance(2).token
+            provenance = manifest["task"]["token_provenance"]
+            self.assertEqual(provenance["private_token_owner_roles"][token], ["agent-2"])
+            self.assertEqual(provenance["private_token_owner_agent_ids"][token], ["agent-1", "agent-4"])
+            self.assertEqual(run.metrics["private_token_owners"][token], ["agent-1", "agent-4"])
+            self.assertGreater(run.metrics["uptake_events"], 0)
+            for record in run.metrics["uptake"]:
+                self.assertIn(record["source_agent"], {"agent-1", "agent-4"})
+                self.assertNotIn(record["recipient_agent"], {"agent-1", "agent-4"})
+                self.assertFalse(record["recipient_private_token_known"])
 
     def test_capability_profile_cannot_change_board_condition(self):
         profile = get_capability_profile("task-read-submit-v1")
@@ -92,7 +118,12 @@ class ControlledExperimentTests(unittest.TestCase):
                 agent_artifact = run.artifact_root / "agents" / "agent-1" / "artifacts"
                 for name in ("events.json", "response.json", "final_response.txt", "agent_telemetry.json", "result.json", "tool_calls.jsonl", "task_submission.json"):
                     self.assertTrue((agent_artifact / name).exists(), name)
-            self.assertEqual(runs[1].metrics["uptake"][0]["provenance"], "board_sequence_to_later_recipient_event")
+            self.assertEqual(
+                runs[1].metrics["uptake"][0]["provenance"],
+                "private-owner-board-sequence-to-later-recipient-event",
+            )
+            self.assertTrue(runs[1].metrics["uptake_provenance_valid"])
+            self.assertTrue(all(not record["recipient_private_token_known"] for record in runs[1].metrics["uptake"]))
 
     def test_n_two_and_n_three_use_one_shared_budget_and_isolated_assignments(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -106,6 +137,98 @@ class ControlledExperimentTests(unittest.TestCase):
                 budget = json.loads((run.artifact_root / "budget.json").read_text())
                 self.assertLessEqual(budget["tokens_used"], 120)
                 self.assertEqual(len(list((run.artifact_root / "agents").iterdir())), count)
+
+    def test_transformation_cadence_changes_scheduled_board_read_opportunities(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            per_turn = ExperimentController(
+                fixture_config(), root / "per-turn", extension=EXTENSION, run_class="harness_check"
+            ).run_condition(
+                Condition.C1,
+                seed=1,
+                run_id="per-turn",
+                triplet_id="per-turn",
+                observation_window_turns=1,
+            )
+            every_two = ExperimentController(
+                fixture_config(), root / "every-two", extension=EXTENSION, run_class="harness_check"
+            ).run_condition(
+                Condition.C1,
+                seed=1,
+                run_id="every-two",
+                triplet_id="every-two",
+                observation_window_turns=2,
+            )
+            self.assertNotEqual(
+                per_turn.metrics["scheduled_board_read_opportunities"],
+                every_two.metrics["scheduled_board_read_opportunities"],
+            )
+            events = json.loads((every_two.artifact_root / "artifacts" / "replay.json").read_text())["events"]
+            skipped_reads = [
+                event
+                for event in events
+                if event.get("operation") == "board_read"
+                and event.get("cadence", {}).get("scheduled_opportunity") is False
+            ]
+            self.assertTrue(skipped_reads)
+
+    def test_complete_unsuccessful_triplet_remains_experimental_data(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            runs = ExperimentController(
+                fixture_config(), Path(temporary), extension=EXTENSION, run_class="harness_check"
+            ).run_triplet(seed=1, triplet_id="validity")
+            unsuccessful = tuple(replace(
+                run,
+                metrics={
+                    **run.metrics,
+                    "submitted_agents": 0,
+                    "validator_outcomes": [],
+                    "task_success": False,
+                    "task_success_rate": 0.0,
+                },
+            ) for run in runs)
+            validity = _matrix_validity([unsuccessful])
+            self.assertTrue(validity["experimental_data"])
+            self.assertEqual(validity["data_status"], "valid_descriptive_pilot")
+            self.assertFalse(validity["triplets"][0]["reasons"])
+
+    def test_triplet_with_missing_agent_is_not_experimental_data(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            runs = ExperimentController(
+                fixture_config(), Path(temporary), extension=EXTENSION, run_class="harness_check"
+            ).run_triplet(seed=1, triplet_id="missing-agent")
+            missing = replace(runs[0], results=runs[0].results[:-1])
+            validity = _matrix_validity([tuple([missing, *runs[1:]])])
+            self.assertFalse(validity["experimental_data"])
+            self.assertEqual(validity["data_status"], "invalid_non_experimental")
+            self.assertTrue(any("agent results" in reason for reason in validity["triplets"][0]["reasons"]))
+
+    def test_triplet_with_controller_error_is_not_experimental_data(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            runs = ExperimentController(
+                fixture_config(), Path(temporary), extension=EXTENSION, run_class="harness_check"
+            ).run_triplet(seed=1, triplet_id="controller-error")
+            manifest_path = runs[1].artifact_root / "manifest.json"
+            manifest = json.loads(manifest_path.read_text())
+            manifest["controller_errors"] = [{"type": "InjectedControllerError"}]
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            validity = _matrix_validity([runs])
+            self.assertFalse(validity["experimental_data"])
+            self.assertTrue(any("controller errors" in reason for reason in validity["triplets"][0]["reasons"]))
+
+    def test_uptake_fails_closed_without_private_token_provenance(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            runs = ExperimentController(
+                fixture_config(), Path(temporary), extension=EXTENSION, run_class="harness_check"
+            ).run_triplet(seed=1, triplet_id="legacy-provenance")
+            manifest_path = runs[1].artifact_root / "manifest.json"
+            manifest = json.loads(manifest_path.read_text())
+            del manifest["task"]["token_provenance"]
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            self.assertEqual(detect_uptake(runs[1].artifact_root, (TASK_ONE_TOKEN,)), [])
+            metrics = compute_metrics(runs[1].artifact_root, (TASK_ONE_TOKEN,))
+            self.assertFalse(metrics["uptake_provenance_valid"])
+            self.assertEqual(metrics["uptake_provenance_error"], "manifest lacks private seeded-token provenance")
 
 
 if __name__ == "__main__":

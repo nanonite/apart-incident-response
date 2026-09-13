@@ -7,6 +7,7 @@ import tempfile
 import threading
 import textwrap
 import unittest
+from datetime import datetime
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -759,7 +760,7 @@ class RuntimeContractTests(unittest.TestCase):
                 for artifact in workspace.artifact_dir.iterdir():
                     self.assertNotIn(b"refresh-", artifact.read_bytes())
 
-    def test_concurrent_oauth_runs_serialize_refresh_rotation(self):
+    def test_concurrent_oauth_runs_overlap_and_preserve_atomic_refresh_state(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             source = root / "codex-source.json"
@@ -784,8 +785,12 @@ class RuntimeContractTests(unittest.TestCase):
                     auth_path = Path(os.environ["HOME"]) / ".pi" / "agent" / "auth.json"
                     auth = json.loads(auth_path.read_text())
                     credentials = auth["openai-codex"]
+                    agent_id = os.environ["APART_AGENT_ID"]
                     refresh = credentials["refresh"]
-                    next_refresh = {"refresh-0": "refresh-1", "refresh-1": "refresh-2"}[refresh]
+                    if refresh != "refresh-0":
+                        print("unexpected refresh token", file=sys.stderr)
+                        raise SystemExit(2)
+                    next_refresh = {"agent-1": "refresh-1", "agent-2": "refresh-2"}[agent_id]
                     credentials["access"] = "access-" + next_refresh[-1]
                     credentials["refresh"] = next_refresh
                     auth_path.write_text(json.dumps(auth) + "\\n")
@@ -831,8 +836,25 @@ class RuntimeContractTests(unittest.TestCase):
 
             self.assertEqual(len(results), 2)
             self.assertTrue(all(result.status.value == "completed" for result in results))
+            started = [
+                datetime.fromisoformat(result.provider_started_at.replace("Z", "+00:00"))
+                for result in results
+                if result.provider_started_at is not None
+            ]
+            ended = [datetime.fromisoformat(result.ended_at.replace("Z", "+00:00")) for result in results]
+            self.assertEqual(len(started), 2)
+            self.assertLess(max(started), min(ended), "authenticated AgentRun instances must overlap")
             stored = json.loads(store.read_text(encoding="utf-8"))
-            self.assertEqual(stored["auth"]["openai-codex"]["refresh"], "refresh-2")
+            stored_credentials = stored["auth"]["openai-codex"]
+            valid_access_by_refresh = {"refresh-1": "access-1", "refresh-2": "access-2"}
+            self.assertIn(stored_credentials["refresh"], valid_access_by_refresh)
+            self.assertEqual(
+                stored_credentials["access"],
+                valid_access_by_refresh[stored_credentials["refresh"]],
+                "controller store must contain one coherent winning OAuth credential",
+            )
+            self.assertEqual(stored_credentials["type"], "oauth")
+            self.assertGreaterEqual(stored["revision"], 2)
 
     def test_auth_store_rejects_repository_workspace_and_insecure_parent_paths(self):
         with tempfile.TemporaryDirectory() as temp:

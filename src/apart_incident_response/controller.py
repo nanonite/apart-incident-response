@@ -180,6 +180,35 @@ class ExperimentController:
                 "path": Path(bundle.relative_path).name,
                 "bundle_sha256": hashlib.sha256(bundle.content.encode("utf-8")).hexdigest(),
             })
+        task_manifest = instance.manifest()
+        task_provenance = task_manifest.get("token_provenance")
+        if not isinstance(task_provenance, Mapping):
+            raise RuntimeConfigError("Task 1 manifest is missing token provenance")
+        owner_roles_by_token = task_provenance.get(
+            "private_token_owner_roles",
+            task_provenance.get("private_token_owners", {}),
+        )
+        if not isinstance(owner_roles_by_token, Mapping):
+            raise RuntimeConfigError("Task 1 manifest has invalid private owner roles")
+        owner_agent_ids_by_token: dict[str, list[str]] = {}
+        for token, roles in owner_roles_by_token.items():
+            if not isinstance(token, str) or not isinstance(roles, list) or not all(isinstance(role, str) for role in roles):
+                raise RuntimeConfigError("Task 1 manifest has invalid private owner roles")
+            owner_agent_ids_by_token[token] = sorted({
+                item["agent_id"]
+                for item in assignments
+                if item["evidence_role"] in roles
+            })
+            if not owner_agent_ids_by_token[token]:
+                raise RuntimeConfigError(f"Task 1 private owner roles do not resolve for {token}")
+        task_manifest["token_provenance"] = {
+            **task_provenance,
+            "private_token_owner_roles": {
+                token: list(roles) for token, roles in owner_roles_by_token.items()
+            },
+            "private_token_owner_agent_ids": owner_agent_ids_by_token,
+            "repeated_evidence_roles_expand_owners": True,
+        }
         return {
             "schema_version": 1,
             "run_class": self.run_class,
@@ -188,7 +217,7 @@ class ExperimentController:
             "triplet_id": triplet_id,
             "condition": condition.value,
             "seed": seed,
-            "task": instance.manifest(),
+            "task": task_manifest,
             "factor_assignment": {
                 "agent_count": run_config.agent_count,
                 "capability_profile": get_capability_profile(capability_profile).to_dict(),
@@ -211,6 +240,12 @@ class ExperimentController:
                 "agent_ids": [item["agent_id"] for item in assignments],
                 "synchronization": "threaded controller start; actual per-agent offsets are recorded in results",
                 "manual_orchestration": False,
+            },
+            "cadence_contract": {
+                "boundary": "controller board-read visibility",
+                "observation_window_turns": observation_window_turns,
+                "schedule": "first board-read attempt and then every Nth attempt per agent",
+                "skipped_slots_are_recorded": True,
             },
             "provenance": {
                 "primary_outcome": "seeded token in a source board message, cross-agent board read, then later recipient event",
@@ -240,6 +275,8 @@ class ExperimentController:
         selected_condition = Condition(condition)
         if isinstance(seed, bool) or not isinstance(seed, int):
             raise RuntimeConfigError("seed must be an integer")
+        if isinstance(observation_window_turns, bool) or not isinstance(observation_window_turns, int) or observation_window_turns < 1:
+            raise RuntimeConfigError("observation_window_turns must be a positive integer")
         count = self.protocol.anchor_agent_count if agent_count is None else agent_count
         profile_name = self.protocol.default_capability_profile if capability_profile is None else capability_profile
         get_capability_profile(profile_name)
@@ -309,6 +346,7 @@ class ExperimentController:
                     board_service,
                     artifact_root=self.artifact_root,
                     telemetry=board_log.record,
+                    board_read_interval=observation_window_turns,
                 ))
             budget = SystemBudget(run_config.aggregate_token_budget, run_config.aggregate_tool_call_budget)
             results: list[Mapping[str, Any]] = []

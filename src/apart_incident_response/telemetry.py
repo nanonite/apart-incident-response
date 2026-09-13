@@ -59,6 +59,57 @@ def _load_jsonl(path: Path) -> list[dict[str, Any]]:
     return events
 
 
+def _private_token_owners(
+    run_root: Path, tokens: Iterable[str]
+) -> tuple[dict[str, frozenset[str]], str | None]:
+    """Resolve private seeded-token ownership from the immutable run manifest."""
+
+    requested = tuple(tokens)
+    if not requested:
+        return {}, None
+    manifest = _load_json(run_root / "manifest.json")
+    task = manifest.get("task") if manifest is not None else None
+    provenance = task.get("token_provenance") if isinstance(task, Mapping) else None
+    owners_by_token = provenance.get("private_token_owners") if isinstance(provenance, Mapping) else None
+    owner_agent_ids_by_token = provenance.get("private_token_owner_agent_ids") if isinstance(provenance, Mapping) else None
+    assignments = manifest.get("assignment") if manifest is not None else None
+    if not isinstance(owners_by_token, Mapping) or not isinstance(assignments, list):
+        return {}, "manifest lacks private seeded-token provenance"
+    resolved: dict[str, frozenset[str]] = {}
+    role_to_agents: dict[str, set[str]] = {}
+    assigned_agents: set[str] = set()
+    for item in assignments:
+        if not isinstance(item, Mapping):
+            continue
+        role = item.get("evidence_role")
+        agent = item.get("agent_id")
+        if isinstance(role, str) and isinstance(agent, str):
+            role_to_agents.setdefault(role, set()).add(agent)
+            assigned_agents.add(agent)
+    if not role_to_agents:
+        return {}, "manifest has no resolvable evidence assignments"
+    owner_roles_by_token = provenance.get("private_token_owner_roles") if isinstance(provenance, Mapping) else None
+    for token in requested:
+        direct_agents = owner_agent_ids_by_token.get(token) if isinstance(owner_agent_ids_by_token, Mapping) else None
+        if isinstance(direct_agents, list):
+            if not direct_agents or not all(isinstance(agent, str) and agent in assigned_agents for agent in direct_agents):
+                return {}, f"manifest has invalid private owner agent provenance for {token}"
+            resolved[token] = frozenset(direct_agents)
+            continue
+        roles = owner_roles_by_token.get(token) if isinstance(owner_roles_by_token, Mapping) else owners_by_token.get(token)
+        if not isinstance(roles, list) or not roles or not all(isinstance(role, str) for role in roles):
+            return {}, f"manifest has invalid private owner provenance for {token}"
+        agents = frozenset(
+            agent
+            for role in roles
+            for agent in role_to_agents.get(role, set())
+        )
+        if not agents:
+            return {}, f"manifest cannot resolve private owners for {token}"
+        resolved[token] = agents
+    return resolved, None
+
+
 def _contains_token(value: Any, token: str) -> bool:
     if isinstance(value, str):
         return token.casefold() in value.casefold()
@@ -112,6 +163,9 @@ def detect_uptake(run_root: Path | str, seeded_tokens: Iterable[str]) -> list[di
 
     root = Path(run_root).expanduser().resolve()
     tokens = tuple(dict.fromkeys(token for token in seeded_tokens if isinstance(token, str) and token))
+    private_owners, provenance_error = _private_token_owners(root, tokens)
+    if provenance_error is not None:
+        return []
     uptake: list[dict[str, Any]] = []
     for recipient, artifact_dir, events in _agent_artifacts(root):
         for read_index, event in enumerate(events):
@@ -134,6 +188,9 @@ def detect_uptake(run_root: Path | str, seeded_tokens: Iterable[str]) -> list[di
                 if not matching_tokens:
                     continue
                 for token in matching_tokens:
+                    owners = private_owners.get(token, frozenset())
+                    if source not in owners or recipient in owners:
+                        continue
                     key = (recipient, source, sequence_id, token)
                     later = events[read_index + 1 :]
                     chosen: tuple[str, Mapping[str, Any]] | None = None
@@ -159,7 +216,9 @@ def detect_uptake(run_root: Path | str, seeded_tokens: Iterable[str]) -> list[di
                         "uptake_timestamp": candidate.get("timestamp", event.get("timestamp")),
                         "uptake_stage": stage,
                         "message_body_sha256": hashlib.sha256(body.encode("utf-8")).hexdigest(),
-                        "provenance": "board_sequence_to_later_recipient_event",
+                        "private_token_owner": source,
+                        "recipient_private_token_known": False,
+                        "provenance": "private-owner-board-sequence-to-later-recipient-event",
                     })
     unique: dict[tuple[Any, ...], dict[str, Any]] = {}
     for record in uptake:
@@ -246,6 +305,7 @@ def compute_metrics(
 
     root = Path(run_root).expanduser().resolve()
     tokens = tuple(dict.fromkeys(token for token in seeded_tokens if isinstance(token, str) and token))
+    private_owners, provenance_error = _private_token_owners(root, tokens)
     board_events = _board_events(root)
     uptake = detect_uptake(root, tokens)
     uptake_outcomes = classify_uptake_outcomes(root, uptake)
@@ -254,7 +314,14 @@ def compute_metrics(
     board_writes = [event for event in board_events if event.get("operation") == "board_append"]
     cross_agent_messages = 0
     total_read_messages = 0
+    cadence_attempts = 0
+    scheduled_read_opportunities = 0
     for event in board_reads:
+        cadence_attempts += 1
+        cadence = event.get("cadence")
+        scheduled = not isinstance(cadence, Mapping) or bool(cadence.get("scheduled_opportunity", True))
+        if scheduled:
+            scheduled_read_opportunities += 1
         messages = event.get("message_ids", [])
         if isinstance(messages, list):
             total_read_messages += len(messages)
@@ -294,11 +361,20 @@ def compute_metrics(
         for token in tokens
         if message.get("agent_id") != event.get("agent_id")
         and _contains_token(message.get("message_body"), token)
+        and event.get("agent_id") not in private_owners.get(token, frozenset())
+        and message.get("source_agent") in private_owners.get(token, frozenset())
     })
     transformations = []
     for event in board_writes:
         body = event.get("message", "")
-        kind = "verbatim_seeded_token" if any(_contains_token(body, token) for token in tokens) else "message_without_seeded_token"
+        source = event.get("agent_id")
+        kind = (
+            "verbatim_seeded_token"
+            if any(_contains_token(body, token) and source in private_owners.get(token, frozenset()) for token in tokens)
+            else "unattributed_seeded_token"
+            if any(_contains_token(body, token) for token in tokens)
+            else "message_without_seeded_token"
+        )
         transformations.append({
             "source_agent": event.get("agent_id"),
             "timestamp": event.get("timestamp"),
@@ -327,11 +403,24 @@ def compute_metrics(
     ]
     board_bytes_read = sum(int(event.get("bytes_read", 0) or 0) for event in board_reads)
     board_bytes_written = sum(int(event.get("bytes_written", 0) or 0) for event in board_writes)
+    message_to_answer_opportunities = sum(
+        1
+        for event in board_reads
+        if not isinstance(event.get("cadence"), Mapping)
+        or bool(event["cadence"].get("scheduled_opportunity", True))
+        for message in event.get("messages", [])
+        if isinstance(message, Mapping)
+        and message.get("source_agent") != event.get("agent_id")
+    )
+    transformation_opportunities = len(board_writes) + message_to_answer_opportunities
     metrics: dict[str, Any] = {
         "schema_version": 1,
-        "uptake_definition": "recipient use after a prior board read of a seeded-token message from another agent",
+        "uptake_definition": "recipient use after a prior board read of a seeded-token message from a declared private owner; every recipient with private exposure is excluded",
         "U": (len(uptake) / eligible) if eligible else 0.0,
-        "uptake_defined": bool(eligible),
+        "uptake_defined": bool(eligible) and provenance_error is None,
+        "uptake_provenance_valid": provenance_error is None,
+        "uptake_provenance_error": provenance_error,
+        "private_token_owners": {token: sorted(owners) for token, owners in private_owners.items()},
         "uptake_events": len(uptake),
         "uptake_recipients": len(recipients),
         "uptake_opportunities": eligible,
@@ -339,6 +428,8 @@ def compute_metrics(
         "uptake_outcomes": uptake_outcomes,
         "board_reads_R": len(board_reads),
         "board_writes_W": len(board_writes),
+        "cadence_read_attempts": cadence_attempts,
+        "scheduled_board_read_opportunities": scheduled_read_opportunities,
         "board_bytes_read": board_bytes_read,
         "board_bytes_written": board_bytes_written,
         "cross_agent_messages_X": cross_agent_messages,
@@ -347,9 +438,9 @@ def compute_metrics(
         "mean_uptake_latency_seconds": (sum(latencies) / len(latencies)) if latencies else None,
         "transformation_events": transformations,
         "evidence_to_message_opportunities": len(board_writes),
-        "message_to_answer_opportunities": cross_agent_messages * max(observation_window_turns, 1),
-        "transformation_opportunities": len(board_writes) + cross_agent_messages * max(observation_window_turns, 1),
-        "transformation_rate": (len(transformations) / (len(board_writes) + cross_agent_messages * max(observation_window_turns, 1))) if (board_writes or cross_agent_messages) else 0.0,
+        "message_to_answer_opportunities": message_to_answer_opportunities,
+        "transformation_opportunities": transformation_opportunities,
+        "transformation_rate": (len(transformations) / transformation_opportunities) if transformation_opportunities else 0.0,
         "agent_count": len(results),
         "completed_agents": successful_agents,
         "submitted_agents": submitted_agents,
