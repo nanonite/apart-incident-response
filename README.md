@@ -97,6 +97,45 @@ run.
 The `run` command writes metadata, raw JSONL, stderr, parsed events, the final
 response, budget usage, and exit status under the agent artifact directory.
 
+## Controlled n-agent experiment controller
+
+The controller in [controller.py](src/apart_incident_response/controller.py)
+implements the versioned protocol in
+[docs/experiment-protocol.md](docs/experiment-protocol.md). It starts one
+threaded, isolated `AgentRun` per agent, gives every condition triplet the same
+prompt/fixture/model/n/timeout/aggregate budget, and owns one board database
+per non-C0 swarm. The aggregate budget is reserved atomically before provider
+launch; for n variations the per-agent envelope is the integer division of the
+same aggregate ceiling.
+
+Run a real Task 1 pilot only after configuring the Pi root and controller-owned
+OAuth store described above:
+
+```bash
+PYTHONPATH=src python scripts/run_experiment.py \
+  --real-anchor --seeds 1 2 3 4 5 \
+  --output runs/t1
+```
+
+The command writes a condition directory and a paired triplet summary for each
+seed. It preserves raw Pi JSONL/stderr, parsed events, response/tokenizer
+artifacts, tool audits, board state/events, submissions, budget/failure data,
+and derived provenance/replay metrics. `U` requires a prior cross-agent board
+read followed by later recipient use of a seeded token; token overlap and task
+success are not substitutes for that trace. Five-seed output is descriptive
+pilot evidence only.
+
+The fake-provider commands are harness checks, never model data:
+
+```bash
+PYTHONPATH=src python scripts/run_experiment.py --harness-check
+PYTHONPATH=src python scripts/run_experiment.py --harness-factors
+```
+
+The second command exercises the predeclared agent-count, capability,
+difficulty, transformation-window, and model-factor paths while recording
+`run_class=harness_check` and `experimental_data=false`.
+
 ## Board storage foundation
 
 Epic 3 issue #16 provides the controller-owned storage primitive in
@@ -206,6 +245,21 @@ only to make Pi emit constrained tool calls. Those calls cross the controller's
 fixture FIFO and produce the audit evidence in
 [docs/pi-extension-smoke-trace.json](docs/pi-extension-smoke-trace.json). Run it
 with `just pi-smoke`.
+
+Before Task 2 work begins, regenerate the credential-free single-agent Task 1
+calibration with:
+
+```bash
+PYTHONPATH=src:. python scripts/task_one_calibration.py \
+  --output docs/task-one-calibration.json
+```
+
+It runs one deterministic fake agent per evidence bundle in C0, where only
+`task_read`, `task_query`, and `task_submit` are available. The records capture
+the prompt, bundle, tool and token counts, response, and validator result. The
+checked-in trace shows all three runs complete while no individual bundle passes
+the complete diagnosis validator. Calibration is diagnostic evidence and is not
+a fourth experimental condition.
 
 ## Docker
 

@@ -173,8 +173,17 @@ class TaskToolService:
         if self._artifact_root is None:
             raise ToolValidationError("submission artifact storage is unavailable")
         diagnosis = required_text(arguments, "diagnosis", MAX_DIAGNOSIS_BYTES)
+        validator_record: dict[str, Any] = {
+            "validator": getattr(definition.answer_validator, "__name__", type(definition.answer_validator).__name__)
+            if definition.answer_validator is not None
+            else None,
+        }
         if definition.answer_validator is not None:
             validation = definition.answer_validator(diagnosis)
+            validator_record.update({
+                "accepted": bool(getattr(validation, "accepted", False)),
+                "missing_terms": list(getattr(validation, "missing_terms", ())),
+            })
             if not getattr(validation, "accepted", False):
                 raise ToolValidationError("diagnosis failed the authenticated task validator")
         evidence = self._validate_evidence(definition, arguments.get("evidence"))
@@ -193,6 +202,7 @@ class TaskToolService:
             "timestamp": self._clock(),
             "diagnosis": safe_diagnosis,
             "evidence": safe_evidence,
+            "validator": validator_record,
             "token_usage": {
                 "source": "controller_runtime_accounting",
                 "status": "provisional",

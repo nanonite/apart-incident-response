@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- Add local Qwen3-8B logprobs data path for entropy metrics (#72)
+- Define neutral agent prompts (#26)
 - Implement Task 1 submission (#23)
 - Integrate delivered tool service and validate real Pi extension (#59)
 - Add append-only board and containment policies (#3)
@@ -28,3 +30,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix board IPC integration and CLI tool wiring (#58)
 
 ### Changed
+- Run single-agent task calibration (#47)

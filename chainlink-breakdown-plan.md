@@ -1,6 +1,14 @@
 # Chainlink Breakdown Plan
 
-This plan breaks the MVP described in `mvp-plan.md` into dependency-ordered epics and tasks. The dashboard and second model remain outside the critical path.
+## Current Priority: Controlled N-Agent Experiment
+
+The immediate goal is a runnable, provenance-backed C0/C1/C2 experiment with a configurable number of isolated agents. The first milestone is a real-model Task 1 pilot with matched prompts, task instances, agent count, model, timeouts, and aggregate compute budgets across each condition triplet. C1 versus C2 is the primary board-read containment contrast; C0 is the board-absent baseline. Runs must capture raw agent and board events, submissions, validator outcomes, costs, and enough metadata to replay and pair results. A deterministic fake-agent calibration or board smoke test is not an experimental run.
+
+After the first controlled triplet works, vary one predeclared factor at a time or use a balanced factorial design: agent count, harness capability profile, task difficulty, information-transformation opportunity/cadence, and model intelligence tier. Keep each factor fixed within a C0/C1/C2 triplet. Define capability profiles by explicitly exposed tools and permissions without introducing a second cross-agent channel. Define transformation frequency from timestamped evidence-to-message and message-to-answer events, with a common observation window and budget; record both opportunities and observed transformations. Calibrate difficulty against independent-agent success, and compare model tiers under the same task fixtures and harness contract. Randomize or counterbalance run order, record assignment and missing/failure outcomes, and distinguish provenance-backed uptake from mere token overlap or task success.
+
+This priority supersedes the older MVP ordering below where it treats Task 2, entropy evaluation, dashboard work, or a broad epic as prerequisites for the first Task 1 matrix. Task 2 and richer response-state metrics can extend the design after the first matrix is collecting valid data. The Chainlink issue graph is the operational work queue.
+
+This plan breaks the MVP described in `mvp-plan.md` into dependency-ordered epics and tasks. Dashboard work remains outside the critical path; the first controlled model-tier comparison is tracked under the current priority above.
 
 Research positioning is informed by Kim et al., *Capable language models can outgrow the benefits of collaboration* ([source PDF](docs/pdfs/s42256-026-01268-y-1.pdf); [local Markdown extraction](docs/markdown/s42256-026-01268-y-1/s42256-026-01268-y-1.md)). That paper is a useful methodological baseline, but this experiment asks a different question.
 
@@ -328,7 +336,7 @@ The MVP should end after the following are complete:
 12. The same transfer is absent under C2.
 13. Repeated runs produce task-success, uptake, response-state, and efficiency metrics with pilot-appropriate claims.
 
-Task 2, the dashboard, statistical intervals, second-model replication, and Task 3 should be treated as progressively lower-priority work.
+Task 2, the dashboard, statistical intervals, additional model replication beyond the first tier comparison, and Task 3 are lower-priority extensions under the current priority above.
 
 ## Decisions to Lock Before Creating Tickets
 

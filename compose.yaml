@@ -20,3 +20,24 @@ services:
       - seccomp=unconfined
       - apparmor=unconfined
     command: ["validate-config", "config/runtime.json"]
+
+  # Local model for the one-shot /goal logprobs data path. Serves Qwen3-8B
+  # (4-bit) and exposes token-level logprobs via /api/generate so the entropy
+  # metrics in entropy-metrics-mvp.md can be computed from raw probabilities.
+  ollama:
+    image: ollama/ollama:0.34.0
+    # Requires the NVIDIA Container Toolkit on the host. On a CPU-only host,
+    # drop `gpus: all` and Ollama will fall back to CPU inference.
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    volumes:
+      - type: bind
+        source: ./ollama-models
+        target: /root/.ollama
+    ports:
+      - "11434:11434"

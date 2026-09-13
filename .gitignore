@@ -4,4 +4,6 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 artifacts/
+runs/
 .uv-cache/
+ollama-models/

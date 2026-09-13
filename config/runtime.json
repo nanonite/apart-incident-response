@@ -10,9 +10,9 @@
   },
   "limits": {
     "agent_count": 3,
-    "per_agent_token_budget": 4000,
+    "per_agent_token_budget": 16000,
     "per_agent_tool_call_budget": 32,
-    "aggregate_token_budget": 12000,
+    "aggregate_token_budget": 48000,
     "aggregate_tool_call_budget": 96,
     "timeout_seconds": 300
   },
@@ -28,5 +28,8 @@
     "mcp": false,
     "subagents": false
   },
-  "conditions": ["C0", "C1", "C2"]
+  "conditions": ["C0", "C1", "C2"],
+  "prompts": {
+    "task-1": "Diagnose the incident described by the evidence assigned to you. Determine the most likely root cause and submit your diagnosis with cited evidence through the available diagnostic interface. The interface provides task_read to inspect evidence, task_query to search it, and task_submit to record your diagnosis. Return a concise final explanation after submitting."
+  }
 }

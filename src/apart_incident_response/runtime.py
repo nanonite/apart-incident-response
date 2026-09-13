@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+from collections import defaultdict
 import fcntl
 import hashlib
 import hmac
@@ -34,6 +35,8 @@ from enum import Enum
 from pathlib import Path
 from threading import Event, Lock, Thread
 from typing import Any, IO, Iterable, Iterator, Mapping, Sequence
+
+from .task_prompts import DEFAULT_TASK_PROMPTS, TaskPromptCatalog, TaskPromptConfigError
 
 
 # Keep CLI execution and package imports on one module identity. This matters
@@ -120,6 +123,7 @@ class AgentIdentity:
     condition: Condition
     task_id: str
     seed: int
+    capability_profile: str = "task-diagnostic-v1"
 
     def __post_init__(self) -> None:
         _validate_id(self.run_id, "run_id")
@@ -127,13 +131,17 @@ class AgentIdentity:
         _validate_id(self.task_id, "task_id")
         if not isinstance(self.seed, int) or isinstance(self.seed, bool):
             raise RuntimeConfigError("seed must be an integer")
+        _validate_id(self.capability_profile, "capability_profile")
         object.__setattr__(self, "condition", Condition(self.condition))
 
     @property
     def credential_id(self) -> str:
         """Controller-keyed binding used by tool servers to identify the agent."""
 
-        material = f"{self.run_id}\0{self.agent_id}\0{self.condition.value}\0{self.task_id}\0{self.seed}"
+        material = (
+            f"{self.run_id}\0{self.agent_id}\0{self.condition.value}\0{self.task_id}"
+            f"\0{self.seed}\0{self.capability_profile}"
+        )
         return hmac.new(
             _identity_signing_key(), material.encode("utf-8"), hashlib.sha256
         ).hexdigest()
@@ -145,6 +153,7 @@ class AgentIdentity:
             "condition": self.condition.value,
             "task_id": self.task_id,
             "seed": self.seed,
+            "capability_profile": self.capability_profile,
             "credential_id": self.credential_id,
         }
 
@@ -161,6 +170,7 @@ class AgentIdentity:
                 condition=raw["condition"],
                 task_id=raw["task_id"],
                 seed=raw["seed"],
+                capability_profile=raw.get("capability_profile", "task-diagnostic-v1"),
             )
         except KeyError as exc:
             raise RuntimeConfigError(f"agent identity is missing {exc.args[0]!r}") from exc
@@ -244,6 +254,7 @@ class RuntimeConfig:
     timeout_seconds: float = 300.0
     isolation: IsolationPolicy = field(default_factory=IsolationPolicy)
     conditions: tuple[Condition, ...] = (Condition.C0, Condition.C1, Condition.C2)
+    task_prompts: Mapping[str, str] = field(default_factory=lambda: dict(DEFAULT_TASK_PROMPTS))
 
     def __post_init__(self) -> None:
         if not isinstance(self.pi_version, str) or not self.pi_version.strip():
@@ -280,6 +291,11 @@ class RuntimeConfig:
         if tuple(self.conditions) != (Condition.C0, Condition.C1, Condition.C2):
             raise RuntimeConfigError("conditions must be the fixed ordered set C0, C1, C2")
         self.isolation.validate()
+        try:
+            catalog = TaskPromptCatalog(self.task_prompts)
+        except TaskPromptConfigError as exc:
+            raise RuntimeConfigError(str(exc)) from exc
+        object.__setattr__(self, "task_prompts", dict(catalog.prompts))
 
     @classmethod
     def from_dict(cls, raw: Mapping[str, Any]) -> "RuntimeConfig":
@@ -287,6 +303,7 @@ class RuntimeConfig:
         limits = raw.get("limits")
         isolation = raw.get("isolation", {})
         conditions = raw.get("conditions", ["C0", "C1", "C2"])
+        task_prompts = raw.get("prompts", DEFAULT_TASK_PROMPTS)
         if not isinstance(pi, Mapping) or not isinstance(limits, Mapping):
             raise RuntimeConfigError("config requires 'pi' and 'limits' objects")
         if not isinstance(isolation, Mapping):
@@ -301,6 +318,8 @@ class RuntimeConfig:
             raise RuntimeConfigError("isolation host allowlists must contain strings")
         if not isinstance(conditions, list):
             raise RuntimeConfigError("conditions must be a JSON array")
+        if not isinstance(task_prompts, Mapping):
+            raise RuntimeConfigError("prompts must be a JSON object")
         command = pi.get("launch_command", [pi.get("executable", "pi")])
         if not isinstance(command, list):
             raise RuntimeConfigError("pi.launch_command must be a JSON array")
@@ -355,6 +374,7 @@ class RuntimeConfig:
                 ),
             ),
             conditions=tuple(Condition(str(condition)) for condition in conditions),
+            task_prompts=dict(task_prompts),
         )
 
     @classmethod
@@ -386,7 +406,16 @@ class RuntimeConfig:
             },
             "isolation": asdict(self.isolation),
             "conditions": [condition.value for condition in self.conditions],
+            "prompts": dict(self.task_prompts),
         }
+
+    def prompt_for(self, task_id: str, seed: int) -> str:
+        """Select a task prompt using task and seed, independent of condition."""
+
+        try:
+            return TaskPromptCatalog(self.task_prompts).prompt_for(task_id, seed)
+        except TaskPromptConfigError as exc:
+            raise RuntimeConfigError(str(exc)) from exc
 
 
 @dataclass(frozen=True)
@@ -583,6 +612,7 @@ def _safe_env(
         "APART_CONDITION": identity.condition.value,
         "APART_TASK_ID": identity.task_id,
         "APART_SEED": str(identity.seed),
+        "APART_CAPABILITY_PROFILE": identity.capability_profile,
         "APART_PI_VERSION": config.pi_version,
         "APART_MODEL": config.model,
         "APART_BUILTIN_TOOLS": "disabled",
@@ -1411,7 +1441,7 @@ def build_pi_command(
     if resolved_extension is not None:
         extension_mount = "/experiment/extensions"
         insert_at = sandbox_command.index("--chdir")
-        sandbox_command[insert_at:insert_at] = [
+        extension_mounts = [
             "--dir",
             "/experiment",
             "--dir",
@@ -1420,6 +1450,13 @@ def build_pi_command(
             str(resolved_extension.parent),
             extension_mount,
         ]
+        if pi_root is not None and (pi_root / "node_modules").is_dir():
+            extension_mounts.extend([
+                "--ro-bind",
+                str(pi_root / "node_modules"),
+                "/experiment/node_modules",
+            ])
+        sandbox_command[insert_at:insert_at] = extension_mounts
         command = [
             part.replace(str(resolved_extension), f"{extension_mount}/{resolved_extension.name}")
             for part in command
@@ -1488,6 +1525,22 @@ def _persistence_failure_diagnostic(error: BaseException) -> str:
     """Describe persistence failure without copying exception details or secrets."""
 
     return f"OAuth credential persistence failed ({type(error).__name__})"
+
+
+def _submission_finalization_failure_diagnostic(error: BaseException) -> str:
+    """Describe submission finalization failure without copying artifact data."""
+
+    return f"Task submission finalization failed ({type(error).__name__})"
+
+
+def _merge_persistence_diagnostics(
+    first: str | None, second: str | None
+) -> str | None:
+    if first is None:
+        return second
+    if second is None:
+        return first
+    return f"{first}; {second}"
 
 
 def _message_key(message: Mapping[str, Any]) -> str:
@@ -1649,7 +1702,9 @@ class AgentRun:
         self.system_budget = system_budget
         self.tool_service = tool_service
 
-    def run(self, prompt: str, extension: Path | None = None) -> RunResult:
+    def run(self, prompt: str | None = None, extension: Path | None = None) -> RunResult:
+        if prompt is None:
+            prompt = self.config.prompt_for(self.identity.task_id, self.identity.seed)
         if not isinstance(prompt, str) or not prompt.strip():
             raise RuntimeConfigError("prompt must be a non-empty string")
         artifact_dir = self.workspace.artifact_dir
@@ -1761,6 +1816,7 @@ class AgentRun:
             self._write_json(artifact_dir / "metadata.json", {
                 "identity": self.identity.to_dict(),
                 "runtime": self.config.to_dict(),
+                "prompt": prompt,
                 "command": command,
                 "started_at": started_at,
             })
@@ -1929,11 +1985,19 @@ class AgentRun:
                 # The submission may have raced the stdout event that reports
                 # its tool call. Finalize after the child and selector have
                 # fully drained so the artifact carries complete usage.
-                self.tool_service.finalize_runtime_usage(self.identity)
+                try:
+                    self.tool_service.finalize_runtime_usage(self.identity)
+                except Exception as exc:
+                    # A malformed or unavailable submission artifact must not
+                    # erase the run's exit status or prevent result.json from
+                    # being written. Keep the diagnostic type-only because
+                    # the exception may contain paths or sensitive data.
+                    persistence_failure = _submission_finalization_failure_diagnostic(exc)
             result = self._finish(
                 status, exit_code, started_at, _utc_now(), started_clock,
                 final_response, failure_reason, command, events,
                 agent_tokens_used, agent_tool_calls_used,
+                persistence_failure=persistence_failure,
             )
             (artifact_dir / "stdout.jsonl").write_text("".join(stdout_lines), encoding="utf-8")
             (artifact_dir / "stderr.log").write_text("".join(stderr_lines), encoding="utf-8")
@@ -1945,13 +2009,14 @@ class AgentRun:
                 # An existing run exception/result must not be masked by a
                 # defensive accounting or cleanup path.
                 pass
+            auth_persistence_failure: str | None = None
             try:
                 _persist_auth_stage(auth_stage)
             except Exception as exc:
                 # Keep the diagnostic deliberately class-only: exception
                 # messages can contain paths or provider data and must never
                 # expose a credential in the artifact.
-                persistence_failure = _persistence_failure_diagnostic(exc)
+                auth_persistence_failure = _persistence_failure_diagnostic(exc)
             try:
                 self._cleanup_staged_auth()
             except Exception:
@@ -1976,14 +2041,16 @@ class AgentRun:
                     auth_stage.release()
                 except Exception:
                     pass
-            if persistence_failure is not None and result is not None:
-                result.persistence_failure = persistence_failure
+            if auth_persistence_failure is not None and result is not None:
+                result.persistence_failure = _merge_persistence_diagnostics(
+                    result.persistence_failure, auth_persistence_failure
+                )
                 if result.status is ExitStatus.COMPLETED:
                     result.status = ExitStatus.FAILED
                 result.failure_reason = (
-                    f"{result.failure_reason}; {persistence_failure}"
+                    f"{result.failure_reason}; {result.persistence_failure}"
                     if result.failure_reason
-                    else persistence_failure
+                    else result.persistence_failure
                 )
                 try:
                     self._write_json(
@@ -2041,6 +2108,7 @@ class AgentRun:
     @staticmethod
     def _write_json(path: Path, value: Mapping[str, Any]) -> None:
         path.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        path.chmod(0o600)
 
     def _finish(
         self,
@@ -2055,6 +2123,7 @@ class AgentRun:
         events: list[dict[str, Any]],
         tokens_used: int,
         tool_calls_used: int,
+        persistence_failure: str | None = None,
     ) -> RunResult:
         result = RunResult(
             identity=self.identity,
@@ -2071,10 +2140,53 @@ class AgentRun:
             workspace=str(self.workspace.root),
             artifact_dir=str(self.workspace.artifact_dir),
             events=events,
+            persistence_failure=persistence_failure,
         )
+        response_text = final_response or ""
+        response_bytes = response_text.encode("utf-8")
+        tokenizer_config = {
+            "name": "utf8-byte-v1",
+            "version": "1",
+            "normalization": "none",
+            "encoding": "utf-8",
+        }
+        tokenizer_config_hash = hashlib.sha256(
+            json.dumps(tokenizer_config, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        ).hexdigest()
+        (self.workspace.artifact_dir / "final_response.txt").write_bytes(response_bytes)
+        (self.workspace.artifact_dir / "final_response.txt").chmod(0o600)
+        self._write_json(self.workspace.artifact_dir / "response.json", {
+            "schema_version": 1,
+            "identity": self.identity.to_dict(),
+            "final_response": final_response,
+            "response_sha256": hashlib.sha256(response_bytes).hexdigest(),
+            "provider_token_count": tokens_used,
+            "tokenizer": tokenizer_config,
+            "tokenizer_config_sha256": tokenizer_config_hash,
+            "token_ids": list(response_bytes),
+            "token_count": len(response_bytes),
+            "token_count_definition": "derived UTF-8 byte token count; provider_token_count is authoritative usage",
+        })
+        event_counts: dict[str, int] = defaultdict(int)
+        for event in events:
+            event_counts[str(event.get("type", "unknown"))] += 1
+        self._write_json(self.workspace.artifact_dir / "agent_telemetry.json", {
+            "schema_version": 1,
+            "identity": self.identity.to_dict(),
+            "started_at": started_at,
+            "ended_at": ended_at,
+            "status": status.value,
+            "event_counts": dict(sorted(event_counts.items())),
+            "turn_count": event_counts.get("turn_end", event_counts.get("message_end", 0)),
+            "tool_call_count": tool_calls_used,
+            "provider_tokens": tokens_used,
+            "wall_clock_seconds": round(time.monotonic() - started_clock, 6),
+            "failure_reason": failure_reason,
+        })
         (self.workspace.artifact_dir / "events.json").write_text(
             json.dumps(events, indent=2, sort_keys=True) + "\n", encoding="utf-8"
         )
+        (self.workspace.artifact_dir / "events.json").chmod(0o600)
         self._write_json(self.workspace.artifact_dir / "result.json", result.to_dict())
         return result
 
@@ -2154,10 +2266,6 @@ def _build_cli_tool_service(
 
 def _run_agent_command(args: argparse.Namespace) -> int:
     config = RuntimeConfig.from_json(args.config)
-    if args.prompt is not None:
-        prompt = args.prompt
-    else:
-        prompt = args.prompt_file.read_text(encoding="utf-8")
     identity = AgentIdentity(
         run_id=args.run_id,
         agent_id=args.agent_id,
@@ -2165,6 +2273,12 @@ def _run_agent_command(args: argparse.Namespace) -> int:
         task_id=args.task_id,
         seed=args.seed,
     )
+    if args.prompt is not None:
+        prompt = args.prompt
+    elif args.prompt_file is not None:
+        prompt = args.prompt_file.read_text(encoding="utf-8")
+    else:
+        prompt = None
     workspace = create_isolated_workspace(args.workspace_root, identity)
     tool_service = None
     board_store = None
@@ -2201,7 +2315,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     run.add_argument("--extension", type=Path)
     run.add_argument("--task-root", type=Path)
     run.add_argument("--board-database", type=Path)
-    prompt = run.add_mutually_exclusive_group(required=True)
+    prompt = run.add_mutually_exclusive_group(required=False)
     prompt.add_argument("--prompt")
     prompt.add_argument("--prompt-file", type=Path)
     args = parser.parse_args(argv)
