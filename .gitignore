@@ -5,3 +5,6 @@ __pycache__/
 .pytest_cache/
 artifacts/
 .uv-cache/
+.openai/
+APART_MODEL_TOKEN
+APART_MODEL_TOKEN*
