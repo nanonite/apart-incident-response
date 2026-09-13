@@ -4,10 +4,13 @@ This repository uses a workspace-local, reproducible Python environment managed 
 [`uv`](https://docs.astral.sh/uv/). From the repository root:
 
 ```bash
-UV_CACHE_DIR=.uv-cache uv sync
-UV_CACHE_DIR=.uv-cache uv run env PYTHONPATH=src python -m unittest discover -s tests -v
+just setup
+just test
 UV_CACHE_DIR=.uv-cache uv run env PYTHONPATH=src python -m apart_incident_response.runtime validate-config config/runtime.json
 ```
+
+`just test` uses the host `bubblewrap` when available and otherwise enters the
+Nix development shell, which supplies the pinned test-runtime tools.
 
 The report's `just` build and its LaTeX dependencies are reproducible through
 the workspace flake:

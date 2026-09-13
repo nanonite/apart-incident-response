@@ -1,5 +1,5 @@
 {
-  description = "Reproducible report tooling for apart-incident-response";
+  description = "Reproducible report and test tooling for apart-incident-response";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
@@ -15,6 +15,9 @@
           default = pkgs.mkShell {
             packages = [
               pkgs.just
+              pkgs.uv
+              pkgs.python312
+              pkgs.bubblewrap
               pkgs.biber
               (pkgs.texlive.combine {
                 inherit (pkgs.texlive)
