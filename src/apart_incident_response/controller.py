@@ -414,7 +414,7 @@ class ExperimentController:
     def run_anchor_matrix(self, seeds: Sequence[int] | None = None) -> list[tuple[SwarmRun, ...]]:
         selected = self.protocol.anchor_seeds if seeds is None else tuple(seeds)
         return [
-            self.run_triplet(seed=seed, triplet_id=f"task1-seed-{seed}")
+            self.run_triplet(seed=seed, triplet_id=f"s{seed:04d}")
             for seed in selected
         ]
 
