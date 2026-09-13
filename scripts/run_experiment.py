@@ -246,6 +246,7 @@ def run_real_anchor(
     seeds: tuple[int, ...],
     model: str | None = None,
     run_id: str | None = None,
+    agent_count: int | None = None,
 ) -> dict[str, object]:
     config = RuntimeConfig.from_json(SOURCE_ROOT / "config" / "runtime.json")
     if model is not None:
@@ -264,7 +265,14 @@ def run_real_anchor(
         run_class="experimental",
     )
     try:
-        triplets = controller.run_anchor_matrix(seeds)
+        if agent_count is None:
+            triplets = controller.run_anchor_matrix(seeds)
+        else:
+            selected_seeds = controller.protocol.anchor_seeds if seeds is None else tuple(seeds)
+            triplets = [
+                controller.run_triplet(seed=seed, triplet_id=f"s{seed:04d}", agent_count=agent_count)
+                for seed in selected_seeds
+            ]
     except Exception as exc:
         return _invocation_failure(invocation, exc, run_class="experimental")
     validity = _matrix_validity(triplets)
@@ -383,6 +391,11 @@ def main() -> int:
     )
     parser.add_argument("--seeds", type=int, nargs="+", default=[1])
     parser.add_argument("--run-id", help="stable label stored with this invocation")
+    parser.add_argument(
+        "--agent-count",
+        type=int,
+        help="override the anchor swarm size (predeclared: 2, 3, or 4); defaults to the anchor (3)",
+    )
     args = parser.parse_args()
     if args.harness_check:
         result = run_harness_check(args.output.expanduser().resolve(), run_id=args.run_id)
@@ -394,6 +407,7 @@ def main() -> int:
             tuple(args.seeds),
             args.model,
             args.run_id,
+            args.agent_count,
         )
     print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
     return 0 if not args.real_anchor or result["experimental_data"] else 2

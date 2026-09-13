@@ -119,7 +119,13 @@ qwen-runtime:
 # different network). `--network host` lets the container reach that host
 # port directly. Container output is written root-owned, so ownership is
 # handed back to the calling user afterward.
-qwen3-experiment output="runs/qwen3-8b/manual" seeds="1" ollama-host="http://localhost:11434": build
+qwen3-experiment output="runs/qwen3-8b/manual" seeds="1" ollama-host="http://localhost:11434" agent-count="": build
+    #!/usr/bin/env bash
+    set -euo pipefail
+    args=(--real-anchor --model ollama/qwen3:8b --seeds {{ seeds }} --output {{ output }})
+    if [[ -n "{{ agent-count }}" ]]; then
+        args+=(--agent-count "{{ agent-count }}")
+    fi
     docker run --rm --network host \
         --cap-add SYS_ADMIN --cap-add NET_ADMIN \
         --security-opt seccomp=unconfined --security-opt apparmor=unconfined \
@@ -130,7 +136,6 @@ qwen3-experiment output="runs/qwen3-8b/manual" seeds="1" ollama-host="http://loc
         -v "$(pwd)/config:/app/config" \
         -v "$(pwd)/runs:/app/runs" \
         --entrypoint python \
-        apart-incident-response:local scripts/run_experiment.py \
-        --real-anchor --model ollama/qwen3:8b --seeds {{ seeds }} --output {{ output }}
+        apart-incident-response:local scripts/run_experiment.py "${args[@]}"
     docker run --rm -v "$(pwd)/runs:/runs" alpine chown -R "$(id -u):$(id -g)" /runs
     find {{ output }} -type d -name home -exec rm -rf {} +
