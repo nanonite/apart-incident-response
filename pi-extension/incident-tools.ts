@@ -184,7 +184,12 @@ export default function (pi: ExtensionAPI) {
 	pi.registerTool({
 		name: "task_read",
 		label: "Read task file",
-		description: "Read one permitted UTF-8 file from the authenticated task fixture.",
+		description:
+			"Read one permitted UTF-8 file from the authenticated task fixture. " +
+			'path must be a bare relative filename with no leading slash, no backslashes, ' +
+			'and no ".." segments (e.g. "notes.txt", never "/workspace/task/notes.txt" or a ' +
+			"directory). Only files explicitly assigned to your identity are readable - if " +
+			"you don't already know the filename, call task_query first to find it.",
 		parameters: Type.Object({
 			path: Type.String({ minLength: 1, maxLength: 256 }),
 		}),
@@ -197,7 +202,11 @@ export default function (pi: ExtensionAPI) {
 		pi.registerTool({
 			name: "task_query",
 			label: "Query task files",
-			description: "Search permitted task files for a literal, case-insensitive text query.",
+			description:
+				"Search permitted task files for a literal, case-insensitive text query. " +
+				"Use this before task_read when you don't yet know the exact filename - it " +
+				"returns matching relative paths in the same bare-filename format task_read " +
+				"expects.",
 			parameters: Type.Object({
 				query: Type.String({ minLength: 1, maxLength: 256 }),
 				path: Type.Optional(Type.String({ minLength: 1, maxLength: 256 })),
@@ -236,7 +245,11 @@ export default function (pi: ExtensionAPI) {
 	pi.registerTool({
 		name: "board_read",
 		label: "Read message board",
-		description: "Read the next bounded page of messages after a sequence cursor.",
+		description:
+			"Read the next bounded page of messages other agents working this incident have " +
+			"posted, after a sequence cursor. This is the only channel to see their findings - " +
+			"call it before submitting your diagnosis, and again if your own evidence seems " +
+			"incomplete, in case another agent already found the missing piece.",
 		parameters: Type.Object({
 			after_sequence_id: Type.Optional(Type.Integer({ minimum: 0 })),
 			limit: Type.Optional(Type.Integer({ minimum: 1, maximum: 50 })),
@@ -250,7 +263,11 @@ export default function (pi: ExtensionAPI) {
 		name: "board_append",
 		label: "Append message",
 		// The service supplies run and agent identity from the credential.
-		description: "Append one bounded diagnostic message to the service-owned board.",
+		description:
+			"Append one bounded diagnostic message to the service-owned board so other agents " +
+			"working this incident can see it - this is the only channel they can read. Post " +
+			"concrete findings (evidence excerpts, a working hypothesis) as soon as you have " +
+			"them, not only after you've fully solved the task.",
 		executionMode: "sequential",
 		parameters: Type.Object({
 			message: Type.String({ minLength: 1, maxLength: 8 * 1024 }),
