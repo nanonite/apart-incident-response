@@ -35,6 +35,8 @@ from pathlib import Path
 from threading import Event, Lock, Thread
 from typing import Any, IO, Iterable, Iterator, Mapping, Sequence
 
+from .task_prompts import DEFAULT_TASK_PROMPTS, TaskPromptCatalog, TaskPromptConfigError
+
 
 # Keep CLI execution and package imports on one module identity. This matters
 # when the CLI constructs the service layer dynamically with ``python -m``.
@@ -244,6 +246,7 @@ class RuntimeConfig:
     timeout_seconds: float = 300.0
     isolation: IsolationPolicy = field(default_factory=IsolationPolicy)
     conditions: tuple[Condition, ...] = (Condition.C0, Condition.C1, Condition.C2)
+    task_prompts: Mapping[str, str] = field(default_factory=lambda: dict(DEFAULT_TASK_PROMPTS))
 
     def __post_init__(self) -> None:
         if not isinstance(self.pi_version, str) or not self.pi_version.strip():
@@ -280,6 +283,11 @@ class RuntimeConfig:
         if tuple(self.conditions) != (Condition.C0, Condition.C1, Condition.C2):
             raise RuntimeConfigError("conditions must be the fixed ordered set C0, C1, C2")
         self.isolation.validate()
+        try:
+            catalog = TaskPromptCatalog(self.task_prompts)
+        except TaskPromptConfigError as exc:
+            raise RuntimeConfigError(str(exc)) from exc
+        object.__setattr__(self, "task_prompts", dict(catalog.prompts))
 
     @classmethod
     def from_dict(cls, raw: Mapping[str, Any]) -> "RuntimeConfig":
@@ -287,6 +295,7 @@ class RuntimeConfig:
         limits = raw.get("limits")
         isolation = raw.get("isolation", {})
         conditions = raw.get("conditions", ["C0", "C1", "C2"])
+        task_prompts = raw.get("prompts", DEFAULT_TASK_PROMPTS)
         if not isinstance(pi, Mapping) or not isinstance(limits, Mapping):
             raise RuntimeConfigError("config requires 'pi' and 'limits' objects")
         if not isinstance(isolation, Mapping):
@@ -301,6 +310,8 @@ class RuntimeConfig:
             raise RuntimeConfigError("isolation host allowlists must contain strings")
         if not isinstance(conditions, list):
             raise RuntimeConfigError("conditions must be a JSON array")
+        if not isinstance(task_prompts, Mapping):
+            raise RuntimeConfigError("prompts must be a JSON object")
         command = pi.get("launch_command", [pi.get("executable", "pi")])
         if not isinstance(command, list):
             raise RuntimeConfigError("pi.launch_command must be a JSON array")
@@ -355,6 +366,7 @@ class RuntimeConfig:
                 ),
             ),
             conditions=tuple(Condition(str(condition)) for condition in conditions),
+            task_prompts=dict(task_prompts),
         )
 
     @classmethod
@@ -386,7 +398,16 @@ class RuntimeConfig:
             },
             "isolation": asdict(self.isolation),
             "conditions": [condition.value for condition in self.conditions],
+            "prompts": dict(self.task_prompts),
         }
+
+    def prompt_for(self, task_id: str, seed: int) -> str:
+        """Select a task prompt using task and seed, independent of condition."""
+
+        try:
+            return TaskPromptCatalog(self.task_prompts).prompt_for(task_id, seed)
+        except TaskPromptConfigError as exc:
+            raise RuntimeConfigError(str(exc)) from exc
 
 
 @dataclass(frozen=True)
@@ -1649,7 +1670,9 @@ class AgentRun:
         self.system_budget = system_budget
         self.tool_service = tool_service
 
-    def run(self, prompt: str, extension: Path | None = None) -> RunResult:
+    def run(self, prompt: str | None = None, extension: Path | None = None) -> RunResult:
+        if prompt is None:
+            prompt = self.config.prompt_for(self.identity.task_id, self.identity.seed)
         if not isinstance(prompt, str) or not prompt.strip():
             raise RuntimeConfigError("prompt must be a non-empty string")
         artifact_dir = self.workspace.artifact_dir
@@ -1761,6 +1784,7 @@ class AgentRun:
             self._write_json(artifact_dir / "metadata.json", {
                 "identity": self.identity.to_dict(),
                 "runtime": self.config.to_dict(),
+                "prompt": prompt,
                 "command": command,
                 "started_at": started_at,
             })
@@ -2154,10 +2178,6 @@ def _build_cli_tool_service(
 
 def _run_agent_command(args: argparse.Namespace) -> int:
     config = RuntimeConfig.from_json(args.config)
-    if args.prompt is not None:
-        prompt = args.prompt
-    else:
-        prompt = args.prompt_file.read_text(encoding="utf-8")
     identity = AgentIdentity(
         run_id=args.run_id,
         agent_id=args.agent_id,
@@ -2165,6 +2185,12 @@ def _run_agent_command(args: argparse.Namespace) -> int:
         task_id=args.task_id,
         seed=args.seed,
     )
+    if args.prompt is not None:
+        prompt = args.prompt
+    elif args.prompt_file is not None:
+        prompt = args.prompt_file.read_text(encoding="utf-8")
+    else:
+        prompt = None
     workspace = create_isolated_workspace(args.workspace_root, identity)
     tool_service = None
     board_store = None
@@ -2201,7 +2227,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     run.add_argument("--extension", type=Path)
     run.add_argument("--task-root", type=Path)
     run.add_argument("--board-database", type=Path)
-    prompt = run.add_mutually_exclusive_group(required=True)
+    prompt = run.add_mutually_exclusive_group(required=False)
     prompt.add_argument("--prompt")
     prompt.add_argument("--prompt-file", type=Path)
     args = parser.parse_args(argv)

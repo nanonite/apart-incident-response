@@ -28,5 +28,8 @@
     "mcp": false,
     "subagents": false
   },
-  "conditions": ["C0", "C1", "C2"]
+  "conditions": ["C0", "C1", "C2"],
+  "prompts": {
+    "task-1": "Diagnose the incident described by the evidence assigned to you. Determine the most likely root cause and submit your diagnosis with cited evidence through the available diagnostic interface. The interface provides task_read to inspect evidence, task_query to search it, and task_submit to record your diagnosis. Return a concise final explanation after submitting."
+  }
 }
