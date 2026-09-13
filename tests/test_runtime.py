@@ -26,6 +26,7 @@ from apart_incident_response.runtime import (
     _SseLogprobCapture,
     _bubblewrap_failure_reason,
     _model_request_metadata,
+    _ollama_sampling_seed,
     _opencode_session_id,
     _prepare_auth_file,
     _prepare_model_limits,
@@ -298,9 +299,10 @@ class RuntimeContractTests(unittest.TestCase):
 
     def test_ollama_model_limits_stage_openai_compatibility_config(self):
         with tempfile.TemporaryDirectory() as temp:
-            workspace = create_isolated_workspace(Path(temp), self.identity())
+            identity = self.identity()
+            workspace = create_isolated_workspace(Path(temp), identity)
             config = self.config(per_agent_token_budget=17).for_model("ollama/qwen3:8b")
-            path = _prepare_model_limits(workspace, config)
+            path = _prepare_model_limits(workspace, config, identity)
             payload = json.loads(path.read_text(encoding="utf-8"))
             provider = payload["providers"]["ollama"]
             self.assertEqual(provider["baseUrl"], "http://127.0.0.1:11434/v1")
@@ -310,6 +312,20 @@ class RuntimeContractTests(unittest.TestCase):
             self.assertFalse(provider["modelOverrides"]["qwen3:8b"]["samplingParams"]["think"])
             self.assertTrue(provider["modelOverrides"]["qwen3:8b"]["samplingParams"]["logprobs"])
             self.assertEqual(provider["modelOverrides"]["qwen3:8b"]["samplingParams"]["top_logprobs"], 5)
+            self.assertEqual(
+                provider["modelOverrides"]["qwen3:8b"]["samplingParams"]["seed"],
+                _ollama_sampling_seed(identity),
+            )
+
+    def test_ollama_sampling_seed_is_stable_and_agent_specific(self):
+        first = self.identity("agent-1")
+        second = self.identity("agent-2")
+        self.assertEqual(_ollama_sampling_seed(first), _ollama_sampling_seed(first))
+        self.assertNotEqual(_ollama_sampling_seed(first), _ollama_sampling_seed(second))
+        self.assertNotEqual(
+            _ollama_sampling_seed(first),
+            _ollama_sampling_seed(self.identity("agent-1", Condition.C1)),
+        )
 
     def test_ollama_relay_allows_only_controller_selected_local_target(self):
         relay = _ModelEgressProxy(
@@ -606,7 +622,7 @@ class RuntimeContractTests(unittest.TestCase):
             identity = self.identity()
             workspace = create_isolated_workspace(Path(temp), identity)
             config = self.config(per_agent_token_budget=17)
-            path = _prepare_model_limits(workspace, config)
+            path = _prepare_model_limits(workspace, config, identity)
             self.assertIsNotNone(path)
             payload = json.loads(path.read_text(encoding="utf-8"))
             self.assertEqual(

@@ -1458,7 +1458,29 @@ def _persist_auth_stage(stage: _AuthStage | None) -> None:
                 lock_handle.close()
 
 
-def _prepare_model_limits(workspace: IsolatedWorkspace, config: RuntimeConfig) -> Path | None:
+def _ollama_sampling_seed(identity: AgentIdentity) -> int:
+    """Derive a stable per-agent sampling seed from the run identity.
+
+    Ollama has no pinned seed by default, so repeated runs of the same
+    run/agent/condition/task/seed combination were sampling qwen3 with fresh
+    randomness every time - a major source of the token-count and
+    tool-call-argument variance observed across runs. Deriving the seed from
+    identity (rather than reusing config.seed verbatim for every agent) keeps
+    each agent's own sampling reproducible without making every agent in a
+    swarm sample in lockstep.
+    """
+
+    material = "\0".join([
+        identity.run_id, identity.agent_id, identity.condition.value,
+        identity.task_id, str(identity.seed),
+    ])
+    digest = hashlib.sha256(material.encode("utf-8")).hexdigest()
+    return int(digest[:8], 16)
+
+
+def _prepare_model_limits(
+    workspace: IsolatedWorkspace, config: RuntimeConfig, identity: AgentIdentity
+) -> Path | None:
     """Stage Pi's provider max-output override when its provider supports it.
 
     Pi's generic provider APIs honor ``models.json`` ``maxTokens``. The
@@ -1494,6 +1516,7 @@ def _prepare_model_limits(workspace: IsolatedWorkspace, config: RuntimeConfig) -
                                 "think": config.thinking_level != "off",
                                 "logprobs": True,
                                 "top_logprobs": _OLLAMA_LOGPROBS_TOP_K,
+                                "seed": _ollama_sampling_seed(identity),
                             },
                         }
                     },
@@ -2628,7 +2651,7 @@ class AgentRun:
                   ),
                   extra_env=tool_environment,
             )
-            _prepare_model_limits(self.workspace, self.config)
+            _prepare_model_limits(self.workspace, self.config, self.identity)
             self._write_json(artifact_dir / "metadata.json", {
                 "identity": self.identity.to_dict(),
                 "runtime": self.config.to_dict(),
