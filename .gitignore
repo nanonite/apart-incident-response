@@ -7,3 +7,4 @@ artifacts/
 runs/
 .uv-cache/
 ollama-models/
+experiments/

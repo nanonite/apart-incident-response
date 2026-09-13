@@ -1,5 +1,8 @@
 default: test
 
+# Check out the `pi` submodule. Required before `build`/`test`/`pi-smoke`
+# (the Docker pi-build stage fails fast with a clear message if `pi/` is
+# empty). Run this after a fresh clone.
 setup:
     git submodule update --init --recursive
 
