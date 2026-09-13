@@ -7,7 +7,7 @@ import json
 import os
 from pathlib import Path
 import threading
-from typing import Any, Callable, Mapping
+from typing import Any, Callable, Mapping, Sequence
 
 from .tool_credentials import VerifiedCredentials
 
@@ -16,7 +16,11 @@ def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
-def _redact(value: Any, credential: str) -> Any:
+def _redact(
+    value: Any,
+    credential: str | None,
+    secrets: Sequence[str] = (),
+) -> Any:
     if isinstance(value, Mapping):
         secret_keys = {
             "access", "access_token", "authorization", "credential", "credential_id",
@@ -25,13 +29,16 @@ def _redact(value: Any, credential: str) -> Any:
         return {
             str(key): "<redacted-secret>"
             if str(key).casefold() in secret_keys
-            else _redact(item, credential)
+            else _redact(item, credential, secrets)
             for key, item in value.items()
         }
     if isinstance(value, list):
-        return [_redact(item, credential) for item in value]
+        return [_redact(item, credential, secrets) for item in value]
     if isinstance(value, str):
-        return value.replace(credential, "<redacted-credential>")
+        redacted = value.replace(credential, "<redacted-credential>") if credential else value
+        for secret in sorted({secret for secret in secrets if secret}, key=len, reverse=True):
+            redacted = redacted.replace(secret, "<redacted-provider-secret>")
+        return redacted
     return value
 
 
@@ -42,6 +49,13 @@ class ToolAuditLog:
         self._artifact_root = Path(artifact_root).expanduser().resolve()
         self._clock = clock
         self._lock = threading.Lock()
+        self._secrets: set[str] = set()
+
+    def add_redaction_secret(self, secret: str) -> None:
+        if not isinstance(secret, str) or not secret:
+            return
+        with self._lock:
+            self._secrets.add(secret)
 
     def record(
         self,
@@ -54,6 +68,8 @@ class ToolAuditLog:
         path = self._artifact_root / identity.run_id / "agents" / identity.agent_id / "artifacts" / "tool_calls.jsonl"
         path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
         path.parent.chmod(0o700)
+        with self._lock:
+            secrets = tuple(self._secrets)
         event = {
             "timestamp": self._clock(),
             "run_id": identity.run_id,
@@ -61,8 +77,8 @@ class ToolAuditLog:
             "condition": identity.condition.value,
             "task_id": identity.task_id,
             "operation": operation,
-            "validated_input": _redact(validated_input, credentials.token),
-            "response": _redact(response, credentials.token),
+            "validated_input": _redact(validated_input, credentials.token, secrets),
+            "response": _redact(response, credentials.token, secrets),
         }
         encoded = json.dumps(event, ensure_ascii=False, sort_keys=True) + "\n"
         with self._lock:

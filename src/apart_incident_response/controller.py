@@ -150,12 +150,12 @@ class ExperimentController:
         tool_budget = self.config.aggregate_tool_call_budget // agent_count
         if token_budget <= 0 or tool_budget <= 0:
             raise RuntimeConfigError("aggregate budget cannot provide a positive envelope to every agent")
+        selected_config = self.config if model is None else self.config.for_model(model)
         return replace(
-            self.config,
+            selected_config,
             agent_count=agent_count,
             per_agent_token_budget=token_budget,
             per_agent_tool_call_budget=tool_budget,
-            model=self.config.model if model is None else model,
         )
 
     def _run_manifest(

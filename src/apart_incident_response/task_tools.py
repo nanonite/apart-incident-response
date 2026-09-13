@@ -120,6 +120,13 @@ class TaskToolService:
             Path(artifact_root).expanduser().resolve() if artifact_root is not None else None
         )
         self._clock = clock
+        self._redaction_secrets: set[str] = set()
+
+    def add_redaction_secret(self, secret: str) -> None:
+        if not isinstance(secret, str) or not secret:
+            return
+        with self._lock:
+            self._redaction_secrets.add(secret)
 
     def configure_submission_artifacts(
         self, artifact_root: Path | str | os.PathLike[str], clock: Callable[[], str]
@@ -404,14 +411,21 @@ class TaskToolService:
             normalized.append(normalized_reference)
         return normalized
 
-    @staticmethod
-    def _redact(value: Any, credential: str) -> Any:
+    def _redact(self, value: Any, credential: str) -> Any:
         if isinstance(value, Mapping):
-            return {str(key): TaskToolService._redact(item, credential) for key, item in value.items()}
+            return {
+                str(key): self._redact(item, credential)
+                for key, item in value.items()
+            }
         if isinstance(value, list):
-            return [TaskToolService._redact(item, credential) for item in value]
+            return [self._redact(item, credential) for item in value]
         if isinstance(value, str):
-            return value.replace(credential, "<redacted-credential>")
+            redacted = value.replace(credential, "<redacted-credential>")
+            with self._lock:
+                secrets = tuple(self._redaction_secrets)
+            for secret in sorted({secret for secret in secrets if secret}, key=len, reverse=True):
+                redacted = redacted.replace(secret, "<redacted-provider-secret>")
+            return redacted
         return value
 
     @staticmethod

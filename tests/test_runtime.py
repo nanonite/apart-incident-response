@@ -21,8 +21,10 @@ from apart_incident_response.runtime import (
     SystemBudget,
     _ModelEgressProxy,
     _bubblewrap_failure_reason,
+    _opencode_session_id,
     _prepare_auth_file,
     _prepare_model_limits,
+    _resolve_auth_store,
     build_pi_command,
     create_isolated_workspace,
     load_identity,
@@ -156,6 +158,12 @@ class RuntimeContractTests(unittest.TestCase):
             reason,
             "Bubblewrap isolation failed: bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted",
         )
+        self.assertEqual(
+            _bubblewrap_failure_reason(
+                ["bwrap: loopback: Failed RTM_NEWADDR: Operation not permitted\n"]
+            ),
+            "Bubblewrap isolation failed: bwrap: loopback: Failed RTM_NEWADDR: Operation not permitted",
+        )
         self.assertIsNone(_bubblewrap_failure_reason(["agent failed\n"]))
 
     def test_model_relay_allows_model_and_oauth_hosts_only_over_https(self):
@@ -168,6 +176,37 @@ class RuntimeContractTests(unittest.TestCase):
         self.assertEqual(relay._parse_connect_target("auth.openai.com:443"), ("auth.openai.com", 443))
         for target in ("example.com:443", "chatgpt.com:80", "chatgpt.com", "https://chatgpt.com:443", "chatgpt.com:443:extra"):
             self.assertIsNone(relay._parse_connect_target(target))
+
+    def test_opencode_selection_is_provider_specific_and_session_is_stable(self):
+        config = self.config().for_model("opencode-go/kimi-k2.6")
+        self.assertEqual(config.model, "opencode-go/kimi-k2.6")
+        self.assertEqual(config.isolation.model_hosts, ("opencode.ai",))
+        self.assertEqual(config.isolation.oauth_hosts, ())
+        self.assertIsNone(config.pi_auth_store_env)
+        codex = config.for_model("openai-codex/gpt-5.6-luna")
+        self.assertEqual(codex.pi_auth_store_env, self.config().pi_auth_store_env)
+        self.assertEqual(codex.isolation.model_hosts, ("chatgpt.com",))
+        self.assertEqual(codex.isolation.oauth_hosts, ("auth.openai.com",))
+        self.assertEqual(_opencode_session_id(self.identity()), _opencode_session_id(self.identity()))
+        self.assertNotEqual(
+            _opencode_session_id(self.identity("agent-1")),
+            _opencode_session_id(self.identity("agent-2")),
+        )
+
+    def test_opencode_does_not_use_configured_codex_oauth_store(self):
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = create_isolated_workspace(Path(temp) / "runs", self.identity())
+            config = self.config(pi_auth_store_env="TEST_AUTH_STORE").for_model("opencode-go/kimi-k2.6")
+            with patch.dict(os.environ, {}, clear=True):
+                self.assertIsNone(_resolve_auth_store(config, None, workspace))
+            self.assertEqual(config.pi_auth_store_env, "TEST_AUTH_STORE")
+
+    def test_opencode_relay_allows_only_opencode_ai_https(self):
+        relay = _ModelEgressProxy(Path("/tmp/unused-opencode-relay.sock"), ("opencode.ai",))
+        self.assertTrue(relay._allowed("opencode.ai", 443))
+        self.assertFalse(relay._allowed("auth.openai.com", 443))
+        self.assertFalse(relay._allowed("example.com", 443))
+        self.assertFalse(relay._allowed("opencode.ai", 80))
 
     def test_model_relay_denies_malformed_proxy_request(self):
         relay = _ModelEgressProxy(Path("/tmp/unused-relay.sock"), ("chatgpt.com", "auth.openai.com"))
@@ -221,6 +260,23 @@ class RuntimeContractTests(unittest.TestCase):
             self.assertIn("/experiment/node_modules", command)
             self.assertEqual(command[command.index("--extension") + 1], "/experiment/extensions/experiment.ts")
             self.assertIn("--no-builtin-tools", command)
+
+    def test_opencode_requires_pinned_pi_native_support(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            pi_root = root / "pi"
+            (pi_root / "packages/coding-agent/src").mkdir(parents=True)
+            (pi_root / "packages/coding-agent/package.json").write_text(
+                json.dumps({"version": "0.83.0"}), encoding="utf-8"
+            )
+            config = self.config(
+                pi_root_env="TEST_APART_PI_ROOT",
+                launch_command=("bun", "run", "{pi_root}/packages/coding-agent/src/cli.ts"),
+            ).for_model("opencode-go/kimi-k2.6")
+            workspace = create_isolated_workspace(root / "runs", self.identity())
+            with patch.dict(os.environ, {"TEST_APART_PI_ROOT": str(pi_root)}):
+                with self.assertRaisesRegex(RuntimeConfigError, "built-in OpenCode Go support"):
+                    build_pi_command(config, self.identity(), workspace)
 
     def test_local_pi_checkout_is_resolved_from_environment(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -358,6 +414,77 @@ class RuntimeContractTests(unittest.TestCase):
             self.assertTrue((workspace.artifact_dir / "events.json").exists())
             saved = json.loads((workspace.artifact_dir / "result.json").read_text(encoding="utf-8"))
             self.assertEqual(saved["status"], "completed")
+
+    def test_opencode_key_is_staged_only_transiently_and_redacted_from_artifacts(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            secret = "opencode-secret-for-test"
+            key_file = root / "opencode-key"
+            key_file.write_text(
+                json.dumps({"opencode-go": {"type": "api_key", "key": secret}}) + "\n",
+                encoding="utf-8",
+            )
+            key_file.chmod(0o600)
+            fake_agent = root / "opencode_fake_agent.py"
+            fake_agent.write_text(
+                textwrap.dedent(
+                    """
+                    import json
+                    import os
+                    import sys
+                    from pathlib import Path
+
+                    auth_path = Path(os.environ["HOME"]) / ".pi" / "agent" / "auth.json"
+                    staged = json.loads(auth_path.read_text())
+                    secret = staged["opencode-go"]["key"]
+                    child_env = os.environ.get("OPENCODE_API_KEY")
+                    print(json.dumps({
+                        "type": "message_end",
+                        "message": {
+                            "role": "assistant",
+                            "content": [{"type": "text", "text": secret + "|" + repr(child_env)}],
+                            "usage": {"totalTokens": 3},
+                            "stopReason": "stop",
+                        },
+                    }), flush=True)
+                    sys.stdin.read()
+                    """
+                ),
+                encoding="utf-8",
+            )
+            identity = self.identity()
+            workspace = create_isolated_workspace(root / "runs", identity)
+            config = self.config(
+                launch_command=(sys.executable, str(fake_agent)),
+                api_key_file_env="TEST_OPENCODE_KEY_FILE",
+                api_key_env="TEST_OPENCODE_KEY_ENV",
+                pi_auth_file_env=None,
+                pi_auth_store_env=None,
+                per_agent_token_budget=10,
+                per_agent_tool_call_budget=2,
+                aggregate_token_budget=10,
+                aggregate_tool_call_budget=2,
+                timeout_seconds=2,
+            ).for_model("opencode-go/kimi-k2.6")
+            with patch.dict(
+                os.environ,
+                {
+                    "TEST_OPENCODE_KEY_FILE": str(key_file),
+                    "TEST_OPENCODE_KEY_ENV": "should-not-be-forwarded",
+                    "OPENCODE_API_KEY": "ambient-value",
+                },
+            ):
+                result = AgentRun(
+                    config, identity, workspace, SystemBudget(10, 2)
+                ).run("diagnose this")
+            self.assertEqual(result.status.value, "completed")
+            self.assertEqual(result.final_response, "[REDACTED]|None")
+            self.assertNotIn(secret, json.dumps(result.to_dict()))
+            for artifact in workspace.artifact_dir.rglob("*"):
+                if artifact.is_file():
+                    self.assertNotIn(secret, artifact.read_text(encoding="utf-8"))
+            self.assertFalse((workspace.root / "home" / ".pi" / "agent" / "auth.json").exists())
+            self.assertFalse((workspace.root / "home" / ".pi" / "agent" / "models.json").exists())
 
     def test_pi_json_stream_replay_uses_authoritative_usage_and_message(self):
         with tempfile.TemporaryDirectory() as temp:

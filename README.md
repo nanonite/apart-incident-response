@@ -86,13 +86,38 @@ atomic. The credential lock spans
 staging, Pi execution, and persistence, so concurrent authenticated runs are
 serialized rather than racing a rotating refresh token. The source Codex/Pi
 auth file is never modified unless a separate, explicit controller workflow
-does so. Run-local `auth.json`, `auth.json.lock` (including directory-shaped
-proper-lockfile locks), and `models.json` are deleted on every exit path.
+does so. Run-local auth.json, auth.json.lock (including directory-shaped
+proper-lockfile locks), and models.json are deleted on every exit path.
 Credentials are never placed in command arguments, logs, artifacts, or child
 environment variables. If a rotated-token write fails, the run is marked
 failed (or retains its original failure status) with a non-secret persistence
-diagnostic in `result.json`; cleanup, relay shutdown, and lock release still
+diagnostic in result.json; cleanup, relay shutdown, and lock release still
 run.
+
+OpenCode Go uses Pi 0.85.1's built-in opencode-go provider. The controller
+checks the pinned checkout for that provider and its session-header support
+before launch; it refuses a custom fallback when those sources are absent.
+The default Codex model and OAuth egress stay unchanged. Select OpenCode Go
+for a real run with a model override and a private key file outside the
+repository:
+
+```bash
+export APART_PI_ROOT="$PWD/pi"
+export APART_OPENCODE_API_KEY_FILE="$HOME/.local/share/opencode/auth.json"
+PYTHONPATH=src python scripts/run_experiment.py \
+  --real-anchor --model opencode-go/kimi-k2.6 --seeds 1 \
+  --output runs/opencode-go
+```
+
+APART_OPENCODE_API_KEY_FILE may point to the standard OpenCode auth JSON or a
+one-line key file. The controller extracts the key, stages it only in the
+run-local Pi auth file, and removes that file on every exit path. A direct
+OPENCODE_API_KEY value is accepted only by the controller as a fallback and
+is never forwarded to Pi. OpenCode selection derives an HTTPS-only opencode.ai
+allowlist and removes the Codex OAuth host. Each agent gets a stable
+x-opencode-session value derived from its run and agent identity and a
+distinct User-Agent; the existing per-agent and aggregate token/tool-call
+limits remain in force.
 
 The `run` command writes metadata, raw JSONL, stderr, parsed events, the final
 response, budget usage, and exit status under the agent artifact directory.

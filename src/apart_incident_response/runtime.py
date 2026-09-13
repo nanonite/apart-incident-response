@@ -29,7 +29,7 @@ import sys
 import tempfile
 import time
 from contextlib import contextmanager
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
@@ -73,6 +73,9 @@ _THINKING_LEVELS = {"off", "minimal", "low", "medium", "high", "xhigh", "max"}
 _MODEL_HOST = re.compile(r"^[a-z0-9](?:[a-z0-9.-]{0,253}[a-z0-9])?$")
 _IDENTITY_SIGNING_KEY = secrets.token_bytes(32)
 _REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
+_OPENCODE_PROVIDER = "opencode-go"
+_OPENCODE_HOST = "opencode.ai"
+_DEFAULT_PROVIDER_USER_AGENT = "apart-incident-response/1"
 
 
 def _identity_signing_key() -> bytes:
@@ -228,8 +231,6 @@ class IsolationPolicy:
             raise RuntimeConfigError("a production runtime requires bubblewrap isolation")
         if not self.model_hosts:
             raise RuntimeConfigError("model_hosts must contain at least one provider hostname")
-        if not self.oauth_hosts:
-            raise RuntimeConfigError("oauth_hosts must contain at least one authentication hostname")
         for host in (*self.model_hosts, *self.oauth_hosts):
             if not isinstance(host, str) or not _MODEL_HOST.fullmatch(host.lower()):
                 raise RuntimeConfigError(f"invalid model provider hostname: {host!r}")
@@ -245,6 +246,9 @@ class RuntimeConfig:
     pi_root_env: str | None = None
     pi_auth_file_env: str | None = None
     pi_auth_store_env: str | None = None
+    api_key_file_env: str | None = "APART_OPENCODE_API_KEY_FILE"
+    api_key_env: str | None = "OPENCODE_API_KEY"
+    provider_user_agent: str = _DEFAULT_PROVIDER_USER_AGENT
     thinking_level: str = "medium"
     agent_count: int = 3
     per_agent_token_budget: int = 4_000
@@ -273,6 +277,19 @@ class RuntimeConfig:
             raise RuntimeConfigError("pi_auth_file_env must be a valid uppercase environment variable name")
         if self.pi_auth_store_env is not None and not _ENV_NAME.fullmatch(self.pi_auth_store_env):
             raise RuntimeConfigError("pi_auth_store_env must be a valid uppercase environment variable name")
+        if self.api_key_file_env is not None and not _ENV_NAME.fullmatch(self.api_key_file_env):
+            raise RuntimeConfigError("api_key_file_env must be a valid uppercase environment variable name")
+        if self.api_key_env is not None and not _ENV_NAME.fullmatch(self.api_key_env):
+            raise RuntimeConfigError("api_key_env must be a valid uppercase environment variable name")
+        if (
+            not isinstance(self.provider_user_agent, str)
+            or not self.provider_user_agent
+            or len(self.provider_user_agent) > 256
+            or any(character in self.provider_user_agent for character in "\r\n")
+        ):
+            raise RuntimeConfigError(
+                "provider_user_agent must be a non-empty one-line value of at most 256 characters"
+            )
         if self.thinking_level not in _THINKING_LEVELS:
             raise RuntimeConfigError(
                 f"thinking_level must be one of {sorted(_THINKING_LEVELS)}"
@@ -291,6 +308,14 @@ class RuntimeConfig:
         if tuple(self.conditions) != (Condition.C0, Condition.C1, Condition.C2):
             raise RuntimeConfigError("conditions must be the fixed ordered set C0, C1, C2")
         self.isolation.validate()
+        provider, separator, _model_id = self.model.partition("/")
+        if separator and provider == _OPENCODE_PROVIDER:
+            if self.isolation.model_hosts != (_OPENCODE_HOST,):
+                raise RuntimeConfigError(
+                    "OpenCode Go requires the model egress allowlist to contain only opencode.ai"
+                )
+            if self.isolation.oauth_hosts:
+                raise RuntimeConfigError("OpenCode Go must not allow unrelated OAuth egress hosts")
         try:
             catalog = TaskPromptCatalog(self.task_prompts)
         except TaskPromptConfigError as exc:
@@ -338,6 +363,17 @@ class RuntimeConfig:
                 if pi.get("auth_store_env") is not None
                 else None
             ),
+            api_key_file_env=(
+                str(pi.get("api_key_file_env"))
+                if pi.get("api_key_file_env") is not None
+                else "APART_OPENCODE_API_KEY_FILE"
+            ),
+            api_key_env=(
+                str(pi.get("api_key_env"))
+                if pi.get("api_key_env") is not None
+                else "OPENCODE_API_KEY"
+            ),
+            provider_user_agent=str(pi.get("provider_user_agent", _DEFAULT_PROVIDER_USER_AGENT)),
             thinking_level=str(pi.get("thinking_level", "medium")),
             agent_count=int(limits.get("agent_count", 3)),
             per_agent_token_budget=int(limits.get("per_agent_token_budget", 4_000)),
@@ -377,6 +413,24 @@ class RuntimeConfig:
             task_prompts=dict(task_prompts),
         )
 
+    def for_model(self, model: str) -> "RuntimeConfig":
+        """Select a model and derive its provider-specific egress contract."""
+
+        if not isinstance(model, str) or "/" not in model:
+            raise RuntimeConfigError("model must use the provider/model-id form")
+        provider, _separator, _model_id = model.partition("/")
+        isolation = self.isolation
+        current_provider = self.model.partition("/")[0]
+        if provider == _OPENCODE_PROVIDER:
+            isolation = replace(isolation, model_hosts=(_OPENCODE_HOST,), oauth_hosts=())
+        elif current_provider == _OPENCODE_PROVIDER:
+            isolation = replace(
+                isolation,
+                model_hosts=("chatgpt.com",),
+                oauth_hosts=("auth.openai.com",),
+            )
+        return replace(self, model=model, isolation=isolation)
+
     @classmethod
     def from_json(cls, path: Path) -> "RuntimeConfig":
         with path.open(encoding="utf-8") as handle:
@@ -394,6 +448,9 @@ class RuntimeConfig:
                 "root_env": self.pi_root_env,
                 "auth_file_env": self.pi_auth_file_env,
                 "auth_store_env": self.pi_auth_store_env,
+                "api_key_file_env": self.api_key_file_env,
+                "api_key_env": self.api_key_env,
+                "provider_user_agent": self.provider_user_agent,
                 "thinking_level": self.thinking_level,
             },
             "limits": {
@@ -619,6 +676,9 @@ def _safe_env(
         "APART_NETWORK": "model-only" if config.isolation.model_network else "disabled",
         "APART_SHARED_FILESYSTEM": "disabled",
     }
+    if _model_provider(config.model) == _OPENCODE_PROVIDER:
+        environment["APART_OPENCODE_SESSION"] = _opencode_session_id(identity)
+        environment["APART_OPENCODE_USER_AGENT"] = config.provider_user_agent
     for name, value in (extra_env or {}).items():
         if name not in {
             "APART_CONTROLLER_CREDENTIAL_FILE",
@@ -675,6 +735,7 @@ class _AuthStage:
     target: Path
     store: Path | None
     baseline_revision: int
+    transient_provider: str | None = None
     lock_handle: IO[str] | None = None
 
     def release(self) -> None:
@@ -701,6 +762,88 @@ def _path_is_within(path: Path, directory: Path) -> bool:
     return True
 
 
+def _model_provider(model: str) -> str:
+    return model.partition("/")[0]
+
+
+def _opencode_session_id(identity: AgentIdentity) -> str:
+    """Return one stable, non-secret routing ID for an agent run."""
+
+    material = f"{identity.run_id}\0{identity.agent_id}".encode("utf-8")
+    return f"apart-{hashlib.sha256(material).hexdigest()[:32]}"
+
+
+def _read_private_api_key(path: Path) -> str:
+    """Read a controller-owned key file without putting its value in env or argv."""
+
+    if path.is_symlink() or not path.is_file():
+        raise RuntimeConfigError("OpenCode API key file is not a regular file")
+    info = path.stat()
+    if info.st_uid != os.geteuid() or stat.S_IMODE(info.st_mode) & 0o077:
+        raise RuntimeConfigError("OpenCode API key file must be controller-owned and mode 0600")
+    try:
+        value = path.read_text(encoding="utf-8").strip()
+    except OSError as exc:
+        raise RuntimeConfigError("cannot read OpenCode API key file") from exc
+    if not value:
+        raise RuntimeConfigError("OpenCode API key file is empty")
+    if value.startswith("{"):
+        try:
+            payload = json.loads(value)
+        except json.JSONDecodeError as exc:
+            raise RuntimeConfigError("OpenCode API key file is not valid JSON") from exc
+        provider_payload = payload.get(_OPENCODE_PROVIDER) if isinstance(payload, Mapping) else None
+        candidate = provider_payload.get("key") if isinstance(provider_payload, Mapping) else None
+        if not isinstance(candidate, str) or not candidate.strip():
+            raise RuntimeConfigError("OpenCode API key JSON is missing its provider key")
+        value = candidate.strip()
+    return value
+
+
+def _resolve_provider_api_key(config: RuntimeConfig) -> str | None:
+    """Resolve an OpenCode key only in the controller before private staging."""
+
+    if _model_provider(config.model) != _OPENCODE_PROVIDER:
+        return None
+    if config.api_key_file_env:
+        raw_path = os.environ.get(config.api_key_file_env)
+        if raw_path:
+            return _read_private_api_key(Path(raw_path).expanduser().resolve())
+    if config.api_key_env:
+        value = os.environ.get(config.api_key_env)
+        if value:
+            value = value.strip()
+            if value:
+                return value
+    raise RuntimeConfigError(
+        "OpenCode Go API key is unavailable; provide a private key file through "
+        f"{config.api_key_file_env} or the controller-only {config.api_key_env} variable"
+    )
+
+
+def _redact_text(value: str | None, secrets: Sequence[str]) -> str | None:
+    """Remove controller-only secret values before returning or persisting data."""
+
+    if value is None:
+        return None
+    redacted = value
+    for secret in sorted({secret for secret in secrets if secret}, key=len, reverse=True):
+        redacted = redacted.replace(secret, "[REDACTED]")
+    return redacted
+
+
+def _redact_value(value: Any, secrets: Sequence[str]) -> Any:
+    if isinstance(value, str):
+        return _redact_text(value, secrets)
+    if isinstance(value, Mapping):
+        return {key: _redact_value(item, secrets) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_redact_value(item, secrets) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_redact_value(item, secrets) for item in value)
+    return value
+
+
 def _resolve_auth_store(
     config: RuntimeConfig,
     source: Path | None,
@@ -708,7 +851,10 @@ def _resolve_auth_store(
 ) -> Path | None:
     """Resolve the controller-owned OAuth store, never the user's source file."""
 
-    if config.pi_auth_store_env is None:
+    if config.pi_auth_store_env is None or _model_provider(config.model) == _OPENCODE_PROVIDER:
+        # OpenCode Go keys are staged only in the run-local Pi auth file.
+        # Keep the configured Codex store intact so switching back to Codex
+        # preserves its existing credential lifecycle.
         return None
     raw_path = os.environ.get(config.pi_auth_store_env)
     if not raw_path:
@@ -946,28 +1092,39 @@ def _prepare_auth_file(
     workspace: IsolatedWorkspace,
     config: RuntimeConfig,
     *,
+    api_key: str | None = None,
     hold_lock: bool = False,
 ) -> _AuthStage | None:
     """Stage credentials and optionally hold the controller refresh lease."""
 
+    transient_provider = _model_provider(config.model) if api_key is not None else None
+    if api_key is not None and transient_provider != _OPENCODE_PROVIDER:
+        raise RuntimeConfigError("an API key can only be staged for OpenCode Go")
     store = _resolve_auth_store(config, source, workspace)
     lock_handle: IO[str] | None = None
     baseline_revision = 0
     try:
         if store is None:
             if source is None:
-                return None
-            payload = _normalize_auth_payload(_load_json_mapping(source, "Pi auth file"))
+                if api_key is None:
+                    return None
+                payload = {}
+            else:
+                payload = _normalize_auth_payload(_load_json_mapping(source, "Pi auth file"))
         elif hold_lock:
             lock_handle = _acquire_auth_store_lock(store)
             snapshot = _read_auth_store(store)
             if snapshot is None:
-                if source is None:
+                if source is None and api_key is None:
                     fcntl.flock(lock_handle.fileno(), fcntl.LOCK_UN)
                     lock_handle.close()
                     lock_handle = None
                     return None
-                payload = _normalize_auth_payload(_load_json_mapping(source, "Pi auth file"))
+                payload = (
+                    _normalize_auth_payload(_load_json_mapping(source, "Pi auth file"))
+                    if source is not None
+                    else {}
+                )
                 baseline_revision = 1
                 _write_auth_store(store, payload, baseline_revision)
             else:
@@ -977,18 +1134,25 @@ def _prepare_auth_file(
             with _locked_auth_store(store):
                 snapshot = _read_auth_store(store)
                 if snapshot is None:
-                    if source is None:
+                    if source is None and api_key is None:
                         return None
-                    payload = _normalize_auth_payload(_load_json_mapping(source, "Pi auth file"))
+                    payload = (
+                        _normalize_auth_payload(_load_json_mapping(source, "Pi auth file"))
+                        if source is not None
+                        else {}
+                    )
                     baseline_revision = 1
                     _write_auth_store(store, payload, baseline_revision)
                 else:
                     payload = dict(snapshot.auth)
                     baseline_revision = snapshot.revision
 
+        if api_key is not None:
+            payload = dict(payload)
+            payload[transient_provider] = {"type": "api_key", "key": api_key}
         target = workspace.root / "home" / ".pi" / "agent" / "auth.json"
         _atomic_write_json(target, payload, validate_parent=False)
-        return _AuthStage(target, store, baseline_revision, lock_handle)
+        return _AuthStage(target, store, baseline_revision, transient_provider, lock_handle)
     except BaseException:
         if lock_handle is not None:
             try:
@@ -1004,6 +1168,9 @@ def _persist_auth_stage(stage: _AuthStage | None) -> None:
     if stage is None or stage.store is None or not stage.target.is_file():
         return
     candidate = _normalize_auth_payload(_load_json_mapping(stage.target, "staged Pi auth file"))
+    if stage.transient_provider is not None:
+        candidate = dict(candidate)
+        candidate.pop(stage.transient_provider, None)
     if _codex_credentials(candidate) is None:
         return
 
@@ -1090,6 +1257,19 @@ def _resolve_launch_command(config: RuntimeConfig) -> tuple[list[str], Path | No
         raise RuntimeConfigError(
             f"Pi version mismatch: config pins {config.pi_version}, checkout reports {actual}"
         )
+    if _model_provider(config.model) == _OPENCODE_PROVIDER:
+        provider_path = pi_root / "packages" / "ai" / "src" / "providers" / "opencode-go.ts"
+        header_path = pi_root / "packages" / "ai" / "src" / "providers" / "opencode-headers.ts"
+        if not provider_path.is_file() or not header_path.is_file():
+            raise RuntimeConfigError(
+                "pinned Pi does not provide built-in OpenCode Go support; refusing a custom fallback"
+            )
+        provider_source = provider_path.read_text(encoding="utf-8")
+        header_source = header_path.read_text(encoding="utf-8")
+        if "opencodeGoProvider" not in provider_source or "OPENCODE_API_KEY" not in provider_source:
+            raise RuntimeConfigError("pinned Pi OpenCode Go provider is incomplete")
+        if "x-opencode-session" not in header_source:
+            raise RuntimeConfigError("pinned Pi OpenCode session-header support is incomplete")
     if not any("{pi_root}" in part for part in command):
         raise RuntimeConfigError("launch_command must reference {pi_root} for a local Pi checkout")
     return [part.replace("{pi_root}", str(pi_root)) for part in command], pi_root
@@ -1515,7 +1695,9 @@ def _bubblewrap_failure_reason(stderr_lines: Iterable[str]) -> str | None:
     for line in stderr_lines:
         stripped = line.strip()
         if stripped.startswith("bwrap:") and (
-            "NETLINK_ROUTE" in stripped or "network namespace" in stripped.lower()
+            "NETLINK_ROUTE" in stripped
+            or "RTM_NEWADDR" in stripped
+            or "network namespace" in stripped.lower()
         ):
             return f"Bubblewrap isolation failed: {stripped}"
     return None
@@ -1730,6 +1912,8 @@ class AgentRun:
         settlement: BudgetSettlement | None = None
         result: RunResult | None = None
         persistence_failure: str | None = None
+        provider_api_key: str | None = None
+        secret_values: tuple[str, ...] = ()
 
         def settle_claim() -> None:
             nonlocal claim, settlement, status, failure_reason
@@ -1791,10 +1975,17 @@ class AgentRun:
                     (*self.config.isolation.model_hosts, *self.config.isolation.oauth_hosts),
                 )
                 proxy.start()
+            provider_api_key = _resolve_provider_api_key(self.config)
+            if provider_api_key is not None:
+                secret_values = (provider_api_key,)
+                if self.tool_service is not None:
+                    self.tool_service.add_redaction_secret(provider_api_key)
             auth_stage = _prepare_auth_file(
                 _resolve_auth_file(self.config),
                 self.workspace,
                 self.config,
+                api_key=provider_api_key,
+                hold_lock=False,
             )
             command = build_pi_command(
                 self.config,
@@ -1822,6 +2013,8 @@ class AgentRun:
             })
             stdout_path.write_text("", encoding="utf-8")
             stderr_path.write_text("", encoding="utf-8")
+            stdout_path.chmod(0o600)
+            stderr_path.chmod(0o600)
 
             # Reserve the complete envelope before Popen. A provider request
             # must never start merely because current accounting happens to
@@ -1908,9 +2101,10 @@ class AgentRun:
                                 selector.unregister(key.fileobj)
                                 continue
                             if key.data == "stdout":
-                                stdout_file.write(line)
+                                safe_line = _redact_text(line, secret_values) or ""
+                                stdout_file.write(safe_line)
                                 stdout_file.flush()
-                                stdout_lines.append(line)
+                                stdout_lines.append(safe_line)
                                 event = self._parse_event(line)
                                 if event is None:
                                     continue
@@ -1946,9 +2140,10 @@ class AgentRun:
                                 if candidate is not None:
                                     final_response = candidate
                             else:
-                                stderr_file.write(line)
+                                safe_line = _redact_text(line, secret_values) or ""
+                                stderr_file.write(safe_line)
                                 stderr_file.flush()
-                                stderr_lines.append(line)
+                                stderr_lines.append(safe_line)
                         if status == ExitStatus.BUDGET_EXHAUSTED:
                             break
                         if process.poll() is not None and not selector.get_map():
@@ -2000,6 +2195,7 @@ class AgentRun:
                 agent_tokens_used, agent_tool_calls_used,
                 persistence_failure=persistence_failure,
                 provider_started_at=provider_started_at,
+                secret_values=secret_values,
             )
             (artifact_dir / "stdout.jsonl").write_text("".join(stdout_lines), encoding="utf-8")
             (artifact_dir / "stderr.log").write_text("".join(stderr_lines), encoding="utf-8")
@@ -2127,7 +2323,15 @@ class AgentRun:
         tool_calls_used: int,
         persistence_failure: str | None = None,
         provider_started_at: str | None = None,
+        secret_values: Sequence[str] = (),
     ) -> RunResult:
+        safe_final_response = _redact_text(final_response, secret_values)
+        safe_failure_reason = _redact_text(failure_reason, secret_values)
+        safe_persistence_failure = _redact_text(persistence_failure, secret_values)
+        safe_events = [
+            _redact_value(event, secret_values)
+            for event in events
+        ]
         result = RunResult(
             identity=self.identity,
             status=status,
@@ -2137,16 +2341,16 @@ class AgentRun:
             duration_seconds=round(time.monotonic() - started_clock, 6),
             tokens_used=tokens_used,
             tool_calls_used=tool_calls_used,
-            final_response=final_response,
-            failure_reason=failure_reason,
+            final_response=safe_final_response,
+            failure_reason=safe_failure_reason,
             command=command,
             workspace=str(self.workspace.root),
             artifact_dir=str(self.workspace.artifact_dir),
-            events=events,
-            persistence_failure=persistence_failure,
+            events=safe_events,
+            persistence_failure=safe_persistence_failure,
             provider_started_at=provider_started_at,
         )
-        response_text = final_response or ""
+        response_text = safe_final_response or ""
         response_bytes = response_text.encode("utf-8")
         tokenizer_config = {
             "name": "utf8-byte-v1",
@@ -2162,7 +2366,7 @@ class AgentRun:
         self._write_json(self.workspace.artifact_dir / "response.json", {
             "schema_version": 1,
             "identity": self.identity.to_dict(),
-            "final_response": final_response,
+            "final_response": safe_final_response,
             "response_sha256": hashlib.sha256(response_bytes).hexdigest(),
             "provider_token_count": tokens_used,
             "tokenizer": tokenizer_config,
@@ -2172,7 +2376,7 @@ class AgentRun:
             "token_count_definition": "derived UTF-8 byte token count; provider_token_count is authoritative usage",
         })
         event_counts: dict[str, int] = defaultdict(int)
-        for event in events:
+        for event in safe_events:
             event_counts[str(event.get("type", "unknown"))] += 1
         self._write_json(self.workspace.artifact_dir / "agent_telemetry.json", {
             "schema_version": 1,
@@ -2186,10 +2390,10 @@ class AgentRun:
             "tool_call_count": tool_calls_used,
             "provider_tokens": tokens_used,
             "wall_clock_seconds": round(time.monotonic() - started_clock, 6),
-            "failure_reason": failure_reason,
+            "failure_reason": safe_failure_reason,
         })
         (self.workspace.artifact_dir / "events.json").write_text(
-            json.dumps(events, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+            json.dumps(safe_events, indent=2, sort_keys=True) + "\n", encoding="utf-8"
         )
         (self.workspace.artifact_dir / "events.json").chmod(0o600)
         self._write_json(self.workspace.artifact_dir / "result.json", result.to_dict())

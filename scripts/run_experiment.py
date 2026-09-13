@@ -162,8 +162,14 @@ def _matrix_validity(triplets: list[tuple[object, ...]]) -> dict[str, object]:
     }
 
 
-def run_real_anchor(output: Path, seeds: tuple[int, ...]) -> dict[str, object]:
+def run_real_anchor(
+    output: Path,
+    seeds: tuple[int, ...],
+    model: str | None = None,
+) -> dict[str, object]:
     config = RuntimeConfig.from_json(SOURCE_ROOT / "config" / "runtime.json")
+    if model is not None:
+        config = config.for_model(model)
     controller = ExperimentController(
         config,
         output,
@@ -247,6 +253,10 @@ def main() -> int:
     mode.add_argument("--harness-factors", action="store_true")
     mode.add_argument("--real-anchor", action="store_true")
     parser.add_argument("--output", type=Path, default=SOURCE_ROOT / "runs" / "t1")
+    parser.add_argument(
+        "--model",
+        help="provider/model-id for real runs; defaults to the configured Codex model",
+    )
     parser.add_argument("--seeds", type=int, nargs="+", default=[1])
     args = parser.parse_args()
     if args.harness_check:
@@ -254,7 +264,11 @@ def main() -> int:
     elif args.harness_factors:
         result = run_harness_factor_checks(args.output.expanduser().resolve())
     else:
-        result = run_real_anchor(args.output.expanduser().resolve(), tuple(args.seeds))
+        result = run_real_anchor(
+            args.output.expanduser().resolve(),
+            tuple(args.seeds),
+            args.model,
+        )
     print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
     return 0 if not args.real_anchor or result["experimental_data"] else 2
 

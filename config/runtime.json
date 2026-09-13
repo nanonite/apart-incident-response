@@ -5,6 +5,9 @@
     "root_env": "APART_PI_ROOT",
     "auth_file_env": "APART_PI_AUTH_FILE",
     "auth_store_env": "APART_PI_AUTH_STORE",
+    "api_key_file_env": "APART_OPENCODE_API_KEY_FILE",
+    "api_key_env": "OPENCODE_API_KEY",
+    "provider_user_agent": "apart-incident-response/1",
     "launch_command": ["bun", "run", "{pi_root}/packages/coding-agent/src/cli.ts"],
     "thinking_level": "xhigh"
   },

@@ -11,7 +11,7 @@ from .board_tools import BoardToolService
 from .capabilities import get_capability_profile
 from .runtime import AgentIdentity, Condition
 from .task_tools import TaskCatalog, TaskDefinition, TaskToolService, TrustedRuntimeUsage
-from .tool_audit import ToolAuditLog, _utc_now
+from .tool_audit import ToolAuditLog, _redact, _utc_now
 from .tool_contract import (
     BOARD_TOOL_NAMES,
     CORE_TOOL_NAMES,
@@ -63,11 +63,21 @@ class ConstrainedToolService:
         self._board_read_interval = board_read_interval
         self._board_read_attempts: dict[tuple[str, str], int] = {}
         self._board_read_lock = threading.Lock()
+        self._redaction_secrets: set[str] = set()
         if artifact_root is not None:
             self._task_service.configure_submission_artifacts(artifact_root, clock)
         self._audit = (
             ToolAuditLog(artifact_root, clock) if artifact_root is not None else None
         )
+
+    def add_redaction_secret(self, secret: str) -> None:
+        if not isinstance(secret, str) or not secret:
+            return
+        with self._runtime_lock:
+            self._redaction_secrets.add(secret)
+        self._task_service.add_redaction_secret(secret)
+        if self._audit is not None:
+            self._audit.add_redaction_secret(secret)
 
     def update_runtime_usage(
         self, identity: AgentIdentity, total_tokens: int, tool_calls: int
@@ -182,6 +192,9 @@ class ConstrainedToolService:
         if not response.get("ok"):
             error = response.get("error")
             event["error"] = dict(error) if isinstance(error, Mapping) else {"code": "unknown"}
+        with self._runtime_lock:
+            secrets = tuple(self._redaction_secrets)
+        event = _redact(event, None, secrets)
         try:
             self._telemetry(event)
         except Exception:

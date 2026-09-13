@@ -193,16 +193,25 @@ class TaskSubmissionTests(unittest.TestCase):
 
     def test_credentials_are_redacted_from_submission_and_audit(self):
         self.service.update_runtime_usage(self.identity, 42, 3)
+        provider_secret = "opencode-secret-for-audit-test"
+        self.service.add_redaction_secret(provider_secret)
         arguments = self.arguments()
-        arguments["diagnosis"] = f"{TASK_ONE_DIAGNOSIS} Credential {self.credential} was redacted."
+        arguments["diagnosis"] = (
+            f"{TASK_ONE_DIAGNOSIS} Credential {self.credential} "
+            f"Provider {provider_secret} was redacted."
+        )
         response = self.submit(arguments)
         self.assertTrue(response["ok"])
         artifact_text = self.artifact_path().read_text(encoding="utf-8")
         audit_text = self.audit_path().read_text(encoding="utf-8")
         self.assertNotIn(self.credential, artifact_text)
         self.assertNotIn(self.credential, audit_text)
+        self.assertNotIn(provider_secret, artifact_text)
+        self.assertNotIn(provider_secret, audit_text)
         self.assertIn("<redacted-credential>", artifact_text)
         self.assertIn("<redacted-credential>", audit_text)
+        self.assertIn("<redacted-provider-secret>", artifact_text)
+        self.assertIn("<redacted-provider-secret>", audit_text)
 
 
 if __name__ == "__main__":

@@ -12,6 +12,9 @@ import { Type } from "typebox";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 const SOCKET_ENV = "APART_TOOL_SOCKET";
+const modelProvider = (process.env.APART_MODEL ?? "").split("/", 1)[0];
+const opencodeSession = process.env.APART_OPENCODE_SESSION;
+const opencodeUserAgent = process.env.APART_OPENCODE_USER_AGENT;
 const condition = process.env.APART_CONDITION;
 const capabilityProfile = process.env.APART_CAPABILITY_PROFILE ?? "task-diagnostic-v1";
 const hasTaskQuery = capabilityProfile === "task-diagnostic-v1";
@@ -140,6 +143,17 @@ function result(value: unknown) {
 }
 
 export default function (pi: ExtensionAPI) {
+	if (modelProvider === "opencode-go") {
+		if (!opencodeSession || !opencodeUserAgent) {
+			throw new Error("OpenCode Go session headers are unavailable");
+		}
+		pi.on("before_provider_headers", (event) => {
+			event.headers["x-opencode-session"] = opencodeSession;
+			event.headers["x-opencode-client"] = "apart-incident-response";
+			event.headers["User-Agent"] = opencodeUserAgent;
+		});
+	}
+
 	pi.registerTool({
 		name: "task_read",
 		label: "Read task file",
