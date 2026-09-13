@@ -1,0 +1,147 @@
+{
+  "audit": [
+    {
+      "agent_id": "pi-agent",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "ok": true,
+        "result": {
+          "content": "ORCHID-731 fixture\n",
+          "path": "evidence.txt",
+          "size": 19,
+          "task_id": "task-1"
+        }
+      },
+      "run_id": "pi-smoke-run",
+      "task_id": "task-1",
+      "timestamp": "2026-09-12T00:00:00Z",
+      "validated_input": {
+        "path": "evidence.txt"
+      }
+    },
+    {
+      "agent_id": "pi-agent",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [
+            {
+              "line": 1,
+              "path": "evidence.txt",
+              "text": "ORCHID-731 fixture"
+            }
+          ],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "pi-smoke-run",
+      "task_id": "task-1",
+      "timestamp": "2026-09-12T00:00:00Z",
+      "validated_input": {
+        "query": "ORCHID-731"
+      }
+    },
+    {
+      "agent_id": "pi-agent",
+      "condition": "C1",
+      "operation": "board_append",
+      "response": {
+        "ok": true,
+        "result": {
+          "agent_id": "pi-agent",
+          "message_body": "Pi agent: ORCHID-731",
+          "message_size": 20,
+          "run_id": "pi-smoke-run",
+          "sequence_id": 1,
+          "server_timestamp": "2026-09-12T00:00:00Z"
+        }
+      },
+      "run_id": "pi-smoke-run",
+      "task_id": "task-1",
+      "timestamp": "2026-09-12T00:00:00Z",
+      "validated_input": {
+        "message": "Pi agent: ORCHID-731"
+      }
+    },
+    {
+      "agent_id": "pi-agent",
+      "condition": "C1",
+      "operation": "board_read",
+      "response": {
+        "ok": true,
+        "result": {
+          "has_more": false,
+          "messages": [
+            {
+              "agent_id": "pi-agent",
+              "message_body": "Pi agent: ORCHID-731",
+              "message_size": 20,
+              "run_id": "pi-smoke-run",
+              "sequence_id": 1,
+              "server_timestamp": "2026-09-12T00:00:00Z"
+            }
+          ],
+          "next_cursor": 1
+        }
+      },
+      "run_id": "pi-smoke-run",
+      "task_id": "task-1",
+      "timestamp": "2026-09-12T00:00:00Z",
+      "validated_input": {
+        "limit": 10
+      }
+    },
+    {
+      "agent_id": "pi-agent",
+      "condition": "C1",
+      "operation": "task_submit",
+      "response": {
+        "ok": true,
+        "result": {
+          "accepted": true,
+          "submission_sha256": "b54e2b152c2135f45dfca42c67ec11c8a8d6076f1796f3deaa64a752c1d4efa8",
+          "task_id": "task-1"
+        }
+      },
+      "run_id": "pi-smoke-run",
+      "task_id": "task-1",
+      "timestamp": "2026-09-12T00:00:00Z",
+      "validated_input": {
+        "answer": "diagnosis"
+      }
+    }
+  ],
+  "built_in_tools": false,
+  "credential_free": true,
+  "extension": "pi-extension/incident-tools.ts",
+  "extension_discovery": false,
+  "fixture_provider": "tests/fixtures/pi-faux-provider.ts",
+  "pi_version": "0.85.1",
+  "tool_events": [
+    {
+      "is_error": false,
+      "tool": "task_read"
+    },
+    {
+      "is_error": false,
+      "tool": "task_query"
+    },
+    {
+      "is_error": false,
+      "tool": "board_append"
+    },
+    {
+      "is_error": false,
+      "tool": "board_read"
+    },
+    {
+      "is_error": false,
+      "tool": "task_submit"
+    }
+  ],
+  "transport": "fixture-fifo"
+}

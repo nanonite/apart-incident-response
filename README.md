@@ -116,9 +116,8 @@ with BoardStore.initialize(
 The store creates `messages` with an `AUTOINCREMENT` sequence ID, controller
 timestamp, run/agent identity, message body, and UTF-8 byte size. SQLite
 triggers reject `UPDATE` and `DELETE`, including direct SQL against the service
-database. `iter_messages()` is only a deterministic storage primitive for the
-future `board_read` API; cursor handling, C0/C1/C2 visibility, identity
-derivation, and Pi tools are intentionally not part of #16.
+database. The board service builds on this store with bounded cursor reads,
+credential-derived identity, run containment, and C0/C1/C2 visibility.
 
 The database is service-owned and must remain outside agent task directories,
 including symlinked paths. It is never mounted into Bubblewrap, included in a
@@ -135,3 +134,65 @@ within the aggregate ceiling.
 
 The pinned Pi version and model are intentionally configuration values so every
 co-worker can review or change them in one file before running a matrix.
+
+## Constrained task and board tools
+
+`apart_incident_response.tool_service.ConstrainedToolService` is the only
+controller boundary used by the mounted extension. It exposes
+`task_read`, `task_query`, and `task_submit`, plus `board_read` and
+`board_append` in C1/C2. C0 registers only the three task tools. Task identity,
+run identity, agent identity, and condition are resolved from an opaque
+controller-issued credential; those fields are never accepted in tool input.
+
+The service reads task fixtures from a controller-selected `TaskCatalog` and
+the board service is the only code that holds `BoardStore`. Task paths are
+relative and bounded, queries are literal and bounded, and submissions are
+idempotent per run/agent. Every accepted or rejected authenticated invocation
+is written to that agent's `tool_calls.jsonl` artifact with validated input,
+result or error, timestamp, run ID, and agent ID. Credential values are
+redacted and are never written to the log.
+
+The extension is [incident-tools.ts](pi-extension/incident-tools.ts). Pass it
+explicitly to `AgentRun.run()` together with a configured service:
+
+```python
+from apart_incident_response import (
+    BoardToolService,
+    BoardStore,
+    ConstrainedToolService,
+    TaskCatalog,
+    TaskDefinition,
+    TaskToolService,
+)
+
+board = BoardStore.initialize("/var/lib/apart-incident-response/board.sqlite3")
+tasks = TaskCatalog({"task-1": TaskDefinition("task-1", "/srv/tasks/task-1")})
+service = ConstrainedToolService(
+    TaskToolService(tasks), BoardToolService(board), artifact_root="/srv/apart/runs"
+)
+```
+
+The runnable CLI wires the same service whenever `runtime run` receives
+`--extension`. Use `--task-root` to select the controller-owned task fixture
+and `--board-database` to select a private shared board database; without the
+latter, C1/C2 use a private database under the run directory. C0 does not
+open a board database.
+
+The production service endpoint is a private Unix socket mounted only at the
+extension endpoint. The managed test environment denies Unix pathname socket
+creation, so credential-free fixture runs use a private controller-created
+FIFO pair with the same JSON service contract; this transport is selected only
+for the explicit `sandbox="none"` test policy. Neither transport exposes the
+SQLite path or a general filesystem, shell, subprocess, MCP, or network tool.
+The credential-free two-agent board trace is recorded in
+[docs/board-smoke-trace.json](docs/board-smoke-trace.json), and can be
+regenerated with `python scripts/board_smoke.py`.
+
+The real Pi extension acceptance smoke is [scripts/pi_extension_smoke.py](scripts/pi_extension_smoke.py).
+It launches the installed Pi 0.85.1 CLI directly with the production
+[incident-tools.ts](pi-extension/incident-tools.ts) extension, disables built-in
+tools and extension discovery, and uses a deterministic in-process model fixture
+only to make Pi emit constrained tool calls. Those calls cross the controller's
+fixture FIFO and produce the audit evidence in
+[docs/pi-extension-smoke-trace.json](docs/pi-extension-smoke-trace.json). Run it
+with `PYTHONPATH=src python scripts/pi_extension_smoke.py`.

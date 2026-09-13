@@ -144,10 +144,10 @@ class BoardStore:
     creates the database parent only when absent, keeps it private, and never
     gives its path or connection to an agent process.
 
-    ``append_message`` is the only write operation.  ``iter_messages`` is a
-    deterministic low-level read primitive for the future ``board_read`` API;
-    cursor semantics, condition visibility, and tool argument validation are
-    intentionally left to #17--#19.
+    ``append_message`` is the only write operation.  ``read_messages`` is a
+    parameterized, bounded read primitive for the board service.  The service
+    supplies the trusted run and visibility scope; agents never receive this
+    connection or database path.
     """
 
     def __init__(
@@ -181,7 +181,13 @@ class BoardStore:
                     "board database must be controller-owned and mode 0600 or stricter"
                 )
 
-        self._connection = sqlite3.connect(self._database_path, timeout=5.0)
+        # BoardToolService serializes access while the IPC server handles each
+        # request on a worker thread.
+        self._connection = sqlite3.connect(
+            self._database_path,
+            timeout=5.0,
+            check_same_thread=False,
+        )
         try:
             self._connection.execute("PRAGMA foreign_keys = ON")
             _initialize_schema(self._connection)
@@ -253,14 +259,82 @@ class BoardStore:
             """
         )
         for row in rows:
-            yield BoardMessage(
-                sequence_id=int(row[0]),
-                run_id=str(row[1]),
-                agent_id=str(row[2]),
-                server_timestamp=str(row[3]),
-                message_body=str(row[4]),
-                message_size=int(row[5]),
-            )
+            yield self._message_from_row(row)
+
+    @staticmethod
+    def _message_from_row(row: sqlite3.Row | tuple[object, ...]) -> BoardMessage:
+        return BoardMessage(
+            sequence_id=int(row[0]),
+            run_id=str(row[1]),
+            agent_id=str(row[2]),
+            server_timestamp=str(row[3]),
+            message_body=str(row[4]),
+            message_size=int(row[5]),
+        )
+
+    def read_messages(
+        self,
+        run_id: str,
+        after_sequence_id: int,
+        *,
+        agent_id: str | None = None,
+        limit: int,
+        max_bytes: int,
+    ) -> tuple[list[BoardMessage], bool]:
+        """Read one deterministic page within a trusted run and optional agent.
+
+        This method intentionally accepts a run and agent supplied by the
+        service, rather than by an agent tool request.  The query is bounded by
+        both row count and UTF-8 message bytes, and reports whether another row
+        remains after the returned page.
+        """
+
+        if not isinstance(run_id, str) or not run_id.strip():
+            raise BoardStorageError("run_id must be a non-empty string")
+        if isinstance(after_sequence_id, bool) or not isinstance(after_sequence_id, int):
+            raise BoardStorageError("after_sequence_id must be an integer")
+        if after_sequence_id < 0:
+            raise BoardStorageError("after_sequence_id must not be negative")
+        if agent_id is not None:
+            agent_id = _validate_message_field(agent_id, "agent_id")
+        if isinstance(limit, bool) or not isinstance(limit, int) or limit <= 0:
+            raise BoardStorageError("limit must be a positive integer")
+        if isinstance(max_bytes, bool) or not isinstance(max_bytes, int) or max_bytes <= 0:
+            raise BoardStorageError("max_bytes must be a positive integer")
+
+        predicates = ["run_id = ?", "sequence_id > ?"]
+        parameters: list[object] = [run_id, after_sequence_id]
+        if agent_id is not None:
+            predicates.append("agent_id = ?")
+            parameters.append(agent_id)
+        where = " AND ".join(predicates)
+        rows = self._connection.execute(
+            f"""
+            SELECT sequence_id, run_id, agent_id, server_timestamp, message_body, message_size
+            FROM messages
+            WHERE {where}
+            ORDER BY sequence_id ASC
+            LIMIT ?
+            """,
+            (*parameters, limit + 1),
+        ).fetchall()
+        page: list[BoardMessage] = []
+        bytes_read = 0
+        for row in rows[:limit]:
+            message = self._message_from_row(row)
+            if page and bytes_read + message.message_size > max_bytes:
+                break
+            if not page and message.message_size > max_bytes:
+                raise BoardStorageError("a stored message exceeds the requested byte bound")
+            page.append(message)
+            bytes_read += message.message_size
+        has_more = len(rows) > len(page)
+        if not has_more and len(page) < limit:
+            has_more = self._connection.execute(
+                f"SELECT 1 FROM messages WHERE {where} AND sequence_id > ? LIMIT 1",
+                (*parameters, page[-1].sequence_id if page else after_sequence_id),
+            ).fetchone() is not None
+        return page, has_more
 
     def close(self) -> None:
         """Close the controller's database connection."""

@@ -36,6 +36,12 @@ from threading import Event, Lock, Thread
 from typing import Any, IO, Iterable, Iterator, Mapping, Sequence
 
 
+# Keep CLI execution and package imports on one module identity. This matters
+# when the CLI constructs the service layer dynamically with ``python -m``.
+if __name__ == "__main__":
+    sys.modules.setdefault("apart_incident_response.runtime", sys.modules[__name__])
+
+
 class RuntimeConfigError(ValueError):
     """Raised when a runtime contract would violate experiment invariants."""
 
@@ -556,12 +562,17 @@ def create_isolated_workspace(root: Path, identity: AgentIdentity) -> IsolatedWo
     )
 
 
-def _safe_env(identity: AgentIdentity, workspace: IsolatedWorkspace, config: RuntimeConfig) -> dict[str, str]:
+def _safe_env(
+    identity: AgentIdentity,
+    workspace: IsolatedWorkspace,
+    config: RuntimeConfig,
+    extra_env: Mapping[str, str] | None = None,
+) -> dict[str, str]:
     """Build a deliberately small child environment with no inherited secrets."""
 
     path = os.environ.get("PATH", os.defpath)
     agent_dir = workspace.root / "home" / ".pi" / "agent"
-    return {
+    environment = {
         "PATH": path,
         "LANG": "C.UTF-8",
         "LC_ALL": "C.UTF-8",
@@ -578,6 +589,39 @@ def _safe_env(identity: AgentIdentity, workspace: IsolatedWorkspace, config: Run
         "APART_NETWORK": "model-only" if config.isolation.model_network else "disabled",
         "APART_SHARED_FILESYSTEM": "disabled",
     }
+    for name, value in (extra_env or {}).items():
+        if name not in {
+            "APART_CONTROLLER_CREDENTIAL_FILE",
+            "APART_TOOL_SOCKET",
+            "APART_TOOL_REQUEST_FIFO",
+            "APART_TOOL_RESPONSE_FIFO",
+        }:
+            raise RuntimeConfigError(f"unsupported controller environment variable: {name}")
+        if not isinstance(value, str) or not value:
+            raise RuntimeConfigError(f"{name} must be a non-empty string")
+        environment[name] = value
+    return environment
+
+
+def _stage_controller_credential(path: Path, credential: str) -> None:
+    """Write an opaque service credential outside the agent-visible mount."""
+
+    if path.exists() or path.is_symlink():
+        raise RuntimeConfigError("controller credential staging path already exists")
+    descriptor = os.open(
+        path,
+        os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0),
+        0o600,
+    )
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+            descriptor = -1
+            handle.write(credential)
+            handle.flush()
+            os.fsync(handle.fileno())
+    finally:
+        if descriptor >= 0:
+            os.close(descriptor)
 
 
 def _resolve_auth_file(config: RuntimeConfig) -> Path | None:
@@ -1180,6 +1224,8 @@ def build_pi_command(
     workspace: IsolatedWorkspace,
     extension: Path | None = None,
     auth_stage: _AuthStage | None = None,
+    tool_socket: Path | None = None,
+    extra_env: Mapping[str, str] | None = None,
 ) -> list[str]:
     """Build the exact Pi argv used for one agent.
 
@@ -1218,6 +1264,15 @@ def build_pi_command(
     )
     if resolved_extension is not None:
         command.extend(["--extension", str(resolved_extension)])
+    resolved_tool_socket: Path | None = None
+    if tool_socket is not None:
+        resolved_tool_socket = tool_socket.expanduser().resolve()
+        try:
+            resolved_tool_socket.relative_to(workspace.root.resolve())
+        except ValueError as exc:
+            raise RuntimeConfigError("tool service socket must be inside the agent workspace") from exc
+        if resolved_tool_socket.name != ".apart-tool-service.sock":
+            raise RuntimeConfigError("tool service socket must use the controller socket name")
     if config.isolation.sandbox == "none":
         return command
     bwrap = shutil.which("bwrap")
@@ -1226,7 +1281,7 @@ def build_pi_command(
     home = workspace.root / "home"
     home.mkdir(mode=0o700, exist_ok=True)
     (home / ".pi" / "agent").mkdir(mode=0o700, parents=True, exist_ok=True)
-    safe_env = _safe_env(identity, workspace, config)
+    safe_env = _safe_env(identity, workspace, config, extra_env)
     safe_env["HOME"] = "/home/agent"
     safe_env["PI_CODING_AGENT_DIR"] = "/home/agent/.pi/agent"
     # The child always gets a private network namespace. When model_network is
@@ -1238,6 +1293,25 @@ def build_pi_command(
     safe_env["https_proxy"] = safe_env["HTTP_PROXY"]
     safe_env["NO_PROXY"] = ""
     safe_env["no_proxy"] = ""
+    if resolved_tool_socket is not None:
+        safe_env["APART_TOOL_SOCKET"] = (
+            "/workspace/.apart-tool-service.sock"
+            if config.isolation.sandbox == "bubblewrap"
+            else str(resolved_tool_socket)
+        )
+    credential_file = (extra_env or {}).get("APART_CONTROLLER_CREDENTIAL_FILE")
+    resolved_credential_file: Path | None = None
+    if credential_file is not None:
+        resolved_credential_file = Path(credential_file).expanduser().resolve()
+        if resolved_credential_file.is_symlink() or not resolved_credential_file.is_file():
+            raise RuntimeConfigError("controller credential file is not a regular file")
+        try:
+            resolved_credential_file.relative_to(workspace.root.resolve())
+        except ValueError:
+            pass
+        else:
+            raise RuntimeConfigError("controller credential file must be outside the agent mount")
+        safe_env["APART_CONTROLLER_CREDENTIAL_FILE"] = "/controller/credential"
     sandbox_command = [
         bwrap,
         "--die-with-parent",
@@ -1269,6 +1343,22 @@ def build_pi_command(
         "--chdir",
         "/workspace/task",
     ]
+    if resolved_tool_socket is not None:
+        insert_at = sandbox_command.index("--chdir")
+        sandbox_command[insert_at:insert_at] = [
+            "--bind",
+            str(resolved_tool_socket),
+            "/workspace/.apart-tool-service.sock",
+        ]
+    if resolved_credential_file is not None:
+        insert_at = sandbox_command.index("--chdir")
+        sandbox_command[insert_at:insert_at] = [
+            "--dir",
+            "/controller",
+            "--ro-bind",
+            str(resolved_credential_file),
+            "/controller/credential",
+        ]
     if config.isolation.model_network:
         source_root = Path(__file__).resolve().parent.parent
         if not source_root.is_dir():
@@ -1536,11 +1626,13 @@ class AgentRun:
         identity: AgentIdentity,
         workspace: IsolatedWorkspace,
         system_budget: SystemBudget,
+        tool_service: "ConstrainedToolService | None" = None,
     ) -> None:
         self.config = config
         self.identity = identity
         self.workspace = workspace
         self.system_budget = system_budget
+        self.tool_service = tool_service
 
     def run(self, prompt: str, extension: Path | None = None) -> RunResult:
         if not isinstance(prompt, str) or not prompt.strip():
@@ -1560,6 +1652,9 @@ class AgentRun:
         stderr_path = artifact_dir / "stderr.log"
         claim: BudgetClaim | None = None
         proxy: _ModelEgressProxy | None = None
+        tool_server: "ToolServiceSocketServer | None" = None
+        tool_environment: dict[str, str] = {}
+        credential_file: Path | None = None
         auth_stage: _AuthStage | None = None
         settlement: BudgetSettlement | None = None
         result: RunResult | None = None
@@ -1583,6 +1678,39 @@ class AgentRun:
                 failure_reason = f"{failure_reason}; {detail}" if failure_reason else detail
 
         try:
+            if self.tool_service is not None:
+                from .tool_service import ToolServiceSocketServer
+
+                tool_server = ToolServiceSocketServer(
+                    self.tool_service,
+                    self.workspace.root / ".apart-tool-service.sock",
+                    use_fifo=self.config.isolation.sandbox == "none",
+                )
+                try:
+                    tool_server.start()
+                    credential = self.tool_service.issue_credential(self.identity)
+                    credential_file = (
+                        self.workspace.run_root
+                        / f".apart-controller-credential-{self.identity.agent_id}"
+                    )
+                    _stage_controller_credential(credential_file, credential)
+                    tool_environment = {
+                        "APART_CONTROLLER_CREDENTIAL_FILE": str(credential_file)
+                    }
+                    if tool_server.uses_fifo:
+                        tool_environment["APART_TOOL_REQUEST_FIFO"] = str(tool_server.request_fifo)
+                        tool_environment["APART_TOOL_RESPONSE_FIFO"] = str(tool_server.response_fifo)
+                    else:
+                        tool_environment["APART_TOOL_SOCKET"] = str(tool_server.socket_path)
+                except (OSError, RuntimeConfigError, ValueError) as exc:
+                    failure_reason = f"tool service setup failed ({type(exc).__name__})"
+                    status = ExitStatus.LAUNCH_ERROR
+                    result = self._finish(
+                        status, exit_code, started_at, _utc_now(), started_clock,
+                        final_response, failure_reason, command, events,
+                        agent_tokens_used, agent_tool_calls_used,
+                    )
+                    return result
             if self.config.isolation.model_network and self.config.isolation.sandbox == "bubblewrap":
                 proxy = _ModelEgressProxy(
                     self.workspace.root / ".apart-model-proxy.sock",
@@ -1601,6 +1729,15 @@ class AgentRun:
                 self.workspace,
                 extension,
                 auth_stage=auth_stage,
+                tool_socket=(
+                    tool_server.socket_path
+                    if (
+                        tool_server is not None
+                        and not tool_server.uses_fifo
+                    )
+                    else None
+                ),
+                extra_env=tool_environment,
             )
             _prepare_model_limits(self.workspace, self.config)
             self._write_json(artifact_dir / "metadata.json", {
@@ -1637,7 +1774,9 @@ class AgentRun:
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     cwd=self.workspace.task_dir,
-                    env=_safe_env(self.identity, self.workspace, self.config),
+                    env=_safe_env(
+                        self.identity, self.workspace, self.config, tool_environment
+                    ),
                     shell=False,
                     close_fds=True,
                     start_new_session=True,
@@ -1793,6 +1932,16 @@ class AgentRun:
                     proxy.stop()
                 except Exception:
                     pass
+            if tool_server is not None:
+                try:
+                    tool_server.stop()
+                except Exception:
+                    pass
+            if credential_file is not None:
+                try:
+                    credential_file.unlink(missing_ok=True)
+                except OSError:
+                    pass
             if auth_stage is not None:
                 try:
                     auth_stage.release()
@@ -1913,6 +2062,41 @@ def _validate_config_command(path: Path) -> int:
     return 0
 
 
+def _build_cli_tool_service(
+    args: argparse.Namespace,
+    identity: AgentIdentity,
+    workspace: IsolatedWorkspace,
+) -> tuple[Any, Any]:
+    """Build the controller tool boundary for an explicitly mounted extension."""
+
+    from .board_storage import BoardStore
+    from .tool_service import (
+        BoardToolService,
+        ConstrainedToolService,
+        TaskCatalog,
+        TaskDefinition,
+        TaskToolService,
+    )
+
+    task_root = args.task_root or workspace.task_dir
+    catalog = TaskCatalog({identity.task_id: TaskDefinition(identity.task_id, task_root)})
+    board_store = None
+    board_service = None
+    if identity.condition is not Condition.C0:
+        database_path = args.board_database or workspace.run_root / ".apart-board.sqlite3"
+        board_store = BoardStore.initialize(
+            database_path,
+            agent_workspace_roots=(workspace.root,),
+        )
+        board_service = BoardToolService(board_store)
+    service = ConstrainedToolService(
+        TaskToolService(catalog),
+        board_service,
+        artifact_root=workspace.workspace_root,
+    )
+    return service, board_store
+
+
 def _run_agent_command(args: argparse.Namespace) -> int:
     config = RuntimeConfig.from_json(args.config)
     if args.prompt is not None:
@@ -1927,12 +2111,21 @@ def _run_agent_command(args: argparse.Namespace) -> int:
         seed=args.seed,
     )
     workspace = create_isolated_workspace(args.workspace_root, identity)
-    result = AgentRun(
-        config,
-        identity,
-        workspace,
-        SystemBudget(config.aggregate_token_budget, config.aggregate_tool_call_budget),
-    ).run(prompt, args.extension)
+    tool_service = None
+    board_store = None
+    if args.extension is not None:
+        tool_service, board_store = _build_cli_tool_service(args, identity, workspace)
+    try:
+        result = AgentRun(
+            config,
+            identity,
+            workspace,
+            SystemBudget(config.aggregate_token_budget, config.aggregate_tool_call_budget),
+            tool_service,
+        ).run(prompt, args.extension)
+    finally:
+        if board_store is not None:
+            board_store.close()
     print(json.dumps(result.to_dict(), indent=2, sort_keys=True))
     return 0 if result.status is ExitStatus.COMPLETED else 1
 
@@ -1951,6 +2144,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     run.add_argument("--seed", type=int, required=True)
     run.add_argument("--workspace-root", type=Path, default=Path("artifacts/runs"))
     run.add_argument("--extension", type=Path)
+    run.add_argument("--task-root", type=Path)
+    run.add_argument("--board-database", type=Path)
     prompt = run.add_mutually_exclusive_group(required=True)
     prompt.add_argument("--prompt")
     prompt.add_argument("--prompt-file", type=Path)
