@@ -791,7 +791,7 @@ def _create_bind_mount_placeholder(path: Path) -> None:
 def _resolve_auth_file(config: RuntimeConfig) -> Path | None:
     """Resolve an optional host-side Pi auth file without placing secrets in env."""
 
-    if _model_provider(config.model) == _OLLAMA_PROVIDER:
+    if _model_provider(config.model) in {_OPENCODE_PROVIDER, _OLLAMA_PROVIDER}:
         return None
     if config.pi_auth_file_env is None:
         return None

@@ -28,6 +28,7 @@ from apart_incident_response.runtime import (
     _prepare_auth_file,
     _prepare_model_limits,
     _resolve_auth_store,
+    _resolve_auth_file,
     build_pi_command,
     create_isolated_workspace,
     load_identity,
@@ -196,6 +197,11 @@ class RuntimeContractTests(unittest.TestCase):
             _opencode_session_id(self.identity("agent-1")),
             _opencode_session_id(self.identity("agent-2")),
         )
+
+    def test_opencode_does_not_require_codex_auth_file(self):
+        config = self.config().for_model("opencode-go/kimi-k2.6")
+        with patch.dict(os.environ, {"TEST_PI_AUTH": "/missing/codex-auth.json"}):
+            self.assertIsNone(_resolve_auth_file(config))
 
     def test_ollama_selection_uses_loopback_endpoint_and_disables_oauth(self):
         config = self.config().for_model("ollama/qwen3:8b")
