@@ -443,7 +443,15 @@ class TaskToolService:
     @staticmethod
     def _check_allowed(definition: TaskDefinition, relative_path: str) -> None:
         if definition.allowed_paths and relative_path not in definition.allowed_paths:
-            raise ToolPermissionError("path is outside the authenticated task permission set")
+            # Naming the agent's own already-authorized files is not a
+            # disclosure - it lets a model that guessed the wrong filename
+            # self-correct on its next call instead of guessing blind
+            # against task_query's literal substring search.
+            allowed = ", ".join(sorted(definition.allowed_paths))
+            raise ToolPermissionError(
+                f"path is outside the authenticated task permission set; "
+                f"permitted path(s): {allowed}"
+            )
 
     @staticmethod
     def _read_file(path: Path) -> str:

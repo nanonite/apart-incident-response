@@ -159,6 +159,16 @@ class TaskSubmissionTests(unittest.TestCase):
                 self.assertFalse(response["ok"])
                 self.assertIn(response["error"]["code"], {"invalid_arguments", "permission_denied"})
 
+    def test_permission_error_names_the_permitted_path(self):
+        self.service.update_runtime_usage(self.identity, 42, 3)
+        response = self.submit({
+            "diagnosis": TASK_ONE_DIAGNOSIS,
+            "evidence": [{"path": "other.txt", "excerpt": "unpermitted"}],
+        })
+        self.assertFalse(response["ok"])
+        self.assertIn(response["error"]["code"], {"invalid_arguments", "permission_denied"})
+        self.assertIn("evidence.txt", response["error"]["message"])
+
     def test_malformed_oversized_and_fabricated_usage_inputs_are_rejected(self):
         self.service.update_runtime_usage(self.identity, 42, 3)
         cases = (
