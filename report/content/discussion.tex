@@ -18,7 +18,7 @@ Under isolation and scheduled unlock, we recorded token-entropy trajectories, re
 These exploratory Ollama \texttt{gemma2:2b} trials ran on a teammate's CPU-only device; output errors and incomplete condition coverage prevented a reliable comparison, and they are excluded from the 539 reported runs.
 With another month, we would compare matched task/role configurations and donor-text controls, assess quality through blinded review, and test whether role design changes information use and entropy in either direction.
 
-The joint-entropy identity in \cref{sec:entropy} extends beyond two agents through total correlation, but our implemented estimator and evidence concern two. Additional agents introduce random variables and higher-order dependencies; whether the observed per-agent behaviour persists remains to be tested. Semantic uncertainty would require repeated fixed-context samples and an explicit equivalence criterion \parencite{kuhn2023semantic}, rather than pooling evolving drafts.
+The joint-entropy identity in \ref{sec:entropy} extends beyond two agents through total correlation, but our implemented estimator and evidence concern two. Additional agents introduce random variables and higher-order dependencies; whether the observed per-agent behaviour persists remains to be tested. Semantic uncertainty would require repeated fixed-context samples and an explicit equivalence criterion \parencite{kuhn2023semantic}, rather than pooling evolving drafts.
 
 \emph{Dual use:} the benchmark could help tune agents to evade monitors. Synthetic assets reduce exposure, but an entropy alarm cannot certify containment or replace access controls.
 
