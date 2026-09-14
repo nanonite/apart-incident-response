@@ -130,6 +130,8 @@ class CommunicationEventLog:
         transmitted = [event.delta_i_bits for event in writes if event.delta_i_bits is not None]
         tokens = [event.message_tokens for event in writes if event.message_tokens]
         useful = [row for row in joins if row["useful"] and row["delta_i_bits"] is not None]
+        outputs = [event for event in self._events if event.kind == "model_output"]
+        logprob_rows = [event for event in outputs if (event.payload or {}).get("logprob_status") not in {None, "not_requested", "unavailable"}]
         def latency(kind: str) -> float | None:
             if started is None:
                 return None
@@ -144,6 +146,9 @@ class CommunicationEventLog:
             "communication_tokens": sum(tokens),
             "bits_per_communication_token": sum(transmitted) / sum(tokens) if sum(tokens) else None,
             "verified_use_count": len(useful),
+            "logprob_output_count": len(logprob_rows),
+            "logprob_complete_output_count": sum((event.payload or {}).get("logprob_status") == "complete" for event in logprob_rows),
+            "logprob_coverage": [(event.payload or {}).get("logprob_coverage") for event in logprob_rows],
             "first_write_latency_seconds": latency("board_write"),
             "first_read_latency_seconds": latency("peer_read_exposure"),
             "first_verified_use_latency_seconds": latency("verified_use"),

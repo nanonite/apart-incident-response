@@ -25,6 +25,7 @@ from typing import Any, Callable, Mapping, Protocol, Sequence
 OPENROUTER_CHAT_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
 DEFAULT_FREE_MODEL = "inclusionai/ling-3.0-flash-vl:free"
 OPENROUTER_ENV_FILE = Path.home() / ".config" / "apart-incident-response" / "openrouter.env"
+PROJECT_ENV_FILE = Path(__file__).resolve().parents[2] / ".env"
 FREE_MODEL_CANDIDATES = (
     "inclusionai/ling-3.0-flash-vl:free",
     "nex-agi/nex-n2.5-mini:free",
@@ -76,10 +77,16 @@ def _load_openrouter_key() -> str | None:
         value = os.environ.get(name, "").strip()
         if value:
             return value
-    if OPENROUTER_ENV_FILE.is_file():
-        for line in OPENROUTER_ENV_FILE.read_text(encoding="utf-8").splitlines():
+    configured_file = os.environ.get("APART_OPENROUTER_ENV_FILE", "").strip()
+    env_files = ([Path(configured_file)] if configured_file else []) + [PROJECT_ENV_FILE, OPENROUTER_ENV_FILE]
+    for env_file in env_files:
+        if not env_file.is_file():
+            continue
+        for line in env_file.read_text(encoding="utf-8").splitlines():
             name, separator, value = line.partition("=")
-            if separator and name.strip() in {"OPENROUTER_API_KEY", "OPEN_ROUTER_API_KEY"} and value.strip():
+            name = name.strip().removeprefix("export ")
+            normalized_name = name.upper().replace("-", "_")
+            if separator and normalized_name in {"OPENROUTER_API_KEY", "OPEN_ROUTER_API_KEY"} and value.strip():
                 return value.strip().strip('"').strip("'")
     return None
 
@@ -125,6 +132,34 @@ class OpenRouterFreeProvider:
         self.api_key = _load_openrouter_key() if api_key is None else api_key
         self.top_logprobs = top_logprobs
         self.timeout = timeout
+        self.provider = "openrouter"
+        self.version = "openrouter-free-v1"
+
+    def respond(self, context: Any) -> Any:
+        """Adapt a battery context without retaining the raw provider response."""
+
+        from .communication_runner import AgentResponse
+
+        prompt = json.dumps({
+            "instruction": context.task_view.get("task_instruction"),
+            "family": context.task_view.get("family"),
+            "condition": context.condition.value,
+            "candidate_labels": context.task_view.get("candidate_labels", []),
+            "joint_candidate_labels": context.task_view.get("joint_candidate_labels"),
+            "private_clues": context.task_view.get("private_clues", []),
+            "visible_messages": list(context.visible_messages),
+        }, sort_keys=True)
+        response = self.complete(prompt, max_tokens=min(context.token_budget, 96), seed=context.turn)
+        answer_match = re.search(r"answer\s*:\s*([^\n.]+)", response.text, flags=re.IGNORECASE)
+        answer = answer_match.group(1).strip() if answer_match else None
+        return AgentResponse(
+            answer=answer,
+            output_text=response.text,
+            logprob_coverage=response.logprob_coverage,
+            logprob_status="complete" if response.logprobs and (response.logprob_coverage is None or response.logprob_coverage >= 1.0)
+            else "partial" if response.logprobs else "unavailable",
+            failure_reason=(response.error or "logprobs unavailable") if not response.logprobs else response.error,
+        )
 
     def complete(self, prompt: str, *, max_tokens: int, seed: int) -> BaselineResponse:
         if not self.api_key:
@@ -181,6 +216,10 @@ class BaselineRunner:
             response = self.provider.complete(case.prompt, max_tokens=self.max_tokens, seed=index)
             valid = response.status == "complete" and bool(response.text)
             correct = case.checker(response.text, case.expected) if valid else False
+            coverage = response.logprob_coverage
+            logprob_status = "unavailable" if not response.logprobs else (
+                "complete" if coverage is None or coverage >= 1.0 else "partial"
+            )
             rows.append({
                 "case_id": case.case_id, "level": case.level, "model": response.model,
                 "status": "valid" if valid else response.status,
@@ -188,9 +227,9 @@ class BaselineRunner:
                 "response_sha256": hashlib.sha256(response.text.encode()).hexdigest() if response.text else None,
                 "response_chars": len(response.text),
                 "latency_seconds": time.monotonic() - started,
-                "logprob_status": "complete" if response.logprobs else "unavailable",
+                "logprob_status": logprob_status,
                 "logprob_token_count": len(response.logprobs),
-                "logprob_coverage": response.logprob_coverage,
+                "logprob_coverage": coverage,
                 "error_type": response.error.split(":", 1)[0] if response.error else None,
             })
         valid_rows = [row for row in rows if row["status"] == "valid"]

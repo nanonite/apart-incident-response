@@ -12,6 +12,9 @@ from .communication_protocol import (
     ReasoningComplexity,
     assign_dependence,
 )
+from .communication_runner import ScriptedProvider, TwoAgentBatteryRunner
+from .communication_protocol import BatteryCondition
+from .communication_analysis import PairedOutcome
 from .task_families import FamilyInstance, generate_grid
 
 
@@ -34,8 +37,38 @@ def calibration_report(families: Sequence[str], *, seed: int = 1) -> dict[str, A
         "realized_regime_counts": dict(Counter(assignment.regime.value if assignment.regime else "undefined" for assignment in assignments)),
         "threshold_sensitivity": threshold_sensitivity,
         "generator_hints_not_used_for_assignment": True,
+        "fixture_pilot": run_fixture_pilot(families, seed=seed),
         "live_pilot": {"status": "not_run", "model": "deepseek/deepseek-v4.1-flash", "budget_usd": 20.0},
         "recommendation": "run capability smoke and a small paired pilot before any replication-power expansion",
+    }
+
+
+def run_fixture_pilot(families: Sequence[str], *, seed: int = 1) -> dict[str, Any]:
+    """Run a small deterministic harness pilot; never represents model evidence."""
+
+    instances = selected_fixture_instances(families, seed=seed)
+    runner = TwoAgentBatteryRunner(turns=1)
+    results = []
+    for instance in instances:
+        answers = {
+            (instance.instance_id, condition, agent): instance.target
+            for condition in BatteryCondition for agent in ("A", "B")
+        }
+        results.extend(runner.run_triplet(instance, ScriptedProvider(answers)))
+    rows = [PairedOutcome(
+        pair_id=result.pair_id, family=result.family, model="fixture",
+        condition=result.condition.value, success=result.task_success,
+        valid=result.status == "completed", useful_bits=float(result.event_summary["verified_useful_bits"]),
+        communication_tokens=int(result.event_summary["communication_tokens"]),
+    ) for result in results]
+    return {
+        "status": "fixture_only_complete",
+        "instance_count": len(instances),
+        "run_count": len(results),
+        "valid_run_count": sum(row.valid for row in rows),
+        "model_evidence": False,
+        "conditions": [condition.value for condition in BatteryCondition],
+        "outcomes": [row.__dict__ for row in rows],
     }
 
 
@@ -50,4 +83,4 @@ def selected_fixture_instances(families: Sequence[str], *, seed: int = 1) -> lis
     return selected
 
 
-__all__ = ["calibration_report", "selected_fixture_instances"]
+__all__ = ["calibration_report", "run_fixture_pilot", "selected_fixture_instances"]

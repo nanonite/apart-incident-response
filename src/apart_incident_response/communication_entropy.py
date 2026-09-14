@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import hashlib
 import math
 from typing import Any, Iterable, Mapping
 
@@ -34,6 +35,25 @@ class LogprobObservation:
             return None
         probabilities = [value / total for value in probabilities]
         return -sum(probability * math.log2(probability) for probability in probabilities if probability > 0)
+
+
+@dataclass(frozen=True)
+class EntropyGateAssignment:
+    run_id: str
+    arm: str
+    gate_step: int | None
+    intervention_label: str
+
+
+def assign_entropy_gate(run_id: str, *, turn8: bool = False) -> EntropyGateAssignment:
+    """Deterministically assign a separately labeled gate arm."""
+
+    if not run_id:
+        raise ValueError("run_id is required")
+    if turn8:
+        return EntropyGateAssignment(run_id, "turn8_exogenous_gate", 8, "scheduled_unlock_at_step_8")
+    arm = "context_perturbation_placebo" if int(hashlib.sha256(run_id.encode()).hexdigest()[-2:], 16) % 2 else "information_gain_observation"
+    return EntropyGateAssignment(run_id, arm, None, "no_synchronized_round_claim")
 
 
 def first_post_read_outputs(events: Iterable[CommunicationEvent]) -> list[dict[str, Any]]:
@@ -105,6 +125,6 @@ def entropy_extension_report(events: Iterable[CommunicationEvent], *, turn8_gate
 
 
 __all__ = [
-    "ENTROPY_EXTENSION_VERSION", "LogprobObservation", "coverage_gate",
+    "ENTROPY_EXTENSION_VERSION", "EntropyGateAssignment", "LogprobObservation", "assign_entropy_gate", "coverage_gate",
     "entropy_extension_report", "first_post_read_outputs", "matched_placebo",
 ]

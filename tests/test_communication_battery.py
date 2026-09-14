@@ -1,15 +1,15 @@
 import unittest
 
-from apart_incident_response.communication_analysis import PairedOutcome, fit_communication_propensity, paired_metrics
+from apart_incident_response.communication_analysis import PairedOutcome, fit_communication_propensity, paired_metrics, paired_contrasts, wilson_interval
 from apart_incident_response.communication_calibration import calibration_report, selected_fixture_instances
-from apart_incident_response.communication_entropy import coverage_gate, first_post_read_outputs
+from apart_incident_response.communication_entropy import assign_entropy_gate, coverage_gate, first_post_read_outputs, matched_placebo
 from apart_incident_response.communication_events import CommunicationEventLog
 from apart_incident_response.communication_protocol import (
     BatteryCondition, BatteryProtocol, DependenceRegime, directional_d_idx,
 )
 from apart_incident_response.communication_runner import AgentResponse, TwoAgentBatteryRunner
 from apart_incident_response.finite_information import ExactInformationEvaluator, FeasibleSet, MessageInterpretation
-from apart_incident_response.live_gate import LiveGate
+from apart_incident_response.live_gate import LiveGate, evaluate_capability_smoke
 from apart_incident_response.communication_report import report_from_rows
 from apart_incident_response.task_families import generate_grid, generate_instance, validate_family_grid
 
@@ -109,6 +109,30 @@ class CommunicationBatteryTests(unittest.TestCase):
             provider_capability=True, stage="full_battery")
         self.assertFalse(decision["authorized"])
         self.assertTrue(decision["reasons"])
+
+    def test_uncertainty_and_paired_contrasts_keep_independent_units(self):
+        self.assertEqual(wilson_interval(1, 1)[0] >= 0.0, True)
+        rows = [
+            PairedOutcome("p1", "hypothesis", "fixture", "ISO", False),
+            PairedOutcome("p1", "hypothesis", "fixture", "FULL", True),
+            PairedOutcome("p1", "hypothesis", "fixture", "COMM", True),
+        ]
+        self.assertEqual(paired_contrasts(rows)["FULL-ISO"]["n_pairs"], 1)
+
+    def test_entropy_placebo_and_turn8_gate_are_separate_labels(self):
+        assignment = assign_entropy_gate("pair-1", turn8=True)
+        self.assertEqual((assignment.arm, assignment.gate_step), ("turn8_exogenous_gate", 8))
+        placebo = matched_placebo([{"message_id": "m", "message_tokens": 3}],
+                                 [{"message_id": "p", "message_tokens": 3}])
+        self.assertEqual(placebo[0]["matching_status"], "yoked")
+
+    def test_capability_smoke_distinguishes_partial_logprob_coverage(self):
+        report = {"provider": "openrouter", "model": "free", "rows": [
+            {"status": "valid", "logprob_token_count": 2, "logprob_status": "partial"},
+        ]}
+        gate = evaluate_capability_smoke(report)
+        self.assertEqual(gate["status"], "capability_pass")
+        self.assertFalse(gate["entropy_coverage_pass"])
 
     def test_calibration_and_report_are_fixture_only_and_privacy_safe(self):
         report = calibration_report(["hypothesis", "reference"])

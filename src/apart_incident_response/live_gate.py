@@ -37,6 +37,31 @@ class LiveGate:
                 "next_gate": "explicit_budget_power_approval" if reasons else "bounded_execution"}
 
 
+def evaluate_capability_smoke(report: Mapping[str, Any], *, require_logprobs: bool = True) -> dict[str, Any]:
+    """Convert a smoke report into a gate input without claiming scientific success."""
+
+    rows = list(report.get("rows", ()))
+    valid = [row for row in rows if row.get("status") == "valid"]
+    logprob_rows = [row for row in valid if row.get("logprob_token_count", 0) > 0]
+    complete_rows = [row for row in logprob_rows if row.get("logprob_status") == "complete"]
+    if require_logprobs:
+        capability = bool(valid) and len(logprob_rows) == len(valid)
+    else:
+        capability = bool(valid)
+    return {
+        "provider": report.get("provider"),
+        "model": report.get("model"),
+        "requests": len(rows),
+        "valid": len(valid),
+        "logprob_rows": len(logprob_rows),
+        "complete_logprob_rows": len(complete_rows),
+        "capability_pass": capability,
+        "entropy_coverage_pass": bool(valid) and len(complete_rows) == len(valid),
+        "scientific_battery_evidence": False,
+        "status": "capability_pass" if capability else "capability_incomplete",
+    }
+
+
 def staged_plan() -> list[dict[str, Any]]:
     return [
         {"stage": "offline", "runs": 0, "api_cost": 0, "requirement": "all generators, validators, and fake-provider tests pass"},
@@ -46,4 +71,4 @@ def staged_plan() -> list[dict[str, Any]]:
     ]
 
 
-__all__ = ["LiveGate", "PILOT_BUDGET_USD", "PILOT_MODEL", "staged_plan"]
+__all__ = ["LiveGate", "PILOT_BUDGET_USD", "PILOT_MODEL", "evaluate_capability_smoke", "staged_plan"]

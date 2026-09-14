@@ -38,12 +38,13 @@ class ReasoningBaselineTests(unittest.TestCase):
         report = BaselineRunner(FakeProvider([
             BaselineResponse("", DEFAULT_FREE_MODEL, status="unavailable", error="missing"),
             BaselineResponse("nonsense", DEFAULT_FREE_MODEL),
-            BaselineResponse("ANSWER: approve", DEFAULT_FREE_MODEL, logprobs=({"token": "x"},)),
+            BaselineResponse("ANSWER: approve", DEFAULT_FREE_MODEL, logprobs=({"token": "x"},), usage={"completion_tokens": 4}),
         ])).run()
         self.assertEqual(report["requests_made"], 3)
         self.assertEqual(report["invalid_runs"], 1)
         self.assertIsNone(report["rows"][0]["correct"])
         self.assertEqual(report["rows"][2]["logprob_token_count"], 1)
+        self.assertEqual(report["rows"][2]["logprob_status"], "partial")
         self.assertFalse(report["raw_responses_retained"])
 
     def test_provider_requires_free_slug_and_missing_key_is_explicit(self):

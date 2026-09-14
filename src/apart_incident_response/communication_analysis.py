@@ -26,6 +26,20 @@ class PairedOutcome:
     latency_seconds: float | None = None
 
 
+def wilson_interval(successes: int, trials: int, *, z: float = 1.96) -> tuple[float, float] | None:
+    """Return a finite-sample binomial interval, or ``None`` without trials."""
+
+    if trials < 0 or successes < 0 or successes > trials or z <= 0:
+        raise ValueError("invalid binomial counts")
+    if trials == 0:
+        return None
+    p = successes / trials
+    denominator = 1.0 + z * z / trials
+    centre = (p + z * z / (2.0 * trials)) / denominator
+    radius = z * math.sqrt((p * (1.0 - p) / trials) + z * z / (4.0 * trials * trials)) / denominator
+    return max(0.0, centre - radius), min(1.0, centre + radius)
+
+
 def paired_metrics(rows: Iterable[PairedOutcome]) -> list[dict[str, Any]]:
     groups: dict[tuple[str, str, str], dict[str, list[PairedOutcome]]] = defaultdict(lambda: defaultdict(list))
     for row in rows:
@@ -44,12 +58,42 @@ def paired_metrics(rows: Iterable[PairedOutcome]) -> list[dict[str, Any]]:
         metrics.append({
             "pair_id": pair_id, "family": family, "model": model,
             "p_success": probabilities, "denominators": denominators,
+            "confidence_intervals": {
+                condition: wilson_interval(
+                    sum(bool(row.success) for row in by_condition.get(condition, ()) if row.valid and row.success is not None),
+                    denominators[condition],
+                )
+                for condition in ("ISO", "FULL", "COMM")
+            },
             "invalid_runs": invalid,
             "c_need": c_need(full, iso) if full is not None and iso is not None else None,
             "eta_comm": eta_comm(comm, iso, full) if comm is not None and iso is not None and full is not None else None,
             "status": "valid" if all(denominators.get(condition, 0) for condition in ("ISO", "FULL", "COMM")) else "incomplete",
         })
     return metrics
+
+
+def paired_contrasts(rows: Sequence[PairedOutcome]) -> dict[str, Any]:
+    """Summarize paired-unit contrasts without treating runs as independent."""
+
+    by_pair: dict[tuple[str, str, str], dict[str, PairedOutcome]] = {}
+    for row in rows:
+        by_pair.setdefault((row.pair_id, row.family, row.model), {})[row.condition] = row
+    contrasts: dict[str, list[float]] = {"FULL-ISO": [], "COMM-ISO": []}
+    for conditions in by_pair.values():
+        if not all(condition in conditions and conditions[condition].valid and conditions[condition].success is not None
+                   for condition in ("ISO", "FULL", "COMM")):
+            continue
+        contrasts["FULL-ISO"].append(float(conditions["FULL"].success) - float(conditions["ISO"].success))
+        contrasts["COMM-ISO"].append(float(conditions["COMM"].success) - float(conditions["ISO"].success))
+    output: dict[str, Any] = {}
+    for name, values in contrasts.items():
+        n = len(values)
+        mean = sum(values) / n if n else None
+        standard_error = math.sqrt(sum((value - mean) ** 2 for value in values) / (n * (n - 1))) if n > 1 else None
+        output[name] = {"n_pairs": n, "mean": mean, "standard_error": standard_error,
+                        "status": "estimable" if n else "insufficient_paired_units"}
+    return output
 
 
 def communication_efficiency(useful_bits: float, communication_tokens: int) -> float | None:
@@ -135,6 +179,7 @@ def analyze_runs(rows: Sequence[PairedOutcome]) -> dict[str, Any]:
 
     return {
         "paired_metrics": paired_metrics(rows),
+        "paired_contrasts": paired_contrasts(rows),
         "propensity": fit_communication_propensity(rows),
         "behavior_counts": {
             category: sum(classify_communication_behavior(row.__dict__) == category for row in rows)
@@ -147,5 +192,5 @@ def analyze_runs(rows: Sequence[PairedOutcome]) -> dict[str, Any]:
 
 __all__ = [
     "PairedOutcome", "analyze_runs", "classify_communication_behavior", "communication_efficiency",
-    "fit_communication_propensity", "paired_metrics",
+    "fit_communication_propensity", "paired_contrasts", "paired_metrics", "wilson_interval",
 ]

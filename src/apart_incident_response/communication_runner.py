@@ -33,6 +33,7 @@ class AgentResponse:
     output_logprob_entropy_bits: float | None = None
     logprob_coverage: float | None = None
     logprob_status: str = "not_requested"
+    failure_reason: str | None = None
 
 
 class BatteryProvider(Protocol):
@@ -137,6 +138,10 @@ class TwoAgentBatteryRunner:
                     log.record("provider_failure", agent, status="invalid",
                                payload={"error_type": type(exc).__name__})
                     continue
+                if response.failure_reason:
+                    invalid.append(agent)
+                    log.record("provider_failure", agent, status="invalid",
+                               payload={"error_type": response.failure_reason.split(":", 1)[0]})
                 output_id = f"output-{agent}-{turn}"
                 log.model_output(agent, output_id,
                                  exposed_message_ids=response.used_message_ids,
@@ -171,6 +176,7 @@ class TwoAgentBatteryRunner:
                                      checker_evidence={"verified": True, "task_checker": f"{instance.family}-oracle-v1",
                                                        "answer_accepted": True})
         status = "invalid" if invalid else "completed"
+        task_success = task_success and status == "completed"
         artifact = {
             "run_id": run, "pair_id": pair, "condition": condition.value,
             "family": instance.family, "instance_id": instance.instance_id, "seed": instance.seed,
