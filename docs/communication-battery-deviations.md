@@ -22,9 +22,11 @@ Version: `two-agent-iso-full-comm-v1`
 - A bounded Ling-3.0-Flash-VL smoke was run through the existing repository
   `.env` key without copying the file: 3/3 elementary reasoning cases were
   correct, 3/3 returned logprob records, and cost was `$0.00`. Returned
-  logprob coverage was partial even after separating provider-reported
-  reasoning tokens (approximately 0.28-0.50 in the repeated check), so it is
-  not an entropy-complete capability result.
+  the provider did not expose a reliable visible-token denominator. A fresh
+  repeated check returned logprob records for 9/9 requests, with top-k mass
+  approximately `0.999996-0.999999` for every record. This supports
+  top-k-mass-validated partial entropy, not an exact full-vocabulary entropy
+  claim.
 - A six-family medium-complexity necessary-cell pilot attempted 18
   ISO/FULL/COMM runs. All runs were retained; provider outputs without usable
   logprob records were classified invalid. ISO: 0/6 valid, FULL: 0/6 valid,

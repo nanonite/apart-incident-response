@@ -82,6 +82,7 @@ class CommunicationEventLog:
     def model_output(self, agent_id: str, output_id: str, *, exposed_message_ids: Iterable[str] = (),
                      logprob_entropy_bits: float | None = None,
                      logprob_coverage: float | None = None,
+                     logprob_mass_coverage: float | None = None,
                      logprob_status: str = "not_requested") -> CommunicationEvent:
         """Record output-time probability data, never read-time entropy."""
 
@@ -89,6 +90,7 @@ class CommunicationEventLog:
                            payload={"exposed_message_ids": list(exposed_message_ids),
                                     "logprob_entropy_bits": logprob_entropy_bits,
                                     "logprob_coverage": logprob_coverage,
+                                    "logprob_mass_coverage": logprob_mass_coverage,
                                     "logprob_status": logprob_status})
 
     def verified_use(self, agent_id: str, message: MessageInformation, output_id: str,
@@ -149,6 +151,7 @@ class CommunicationEventLog:
             "logprob_output_count": len(logprob_rows),
             "logprob_complete_output_count": sum((event.payload or {}).get("logprob_status") == "complete" for event in logprob_rows),
             "logprob_coverage": [(event.payload or {}).get("logprob_coverage") for event in logprob_rows],
+            "logprob_mass_coverage": [(event.payload or {}).get("logprob_mass_coverage") for event in logprob_rows],
             "first_write_latency_seconds": latency("board_write"),
             "first_read_latency_seconds": latency("peer_read_exposure"),
             "first_verified_use_latency_seconds": latency("verified_use"),

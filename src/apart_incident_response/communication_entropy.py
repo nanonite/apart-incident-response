@@ -71,11 +71,12 @@ def first_post_read_outputs(events: Iterable[CommunicationEvent]) -> list[dict[s
                          "output_id": None, "status": "missing_post_read_output"})
             continue
         payload = output.payload or {}
-        coverage = payload.get("logprob_coverage")
+        coverage = payload.get("logprob_mass_coverage", payload.get("logprob_coverage"))
         rows.append({"message_id": read.message_id, "agent_id": read.agent_id,
                      "output_id": output.output_id, "sequence": output.sequence,
                      "entropy_bits": payload.get("logprob_entropy_bits"),
                      "coverage": coverage,
+                     "coverage_kind": "topk_probability_mass" if payload.get("logprob_mass_coverage") is not None else "visible_token_denominator",
                      "status": payload.get("logprob_status", "not_requested"),
                      "event_alignment": "first_model_output_after_peer_read"})
     return rows

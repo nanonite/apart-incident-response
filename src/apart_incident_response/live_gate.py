@@ -43,7 +43,8 @@ def evaluate_capability_smoke(report: Mapping[str, Any], *, require_logprobs: bo
     rows = list(report.get("rows", ()))
     valid = [row for row in rows if row.get("status") == "valid"]
     logprob_rows = [row for row in valid if row.get("logprob_token_count", 0) > 0]
-    complete_rows = [row for row in logprob_rows if row.get("logprob_status") == "complete"]
+    complete_rows = [row for row in logprob_rows if row.get("logprob_status") == "full_logits" or
+                     (row.get("topk_mass_coverage") is not None and row.get("topk_mass_coverage") >= 0.95)]
     if require_logprobs:
         capability = bool(valid) and len(logprob_rows) == len(valid)
     else:

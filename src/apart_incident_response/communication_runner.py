@@ -32,6 +32,7 @@ class AgentResponse:
     output_text: str = ""
     output_logprob_entropy_bits: float | None = None
     logprob_coverage: float | None = None
+    logprob_mass_coverage: float | None = None
     logprob_status: str = "not_requested"
     failure_reason: str | None = None
 
@@ -147,6 +148,7 @@ class TwoAgentBatteryRunner:
                                  exposed_message_ids=response.used_message_ids,
                                  logprob_entropy_bits=response.output_logprob_entropy_bits,
                                  logprob_coverage=response.logprob_coverage,
+                                 logprob_mass_coverage=response.logprob_mass_coverage,
                                  logprob_status=response.logprob_status)
                 used_outputs.append((agent, output_id, response.used_message_ids))
                 if response.answer is not None:

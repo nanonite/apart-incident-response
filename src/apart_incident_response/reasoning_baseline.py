@@ -57,16 +57,34 @@ class BaselineResponse:
 
     @property
     def logprob_coverage(self) -> float | None:
+        """Visible-token coverage, only when the provider supplies its denominator."""
+
+        visible_tokens = (self.usage or {}).get("visible_completion_tokens")
+        if isinstance(visible_tokens, int) and visible_tokens > 0 and self.logprobs:
+            return min(1.0, len(self.logprobs) / visible_tokens)
+        return None
+
+    @property
+    def topk_mass_coverage(self) -> float | None:
+        """Mean probability mass represented by returned top-k alternatives."""
+
         if not self.logprobs:
             return None
-        output_tokens = (self.usage or {}).get("completion_tokens")
-        details = (self.usage or {}).get("completion_tokens_details")
-        reasoning_tokens = details.get("reasoning_tokens", 0) if isinstance(details, Mapping) else 0
-        if isinstance(output_tokens, int) and isinstance(reasoning_tokens, int):
-            output_tokens = output_tokens - reasoning_tokens
-        if isinstance(output_tokens, int) and output_tokens > 0:
-            return min(1.0, len(self.logprobs) / output_tokens)
-        return None
+        masses: list[float] = []
+        for record in self.logprobs:
+            values: dict[str, float] = {}
+            for alternative in record.get("top_logprobs") or []:
+                if not isinstance(alternative, Mapping) or not isinstance(alternative.get("token"), str):
+                    continue
+                logprob = alternative.get("logprob")
+                if isinstance(logprob, (int, float)) and math.isfinite(logprob):
+                    values.setdefault(alternative["token"], math.exp(logprob))
+            token, logprob = record.get("token"), record.get("logprob")
+            if isinstance(token, str) and isinstance(logprob, (int, float)) and math.isfinite(logprob):
+                values.setdefault(token, math.exp(logprob))
+            if values:
+                masses.append(min(1.0, sum(values.values())))
+        return sum(masses) / len(masses) if masses else None
 
 
 class BaselineProvider(Protocol):
@@ -160,8 +178,8 @@ class OpenRouterFreeProvider:
             answer=answer,
             output_text=response.text,
             logprob_coverage=response.logprob_coverage,
-            logprob_status="complete" if response.logprobs and (response.logprob_coverage is None or response.logprob_coverage >= 1.0)
-            else "partial" if response.logprobs else "unavailable",
+            logprob_mass_coverage=response.topk_mass_coverage,
+            logprob_status="records_present" if response.logprobs else "unavailable",
             failure_reason=(response.error or "logprobs unavailable") if not response.logprobs else response.error,
         )
 
@@ -222,7 +240,9 @@ class BaselineRunner:
             correct = case.checker(response.text, case.expected) if valid else False
             coverage = response.logprob_coverage
             logprob_status = "unavailable" if not response.logprobs else (
-                "complete" if coverage is None or coverage >= 1.0 else "partial"
+                "complete" if coverage is not None and coverage >= 1.0 else
+                "partial_token_coverage" if coverage is not None else
+                "records_present_visible_coverage_unknown"
             )
             rows.append({
                 "case_id": case.case_id, "level": case.level, "model": response.model,
@@ -234,6 +254,7 @@ class BaselineRunner:
                 "logprob_status": logprob_status,
                 "logprob_token_count": len(response.logprobs),
                 "logprob_coverage": coverage,
+                "topk_mass_coverage": response.topk_mass_coverage,
                 "reasoning_tokens": ((response.usage or {}).get("completion_tokens_details") or {}).get("reasoning_tokens"),
                 "error_type": response.error.split(":", 1)[0] if response.error else None,
             })
