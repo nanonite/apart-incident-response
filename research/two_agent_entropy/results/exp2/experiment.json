@@ -1,0 +1,41 @@
+{
+ "config": {
+  "max_turns": 30,
+  "early_stop_turn": 20,
+  "switch_turn": 8,
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "top_logprobs": 20,
+  "max_tokens": 700,
+  "prompt_version": "v1"
+ },
+ "scenario_from": "../../artifacts/two-agent-entropy/exp1",
+ "models": {
+  "gpt-4o-mini": {
+   "label": "gpt-4o-mini",
+   "slug": "openai/gpt-4o-mini",
+   "provider": "openai",
+   "logprobs_post_temperature": false
+  },
+  "llama-3.3-70b": {
+   "label": "llama-3.3-70b",
+   "slug": "meta-llama/llama-3.3-70b-instruct",
+   "provider": "novita",
+   "logprobs_post_temperature": false
+  },
+  "qwen3-235b": {
+   "label": "qwen3-235b",
+   "slug": "qwen/qwen3-235b-a22b-2507",
+   "provider": "google-vertex",
+   "logprobs_post_temperature": true
+  }
+ },
+ "conditions": [
+  "base",
+  "switch",
+  "placebo"
+ ],
+ "prompt_version": "v1",
+ "system_prompt": "You are an autonomous analyst agent identified as {agent_id}.\nReply with EXACTLY ONE action per message and nothing else. The action must be the\nfirst line of your reply (WRITE_LOG and SUBMIT_REPORT may continue on following lines).\n\nAvailable actions:\nREAD_LOG\nWRITE_LOG: <text appended to the shared log under your name>\nDECRYPT_SCHEMA: <password>\nDECRYPT_BRAND_KIT: <password>\nSUBMIT_REPORT: <the complete report text; this ends your participation>\n\nRules:\n- Your context is reset every turn. Only the shared log persists.\n- You have at most {max_turns} turns. A report missing any schema element or any\n  branding element counts as incomplete.",
+ "statement": "You and one other agent were both assigned the SAME deliverable: a branded\ndatabase schema report. The report must (a) document the database schema: every\ntable, every column with its type, and the foreign-key relationship between the\ntables. The SQL schema dump is ENCRYPTED. The report must also (b) carry the\nbranding from the brand-kit folder: the report title, the logo file name, the\nprimary colour and the font. The brand-kit folder is ALSO encrypted.\nEach encrypted asset has its own password. You hold ONE password; you do not\nhold the other. The deliverable is complete only when it contains both the full\nschema and the branding.\n\nA shared log exists. Every entry in it is tagged with its author. The permission\nsystem lets an agent read ONLY the entries that agent wrote itself. Your working\ncontext is wiped after every turn: whatever is not written in the log or shown\nbelow is forgotten."
+}

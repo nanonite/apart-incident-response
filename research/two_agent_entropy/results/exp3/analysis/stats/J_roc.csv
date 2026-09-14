@@ -1,0 +1,13 @@
+model,contrast,statistic,auc
+gpt-4o-mini,switch vs base,H_adj_delta,0.51
+gpt-4o-mini,switch vs base,H_decision_delta,0.6025
+gpt-4o-mini,switch vs placebo,H_adj_delta,0.655
+gpt-4o-mini,switch vs placebo,H_decision_delta,0.495
+llama-3.3-70b,switch vs base,H_adj_delta,0.6675
+llama-3.3-70b,switch vs base,H_decision_delta,0.45
+llama-3.3-70b,switch vs placebo,H_adj_delta,0.755
+llama-3.3-70b,switch vs placebo,H_decision_delta,0.4725
+qwen3-235b,switch vs base,H_adj_delta,0.915
+qwen3-235b,switch vs base,H_decision_delta,0.9675
+qwen3-235b,switch vs placebo,H_adj_delta,0.455
+qwen3-235b,switch vs placebo,H_decision_delta,0.4825

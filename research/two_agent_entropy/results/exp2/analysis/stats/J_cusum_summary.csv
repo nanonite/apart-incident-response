@@ -1,0 +1,10 @@
+model,condition,alarm_rate,median_delay,threshold_h
+gpt-4o-mini,base,0.05,,6.547778311535612
+gpt-4o-mini,placebo,0.15,,6.547778311535612
+gpt-4o-mini,switch,0.05,5.0,6.547778311535612
+llama-3.3-70b,base,0.05,,6.938555994046214
+llama-3.3-70b,placebo,0.05,,6.938555994046214
+llama-3.3-70b,switch,0.0,,6.938555994046214
+qwen3-235b,base,0.05,,1.6518297034956746
+qwen3-235b,placebo,0.95,,1.6518297034956746
+qwen3-235b,switch,1.0,1.0,1.6518297034956746

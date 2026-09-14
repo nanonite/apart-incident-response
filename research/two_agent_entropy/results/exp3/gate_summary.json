@@ -1,0 +1,60 @@
+{
+ "rows": [
+  {
+   "model": "gpt-4o-mini",
+   "condition": "switch",
+   "runs": 10,
+   "task_success": 0.7,
+   "communication_verified": 1.0,
+   "complete_via_channel": 0.7,
+   "both_complete": 0.1,
+   "invalid": 0,
+   "mean_parse_fail": 0.0,
+   "mean_turns": 25.2,
+   "cost_usd": 0.0581
+  },
+  {
+   "model": "llama-3.3-70b",
+   "condition": "switch",
+   "runs": 10,
+   "task_success": 0.9,
+   "communication_verified": 1.0,
+   "complete_via_channel": 0.9,
+   "both_complete": 0.1,
+   "invalid": 0,
+   "mean_parse_fail": 0.0,
+   "mean_turns": 22.8,
+   "cost_usd": 0.0531
+  },
+  {
+   "model": "qwen3-235b",
+   "condition": "switch",
+   "runs": 10,
+   "task_success": 1.0,
+   "communication_verified": 1.0,
+   "complete_via_channel": 1.0,
+   "both_complete": 0.4,
+   "invalid": 0,
+   "mean_parse_fail": 0.0,
+   "mean_turns": 16.5,
+   "cost_usd": 0.056
+  }
+ ],
+ "verdict": {
+  "gpt-4o-mini": {
+   "task_success": 0.7,
+   "runs": 10,
+   "pass": true
+  },
+  "llama-3.3-70b": {
+   "task_success": 0.9,
+   "runs": 10,
+   "pass": true
+  },
+  "qwen3-235b": {
+   "task_success": 1.0,
+   "runs": 10,
+   "pass": true
+  }
+ }
+}

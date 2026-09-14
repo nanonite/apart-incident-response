@@ -1,0 +1,221 @@
+<title>Temperature Sweep Results</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F3F6F6; --surface:#FFFFFF; --sunk:#E9EFF0; --ink:#13212B; --muted:#56666F; --rule:#D3DDDF;
+  --accent:#0B6E8A; --placebo:#C2410C; --good:#15803D; --note:#F6E5D3; --caution:#FDF3D7; --figbg:#FFFFFF;
+  --font:"Poppins",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1519; --surface:#152027; --sunk:#1A272F; --ink:#E3EBED; --muted:#96A7AF; --rule:#27363E;
+    --accent:#56B6D1; --placebo:#EFA35C; --good:#4ADE80; --note:#3A2816; --caution:#33290F; --figbg:#152027;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1519; --surface:#152027; --sunk:#1A272F; --ink:#E3EBED; --muted:#96A7AF; --rule:#27363E;
+  --accent:#56B6D1; --placebo:#EFA35C; --good:#4ADE80; --note:#3A2816; --caution:#33290F; --figbg:#152027;
+}
+.fig-dark{display:none}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .fig-light{display:none}
+  :root:not([data-theme="light"]) .fig-dark{display:block}
+}
+:root[data-theme="dark"] .fig-light{display:none}
+:root[data-theme="dark"] .fig-dark{display:block}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.65;margin:0;padding-inline:20px;padding-block:0 72px}
+main{max-width:1040px;margin-inline:auto;display:grid;gap:56px}
+h1,h2,h3{margin:0;line-height:1.2;text-wrap:balance}
+p{margin:0}
+a{color:var(--accent);text-underline-offset:3px}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+code{font-family:var(--mono);font-size:.86em}
+.topbar{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--rule);padding-block:10px;margin-inline:-20px;padding-inline:20px}
+.topbar-inner{max-width:1040px;margin-inline:auto;display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;justify-content:space-between}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tabs a{font-size:13px;font-weight:600;text-decoration:none;color:var(--ink);background:var(--surface);border:1px solid var(--rule);border-radius:999px;padding:5px 14px}
+.tabs a:hover{border-color:var(--accent)}
+.theme{display:flex;gap:4px;align-items:center;font-size:12px;color:var(--muted)}
+.theme button{font:inherit;font-size:12px;font-weight:600;color:var(--ink);background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:4px 10px;cursor:pointer}
+.theme button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+header{display:grid;gap:14px;padding-top:36px}
+.eyebrow{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1{font-size:clamp(30px,4.6vw,44px);font-weight:700;letter-spacing:-.02em}
+h2{font-size:26px;font-weight:700;letter-spacing:-.01em}
+h3{font-size:16px;font-weight:600}
+.lede{font-size:17px;color:var(--muted);max-width:68ch}
+.glance{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.glance{grid-template-columns:1fr}}
+.glance div{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:14px 16px;display:grid;gap:4px;font-size:13.5px}
+.glance b{font-family:var(--mono);font-size:13px;color:var(--muted);font-weight:500}
+.glance strong{font-size:15px}
+.exp{display:grid;gap:22px;scroll-margin-top:70px;border-top:1px solid var(--rule);padding-top:40px}
+.exp-head{display:grid;gap:8px}
+.temp{font-family:var(--mono);font-size:13px;color:var(--accent);font-weight:500}
+.headline{background:var(--surface);border:1px solid var(--rule);border-left:4px solid var(--accent);border-radius:10px;padding:16px 20px;font-size:16px;font-weight:500;max-width:860px}
+.findings{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.finding{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:14px 18px;display:grid;grid-template-columns:118px 1fr;gap:14px}
+@media (max-width:640px){.finding{grid-template-columns:1fr;gap:4px}}
+.verdict{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding-top:3px}
+.v-yes{color:var(--good)} .v-mixed{color:var(--accent)} .v-no{color:var(--placebo)}
+.finding div{display:grid;gap:4px}
+.finding p{color:var(--muted);font-size:14px}
+.num{font-family:var(--mono);color:var(--ink);font-variant-numeric:tabular-nums}
+.caution{background:var(--caution);border-radius:10px;padding:14px 18px;font-size:14px;display:grid;gap:6px;max-width:860px}
+.table-wrap{overflow-x:auto;border:1px solid var(--rule);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;vertical-align:top;padding:8px 12px;border-bottom:1px solid var(--rule)}
+tr:last-child td{border-bottom:0}
+th{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;background:var(--sunk);white-space:nowrap}
+td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+td small{display:block;color:var(--muted);font-size:11px}
+.sig{color:var(--good);font-weight:500}
+.chip{font-family:var(--mono);font-size:11px;padding:1px 7px;border-radius:4px;color:#fff;white-space:nowrap}
+.chip.base{background:#64748B} .chip.switch{background:#0B6E8A} .chip.placebo{background:#C2410C}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media (max-width:820px){.grid2{grid-template-columns:1fr}}
+figure{margin:0;background:var(--figbg);border:1px solid var(--rule);border-radius:10px;padding:10px;display:grid;gap:8px}
+figure img{width:100%;height:auto}
+figcaption{font-size:12.5px;color:var(--muted);padding:0 4px 2px}
+.figs{display:grid;gap:14px}
+footer{font-size:12.5px;color:var(--muted);border-top:1px solid var(--rule);padding-top:16px;display:grid;gap:4px}
+</style>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <nav class="tabs" aria-label="Sections">
+      <a href="#t0">Temperature 0</a>
+      <a href="#t05">Temperature 0.5</a>
+    </nav>
+    <div class="theme" role="group" aria-label="Page theme">
+      <span>Theme</span>
+      <button type="button" data-set="light" id="theme-light">Light</button>
+      <button type="button" data-set="dark" id="theme-dark">Dark</button>
+      <button type="button" data-set="auto" id="theme-auto">Auto</button>
+    </div>
+  </div>
+</div>
+
+<main>
+<header>
+  <p class="eyebrow">Listening to the Collective · temperature sweep</p>
+  <h1>Temperature Sweep Results</h1>
+  <p class="lede">The shared-log experiment rerun at sampling temperatures 0 and 0.5, with the same scenario, prompts, models, pinned providers and N=20 runs per cell as the temperature 1 experiment (exp1). The question: does lower-variance sampling let entropy tell real communication from a placebo?</p>
+  <div class="glance">
+    <div><b>T = 1 · exp1 (reference)</b><strong>No separation</strong>No model distinguished switch from placebo; placebo effects were equal or larger.</div>
+    <div><b>T = 0.5 · exp3</b><strong>No separation for Qwen; weak for Llama</strong>Qwen shifts equally under switch and placebo. Llama shows a small switch-specific rise.</div>
+    <div><b>T = 0 · exp2</b><strong>Clear separation for Qwen</strong>Switch raised Qwen's entropy well above placebo (AUC 0.95). Caveat: greedy decoding made many Qwen runs duplicates.</div>
+  </div>
+</header>
+
+<section class="exp" id="t0">
+  <div class="exp-head">
+    <p class="temp">exp2 · temperature 0 · 213 runs (30 gate, 3 donor, 180 full), 0 invalid full runs · $1.48</p>
+    <h2>Temperature 0</h2>
+  </div>
+  <p class="headline">At temperature 0, Qwen's entropy separated real communication from the placebo: switch raised adjusted token entropy by 0.085 bits and decision entropy by 0.225 bits more than placebo (both AUC 0.95, Holm p = 0.001). GPT-4o-mini showed nothing, and Llama moved more under placebo than under switch.</p>
+
+  <ul class="findings">
+    <li class="finding"><span class="verdict v-yes">Confirmed</span><div><h3>The channel still works at greedy decoding</h3><p>Verified communication in <span class="num">100%</span> of switch runs for all three models, and task success of <span class="num">90%</span>, <span class="num">100%</span> and <span class="num">100%</span> (gpt-4o-mini, Llama, Qwen). None in base or placebo, and no leak flags.</p></div></li>
+    <li class="finding"><span class="verdict v-yes">New</span><div><h3>Qwen: switch is distinguishable from placebo</h3><p>Run-level change in adjusted token entropy is <span class="num">+0.085</span> bits higher under switch than placebo (95% CI +0.059 to +0.111, AUC 0.955), and decision entropy <span class="num">+0.225</span> bits (CI +0.177 to +0.274). In the regression, switch × post is <span class="num">+0.143</span> against <span class="num">+0.053</span> for placebo. Right after a read, entropy is highest after real peer entries (<span class="num">0.514</span>) rather than placebo entries (<span class="num">0.404</span>) or own entries (<span class="num">0.346</span>), the reverse of temperature 1.</p></div></li>
+    <li class="finding"><span class="verdict v-no">Not confirmed</span><div><h3>GPT-4o-mini and Llama do not separate</h3><p>GPT-4o-mini shows no condition effect on any measure (all p &gt; 0.26). Llama moves under placebo (raw token entropy +0.042 bits vs base, Holm p = 0.017; regression placebo × post +0.029, p = 0.02) but not under switch.</p></div></li>
+    <li class="finding"><span class="verdict v-mixed">Mixed</span><div><h3>Coupling and monitoring</h3><p>For Qwen, I(X₁;X₂) among active agents exceeds its null in 8 of 13 post-switch turns under switch (2 under placebo), but the excess is only about <span class="num">0.013</span> bits. A CUSUM calibrated on base alarms in 100% of Qwen switch runs (median 1 turn after the first read) but also in 95% of placebo runs, because near-deterministic base runs give it a very low threshold.</p></div></li>
+  </ul>
+
+  <div class="caution">
+    <b>Caveat: greedy decoding made Qwen runs repeat</b>
+    <p>OpenAI and Novita still produced 20 distinct runs per cell at temperature 0, but Qwen on Google Vertex did not. Its 20 base runs contain only <span class="num">2</span> distinct trajectories (one per agent order), switch <span class="num">15</span> and placebo <span class="num">19</span>. Treat Qwen's switch − base contrasts (AUC 1.0) as unreliable. The switch − placebo result survives de-duplication: counting each distinct trajectory once (15 vs 19), adjusted entropy differs by +0.089 bits and decision entropy by +0.238 bits, AUC 0.95, permutation p &lt; 0.0001.</p>
+  </div>
+
+  <div class="table-wrap"><table>
+    <thead><tr><th>model</th><th>condition</th><th>task success</th><th>comm. verified</th><th>median τ_read</th><th>mean turns</th></tr></thead>
+    <tbody>{{exp2_gt}}</tbody>
+  </table></div>
+
+  <div class="table-wrap"><table>
+    <thead><tr><th>measure</th><th>model</th><th>switch − base<small>bits [95% CI]</small></th><th>Holm p</th><th>placebo − base</th><th>Holm p</th><th>switch − placebo</th><th>Holm p</th></tr></thead>
+    <tbody>{{exp2_did}}</tbody>
+  </table></div>
+
+  <div class="grid2">
+    <div class="table-wrap"><table>
+      <thead><tr><th>model</th><th>interaction</th><th>OLS, run-clustered<small>bits/token [95% CI]</small></th><th>p</th></tr></thead>
+      <tbody>{{exp2_reg}}</tbody>
+    </table></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>model</th><th>after own read</th><th>after peer read</th><th>after placebo read</th></tr></thead>
+      <tbody>{{exp2_spike}}</tbody>
+    </table></div>
+  </div>
+
+  <div class="figs">{{exp2_figures}}</div>
+</section>
+
+<section class="exp" id="t05">
+  <div class="exp-head">
+    <p class="temp">exp3 · temperature 0.5 · 213 runs (30 gate, 3 donor, 180 full), 0 invalid full runs · $1.38</p>
+    <h2>Temperature 0.5</h2>
+  </div>
+  <p class="headline">At temperature 0.5 the temperature 1 picture returns for Qwen: entropy rises about equally under switch and placebo (switch − placebo +0.005 bits, p = 0.85). Llama shows a small switch-specific rise that placebo does not produce, and GPT-4o-mini again shows nothing.</p>
+
+  <ul class="findings">
+    <li class="finding"><span class="verdict v-yes">Confirmed</span><div><h3>The channel works</h3><p>Verified communication in <span class="num">100%</span> of switch runs, task success <span class="num">100%</span>, <span class="num">90%</span> and <span class="num">100%</span>. None in base or placebo. Every cell has 20 distinct runs.</p></div></li>
+    <li class="finding"><span class="verdict v-no">Not confirmed</span><div><h3>Qwen: foreign text moves entropy, real or not</h3><p>Versus base, adjusted token entropy rises <span class="num">+0.120</span> bits under switch and <span class="num">+0.115</span> under placebo; decision entropy <span class="num">+0.358</span> and <span class="num">+0.356</span>. Both are highly significant against base, and indistinguishable from each other (AUC 0.46). After a read: own entries <span class="num">0.337</span>, peer <span class="num">0.509</span>, placebo <span class="num">0.483</span>.</p></div></li>
+    <li class="finding"><span class="verdict v-mixed">Weak</span><div><h3>Llama: a small switch-specific effect</h3><p>Adjusted token entropy rises <span class="num">+0.026</span> bits more under switch than placebo (uncorrected p = 0.007, Holm p = 0.052, AUC 0.76), and log-entry text entropy <span class="num">+0.057</span> bits (Holm p = 0.046). Regression: switch × post <span class="num">+0.027</span> (p = 0.006), placebo × post about 0. The effect is small, and Llama's logprobs from Novita vary by up to 0.87 nats between identical calls.</p></div></li>
+    <li class="finding"><span class="verdict v-no">Not confirmed</span><div><h3>GPT-4o-mini, coupling and monitoring</h3><p>GPT-4o-mini shows no significant effect after correction. With only active agents counted, I(X₁;X₂) shows no consistent excess over the null. A CUSUM calibrated on base alarms in 40% of Qwen switch runs and 50% of placebo runs.</p></div></li>
+  </ul>
+
+  <div class="table-wrap"><table>
+    <thead><tr><th>model</th><th>condition</th><th>task success</th><th>comm. verified</th><th>median τ_read</th><th>mean turns</th></tr></thead>
+    <tbody>{{exp3_gt}}</tbody>
+  </table></div>
+
+  <div class="table-wrap"><table>
+    <thead><tr><th>measure</th><th>model</th><th>switch − base<small>bits [95% CI]</small></th><th>Holm p</th><th>placebo − base</th><th>Holm p</th><th>switch − placebo</th><th>Holm p</th></tr></thead>
+    <tbody>{{exp3_did}}</tbody>
+  </table></div>
+
+  <div class="grid2">
+    <div class="table-wrap"><table>
+      <thead><tr><th>model</th><th>interaction</th><th>OLS, run-clustered<small>bits/token [95% CI]</small></th><th>p</th></tr></thead>
+      <tbody>{{exp3_reg}}</tbody>
+    </table></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>model</th><th>after own read</th><th>after peer read</th><th>after placebo read</th></tr></thead>
+      <tbody>{{exp3_spike}}</tbody>
+    </table></div>
+  </div>
+
+  <div class="figs">{{exp3_figures}}</div>
+</section>
+
+<footer>
+  <span>Method as in exp1: run-level difference-in-differences (turns 8–20 minus 1–7), 10,000-label permutation tests with Holm correction, OLS with run-clustered errors, re-pairing null for I(X₁;X₂). Qwen logprobs at T=0.5 are restored from Google Vertex's temperature-scaled values; at T=0 they are returned unscaled.</span>
+  <span>Raw data: releases <a href="https://github.com/nanonite/apart-incident-response/releases/tag/exp2-raw-data">exp2-raw-data</a> (T=0) and <a href="https://github.com/nanonite/apart-incident-response/releases/tag/exp3-raw-data">exp3-raw-data</a> (T=0.5); reference <a href="https://github.com/nanonite/apart-incident-response/releases/tag/exp1-raw-data">exp1-raw-data</a> (T=1). Code: branch <code>research/exp1-entropy-analysis</code>.</span>
+</footer>
+</main>
+
+<script>
+(function(){
+  const root=document.documentElement;
+  const buttons=[...document.querySelectorAll('.theme button')];
+  function paint(mode){
+    buttons.forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.set===mode)));
+  }
+  function apply(mode){
+    if(mode==='auto'){ delete root.dataset.theme; } else { root.dataset.theme=mode; }
+    paint(mode);
+    try{ localStorage.setItem('tsweep-theme', mode); }catch(e){}
+  }
+  let saved=null;
+  try{ saved=localStorage.getItem('tsweep-theme'); }catch(e){}
+  if(saved==='light'||saved==='dark'){ apply(saved); } else { paint(root.dataset.theme||'auto'); }
+  buttons.forEach(b=>b.addEventListener('click',()=>apply(b.dataset.set)));
+})();
+</script>

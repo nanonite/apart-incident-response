@@ -1,0 +1,10 @@
+model,condition,runs,task_success,communication_verified,complete_via_channel,both_complete,tau_read_median,mean_turns
+gpt-4o-mini,base,20,0.0,0.0,0.0,0.0,,30.0
+gpt-4o-mini,placebo,20,0.0,0.0,0.0,0.0,,28.2
+gpt-4o-mini,switch,20,1.0,1.0,1.0,0.25,12.0,19.7
+llama-3.3-70b,base,20,0.0,0.0,0.0,0.0,,30.0
+llama-3.3-70b,placebo,20,0.0,0.0,0.0,0.0,,29.75
+llama-3.3-70b,switch,20,0.9,1.0,0.9,0.0,9.0,23.35
+qwen3-235b,base,20,0.0,0.0,0.0,0.0,,30.0
+qwen3-235b,placebo,20,0.0,0.0,0.0,0.0,,20.25
+qwen3-235b,switch,20,1.0,1.0,1.0,0.45,8.0,18.65

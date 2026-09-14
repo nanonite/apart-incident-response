@@ -46,11 +46,33 @@ import entropy as E  # noqa: E402
 
 MODELS = ["gpt-4o-mini", "llama-3.3-70b", "qwen3-235b"]
 CONDITIONS = ["base", "switch", "placebo"]
-COLOURS = {"base": "#64748b", "switch": "#0b6e8a", "placebo": "#c2410c"}
+THEMES = {
+    "light": {"colours": {"base": "#64748b", "switch": "#0b6e8a", "placebo": "#c2410c"},
+              "bg": "#ffffff", "ink": "#13212b", "muted": "#8a99a3", "accent2": "#7c3aed", "fig_dir": "figures"},
+    "dark": {"colours": {"base": "#94a3b8", "switch": "#56b6d1", "placebo": "#efa35c"},
+             "bg": "#152027", "ink": "#e3ebed", "muted": "#6f8089", "accent2": "#a78bfa", "fig_dir": "figures_dark"},
+}
+THEME = "light"
+COLOURS = dict(THEMES[THEME]["colours"])
+INK, MUTED = THEMES[THEME]["ink"], THEMES[THEME]["muted"]
 ACTIONS = ["read_log", "write_log", "decrypt", "submit"]
 SWITCH, WINDOW_END = 8, 20
 RNG = np.random.default_rng(20260913)
 Q_COLS = [f"q_{a}" for a in E.ACTIONS]
+
+def apply_theme(name: str) -> None:
+    """Switch colours and matplotlib styling for light or dark page backgrounds."""
+    global THEME, INK, MUTED
+    THEME = name
+    t = THEMES[name]
+    COLOURS.clear()
+    COLOURS.update(t["colours"])
+    INK, MUTED = t["ink"], t["muted"]
+    plt.rcParams.update({"figure.facecolor": t["bg"], "axes.facecolor": t["bg"], "savefig.facecolor": t["bg"],
+                         "text.color": t["ink"], "axes.labelcolor": t["ink"], "axes.edgecolor": t["muted"],
+                         "xtick.color": t["ink"], "ytick.color": t["ink"], "grid.color": t["muted"],
+                         "legend.labelcolor": t["ink"]})
+
 
 plt.rcParams.update({"figure.dpi": 150, "savefig.dpi": 150, "font.size": 9, "axes.spines.top": False,
                      "axes.spines.right": False, "axes.titleweight": "bold", "axes.titlesize": 10,
@@ -171,7 +193,7 @@ def ground_truth(runs, fig_dir, stats_dir):
         vals = [gt[(gt.model == m) & (gt.condition == c)].task_success.item() for m in MODELS]
         comm = [gt[(gt.model == m) & (gt.condition == c)].communication_verified.item() for m in MODELS]
         axes[0].bar(x + (i - 1) * width, vals, width, color=COLOURS[c], label=f"{c}: task success")
-        axes[0].scatter(x + (i - 1) * width, comm, color="black", marker="_", s=120, zorder=3,
+        axes[0].scatter(x + (i - 1) * width, comm, color=INK, marker="_", s=120, zorder=3,
                         label="verified communication" if i == 0 else None)
     axes[0].set_xticks(x, MODELS)
     axes[0].set_ylim(0, 1.05)
@@ -183,8 +205,8 @@ def ground_truth(runs, fig_dir, stats_dir):
         axes[1].scatter(df.tau_read + RNG.uniform(-0.15, 0.15, len(df)), np.full(len(df), i + 0.12), s=12,
                         color=COLOURS["switch"], label="τ_read" if i == 0 else None)
         axes[1].scatter(df.tau_use + RNG.uniform(-0.15, 0.15, len(df)), np.full(len(df), i - 0.12), s=12,
-                        color="#7c3aed", label="τ_use" if i == 0 else None)
-    axes[1].axvline(SWITCH, color="black", ls="--", lw=0.8)
+                        color=THEMES[THEME]["accent2"], label="τ_use" if i == 0 else None)
+    axes[1].axvline(SWITCH, color=INK, ls="--", lw=0.8)
     axes[1].set_yticks(range(len(MODELS)), MODELS)
     axes[1].set_xlabel("turn")
     axes[1].set_title("Switch runs: first cross-agent read and first use")
@@ -216,8 +238,8 @@ def trajectories(active, fig_dir, stats_dir, column="H", name="fig02_token_entro
                 t, mean, lo, hi, _ = zip(*pts)
                 ax.plot(t, mean, color=COLOURS[c], lw=1.6, label=c)
                 ax.fill_between(t, lo, hi, color=COLOURS[c], alpha=0.15, lw=0)
-        ax.axvline(SWITCH, color="black", ls="--", lw=0.8)
-        ax.axvline(WINDOW_END, color="grey", ls=":", lw=0.8)
+        ax.axvline(SWITCH, color=INK, ls="--", lw=0.8)
+        ax.axvline(WINDOW_END, color=MUTED, ls=":", lw=0.8)
         ax.set_title(m)
         ax.set_xlabel("turn")
     axes[0].set_ylabel("bits/token")
@@ -242,7 +264,7 @@ def action_mix(calls, active, fig_dir, stats_dir):
                 if a in share:
                     axes[i, j].bar(share.index, share[a], bottom=bottom, color=palette[a], width=0.9, label=a)
                     bottom += share[a].values
-            axes[i, j].axvline(SWITCH - 0.5, color="black", ls="--", lw=0.8)
+            axes[i, j].axvline(SWITCH - 0.5, color=INK, ls="--", lw=0.8)
             if i == 0:
                 axes[i, j].set_title(c)
             if j == 0:
@@ -314,8 +336,8 @@ def did(active, fig_dir, stats_dir):
                 v = runlevel[(runlevel.model == m) & (runlevel.condition == c)][f"{k}_delta"].dropna().values
                 ax.scatter(np.full(len(v), x) + RNG.uniform(-0.12, 0.12, len(v)), v, s=10, color=COLOURS[c], alpha=0.7)
                 mean, lo, hi = boot_ci(v)
-                ax.errorbar(x + 0.28, mean, yerr=[[mean - lo], [hi - mean]], fmt="o", color="black", ms=4, capsize=2)
-            ax.axhline(0, color="grey", lw=0.6)
+                ax.errorbar(x + 0.28, mean, yerr=[[mean - lo], [hi - mean]], fmt="o", color=INK, ms=4, capsize=2)
+            ax.axhline(0, color=MUTED, lw=0.6)
             ax.set_xticks(range(3), CONDITIONS)
             sw = tests[(tests.model == m) & (tests.metric == k) & (tests.contrast == "switch - base")].iloc[0]
             pl = tests[(tests.model == m) & (tests.metric == k) & (tests.contrast == "switch - placebo")].iloc[0]
@@ -410,10 +432,10 @@ def system_entropy(calls, fig_dir, stats_dir, n_perm=1000):
                 axes[1, j].scatter(sig.turn, sig.I, color=COLOURS[c], s=14, zorder=3)
                 axes[2, j].plot(d.turn, d.I_excess, color=COLOURS[c], lw=1.6)
             for row in range(3):
-                axes[row, j].axvline(SWITCH, color="black", ls="--", lw=0.8)
+                axes[row, j].axvline(SWITCH, color=INK, ls="--", lw=0.8)
             axes[0, j].set_title(m)
             axes[2, j].set_xlabel("turn")
-            axes[2, j].axhline(0, color="grey", lw=0.6)
+            axes[2, j].axhline(0, color=MUTED, lw=0.6)
         axes[0, 0].set_ylabel("H(X1,X2) bits\n(dotted: H1+H2)")
         axes[1, 0].set_ylabel("I(X1;X2) bits\n(dashed: null 95th pct;\ndots: p<0.05)")
         axes[2, 0].set_ylabel("I − null mean")
@@ -460,7 +482,7 @@ def aligned(active, runs, fig_dir, stats_dir):
                 r, mean, lo, hi = zip(*pts)
                 ax.plot(r, mean, color=COLOURS[c], lw=1.6, label=f"{c} (anchor: first {'peer' if c == 'switch' else 'placebo'} read)")
                 ax.fill_between(r, lo, hi, color=COLOURS[c], alpha=0.15, lw=0)
-        ax.axvline(0, color="black", ls="--", lw=0.8)
+        ax.axvline(0, color=INK, ls="--", lw=0.8)
         ax.set_title(m)
         ax.set_xlabel("turn − first foreign read")
     axes[0].set_ylabel("adjusted bits/token")
@@ -517,7 +539,7 @@ def detection(active, runs, runlevel, fig_dir, stats_dir):
             posd = rl[rl.condition == "switch"].H_decision_delta.dropna().values
             negd = rl[rl.condition == other].H_decision_delta.dropna().values
             roc_rows.append({"model": m, "contrast": f"switch vs {other}", "statistic": "H_decision_delta", "auc": auc(posd, negd)})
-        ax.plot([0, 1], [0, 1], color="grey", lw=0.6)
+        ax.plot([0, 1], [0, 1], color=MUTED, lw=0.6)
         ax.set_title(m)
         ax.set_xlabel("false positive rate")
         ax.legend(fontsize=7, loc="lower right")
@@ -560,7 +582,7 @@ def detection(active, runs, runlevel, fig_dir, stats_dir):
         ax.set_xticks(range(3), CONDITIONS)
         delays = cr[cr.condition == "switch"].delay.dropna()
         ax.set_title(f"{m}\nalarm rate (h={h:.1f}); switch median delay {delays.median() if len(delays) else float('nan'):+.0f} turns")
-        ax.axhline(0.05, color="grey", ls=":", lw=0.8)
+        ax.axhline(0.05, color=MUTED, ls=":", lw=0.8)
     axes[0].set_ylabel("share of runs with an alarm in turns 8–20")
     fig.suptitle("J2. CUSUM on adjusted entropy, calibrated to 5% false alarms on base runs", x=0.01, ha="left", fontweight="bold")
     savefig(fig, fig_dir / "fig09_cusum_detection.png")
@@ -576,9 +598,10 @@ def detection(active, runs, runlevel, fig_dir, stats_dir):
 
 # --------------------------------------------------------------------------- main
 
-def main(exp: Path) -> None:
+def main(exp: Path, theme: str = "light") -> None:
+    apply_theme(theme)
     out = exp / "analysis"
-    fig_dir, stats_dir = out / "figures", out / "stats"
+    fig_dir, stats_dir = out / THEMES[theme]["fig_dir"], out / "stats"
     fig_dir.mkdir(parents=True, exist_ok=True)
     stats_dir.mkdir(parents=True, exist_ok=True)
     calls, active, runs = load(exp)
@@ -612,4 +635,4 @@ def main(exp: Path) -> None:
 
 
 if __name__ == "__main__":
-    main(Path(sys.argv[1]).resolve())
+    main(Path(sys.argv[1]).resolve(), sys.argv[2] if len(sys.argv) > 2 else "light")
