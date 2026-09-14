@@ -1,0 +1,49 @@
+This is BibTeX, Version 0.99d (TeX Live 2022/Debian)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: submission.aux
+The style file: plainnat.bst
+Database file #1: references.bib
+Warning--entry type for "openai2026incident" isn't style-file defined
+--line 123 of file references.bib
+You've used 3 entries,
+            2773 wiz_defined-function locations,
+            611 strings with 5431 characters,
+and the built_in function-call counts, 1312 in all, are:
+= -- 112
+> -- 79
+< -- 1
++ -- 27
+- -- 24
+* -- 107
+:= -- 207
+add.period$ -- 10
+call.type$ -- 3
+change.case$ -- 17
+chr.to.int$ -- 3
+cite$ -- 6
+duplicate$ -- 52
+empty$ -- 107
+format.name$ -- 27
+if$ -- 267
+int.to.chr$ -- 1
+int.to.str$ -- 1
+missing$ -- 1
+newline$ -- 24
+num.names$ -- 12
+pop$ -- 38
+preamble$ -- 1
+purify$ -- 14
+quote$ -- 0
+skip$ -- 47
+stack$ -- 0
+substring$ -- 31
+swap$ -- 3
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 33
+warning$ -- 0
+while$ -- 11
+width$ -- 0
+write$ -- 46
+(There was 1 warning)

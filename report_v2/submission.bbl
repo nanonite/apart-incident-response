@@ -1,0 +1,29 @@
+\begin{thebibliography}{3}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Farquhar et~al.(2024)Farquhar, Kossen, Kuhn, and
+  Gal]{shannon_hallucination}
+Sebastian Farquhar, Jannik Kossen, Lorenz Kuhn, and Yarin Gal.
+\newblock Detecting hallucinations in large language models using semantic
+  entropy.
+\newblock \emph{Nature}, 630\penalty0 (8017):\penalty0 625--630, 2024.
+\newblock \doi{10.1038/s41586-024-07421-0}.
+
+\bibitem[{OpenAI}(2026)]{openai2026incident}
+{OpenAI}.
+\newblock {OpenAI--Hugging Face} incident technical report, 2026.
+\newblock URL
+  \url{https://cdn.openai.com/pdf/67869394-cb91-4c12-888c-5cbd85c7814c/OpenAI-Hugging-Face%20Incident-Technical-Report.pdf}.
+
+\bibitem[Zhao et~al.(2026)Zhao, Chen, and
+  Su]{zhao2026doesmultiagentcollaborationhelp}
+Yuxuan Zhao, Sijia Chen, and Ningxin Su.
+\newblock When does multi-agent collaboration help? an entropy perspective,
+  2026.
+\newblock URL \url{https://arxiv.org/abs/2602.04234}.
+
+\end{thebibliography}
