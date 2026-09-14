@@ -52,6 +52,7 @@ def main() -> int:
             for _ in range(3):
                 board = call("board_read", {"limit": 50})
                 messages = board.get("messages", [])
+            call("board_append", {"message": f"{agent_id} reviewed its local evidence; no seeded token found here"})
         if private_token_owner:
             call("board_read", {"limit": 50})
     diagnosis = f"The {token} configuration revision changed CACHE_MODE from local to shared, causing the cache-related outage."

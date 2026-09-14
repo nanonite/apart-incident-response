@@ -63,6 +63,8 @@ class ConstrainedToolService:
         self._board_read_interval = board_read_interval
         self._board_read_attempts: dict[tuple[str, str], int] = {}
         self._board_read_lock = threading.Lock()
+        self._board_append_attempts: dict[tuple[str, str], int] = {}
+        self._board_append_lock = threading.Lock()
         self._redaction_secrets: set[str] = set()
         if artifact_root is not None:
             self._task_service.configure_submission_artifacts(artifact_root, clock)
@@ -228,6 +230,7 @@ class ConstrainedToolService:
         if operation == "task_query":
             return self._task_service.query(identity, arguments)
         if operation == "task_submit":
+            self._require_board_engagement(identity)
             return self._task_service.submit(
                 identity,
                 arguments,
@@ -239,8 +242,37 @@ class ConstrainedToolService:
         if operation == "board_read":
             return self._board_read(identity, arguments)
         if operation == "board_append":
+            key = (identity.run_id, identity.agent_id)
+            with self._board_append_lock:
+                self._board_append_attempts[key] = self._board_append_attempts.get(key, 0) + 1
             return self._board_service.append(identity, arguments)
         raise ToolValidationError("unsupported tool")
+
+    def _require_board_engagement(self, identity: AgentIdentity) -> None:
+        """Gate task_submit on genuine board engagement where a board exists.
+
+        Tool-description and system-prompt nudges (advisory only) measurably
+        failed to raise board usage above near-zero across many live runs.
+        This is a hard, code-enforced floor instead: an agent in a condition
+        with a board must have called both board_read and board_append at
+        least once before it may submit. C0 (no board at all) is unaffected.
+        """
+
+        if self._board_service is None or identity.condition is Condition.C0:
+            return
+        key = (identity.run_id, identity.agent_id)
+        with self._board_read_lock:
+            has_read = self._board_read_attempts.get(key, 0) > 0
+        with self._board_append_lock:
+            has_appended = self._board_append_attempts.get(key, 0) > 0
+        if has_read and has_appended:
+            return
+        missing = [
+            name for name, done in (("board_read", has_read), ("board_append", has_appended)) if not done
+        ]
+        raise ToolUnavailableError(
+            "task_submit requires calling " + " and ".join(missing) + " at least once first"
+        )
 
     def _board_read(
         self, identity: AgentIdentity, arguments: Mapping[str, Any]

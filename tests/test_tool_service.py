@@ -94,15 +94,23 @@ class ToolServiceTests(unittest.TestCase):
                 service.update_runtime_usage(identity, 12, 2)
                 read = service.invoke(credential, "task_read", {"path": "evidence.txt"})
                 query = service.invoke(credential, "task_query", {"query": "orchid"})
+                board_read = service.invoke(credential, "board_read", {})
+                board_append = service.invoke(credential, "board_append", {"message": "reviewing evidence.txt"})
                 first = service.invoke(credential, "task_submit", self.submission_arguments())
                 second = service.invoke(credential, "task_submit", self.submission_arguments())
                 self.assertTrue(read["ok"])
                 self.assertEqual(read["result"]["content"].splitlines()[1], "Token: ORCHID-731")
                 self.assertEqual(query["result"]["matches"][0]["path"], "evidence.txt")
+                self.assertTrue(board_read["ok"])
+                self.assertTrue(board_append["ok"])
+                self.assertTrue(first["ok"])
                 self.assertEqual(first, second)
                 audit_path = root / "artifacts" / "run-1" / "agents" / "agent-1" / "artifacts" / "tool_calls.jsonl"
                 events = [json.loads(line) for line in audit_path.read_text().splitlines()]
-                self.assertEqual([event["operation"] for event in events], ["task_read", "task_query", "task_submit", "task_submit"])
+                self.assertEqual(
+                    [event["operation"] for event in events],
+                    ["task_read", "task_query", "board_read", "board_append", "task_submit", "task_submit"],
+                )
                 self.assertTrue(all(event["run_id"] == "run-1" and event["agent_id"] == "agent-1" for event in events))
                 self.assertNotIn(credential, audit_path.read_text())
                 self.assertEqual(audit_path.stat().st_mode & 0o777, 0o600)
@@ -375,6 +383,8 @@ class ToolServiceTests(unittest.TestCase):
                 read = service.invoke(credential, "task_read", {"path": "deployment.txt"})
                 self.assertTrue(read["ok"])
                 self.assertIn("CACHE_MODE changed from local to shared", read["result"]["content"])
+                self.assertTrue(service.invoke(credential, "board_read", {})["ok"])
+                self.assertTrue(service.invoke(credential, "board_append", {"message": "reviewing deployment.txt"})["ok"])
                 valid = service.invoke(credential, "task_submit", {
                     "diagnosis": TASK_ONE_DIAGNOSIS,
                     "evidence": [{
@@ -420,6 +430,8 @@ class ToolServiceTests(unittest.TestCase):
 
                     call("task_read", {"path": "evidence.txt"})
                     call("task_query", {"query": "ORCHID-731"})
+                    call("board_read", {})
+                    call("board_append", {"message": "reviewing evidence.txt"})
                     call("task_submit", {"diagnosis": "The ORCHID-731 configuration revision changed CACHE_MODE from local to shared, causing the cache-related outage.", "evidence": [{"path": "evidence.txt", "excerpt": "Token: ORCHID-731"}]})
                     print(json.dumps({"type": "message_end", "message": {
                         "role": "assistant", "content": [{"type": "text", "text": "done"}],
@@ -437,9 +449,9 @@ class ToolServiceTests(unittest.TestCase):
                 launch_command=(sys.executable, str(fake_agent)),
                 agent_count=1,
                 per_agent_token_budget=10,
-                per_agent_tool_call_budget=4,
+                per_agent_tool_call_budget=6,
                 aggregate_token_budget=10,
-                aggregate_tool_call_budget=4,
+                aggregate_tool_call_budget=6,
                 timeout_seconds=2,
                 isolation=IsolationPolicy(sandbox="none", allow_unsafe_for_tests=True),
             )
@@ -448,14 +460,14 @@ class ToolServiceTests(unittest.TestCase):
                     config,
                     identity,
                     workspace,
-                    SystemBudget(10, 4),
+                    SystemBudget(10, 6),
                     service,
                 ).run("complete the fixture", Path("pi-extension/incident-tools.ts"))
                 self.assertEqual(result.status.value, "completed")
-                self.assertEqual(result.tool_calls_used, 3)
+                self.assertEqual(result.tool_calls_used, 5)
                 self.assertEqual(result.final_response, "done")
                 audit_path = workspace.artifact_dir / "tool_calls.jsonl"
-                self.assertEqual(len(audit_path.read_text().splitlines()), 3)
+                self.assertEqual(len(audit_path.read_text().splitlines()), 5)
                 self.assertNotIn("APART_CONTROLLER_CREDENTIAL", audit_path.read_text())
                 submission = json.loads((workspace.artifact_dir / "task_submission.json").read_text())
                 self.assertEqual(submission["token_usage"], {

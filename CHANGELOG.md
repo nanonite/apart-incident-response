@@ -37,5 +37,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix board IPC integration and CLI tool wiring (#58)
 
 ### Changed
-- Confirm OpenRouter logprob support for a pinned model and route (#93)
+- Confirm OpenRouter logprob support for a pinned model and route (#93, main)
+- Enforce board engagement as a hard gate on task_submit for C1/C2 (#99)
+- Inject redundant clean tool schema to work around Ollama's Qwen3 tools-field templating bug (#97)
+- Single-sweep before/after comparisons can't isolate small-lever effects from seed variance (#98)
+- Task 1's evidence-role rotation is incompatible with agent_count < 3 for 1-in-3 seeds (#96)
+- Add condition-scoped system-prompt guidance via --append-system-prompt (#95)
+- Expose --agent-count on the real-anchor CLI to exercise swarm-size variation (#94)
+- Reveal permitted filenames in task_read/task_query/task_submit permission errors (#93)
+- Inject explicit tool-usage guidance into the agent task prompt (#92)
+- Pin Ollama sampling seed/temperature to reduce qwen3 run-to-run variance (#91)
 - Run single-agent task calibration (#47)

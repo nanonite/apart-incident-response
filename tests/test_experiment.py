@@ -107,7 +107,11 @@ class ControlledExperimentTests(unittest.TestCase):
             # Concurrent agents may observe different prefixes of the append-only
             # board; raw events preserve the exact schedule for replay.
             self.assertGreater(runs[1].metrics["cross_agent_messages_X"], 0)
-            self.assertLessEqual(runs[1].metrics["cross_agent_messages_X"], 6)
+            # Every agent now posts (not just the private-token owner, to satisfy
+            # ConstrainedToolService's board-engagement gate on task_submit), so
+            # more messages exist for the repeated read loop to cross-read; the
+            # exact count also depends on concurrent-thread read/write timing.
+            self.assertLessEqual(runs[1].metrics["cross_agent_messages_X"], 24)
             self.assertEqual(runs[2].metrics["cross_agent_messages_X"], 0)
             for run in runs:
                 self.assertTrue(run.metrics["task_success"])
