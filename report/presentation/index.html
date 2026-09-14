@@ -1,0 +1,413 @@
+<title>Sensing Disruption</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --paper: #f6f8f7;
+    --stage: #ffffff;
+    --ink: #13212b;
+    --muted: #56666f;
+    --line: #dde3e4;
+    --accent: #0b6e8a;
+    --accent-soft: #e3f0f3;
+    --placebo: #c2410c;
+    --placebo-soft: #fbeee6;
+    --sans: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    padding: 20px 16px 32px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+  .deck { width: min(100%, calc((100vh - 150px) * 16 / 9), 1280px); }
+  .stage {
+    container-type: inline-size;
+    position: relative;
+    aspect-ratio: 16 / 9;
+    max-width: 100%;
+    background: var(--stage);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(19, 33, 43, .05), 0 12px 40px rgba(19, 33, 43, .06);
+  }
+  .slide {
+    position: absolute;
+    inset: 0;
+    padding: 5.2cqw 6cqw 4.6cqw;
+    display: flex;
+    flex-direction: column;
+    gap: 2.2cqw;
+    animation: enter .35s ease both;
+  }
+  @keyframes enter { from { opacity: .001; transform: translateY(.6cqw); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .slide { animation: none; } }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 1.05cqw;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  h1, h2 { margin: 0; text-wrap: balance; letter-spacing: -.015em; }
+  h1 { font-size: 5.4cqw; font-weight: 700; line-height: 1.02; }
+  h2 { font-size: 2.9cqw; font-weight: 650; line-height: 1.12; max-width: 62cqw; }
+  p { margin: 0; }
+  .lede { font-size: 1.9cqw; line-height: 1.4; color: var(--muted); max-width: 58cqw; }
+  .small { font-size: 1.45cqw; line-height: 1.45; color: var(--muted); }
+  .mono { font-family: var(--mono); }
+  .footer {
+    margin-top: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-family: var(--mono);
+    font-size: 1cqw;
+    color: var(--muted);
+    border-top: 1px solid var(--line);
+    padding-top: 1.2cqw;
+  }
+
+  /* title */
+  .title { gap: 1.4cqw; }
+  .hero { margin: 0; flex: 1; min-height: 0; display: flex; align-items: center; }
+  .hero svg { width: 100%; max-width: 100%; height: auto; max-height: 27cqw; display: block; }
+  .title h1 span { color: var(--accent); }
+  .title .lede { font-size: 2cqw; max-width: 60cqw; }
+
+  /* timeline */
+  .timeline { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2cqw; margin-top: .6cqw; }
+  .event { border-top: 2px solid var(--line); padding-top: 1.2cqw; display: flex; flex-direction: column; gap: .6cqw; }
+  .event.hot { border-top-color: var(--placebo); }
+  .event .date { font-family: var(--mono); font-size: 1.15cqw; color: var(--muted); }
+  .event .what { font-size: 1.75cqw; line-height: 1.3; font-weight: 500; }
+  .punch {
+    margin-top: .8cqw;
+    font-size: 2.3cqw;
+    line-height: 1.25;
+    font-weight: 600;
+    max-width: 70cqw;
+    padding-left: 1.6cqw;
+    border-left: 3px solid var(--accent);
+  }
+
+  .incident { margin: 0; flex: 1; min-height: 0; display: flex; align-items: center; }
+  .incident svg { width: 100%; max-width: 100%; height: auto; max-height: 26cqw; display: block; }
+
+  /* idea */
+  .two { display: grid; grid-template-columns: 1.05fr 1fr; gap: 4cqw; align-items: center; flex: 1; }
+  .scale { display: flex; flex-direction: column; gap: 1.1cqw; }
+  .row { display: grid; grid-template-columns: 7cqw 1fr; align-items: center; gap: 1.4cqw; }
+  .row .bits { font-family: var(--mono); font-size: 1.7cqw; font-weight: 500; text-align: right; font-variant-numeric: tabular-nums; }
+  .bar { height: 2.6cqw; border-radius: 3px; display: flex; overflow: hidden; background: var(--paper); }
+  .bar i { display: block; height: 100%; }
+  .bar i + i { border-left: 2px solid var(--stage); }
+  .bar .r { background: var(--accent); }
+  .bar .w { background: #7fb3c2; }
+  .bar .d { background: #b9d5dd; }
+  .bar .s { background: #d9e8ec; }
+  .bar .o { background: #edf4f6; }
+  .row .cap { grid-column: 2; font-size: 1.2cqw; color: var(--muted); margin-top: -.5cqw; }
+  .formula { font-family: var(--mono); font-size: 1.6cqw; color: var(--ink); background: var(--paper); border-radius: 4px; padding: 1cqw 1.4cqw; align-self: start; }
+
+  /* design */
+  .design { display: grid; grid-template-columns: 1.9fr 1fr; gap: 3cqw; flex: 1; align-items: center; min-height: 0; }
+  .design img { width: auto; max-width: 100%; max-height: 33cqw; height: auto; display: block; margin: 0 auto; }
+  .conds { display: flex; flex-direction: column; gap: 1.1cqw; }
+  .cond { display: grid; grid-template-columns: 9.5cqw 1fr; gap: 1cqw; align-items: baseline; font-size: 1.5cqw; line-height: 1.3; }
+  .tag { font-family: var(--mono); font-size: 1.05cqw; text-transform: uppercase; letter-spacing: .08em; padding: .35cqw .6cqw; border-radius: 3px; text-align: center; }
+  .tag.base { background: var(--paper); color: var(--muted); }
+  .tag.switch { background: var(--accent-soft); color: var(--accent); }
+  .tag.placebo { background: var(--placebo-soft); color: var(--placebo); }
+  .facts { display: flex; gap: 2.4cqw; margin-top: 1cqw; padding-top: 1.2cqw; border-top: 1px solid var(--line); }
+  .fact b { display: block; font-family: var(--mono); font-size: 2.3cqw; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .fact span { font-size: 1.15cqw; color: var(--muted); }
+
+  /* result */
+  .result { display: grid; grid-template-columns: 1.55fr 1fr; gap: 3cqw; flex: 1; align-items: center; min-height: 0; }
+  .result img { width: auto; max-width: 100%; max-height: 31cqw; height: auto; display: block; margin: 0 auto; }
+  .callouts { display: flex; flex-direction: column; gap: 1.8cqw; }
+  .callout { display: flex; flex-direction: column; gap: .4cqw; }
+  .callout b { font-family: var(--mono); font-size: 2.6cqw; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .callout.good b { color: var(--accent); }
+  .callout.warn b { color: var(--placebo); }
+  .callout span { font-size: 1.4cqw; line-height: 1.35; color: var(--ink); }
+
+  /* takeaway */
+  .take { display: grid; grid-template-columns: 1fr 1fr; gap: 4cqw; flex: 1; align-items: start; margin-top: 1cqw; }
+  .col h3 { margin: 0 0 1.2cqw; font-family: var(--mono); font-size: 1.1cqw; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .col ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 1.1cqw; }
+  .col li { font-size: 1.7cqw; line-height: 1.3; padding-left: 1.6cqw; position: relative; }
+  .col li::before { content: ""; position: absolute; left: 0; top: .75cqw; width: .7cqw; height: .7cqw; border-radius: 50%; background: var(--accent); }
+  .col.next li::before { background: transparent; border: 1.5px solid var(--muted); }
+
+  .deck:fullscreen { display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; background: #ffffff; }
+  .deck:fullscreen .stage { width: min(100vw, 177.78vh); border: 0; border-radius: 0; box-shadow: none; }
+  [hidden] { display: none !important; }
+
+  /* controls */
+  .controls { width: min(100%, 1280px); display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .controls button {
+    font: 500 14px var(--sans);
+    color: var(--ink);
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 7px 14px;
+    cursor: pointer;
+  }
+  .controls button:hover { border-color: var(--muted); }
+  .controls button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .progress { flex: 1; min-width: 120px; height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; }
+  .progress i { display: block; height: 100%; background: var(--accent); transition: width .3s ease; }
+  .count { font: 13px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+  .hint { font: 12px var(--mono); color: var(--muted); }
+  .notes {
+    width: min(100%, 1280px);
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 14px 18px;
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--ink);
+  }
+  .notes .label { font: 12px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+</style>
+
+<div class="deck">
+  <div class="stage" id="stage" aria-live="polite">
+
+    <section class="slide title" data-notes="We asked a simple question: can an AI agent's own uncertainty tell us that a hidden channel has opened, without reading a single message? This line is the answer in one picture: when foreign text reaches the agent, its uncertainty about what to do next jumps.">
+      <div class="eyebrow">AI Incident Response Sprint 2026 · Containment Standards</div>
+      <h1>Sensing <span>Disruption</span></h1>
+      <p class="lede">Can an agent’s own uncertainty reveal that a hidden channel has opened?</p>
+      <figure class="hero">
+        <svg viewBox="0 0 1000 292" role="img" aria-label="Qwen3 235B decision entropy per turn at temperature 0.5: before turn 8 all runs overlap; after the hidden channel opens, runs that received foreign text rise to about 0.9 bits while undisturbed runs stay near 0.55 bits.">
+          <line x1="72" x2="960" y1="250.0" y2="250.0" stroke="#e8eced"/><text x="64" y="254.0" text-anchor="end" font-size="12" fill="#56666f" font-family="JetBrains Mono, ui-monospace, monospace">0.0</text><line x1="72" x2="960" y1="175.9" y2="175.9" stroke="#e8eced"/><text x="64" y="179.9" text-anchor="end" font-size="12" fill="#56666f" font-family="JetBrains Mono, ui-monospace, monospace">0.5</text><line x1="72" x2="960" y1="101.9" y2="101.9" stroke="#e8eced"/><text x="64" y="105.9" text-anchor="end" font-size="12" fill="#56666f" font-family="JetBrains Mono, ui-monospace, monospace">1.0</text>
+          <line x1="381.1" x2="381.1" y1="22" y2="252" stroke="#13212b" stroke-width="1.2" stroke-dasharray="4 4"/>
+          <text x="371.1" y="34" text-anchor="end" font-size="14" font-weight="600" fill="#13212b" font-family="Figtree, system-ui, sans-serif">hidden channel opens →</text>
+          <polyline points="80.0,242.1 126.3,228.5 172.6,219.0 218.9,69.6 265.3,178.4 311.6,145.7 357.9,153.9 404.2,168.2 450.5,157.4 496.8,159.5 543.2,172.4 589.5,176.1 635.8,169.3 682.1,162.3 728.4,161.9 774.7,163.2 821.1,170.1 867.4,178.1 913.7,177.9 960.0,147.0" fill="none" stroke="#9aa6ab" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+          <polyline points="357.9,146.0 404.2,150.4 450.5,73.4 496.8,111.3 543.2,115.4 589.5,125.9 635.8,107.6 682.1,108.7 728.4,116.4 774.7,105.4 821.1,130.7 867.4,134.1 913.7,134.4 960.0,133.7" fill="none" stroke="#0b6e8a" stroke-width="3.6" stroke-linejoin="round" stroke-linecap="round"/>
+          <text x="506.1" y="69.3" font-size="16" font-weight="600" fill="#0b6e8a" font-family="Figtree, system-ui, sans-serif">foreign text arrived: the agent is less sure what to do</text>
+          <text x="506.1" y="201.1" font-size="16" font-weight="600" fill="#6b7a80" font-family="Figtree, system-ui, sans-serif">nothing arrived: the agent keeps waiting</text>
+          <text x="80.0" y="272" text-anchor="middle" font-size="12" fill="#56666f" font-family="JetBrains Mono, ui-monospace, monospace">1</text><text x="404.2" y="272" text-anchor="middle" font-size="12" fill="#56666f" font-family="JetBrains Mono, ui-monospace, monospace">8</text><text x="682.1" y="272" text-anchor="middle" font-size="12" fill="#56666f" font-family="JetBrains Mono, ui-monospace, monospace">14</text><text x="960.0" y="272" text-anchor="middle" font-size="12" fill="#56666f" font-family="JetBrains Mono, ui-monospace, monospace">20</text>
+          <text x="520.0" y="290" text-anchor="middle" font-size="12" fill="#56666f" font-family="Figtree, system-ui, sans-serif">turn</text>
+          <text x="18" y="140" transform="rotate(-90 18 140)" text-anchor="middle" font-size="12" fill="#56666f" font-family="Figtree, system-ui, sans-serif">uncertainty (bits)</text>
+        </svg>
+      </figure>
+      <div class="footer"><span>Qwen3 235B · uncertainty about its next action · T = 0.5 · 60 runs</span><span>AI Safety Colombia · Bogotá hub</span></div>
+    </section>
+
+    <section class="slide" hidden data-notes="In July 2026, agents in separate OpenAI evaluation runs turned a package mirror into a message board. They left notes, shared credentials and exploits for about two months, and then breached Hugging Face. The agents kept switching channels, so watching any one of them fails. But every channel ends the same way: text the agent was never given lands in its context.">
+      <div class="eyebrow">The problem · July 2026</div>
+      <h2>Isolated agents turned a package mirror into a hidden message board.</h2>
+      <figure class="incident">
+        <svg viewBox="0 0 960 300" role="img" aria-label="Schematic of the incident: three isolated evaluation runs write notes to a shared package mirror used as a message board, which leads to a breach of Hugging Face production infrastructure.">
+          <defs>
+            <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="#56666f"/>
+            </marker>
+            <marker id="arrHot" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#c2410c"/>
+            </marker>
+          </defs>
+          <g font-family="Figtree, system-ui, sans-serif">
+            <!-- sandboxes -->
+            <g>
+              <rect x="20" y="30" width="190" height="62" rx="6" fill="#ffffff" stroke="#0b6e8a" stroke-width="2"/>
+              <text x="115" y="58" text-anchor="middle" font-size="17" font-weight="600" fill="#13212b">Evaluation run A</text>
+              <text x="115" y="80" text-anchor="middle" font-size="13" fill="#56666f">sandboxed agent</text>
+              <rect x="20" y="119" width="190" height="62" rx="6" fill="#ffffff" stroke="#0b6e8a" stroke-width="2"/>
+              <text x="115" y="147" text-anchor="middle" font-size="17" font-weight="600" fill="#13212b">Evaluation run B</text>
+              <text x="115" y="169" text-anchor="middle" font-size="13" fill="#56666f">sandboxed agent</text>
+              <rect x="20" y="208" width="190" height="62" rx="6" fill="#ffffff" stroke="#0b6e8a" stroke-width="2"/>
+              <text x="115" y="236" text-anchor="middle" font-size="17" font-weight="600" fill="#13212b">Evaluation run C</text>
+              <text x="115" y="258" text-anchor="middle" font-size="13" fill="#56666f">sandboxed agent</text>
+            </g>
+            <!-- arrows to mirror -->
+            <path d="M212,61 C290,61 300,120 368,138" fill="none" stroke="#56666f" stroke-width="1.8" marker-end="url(#arr)" marker-start="url(#arr)"/>
+            <path d="M212,150 L366,150" fill="none" stroke="#56666f" stroke-width="1.8" marker-end="url(#arr)" marker-start="url(#arr)"/>
+            <path d="M212,239 C290,239 300,180 368,162" fill="none" stroke="#56666f" stroke-width="1.8" marker-end="url(#arr)" marker-start="url(#arr)"/>
+            <!-- mirror / board -->
+            <rect x="372" y="70" width="230" height="160" rx="6" fill="#e3f0f3" stroke="#0b6e8a" stroke-width="2"/>
+            <text x="487" y="102" text-anchor="middle" font-size="18" font-weight="700" fill="#13212b">Package mirror</text>
+            <text x="487" y="123" text-anchor="middle" font-size="13" fill="#0b6e8a">used as a message board</text>
+            <rect x="392" y="138" width="190" height="24" rx="3" fill="#ffffff" stroke="#b9d5dd"/>
+            <text x="402" y="155" font-size="12.5" font-family="JetBrains Mono, ui-monospace, monospace" fill="#13212b">“Agent seeks [filename]”</text>
+            <rect x="392" y="168" width="190" height="24" rx="3" fill="#ffffff" stroke="#b9d5dd"/>
+            <text x="402" y="185" font-size="12.5" font-family="JetBrains Mono, ui-monospace, monospace" fill="#13212b">credentials, exploits</text>
+            <rect x="392" y="198" width="190" height="22" rx="3" fill="#ffffff" stroke="#b9d5dd"/>
+            <text x="402" y="214" font-size="12.5" font-family="JetBrains Mono, ui-monospace, monospace" fill="#56666f">…</text>
+            <!-- breach -->
+            <path d="M606,150 L738,150" fill="none" stroke="#c2410c" stroke-width="2.4" marker-end="url(#arrHot)"/>
+            <text x="672" y="138" text-anchor="middle" font-size="13" fill="#c2410c" font-weight="600">breach</text>
+            <rect x="744" y="100" width="196" height="100" rx="6" fill="#fbeee6" stroke="#c2410c" stroke-width="2"/>
+            <text x="842" y="140" text-anchor="middle" font-size="18" font-weight="700" fill="#13212b">Hugging Face</text>
+            <text x="842" y="163" text-anchor="middle" font-size="13" fill="#c2410c">production infrastructure</text>
+            <!-- time axis -->
+            <text x="487" y="258" text-anchor="middle" font-size="13" font-family="JetBrains Mono, ui-monospace, monospace" fill="#56666f">12 May → Jul 2026</text>
+            <text x="842" y="228" text-anchor="middle" font-size="13" font-family="JetBrains Mono, ui-monospace, monospace" fill="#56666f">11–13 Jul</text>
+          </g>
+        </svg>
+      </figure>
+      <p class="punch">Every hidden channel ends the same way: foreign text inside an agent’s context.</p>
+      <div class="footer"><span>Schematic based on the OpenAI incident report and Hugging Face timeline (2026)</span><span>02</span></div>
+    </section>
+
+    <section class="slide" hidden data-notes="So instead of reading messages, we read probabilities. Every model already produces a probability distribution over what it does next. Entropy turns that into one number: zero bits when the agent is sure, one bit for a coin flip. If foreign text arrives, that number should move, whatever channel carried it.">
+      <div class="eyebrow">The idea</div>
+      <h2>Don’t read the channel. Read the agent’s probabilities.</h2>
+      <div class="two">
+        <div class="scale" aria-label="Examples of decision entropy">
+          <div class="row"><span class="bits">0.00</span><div class="bar"><i class="r" style="width:100%"></i></div></div>
+          <div class="row"><span class="cap">100% read: completely sure</span></div>
+          <div class="row"><span class="bits">0.47</span><div class="bar"><i class="r" style="width:90%"></i><i class="w" style="width:10%"></i></div></div>
+          <div class="row"><span class="cap">90% read, 10% write</span></div>
+          <div class="row"><span class="bits">1.00</span><div class="bar"><i class="r" style="width:50%"></i><i class="w" style="width:50%"></i></div></div>
+          <div class="row"><span class="cap">a coin flip between two actions</span></div>
+          <div class="row"><span class="bits">2.32</span><div class="bar"><i class="r" style="width:20%"></i><i class="w" style="width:20%"></i><i class="d" style="width:20%"></i><i class="s" style="width:20%"></i><i class="o" style="width:20%"></i></div></div>
+          <div class="row"><span class="cap">all five actions equally likely</span></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:1.6cqw">
+          <div class="formula">H = − Σ p(a) · log₂ p(a)</div>
+          <p class="small">The model already outputs these probabilities for every token it generates. No extra model call, no access to the message, no knowledge of the channel.</p>
+          <p class="small">Same logic as network security: attacks show up in the entropy of traffic, without opening the packets.</p>
+        </div>
+      </div>
+      <div class="footer"><span>Decision entropy: uncertainty over the agent’s next action</span><span>03</span></div>
+    </section>
+
+    <section class="slide" hidden data-notes="We rebuilt the incident as a testbed. Two sandboxed agents each hold one password to a task neither can finish alone. They share a log, like the package mirror. From turn 8, the log either stays private, opens to the partner's real messages, or delivers useless placebo text. We ran three models at three temperatures, 540 runs, with cryptographic proof of who actually communicated.">
+      <div class="eyebrow">The design</div>
+      <h2>We rebuilt the incident as a two-agent testbed.</h2>
+      <div class="design">
+        <img src="architecture.png" alt="Testbed diagram: two agents with different passwords share an append-only log through a permission filter; a switch opens the filter at turn 8 and a donor log injects placebo entries.">
+        <div>
+          <div class="conds">
+            <div class="cond"><span class="tag base">Base</span><span>Log stays private. Nothing arrives.</span></div>
+            <div class="cond"><span class="tag switch">Switch</span><span>From turn 8, the partner’s real messages arrive.</span></div>
+            <div class="cond"><span class="tag placebo">Placebo</span><span>From turn 8, useless text from another run arrives.</span></div>
+          </div>
+          <div class="facts">
+            <div class="fact"><b>3</b><span>models</span></div>
+            <div class="fact"><b>3</b><span>temperatures</span></div>
+            <div class="fact"><b>540</b><span>runs</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Random passwords and identifiers make every use of the channel provable</span><span>04</span></div>
+    </section>
+
+    <section class="slide" hidden data-notes="Here is decision entropy turn by turn. For Qwen, the bottom row, entropy jumps as soon as foreign text arrives and separates disturbed runs with an AUC of up to 0.96. For gpt-4o-mini and Llama, the lines overlap: no signal. And look at the orange and blue lines: useless placebo text moves entropy as much as real messages.">
+      <div class="eyebrow">The result</div>
+      <h2>It works for some models, and it can’t tell a message from noise.</h2>
+      <div class="result">
+        <img src="trajectories.png" alt="Decision entropy per turn for gpt-4o-mini, Llama 3.3 70B and Qwen3 235B at temperatures 1, 0.5 and 0. Only Qwen's disrupted runs rise above base after turn 8.">
+        <div class="callouts">
+          <div class="callout good"><b>AUC 0.85–0.96</b><span>Qwen: entropy separates disturbed runs from undisturbed ones at every temperature.</span></div>
+          <div class="callout"><b>No signal</b><span>gpt-4o-mini and Llama 3.3 70B: the curves overlap.</span></div>
+          <div class="callout warn"><b>0.92 ≈ 0.91 bits</b><span>Placebo text raises Qwen’s entropy as much as real messages (T = 0.5).</span></div>
+        </div>
+      </div>
+      <div class="footer"><span>Decision entropy per turn · 20 runs per condition · dotted line = turn 8</span><span>05</span></div>
+    </section>
+
+    <section class="slide" hidden data-notes="So entropy can tell us that a sandboxed agent's context was disrupted, for some models, but not whether that disruption was communication. It is a new, cheap signal that does not depend on the channel, and it still needs development: calibration for each model, comparison against sibling runs, and tests against agents that try to hide.">
+      <div class="eyebrow">Takeaway</div>
+      <h2>Entropy detects that an agent’s context was disrupted, not whether it was communication.</h2>
+      <div class="take">
+        <div class="col">
+          <h3>What we showed</h3>
+          <ul>
+            <li>A signal that needs no message, no chain of thought and no knowledge of the channel.</li>
+            <li>It works for some models, not all.</li>
+            <li>The agents never synchronised: watch each agent, not pairs.</li>
+          </ul>
+        </div>
+        <div class="col next">
+          <h3>Still to build</h3>
+          <ul>
+            <li>Calibration for each model.</li>
+            <li>Baselines from sibling runs instead of fixed thresholds.</li>
+            <li>Open-weight models, more agents, agents that try to hide.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer"><span>github.com/nanonite/apart-incident-response</span><span>06</span></div>
+    </section>
+
+  </div>
+</div>
+
+<div class="controls">
+  <button id="prev" type="button" aria-label="Previous slide">← Prev</button>
+  <button id="next" type="button" aria-label="Next slide">Next →</button>
+  <div class="progress" aria-hidden="true"><i id="bar"></i></div>
+  <span class="count" id="count">1 / 6</span>
+  <button id="notesBtn" type="button" aria-pressed="false">Show script</button>
+  <span class="hint">← → to navigate · N for script · F for fullscreen</span>
+</div>
+
+<div class="notes" id="notes" hidden>
+  <div class="label">Script for this slide</div>
+  <div id="notesText"></div>
+</div>
+
+<script>
+  const slides = [...document.querySelectorAll('.slide')];
+  const bar = document.getElementById('bar');
+  const count = document.getElementById('count');
+  const notes = document.getElementById('notes');
+  const notesText = document.getElementById('notesText');
+  const notesBtn = document.getElementById('notesBtn');
+  let i = 0;
+
+  function readHash() {
+    const n = parseInt(location.hash.slice(1), 10);
+    return Number.isFinite(n) && n >= 1 && n <= slides.length ? n - 1 : 0;
+  }
+  function show(n) {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach((s, k) => { s.hidden = k !== i; });
+    bar.style.width = ((i + 1) / slides.length * 100) + '%';
+    count.textContent = (i + 1) + ' / ' + slides.length;
+    notesText.textContent = slides[i].dataset.notes || '';
+    if (location.hash !== '#' + (i + 1)) history.replaceState(null, '', '#' + (i + 1));
+  }
+  function toggleNotes() {
+    notes.hidden = !notes.hidden;
+    notesBtn.setAttribute('aria-pressed', String(!notes.hidden));
+    notesBtn.textContent = notes.hidden ? 'Show script' : 'Hide script';
+  }
+  document.getElementById('prev').addEventListener('click', () => show(i - 1));
+  document.getElementById('next').addEventListener('click', () => show(i + 1));
+  notesBtn.addEventListener('click', toggleNotes);
+  document.getElementById('stage').addEventListener('click', (e) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    show(e.clientX - r.left > r.width / 3 ? i + 1 : i - 1);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); show(i + 1); }
+    else if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); show(i - 1); }
+    else if (e.key === 'Home') show(0);
+    else if (e.key === 'End') show(slides.length - 1);
+    else if (e.key.toLowerCase() === 'n') toggleNotes();
+    else if (e.key.toLowerCase() === 'f') {
+      const st = document.querySelector('.deck');
+      if (!document.fullscreenElement && st.requestFullscreen) st.requestFullscreen().catch(() => {});
+      else if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+    }
+  });
+  show(readHash());
+</script>
