@@ -13,9 +13,9 @@
   },
   "limits": {
     "agent_count": 3,
-    "per_agent_token_budget": 26000,
+    "per_agent_token_budget": 34000,
     "per_agent_tool_call_budget": 32,
-    "aggregate_token_budget": 78000,
+    "aggregate_token_budget": 102000,
     "aggregate_tool_call_budget": 96,
     "timeout_seconds": 300
   },
