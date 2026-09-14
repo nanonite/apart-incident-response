@@ -19,13 +19,22 @@ def _():
     sys.path.insert(0, str(repo_root / "src"))
     from apart_incident_response.controlled_entropy_analysis import (
         AnalysisValidationError,
+        audit_matrix,
         call_rows,
+        coupling_proxy,
         discover_matrices,
+        early_warning_detector,
+        endpoint_analysis,
+        event_aligned_profile,
+        functional_form_comparison,
         independence_baseline,
+        interrupted_series,
         load_matrix,
         outcome_summary,
         paired_condition_contrasts,
         replay_validation,
+        robustness_summary,
+        token_rows,
         turn_profile,
     )
 
@@ -34,9 +43,16 @@ def _():
     return (
         AnalysisValidationError,
         Path,
+        audit_matrix,
         call_rows,
+        coupling_proxy,
         discover_matrices,
+        early_warning_detector,
+        endpoint_analysis,
+        event_aligned_profile,
+        functional_form_comparison,
         independence_baseline,
+        interrupted_series,
         load_matrix,
         mo,
         np,
@@ -45,18 +61,25 @@ def _():
         replay_validation,
         repo_root,
         requested_matrix,
+        robustness_summary,
         runs_root,
+        token_rows,
         turn_profile,
     )
 
 
 @app.cell
-def _(AnalysisValidationError, discover_matrices, load_matrix, mo, requested_matrix, runs_root):
+def _(AnalysisValidationError, audit_matrix, discover_matrices, load_matrix, mo, requested_matrix, runs_root):
     candidates = {}
     rejected = []
+    audits = []
     paths = [requested_matrix] if requested_matrix else discover_matrices(runs_root)
     for raw_path in paths:
         path = raw_path if hasattr(raw_path, "read_text") else str(raw_path)
+        try:
+            audits.append(audit_matrix(path))
+        except AnalysisValidationError as exc:
+            rejected.append({"matrix": str(path), "reason": str(exc)})
         try:
             _candidate = load_matrix(path, expected_agent_count=2)
         except AnalysisValidationError as exc:
@@ -67,16 +90,29 @@ def _(AnalysisValidationError, discover_matrices, load_matrix, mo, requested_mat
     if not candidates:
         mo.stop(
             True,
-            mo.callout(
-                mo.md(
-                    "No complete experimental two-agent matrix was found. "
-                    "Set `APART_MATRIX_PATH` to a matrix JSON after the live run. "
-                    f"Rejected candidates: {len(rejected)}."
+            mo.vstack([
+                mo.callout(
+                    mo.md(
+                        "No complete experimental two-agent matrix was found. "
+                        "Set `APART_MATRIX_PATH` to a matrix JSON after the live run. "
+                        f"Rejected candidates: {len(rejected)}."
+                    ),
+                    kind="warn",
                 ),
-                kind="warn",
-            ),
+                mo.md("### Local matrix audit"),
+                mo.table([
+                    {
+                        "matrix": item["matrix"],
+                        "experimental_data": item.get("experimental_data"),
+                        "triplets": item.get("triplets"),
+                        "entropy_ready": item.get("entropy_ready"),
+                        "reasons": "; ".join(item.get("reasons", [])[:3]),
+                    }
+                    for item in audits
+                ]),
+            ]),
         )
-    return candidates, rejected
+    return audits, candidates, rejected
 
 
 @app.cell
@@ -94,11 +130,51 @@ def _(candidates, mo):
 
 
 @app.cell
-def _(call_rows, candidates, matrix_choice):
+def _(call_rows, candidates, matrix_choice, token_rows):
     dataset = candidates[matrix_choice.value]
     calls = call_rows(dataset)
+    tokens = token_rows(dataset)
     max_turn = max((int(row["turn"]) for row in calls), default=1)
-    return calls, dataset, max_turn
+    return calls, dataset, max_turn, tokens
+
+
+@app.cell
+def _(mo, np, tokens):
+    _summary = []
+    for _condition in ("C0", "C1", "C2"):
+        _values = [row for row in tokens if row["condition"] == _condition]
+        _finite_entropy = [row["partial_entropy_bits"] for row in _values if np.isfinite(row["partial_entropy_bits"])]
+        _finite_coverage = [row["covered_mass"] for row in _values if np.isfinite(row["covered_mass"])]
+        _summary.append({
+            "condition": _condition,
+            "tokens": len(_values),
+            "mean_partial_entropy_bits": float(np.mean(_finite_entropy)) if _finite_entropy else np.nan,
+            "mean_top_k_entropy_bits": float(np.mean([row["top_k_entropy_bits"] for row in _values if np.isfinite(row["top_k_entropy_bits"])])) if _values else np.nan,
+            "mean_coverage": float(np.mean(_finite_coverage)) if _finite_coverage else np.nan,
+            "coverage_below_0_99": float(np.mean(np.asarray(_finite_coverage) < 0.99)) if _finite_coverage else np.nan,
+        })
+    mo.vstack([
+        mo.md("## Token-level analysis\nEach row is one recorded token. Partial entropy is the provider top-K measure; coverage is the returned probability mass."),
+        mo.table(_summary),
+        mo.table(tokens[:100]),
+    ])
+    return
+
+
+@app.cell
+def _(mo, np, tokens):
+    import matplotlib.pyplot as _plt
+
+    _entropy = np.asarray([row["partial_entropy_bits"] for row in tokens], dtype=float)
+    _coverage = np.asarray([row["covered_mass"] for row in tokens], dtype=float)
+    _figure, _axes = _plt.subplots(1, 2, figsize=(10, 3.5))
+    _axes[0].hist(_entropy[np.isfinite(_entropy)], bins=30, color="#4c78a8", alpha=0.85)
+    _axes[0].set(title="Token partial entropy", xlabel="bits", ylabel="tokens")
+    _axes[1].hist(_coverage[np.isfinite(_coverage)], bins=30, color="#54a24b", alpha=0.85)
+    _axes[1].set(title="Returned probability coverage", xlabel="mass", ylabel="tokens")
+    _figure.tight_layout()
+    mo.vstack([mo.md("### Token distributions"), _figure])
+    return
 
 
 @app.cell
@@ -177,6 +253,32 @@ def _(contrasts, mo):
 
 
 @app.cell
+def _(dataset, endpoint_analysis, event_aligned_profile, interrupted_series):
+    endpoints = endpoint_analysis(dataset)
+    interrupted = interrupted_series(dataset)
+    event_study = event_aligned_profile(dataset)
+    return endpoints, event_study, interrupted
+
+
+@app.cell
+def _(endpoints, event_study, interrupted, mo):
+    endpoint_columns = [
+        "endpoint", "window", "contrast", "n_seeds", "estimate", "ci_low",
+        "ci_high", "p_wilcoxon", "p_wilcoxon_bh", "excluded_seeds",
+    ]
+    mo.vstack([
+        mo.md(
+            "## Ported endpoint, interrupted-series, and event-study stages\n"
+            "Endpoints use balanced raw entropy. The interrupted-series and event-study views use the declared turn boundary; current artifacts do not record an endogenous uptake event."
+        ),
+        mo.table([{key: row.get(key) for key in endpoint_columns} for row in endpoints]),
+        mo.table(interrupted),
+        mo.table(event_study),
+    ])
+    return
+
+
+@app.cell
 def _(dataset, turn_profile):
     profile = turn_profile(dataset)
     return (profile,)
@@ -184,29 +286,29 @@ def _(dataset, turn_profile):
 
 @app.cell
 def _(mo, np, profile):
-    import matplotlib.pyplot as plt
+    import matplotlib.pyplot as _plt
 
-    figure, axis = plt.subplots(figsize=(10, 4))
-    colours = {"C0": "#4c78a8", "C1": "#f58518", "C2": "#54a24b"}
-    for condition in ("C0", "C1", "C2"):
-        values = [row for row in profile if row["condition"] == condition]
-        if not values:
+    _figure, _axis = _plt.subplots(figsize=(10, 4))
+    _colours = {"C0": "#4c78a8", "C1": "#f58518", "C2": "#54a24b"}
+    for _condition in ("C0", "C1", "C2"):
+        _values = [row for row in profile if row["condition"] == _condition]
+        if not _values:
             continue
-        x = np.asarray([row["turn"] for row in values])
-        y = np.asarray([row["mean"] for row in values])
-        low = np.asarray([row["ci_low"] for row in values])
-        high = np.asarray([row["ci_high"] for row in values])
-        axis.fill_between(x, low, high, color=colours[condition], alpha=0.16)
-        axis.plot(x, y, marker="o", ms=3, color=colours[condition], label=condition)
-    axis.set(
+        _x = np.asarray([row["turn"] for row in _values])
+        _y = np.asarray([row["mean"] for row in _values])
+        _low = np.asarray([row["ci_low"] for row in _values])
+        _high = np.asarray([row["ci_high"] for row in _values])
+        _axis.fill_between(_x, _low, _high, color=_colours[_condition], alpha=0.16)
+        _axis.plot(_x, _y, marker="o", ms=3, color=_colours[_condition], label=_condition)
+    _axis.set(
         title="Per-turn mean top-K partial entropy",
         xlabel="Measured assistant response ordinal",
         ylabel="Mean entropy (bits/token)",
     )
-    axis.grid(alpha=0.25)
-    axis.legend(title="Condition")
-    figure.tight_layout()
-    mo.vstack([mo.md("## Entropy trajectory"), figure])
+    _axis.grid(alpha=0.25)
+    _axis.legend(title="Condition")
+    _figure.tight_layout()
+    mo.vstack([mo.md("## Entropy trajectory"), _figure])
     return
 
 
@@ -221,6 +323,34 @@ def _(dataset, independence_baseline, mo):
             "joint entropy, mutual information, and total correlation are not estimated."
         ),
         mo.table(_rows),
+    ])
+    return
+
+
+@app.cell
+def _(coupling_proxy, dataset, early_warning_detector, functional_form_comparison, robustness_summary):
+    coupling = coupling_proxy(dataset)
+    detector = early_warning_detector(dataset)
+    functional_form = functional_form_comparison(dataset)
+    robustness = robustness_summary(dataset)
+    return coupling, detector, functional_form, robustness
+
+
+@app.cell
+def _(coupling, detector, functional_form, mo, robustness):
+    mo.vstack([
+        mo.md(
+            "## Coupling, functional form, detector, and robustness\n"
+            "Coupling is the available aligned entropy trajectory proxy. The old action-class mutual information requires action-token distributions that are absent from this schema."
+        ),
+        mo.md("### Agent coupling proxy"),
+        mo.table(coupling),
+        mo.md("### Functional forms"),
+        mo.table(functional_form),
+        mo.md("### Fixed-boundary detector"),
+        mo.table(detector),
+        mo.md("### Entropy robustness"),
+        mo.table(robustness),
     ])
     return
 
@@ -249,9 +379,12 @@ def _(calls, dataset, mo, repo_root):
         **Notebook:** `{repo_root / "notebooks/controlled_entropy_analysis.py"}`
 
         The imported analysis keeps failed or incomplete matrices out of the
-        estimand and does not impute missing token probabilities. The old
-        analysis branch's fixed event time, placebo donor, and soft action-class
-        joint estimators require variables absent from this C0/C1/C2 schema.
+        estimand, gates entropy estimates on replay, and drops seeds whose
+        requested window is not balanced across both agents and all conditions.
+        The former branch's endogenous uptake event, action-class joint
+        estimator, and action/prompt-length covariate adjustment require
+        variables absent from this C0/C1/C2 schema; the notebook labels their
+        current descriptive replacements accordingly.
         """
     )
     return

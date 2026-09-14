@@ -12,6 +12,7 @@ APART_MODEL_TOKEN
 APART_MODEL_TOKEN*
 qwen3-cache/
 ollama-models/
+analysis_temperature_1/out/
 experiments/
 Experiments/Experiment-1/batches/
 Experiments/Experiment-1/fixture/

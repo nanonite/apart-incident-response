@@ -514,12 +514,41 @@ def call_rows(dataset: MatrixDataset) -> list[dict[str, Any]]:
                         "kind": turn.get("kind", "unknown"),
                         "token_count": len(tokens),
                         "mean_entropy_bits": _mean(_token_entropy(t, "partial_entropy_bits") for t in tokens if isinstance(t, Mapping)),
+                        "mean_top_k_entropy_bits": _mean(_token_entropy(t, "top_k_entropy_bits") for t in tokens if isinstance(t, Mapping)),
+                        "mean_residual_entropy_bits": _mean(_token_entropy(t, "residual_bucket_entropy_bits") for t in tokens if isinstance(t, Mapping)),
                         "mean_surprise_bits": _mean(_token_entropy(t, "sampled_surprise_bits") for t in tokens if isinstance(t, Mapping)),
                         "mean_coverage": _mean(
                             float(t.get("covered_mass", float("nan")))
                             for t in tokens if isinstance(t, Mapping)
                         ),
                     })
+    return rows
+
+
+def require_replay_valid(
+    dataset: MatrixDataset,
+    *,
+    tolerance: float = 1e-9,
+) -> list[dict[str, Any]]:
+    """Return the replay audit or refuse to produce an entropy estimate.
+
+    Replay is part of the analysis inclusion rule.  Callers that only need an
+    execution audit can still use :func:`replay_validation` directly.
+    """
+
+    rows = replay_validation(dataset, tolerance=tolerance)
+    invalid = [row for row in rows if not row.get("valid", False)]
+    if invalid:
+        sample = invalid[0]
+        detail = (
+            f"{sample.get('condition', '?')}/{sample.get('agent', '?')} "
+            f"seed {sample.get('seed', '?')}: "
+            f"{sample.get('error', 'stored probability values do not replay') }"
+        )
+        raise AnalysisValidationError(
+            f"entropy estimate blocked by replay validation ({len(invalid)} invalid artifacts; {detail})",
+            report={"invalid": invalid, "checked": rows},
+        )
     return rows
 
 
@@ -706,7 +735,26 @@ def _seed_condition_means(
     turn_start: int | None,
     turn_stop: int | None,
 ) -> dict[tuple[int, str], float]:
-    by_agent: dict[tuple[int, str, str], list[float]] = {}
+    """Average only balanced seed-condition cells.
+
+    A cell is usable when every agent has one finite observation for every
+    requested response ordinal.  This keeps short runs from contributing a
+    different number of responses to different conditions.
+    """
+
+    turns = {
+        int(row["turn"])
+        for row in rows
+        if _is_int(row.get("turn"))
+        and (turn_start is None or row["turn"] >= turn_start)
+        and (turn_stop is None or row["turn"] <= turn_stop)
+    }
+    if turn_start is not None and turn_stop is not None:
+        turns = set(range(turn_start, turn_stop + 1))
+    if not turns:
+        return {}
+
+    by_agent: dict[tuple[int, str, str], dict[int, list[float]]] = {}
     for row in rows:
         turn = row.get("turn")
         if not _is_int(turn) or (turn_start is not None and turn < turn_start) or (turn_stop is not None and turn > turn_stop):
@@ -715,11 +763,48 @@ def _seed_condition_means(
         if not isinstance(value, (int, float)) or isinstance(value, bool) or not math.isfinite(float(value)):
             continue
         key = (int(row["seed"]), str(row["condition"]), str(row["agent"]))
-        by_agent.setdefault(key, []).append(float(value))
+        by_agent.setdefault(key, {}).setdefault(int(turn), []).append(float(value))
+
     by_condition: dict[tuple[int, str], list[float]] = {}
-    for (seed, condition, _agent), values in by_agent.items():
-        by_condition.setdefault((seed, condition), []).append(float(np.mean(values)))
-    return {key: float(np.mean(values)) for key, values in by_condition.items() if values}
+    for (seed, condition, agent), values_by_turn in by_agent.items():
+        if set(values_by_turn) != turns or any(len(values) != 1 for values in values_by_turn.values()):
+            continue
+        by_condition.setdefault((seed, condition), []).append(
+            float(np.mean([values_by_turn[turn][0] for turn in sorted(turns)]))
+        )
+    return {
+        key: float(np.mean(values))
+        for key, values in by_condition.items()
+        if len(values) >= 2
+    }
+
+
+def _resolved_window(
+    rows: Sequence[Mapping[str, Any]],
+    *,
+    metric: str,
+    turn_start: int | None,
+    turn_stop: int | None,
+) -> tuple[int, int]:
+    start = 1 if turn_start is None else int(turn_start)
+    if start < 1:
+        raise ValueError("turn_start must be at least one")
+    if turn_stop is None:
+        maxima: dict[tuple[int, str, str], int] = {}
+        for row in rows:
+            turn = row.get("turn")
+            value = row.get(metric)
+            if _is_int(turn) and isinstance(value, (int, float)) and math.isfinite(float(value)):
+                key = (int(row["seed"]), str(row["condition"]), str(row["agent"]))
+                maxima[key] = max(maxima.get(key, 0), int(turn))
+        if not maxima:
+            raise AnalysisValidationError("no finite call observations are available")
+        stop = min(maxima.values())
+    else:
+        stop = int(turn_stop)
+    if stop < start:
+        raise ValueError("turn_stop must be at least turn_start")
+    return start, stop
 
 
 def paired_condition_contrasts(
@@ -734,15 +819,23 @@ def paired_condition_contrasts(
     """Estimate matched C0/C1/C2 contrasts with seeds as the unit."""
 
     rows = call_rows(dataset)
-    values = _seed_condition_means(
+    require_replay_valid(dataset)
+    resolved_start, resolved_stop = _resolved_window(
         rows, metric=metric, turn_start=turn_start, turn_stop=turn_stop
+    )
+    values = _seed_condition_means(
+        rows, metric=metric, turn_start=resolved_start, turn_stop=resolved_stop
     )
     output: list[dict[str, Any]] = []
     for offset, (name, (right, left)) in enumerate(CONTRASTS.items()):
         differences = [
             values[(triplet.seed, right)] - values[(triplet.seed, left)]
             for triplet in dataset.triplets
-            if (triplet.seed, right) in values and (triplet.seed, left) in values
+            if all((triplet.seed, condition) in values for condition in CONDITIONS)
+        ]
+        included_seeds = [
+            triplet.seed for triplet in dataset.triplets
+            if all((triplet.seed, condition) in values for condition in CONDITIONS)
         ]
         estimate, low, high = bootstrap_ci(differences, draws=draws, seed=seed + offset)
         finite = np.asarray(differences, dtype=float)
@@ -752,8 +845,12 @@ def paired_condition_contrasts(
             "contrast": name,
             "turn_start": turn_start,
             "turn_stop": turn_stop,
+            "turn_start_resolved": resolved_start,
+            "turn_stop_resolved": resolved_stop,
+            "balance_rule": "both agents and all requested response ordinals are present in every included condition",
             "n_seeds": int(finite.size),
-            "seeds": [triplet.seed for triplet in dataset.triplets if (triplet.seed, right) in values and (triplet.seed, left) in values],
+            "seeds": included_seeds,
+            "excluded_seeds": [seed for seed in dataset.seeds if seed not in included_seeds],
             "estimate": estimate,
             "ci_low": low,
             "ci_high": high,
@@ -777,6 +874,7 @@ def turn_profile(
     """Return per-turn condition means and seed-bootstrap intervals."""
 
     rows = call_rows(dataset)
+    require_replay_valid(dataset)
     result: list[dict[str, Any]] = []
     for condition in CONDITIONS:
         turns = sorted({int(row["turn"]) for row in rows if row["condition"] == condition})
@@ -794,11 +892,513 @@ def turn_profile(
                 "condition": condition,
                 "turn": turn,
                 "n_seeds": len(per_seed),
+                "balanced_agents": len(per_seed) > 0,
                 "mean": mean,
                 "ci_low": low,
                 "ci_high": high,
             })
     return result
+
+
+def _contrast_statistics(
+    dataset: MatrixDataset,
+    values: Mapping[tuple[int, str], float],
+    *,
+    metric: str,
+    label: str,
+    turn_start: int,
+    turn_stop: int,
+    draws: int,
+    seed: int,
+) -> list[dict[str, Any]]:
+    output: list[dict[str, Any]] = []
+    for offset, (name, (right, left)) in enumerate(CONTRASTS.items()):
+        included = [
+            triplet.seed for triplet in dataset.triplets
+            if all((triplet.seed, condition) in values for condition in CONDITIONS)
+        ]
+        differences = [
+            values[(matched_seed, right)] - values[(matched_seed, left)]
+            for matched_seed in included
+        ]
+        finite = np.asarray(differences, dtype=float)
+        estimate, low, high = bootstrap_ci(differences, draws=draws, seed=seed + offset)
+        output.append({
+            "model": dataset.model,
+            "metric": metric,
+            "analysis": label,
+            "contrast": name,
+            "turn_start": turn_start,
+            "turn_stop": turn_stop,
+            "balance_rule": "both agents and all requested response ordinals are present in every included condition",
+            "n_seeds": int(finite.size),
+            "seeds": included,
+            "excluded_seeds": [item.seed for item in dataset.triplets if item.seed not in included],
+            "estimate": estimate,
+            "ci_low": low,
+            "ci_high": high,
+            "median": float(np.median(finite)) if finite.size else float("nan"),
+            "sd": float(np.std(finite, ddof=1)) if finite.size > 1 else float("nan"),
+            "n_positive": int((finite > 0).sum()),
+            "p_sign": sign_test_pvalue(finite),
+            "p_wilcoxon": wilcoxon_signed_rank_pvalue(finite),
+        })
+    adjusted = benjamini_hochberg([row["p_wilcoxon"] for row in output])
+    for row, value in zip(output, adjusted):
+        row["p_wilcoxon_bh"] = float(value)
+    return output
+
+
+def _window_values(
+    rows: Sequence[Mapping[str, Any]],
+    *,
+    metric: str,
+    turn_start: int,
+    turn_stop: int,
+) -> dict[tuple[int, str], float]:
+    return _seed_condition_means(
+        rows,
+        metric=metric,
+        turn_start=turn_start,
+        turn_stop=turn_stop,
+    )
+
+
+def endpoint_analysis(
+    dataset: MatrixDataset,
+    *,
+    metric: str = "mean_entropy_bits",
+    intervention_turn: int = 8,
+    post_windows: Sequence[int] = (5, 10),
+    draws: int = DEFAULT_BOOTSTRAP_DRAWS,
+    seed: int = DEFAULT_RANDOM_SEED,
+) -> list[dict[str, Any]]:
+    """Recreate the old endpoint table for the current three-condition schema.
+
+    The current artifacts do not expose the old action and prompt-length
+    covariates, so these are raw balanced endpoints.  Each row is still a
+    matched seed contrast and the pre/post variant uses the same requested
+    response ordinals in every included cell.
+    """
+
+    if intervention_turn < 2:
+        raise ValueError("intervention_turn must be at least two")
+    rows = call_rows(dataset)
+    require_replay_valid(dataset)
+    output: list[dict[str, Any]] = []
+    for offset, width in enumerate(post_windows):
+        if not _is_int(width) or width < 1:
+            raise ValueError("post_windows must contain positive integers")
+        post_start = intervention_turn
+        post_stop = intervention_turn + int(width) - 1
+        post = _window_values(rows, metric=metric, turn_start=post_start, turn_stop=post_stop)
+        post_rows = _contrast_statistics(
+            dataset, post, metric=metric, label=f"post_{width}",
+            turn_start=post_start, turn_stop=post_stop,
+            draws=draws, seed=seed + offset * 3,
+        )
+        for row in post_rows:
+            row["window"] = int(width)
+            row["endpoint"] = "post"
+        output.extend(post_rows)
+
+        pre = _window_values(rows, metric=metric, turn_start=1, turn_stop=intervention_turn - 1)
+        changes = {
+            key: post[key] - pre[key]
+            for key in post
+            if key in pre
+        }
+        change_rows = _contrast_statistics(
+            dataset, changes, metric=metric, label=f"prepost_{width}",
+            turn_start=1, turn_stop=post_stop,
+            draws=draws, seed=seed + offset * 3 + 1,
+        )
+        for row in change_rows:
+            row["window"] = int(width)
+            row["endpoint"] = "post_minus_pre"
+        output.extend(change_rows)
+    return output
+
+
+def _ols_coefficients(x: np.ndarray, y: np.ndarray) -> tuple[np.ndarray, float, float]:
+    if x.ndim != 2 or y.ndim != 1 or len(y) != len(x) or len(y) == 0:
+        return np.asarray([], dtype=float), float("nan"), float("nan")
+    try:
+        coefficients, _residuals, _rank, _singular = np.linalg.lstsq(x, y, rcond=None)
+    except np.linalg.LinAlgError:
+        return np.asarray([], dtype=float), float("nan"), float("nan")
+    residual = y - x @ coefficients
+    sse = float(np.sum(residual * residual))
+    n = len(y)
+    k = x.shape[1]
+    if n == 0 or sse <= 0:
+        bic = float("-inf") if sse == 0 else float("nan")
+    else:
+        bic = float(n * math.log(sse / n) + k * math.log(n))
+    return coefficients, sse, bic
+
+
+def interrupted_series(
+    dataset: MatrixDataset,
+    *,
+    metric: str = "mean_entropy_bits",
+    intervention_turn: int = 8,
+) -> list[dict[str, Any]]:
+    """Fit a descriptive interrupted series at a declared turn boundary.
+
+    C0/C1/C2 runs have no treatment onset recorded in the artifact.  This
+    function therefore reports piecewise slopes and level changes only; it
+    does not label the boundary as a causal intervention or emit ITS p-values.
+    """
+
+    if intervention_turn < 2:
+        raise ValueError("intervention_turn must be at least two")
+    profile = turn_profile(dataset, metric=metric)
+    output: list[dict[str, Any]] = []
+    for condition in CONDITIONS:
+        values = [
+            row for row in profile
+            if row["condition"] == condition and math.isfinite(float(row["mean"]))
+        ]
+        if not values:
+            continue
+        turns = np.asarray([row["turn"] for row in values], dtype=float)
+        y = np.asarray([row["mean"] for row in values], dtype=float)
+        post = (turns >= intervention_turn).astype(float)
+        centered = turns - intervention_turn
+        x = np.column_stack((np.ones(len(turns)), centered, post, centered * post))
+        coefficients, sse, bic = _ols_coefficients(x, y)
+        if len(coefficients) == 4:
+            output.append({
+                "model": dataset.model,
+                "condition": condition,
+                "metric": metric,
+                "intervention_turn": intervention_turn,
+                "event_source": "declared analysis boundary; no observed uptake onset",
+                "n_turns": len(values),
+                "min_seed_count": min(int(row["n_seeds"]) for row in values),
+                "level_at_boundary": float(coefficients[0]),
+                "pre_slope": float(coefficients[1]),
+                "level_change": float(coefficients[2]),
+                "slope_change": float(coefficients[3]),
+                "post_slope": float(coefficients[1] + coefficients[3]),
+                "sse": sse,
+                "bic": bic,
+            })
+    return output
+
+
+def event_aligned_profile(
+    dataset: MatrixDataset,
+    *,
+    metric: str = "mean_entropy_bits",
+    event_turn: int = 8,
+    radius: int = 3,
+) -> list[dict[str, Any]]:
+    """Return an event-study profile around a declared turn.
+
+    This is the portable part of the former event study.  The old endogenous
+    ``tau_read``/``tau_use`` fields are not available in the UUID probability
+    artifacts, so ``event_turn`` must be supplied and is reported as such.
+    """
+
+    if radius < 0:
+        raise ValueError("radius must be non-negative")
+    rows = call_rows(dataset)
+    require_replay_valid(dataset)
+    grouped: dict[tuple[str, int, int], list[float]] = {}
+    for row in rows:
+        value = row.get(metric)
+        turn = row.get("turn")
+        if row.get("condition") not in CONDITIONS or not _is_int(turn):
+            continue
+        relative = int(turn) - event_turn
+        if abs(relative) > radius or not isinstance(value, (int, float)) or not math.isfinite(float(value)):
+            continue
+        grouped.setdefault((str(row["condition"]), relative, int(row["seed"])), []).append(float(value))
+    output: list[dict[str, Any]] = []
+    for condition in CONDITIONS:
+        for relative in range(-radius, radius + 1):
+            per_seed = [
+                float(np.mean(values))
+                for (item_condition, item_relative, _seed), values in grouped.items()
+                if item_condition == condition and item_relative == relative and len(values) == 2
+            ]
+            mean, low, high = bootstrap_ci(per_seed, seed=DEFAULT_RANDOM_SEED + relative + radius)
+            output.append({
+                "model": dataset.model,
+                "condition": condition,
+                "relative_turn": relative,
+                "event_turn": event_turn,
+                "event_source": "declared analysis boundary; no observed uptake onset",
+                "metric": metric,
+                "n_seeds": len(per_seed),
+                "mean": mean,
+                "ci_low": low,
+                "ci_high": high,
+            })
+    return output
+
+
+def _pearson(x: Sequence[float], y: Sequence[float]) -> float:
+    left = np.asarray(x, dtype=float)
+    right = np.asarray(y, dtype=float)
+    if left.size < 2 or left.size != right.size:
+        return float("nan")
+    left = left - left.mean()
+    right = right - right.mean()
+    denominator = math.sqrt(float(np.sum(left * left) * np.sum(right * right)))
+    return float(np.sum(left * right) / denominator) if denominator > 0 else float("nan")
+
+
+def coupling_proxy(
+    dataset: MatrixDataset,
+    *,
+    metric: str = "mean_entropy_bits",
+) -> list[dict[str, Any]]:
+    """Measure aligned agent trajectory coupling available in current traces.
+
+    The old soft action-class joint distribution cannot be reconstructed from
+    these artifacts.  This proxy uses paired per-response entropy trajectories
+    and is labelled separately from mutual information.
+    """
+
+    rows = call_rows(dataset)
+    require_replay_valid(dataset)
+    by_key: dict[tuple[int, str, int], dict[str, float]] = {}
+    for row in rows:
+        value = row.get(metric)
+        if isinstance(value, (int, float)) and math.isfinite(float(value)):
+            by_key.setdefault((int(row["seed"]), str(row["condition"]), int(row["turn"])), {})[str(row["agent"])] = float(value)
+    output: list[dict[str, Any]] = []
+    for condition in CONDITIONS:
+        pairs = [values for (seed, item_condition, turn), values in by_key.items()
+                 if item_condition == condition and len(values) == 2]
+        left = [values[sorted(values)[0]] for values in pairs]
+        right = [values[sorted(values)[1]] for values in pairs]
+        delta = np.asarray(left, dtype=float) - np.asarray(right, dtype=float)
+        mean_delta, low, high = bootstrap_ci(delta, seed=DEFAULT_RANDOM_SEED + len(output))
+        output.append({
+            "model": dataset.model,
+            "condition": condition,
+            "metric": metric,
+            "coupling_measure": "paired entropy trajectory proxy",
+            "n_pairs": int(delta.size),
+            "n_seeds": len({key[0] for key, values in by_key.items() if key[1] == condition and len(values) == 2}),
+            "agent_correlation": _pearson(left, right),
+            "mean_agent_delta_bits": mean_delta,
+            "ci_low": low,
+            "ci_high": high,
+            "joint_entropy_available": False,
+        })
+    return output
+
+
+def functional_form_comparison(
+    dataset: MatrixDataset,
+    *,
+    metric: str = "mean_entropy_bits",
+) -> list[dict[str, Any]]:
+    """Compare small NumPy-only time-series forms by BIC and RMSE."""
+
+    profile = turn_profile(dataset, metric=metric)
+    forms = {
+        "constant": lambda x: np.column_stack((np.ones(len(x)),)),
+        "linear": lambda x: np.column_stack((np.ones(len(x)), x)),
+        "logarithmic": lambda x: np.column_stack((np.ones(len(x)), np.log1p(x))),
+        "cubic": lambda x: np.column_stack((np.ones(len(x)), x, x**2, x**3)),
+    }
+    output: list[dict[str, Any]] = []
+    for condition in CONDITIONS:
+        values = [row for row in profile if row["condition"] == condition and math.isfinite(float(row["mean"]))]
+        x = np.asarray([row["turn"] for row in values], dtype=float)
+        y = np.asarray([row["mean"] for row in values], dtype=float)
+        for name, design in forms.items():
+            matrix = design(x)
+            if len(y) < matrix.shape[1]:
+                continue
+            coefficients, sse, bic = _ols_coefficients(matrix, y)
+            output.append({
+                "model": dataset.model,
+                "condition": condition,
+                "metric": metric,
+                "form": name,
+                "n_turns": len(y),
+                "rmse": float(math.sqrt(sse / len(y))) if math.isfinite(sse) else float("nan"),
+                "bic": bic,
+                "selected_by_bic": False,
+            })
+    for condition in CONDITIONS:
+        candidates = [row for row in output if row["condition"] == condition and math.isfinite(float(row["bic"]))]
+        if candidates:
+            winner = min(candidates, key=lambda row: row["bic"])["form"]
+            for row in candidates:
+                row["selected_by_bic"] = row["form"] == winner
+    return output
+
+
+def early_warning_detector(
+    dataset: MatrixDataset,
+    *,
+    metric: str = "mean_entropy_bits",
+    baseline_stop: int = 7,
+    monitor_start: int = 8,
+    quantile: float = 0.95,
+) -> list[dict[str, Any]]:
+    """Apply a transparent z-score detector using C0 as the null calibration.
+
+    It is a diagnostic detector.  The fixed monitoring boundary is known in
+    advance, and current traces do not record an observed uptake event against
+    which alarm lead time can be scored.
+    """
+
+    if not 0 < quantile < 1 or baseline_stop >= monitor_start:
+        raise ValueError("quantile must be in (0, 1) and baseline_stop before monitor_start")
+    rows = call_rows(dataset)
+    require_replay_valid(dataset)
+    by_series: dict[tuple[int, str, str], list[tuple[int, float]]] = {}
+    for row in rows:
+        value = row.get(metric)
+        turn = row.get("turn")
+        if _is_int(turn) and isinstance(value, (int, float)) and math.isfinite(float(value)):
+            by_series.setdefault((int(row["seed"]), str(row["condition"]), str(row["agent"])), []).append((int(turn), float(value)))
+    scores: dict[tuple[int, str, str], tuple[float, int | None, int]] = {}
+    for key, series in by_series.items():
+        baseline = np.asarray([value for turn, value in series if turn <= baseline_stop], dtype=float)
+        monitored = [(turn, value) for turn, value in series if turn >= monitor_start]
+        if baseline.size < 2 or not monitored:
+            continue
+        mean = float(baseline.mean())
+        sd = float(baseline.std(ddof=1))
+        scale = sd if sd > 1e-12 else 1.0
+        z = [(turn, abs((value - mean) / scale)) for turn, value in monitored]
+        scores[key] = (max(value for _turn, value in z), next((turn for turn, value in z if value >= 0), None), int(baseline.size))
+    null_scores = [value[0] for key, value in scores.items() if key[1] == "C0"]
+    threshold = float(np.quantile(null_scores, quantile)) if null_scores else float("nan")
+    output: list[dict[str, Any]] = []
+    for (seed, condition, agent), (score, _unused_alarm, baseline_n) in scores.items():
+        series = by_series[(seed, condition, agent)]
+        baseline = np.asarray([value for turn, value in series if turn <= baseline_stop], dtype=float)
+        scale = float(baseline.std(ddof=1)) if baseline.size > 1 else 1.0
+        scale = scale if scale > 1e-12 else 1.0
+        mean = float(baseline.mean())
+        alarm = next((turn for turn, value in series if turn >= monitor_start and abs((value - mean) / scale) >= threshold), None)
+        output.append({
+            "model": dataset.model,
+            "seed": seed,
+            "condition": condition,
+            "agent": agent,
+            "metric": metric,
+            "baseline_turns": baseline_n,
+            "monitor_start": monitor_start,
+            "threshold": threshold,
+            "max_abs_z": score,
+            "alarm_turn": alarm,
+            "alarm_before_observed_uptake": None,
+            "interpretation": "fixed-boundary diagnostic; no uptake timestamp in current artifact",
+        })
+    return output
+
+
+def robustness_summary(dataset: MatrixDataset) -> list[dict[str, Any]]:
+    """Summarize partial, top-K, residual and coverage token measures."""
+
+    rows = token_rows(dataset)
+    output: list[dict[str, Any]] = []
+    for condition in CONDITIONS:
+        values = [row for row in rows if row["condition"] == condition]
+        def finite(field: str) -> list[float]:
+            return [float(row[field]) for row in values if isinstance(row.get(field), (int, float)) and math.isfinite(float(row[field]))]
+        coverage = finite("covered_mass")
+        partial = finite("partial_entropy_bits")
+        output.append({
+            "model": dataset.model,
+            "condition": condition,
+            "token_rows": len(values),
+            "partial_entropy_mean_bits": float(np.mean(partial)) if partial else float("nan"),
+            "top_k_entropy_mean_bits": float(np.mean(finite("top_k_entropy_bits"))) if finite("top_k_entropy_bits") else float("nan"),
+            "residual_bucket_entropy_mean_bits": float(np.mean(finite("residual_bucket_entropy_bits"))) if finite("residual_bucket_entropy_bits") else float("nan"),
+            "coverage_mean": float(np.mean(coverage)) if coverage else float("nan"),
+            "coverage_below_0_99": float(np.mean(np.asarray(coverage) < 0.99)) if coverage else float("nan"),
+        })
+    return output
+
+
+def audit_matrix(matrix_path: Path | str) -> dict[str, Any]:
+    """Audit a matrix, including rejected runs, without creating an estimate."""
+
+    path = Path(matrix_path).expanduser().resolve()
+    if path.is_dir():
+        path = path / "matrix.json"
+    document = _read_json(path)
+    if not isinstance(document, Mapping):
+        raise AnalysisValidationError(f"matrix is not a JSON object: {path}")
+    triplets = document.get("triplets")
+    if not isinstance(triplets, list):
+        triplets = []
+    condition_rows: list[dict[str, Any]] = []
+    reasons: list[str] = []
+    for index, triplet in enumerate(triplets):
+        entries = triplet.get("artifacts", {}).get("conditions", {}) if isinstance(triplet, Mapping) else {}
+        for condition in CONDITIONS:
+            entry = entries.get(condition) if isinstance(entries, Mapping) else None
+            row: dict[str, Any] = {"triplet_index": index, "condition": condition}
+            try:
+                if not isinstance(entry, Mapping):
+                    raise AnalysisValidationError("missing condition link")
+                root = _condition_root(path.parent, entry, condition)
+                manifest = _read_json(root / "manifest.json")
+                results = _read_json(root / "results.json")
+                result_rows = results.get("results", []) if isinstance(results, Mapping) else []
+                statuses = [
+                    item.get("status") for item in result_rows
+                    if isinstance(item, Mapping)
+                ]
+                probability_rows = []
+                for artifact in entry.get("probability_artifacts", {}).values() if isinstance(entry.get("probability_artifacts"), Mapping) else []:
+                    artifact_path = _resolve_link(path.parent, artifact, label="probability artifact")
+                    probability = _read_json(artifact_path)
+                    coverage = probability.get("coverage", {}) if isinstance(probability, Mapping) else {}
+                    probability_rows.append({
+                        "complete": coverage.get("complete"),
+                        "partial": coverage.get("partial"),
+                        "unavailable": coverage.get("unavailable"),
+                        "turns": coverage.get("turns"),
+                        "tokens": coverage.get("tokens"),
+                    })
+                row.update({
+                    "seed": manifest.get("seed") if isinstance(manifest, Mapping) else None,
+                    "agent_count": len((manifest.get("assignment", []) if isinstance(manifest, Mapping) else [])),
+                    "result_statuses": statuses,
+                    "probability_artifacts": probability_rows,
+                    "entropy_ready": bool(statuses) and all(status == "completed" for status in statuses)
+                    and bool(probability_rows) and all(
+                        item.get("complete", 0) > 0 and item.get("unavailable", 0) == 0
+                        for item in probability_rows
+                    ),
+                })
+            except (AnalysisValidationError, OSError, TypeError, ValueError) as exc:
+                row["error"] = str(exc)
+                row["entropy_ready"] = False
+            if not row.get("entropy_ready"):
+                reasons.append(
+                    f"triplet {index} {condition}: "
+                    f"{row.get('error') or row.get('result_statuses') or 'probability artifact unavailable'}"
+                )
+            condition_rows.append(row)
+    ready = bool(condition_rows) and all(row.get("entropy_ready") for row in condition_rows)
+    return {
+        "matrix": str(path),
+        "run_uuid": document.get("run_uuid"),
+        "model": document.get("model"),
+        "run_class": document.get("run_class"),
+        "experimental_data": document.get("experimental_data"),
+        "triplets": len(triplets),
+        "conditions_checked": len(condition_rows),
+        "entropy_ready": ready,
+        "conditions": condition_rows,
+        "reasons": reasons,
+    }
 
 
 def outcome_summary(dataset: MatrixDataset) -> list[dict[str, Any]]:
@@ -837,6 +1437,7 @@ def independence_baseline(dataset: MatrixDataset) -> list[dict[str, Any]]:
     """Return H(agent 1)+H(agent 2), explicitly without a joint estimate."""
 
     rows = call_rows(dataset)
+    require_replay_valid(dataset)
     output: list[dict[str, Any]] = []
     for triplet in dataset.triplets:
         for condition in CONDITIONS:
@@ -861,6 +1462,7 @@ def independence_baseline(dataset: MatrixDataset) -> list[dict[str, Any]]:
 
 __all__ = [
     "AnalysisValidationError",
+    "audit_matrix",
     "CONDITIONS",
     "MatrixDataset",
     "TripletRecord",
@@ -871,11 +1473,19 @@ __all__ = [
     "call_rows",
     "discover_matrices",
     "entropy_bits",
+    "endpoint_analysis",
+    "event_aligned_profile",
+    "early_warning_detector",
+    "functional_form_comparison",
+    "interrupted_series",
     "independence_baseline",
     "load_matrix",
     "outcome_summary",
     "paired_condition_contrasts",
     "replay_validation",
+    "require_replay_valid",
+    "robustness_summary",
+    "coupling_proxy",
     "sign_test_pvalue",
     "token_rows",
     "turn_profile",

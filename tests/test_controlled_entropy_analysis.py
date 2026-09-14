@@ -8,10 +8,16 @@ from apart_incident_response.controlled_entropy_analysis import (
     AnalysisValidationError,
     benjamini_hochberg,
     call_rows,
+    endpoint_analysis,
+    event_aligned_profile,
+    coupling_proxy,
     entropy_bits,
+    functional_form_comparison,
     load_matrix,
     paired_condition_contrasts,
     replay_validation,
+    require_replay_valid,
+    robustness_summary,
     sign_test_pvalue,
     wilcoxon_signed_rank_pvalue,
 )
@@ -144,6 +150,39 @@ class ControlledEntropyAnalysisTests(unittest.TestCase):
             self.assertEqual(len(replay), 6)
             self.assertTrue(all(row["valid"] for row in replay))
             self.assertTrue(all(row["max_abs_coverage_error"] == 0.0 for row in replay))
+
+    def test_entropy_estimates_are_blocked_when_replay_changes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            dataset = load_matrix(_matrix(Path(temporary)))
+            token = dataset.triplets[0].conditions["C0"].agents[0].document["turns"][0]["probability_artifact"]["tokens"][0]
+            token["entropy"]["partial_entropy_bits"] += 0.01
+            with self.assertRaisesRegex(AnalysisValidationError, "blocked by replay validation"):
+                paired_condition_contrasts(dataset, draws=20)
+            with self.assertRaises(AnalysisValidationError):
+                require_replay_valid(dataset)
+
+    def test_contrasts_drop_a_seed_with_an_unequal_requested_window(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            matrix_path = _matrix(root)
+            artifact_path = root / "s0001" / "C2" / "agents" / "agent-2" / "artifacts" / "probability_artifacts.json"
+            artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
+            artifact["turns"] = artifact["turns"][:1]
+            artifact["coverage"] = {"turns": 1, "complete": 1, "partial": 0, "unavailable": 0}
+            _write(artifact_path, artifact)
+            dataset = load_matrix(matrix_path)
+            contrasts = paired_condition_contrasts(dataset, turn_start=1, turn_stop=2, draws=20)
+            self.assertTrue(all(row["n_seeds"] == 0 for row in contrasts))
+            self.assertTrue(all(row["excluded_seeds"] == [1] for row in contrasts))
+
+    def test_current_schema_analysis_stages_share_the_replay_gate(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            dataset = load_matrix(_matrix(Path(temporary)))
+            self.assertEqual(len(endpoint_analysis(dataset, post_windows=(1,))), 6)
+            self.assertEqual(len(event_aligned_profile(dataset, event_turn=1, radius=1)), 9)
+            self.assertEqual(len(coupling_proxy(dataset)), 3)
+            self.assertTrue(functional_form_comparison(dataset))
+            self.assertEqual(len(robustness_summary(dataset)), 3)
 
     def test_numpy_statistics_have_stable_definitions(self):
         self.assertAlmostEqual(entropy_bits([0.5, 0.5]), 1.0)
