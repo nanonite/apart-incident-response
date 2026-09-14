@@ -13,6 +13,7 @@ from dataclasses import dataclass
 import json
 from pathlib import Path, PureWindowsPath
 import re
+from shutil import copyfileobj
 from typing import Any, Mapping
 from urllib.parse import quote, unquote
 import uuid
@@ -52,15 +53,10 @@ def _model_text(model: str) -> str:
     return model
 
 
-def encode_model_slug(model: str, *, provider: str | None = None) -> str:
-    """Encode a model identifier into one reversible path component."""
+def encode_model_slug(model: str) -> str:
+    """Encode the complete model identifier into one reversible path component."""
 
     model = _model_text(model)
-    if provider is not None:
-        provider = _safe_label(provider, "provider")
-        prefix = provider + "/"
-        if model.startswith(prefix):
-            model = model[len(prefix):]
     return quote(model, safe="-_.~")
 
 
@@ -80,20 +76,31 @@ def split_model_id(model: str, *, provider: str | None = None) -> tuple[str, str
     full_model = _model_text(model)
     if provider is None:
         if "/" in full_model:
-            selected_provider, model_name = full_model.split("/", 1)
+            selected_provider = full_model.split("/", 1)[0]
             selected_provider = _safe_label(selected_provider, "provider")
         else:
-            selected_provider, model_name = "unknown", full_model
+            selected_provider = "unknown"
     else:
         selected_provider = _safe_label(provider, "provider")
-        prefix = selected_provider + "/"
-        model_name = full_model[len(prefix):] if full_model.startswith(prefix) else full_model
-    if not model_name or model_name in {".", ".."}:
-        raise RunPathError("model name must be non-empty")
-    slug = encode_model_slug(model_name)
+    slug = encode_model_slug(full_model)
     if not SAFE_MODEL_SLUG.fullmatch(slug):
         raise RunPathError("model slug must be one safe encoded path component")
     return selected_provider, full_model, slug
+
+
+def copy_file_if_absent(source: Path | str, destination: Path | str) -> bool:
+    """Copy a compatibility artifact without replacing an earlier invocation."""
+
+    source_path = Path(source)
+    destination_path = Path(destination)
+    destination_path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    try:
+        with source_path.open("rb") as source_handle, destination_path.open("xb") as destination_handle:
+            copyfileobj(source_handle, destination_handle)
+    except FileExistsError:
+        return False
+    destination_path.chmod(0o600)
+    return True
 
 
 def validate_uuid4(value: str | uuid.UUID) -> str:
@@ -206,6 +213,7 @@ __all__ = [
     "RunDirectory",
     "RunPathError",
     "create_run_directory",
+    "copy_file_if_absent",
     "decode_model_slug",
     "encode_model_slug",
     "find_run_by_uuid",

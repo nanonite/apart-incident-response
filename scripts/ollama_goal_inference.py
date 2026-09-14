@@ -41,7 +41,7 @@ from apart_incident_response.probability_artifacts import (
     build_probability_artifact,
     normalize_token_probability,
 )
-from apart_incident_response.run_paths import create_run_directory
+from apart_incident_response.run_paths import copy_file_if_absent, create_run_directory
 
 DEFAULT_HOST = "http://localhost:11434"
 DEFAULT_MODEL = "qwen3:8b"
@@ -63,9 +63,7 @@ def _mirror_file(path: Path, legacy_root: Path) -> None:
     if destination == path:
         return
     try:
-        destination.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
-        destination.write_bytes(path.read_bytes())
-        destination.chmod(0o600)
+        copy_file_if_absent(path, destination)
     except OSError:
         return
 

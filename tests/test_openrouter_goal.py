@@ -152,6 +152,30 @@ class OpenRouterGoalInferenceTests(unittest.TestCase):
             )
             self.assertEqual(failure["error"], "OPENROUTER_API_KEY is required")
 
+    def test_repeated_failures_preserve_earlier_legacy_artifact(self):
+        with tempfile.TemporaryDirectory() as temp:
+            output = Path(temp) / "repeated"
+            arguments = [
+                "--prompt", "capital of France",
+                "--model", "openai/gpt-4o-mini",
+                "--output", str(output),
+            ]
+            with patch.dict(os.environ, {}, clear=True):
+                self.assertEqual(main(arguments), 2)
+                first_legacy = json.loads((output / "failure.json").read_text(encoding="utf-8"))
+                self.assertEqual(main(arguments), 2)
+            second_legacy = json.loads((output / "failure.json").read_text(encoding="utf-8"))
+            self.assertEqual(second_legacy["run_uuid"], first_legacy["run_uuid"])
+            canonical = output / "openrouter" / "openai%2Fgpt-4o-mini"
+            canonical_failures = sorted(canonical.glob("*/failure.json"))
+            self.assertEqual(len(canonical_failures), 2)
+            canonical_uuids = [
+                json.loads(path.read_text(encoding="utf-8"))["run_uuid"]
+                for path in canonical_failures
+            ]
+            self.assertEqual(len(set(canonical_uuids)), 2)
+            self.assertIn(first_legacy["run_uuid"], canonical_uuids)
+
     def test_invalid_token_array_writes_failure_artifact(self):
         response = self.load("openrouter-chat-completion-logprobs.json")
         response["choices"][0]["logprobs"]["content"][1]["logprob"] = float("nan")

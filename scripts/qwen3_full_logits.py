@@ -8,7 +8,6 @@ import hashlib
 import json
 from pathlib import Path
 import random
-import shutil
 import sys
 import time
 from typing import Any, Mapping
@@ -27,7 +26,7 @@ from apart_incident_response.qwen3_runtime import (  # noqa: E402
     dependency_versions,
     load_qwen3,
 )
-from apart_incident_response.run_paths import create_run_directory  # noqa: E402
+from apart_incident_response.run_paths import copy_file_if_absent, create_run_directory  # noqa: E402
 
 
 DEFAULT_CONFIG = SOURCE_ROOT / "config" / "qwen3-8b.json"
@@ -50,19 +49,14 @@ def _mirror_tree(source: Path, legacy_root: Path) -> None:
             if path.is_dir():
                 target.mkdir(mode=0o700, parents=True, exist_ok=True)
             elif path.is_file():
-                target.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
-                shutil.copy2(path, target)
-                target.chmod(0o600)
+                copy_file_if_absent(path, target)
     except OSError:
         return
 
 
 def _mirror_file(path: Path, legacy_root: Path) -> None:
     try:
-        legacy_root.mkdir(mode=0o700, parents=True, exist_ok=True)
-        target = legacy_root / path.name
-        shutil.copy2(path, target)
-        target.chmod(0o600)
+        copy_file_if_absent(path, legacy_root / path.name)
     except OSError:
         return
 

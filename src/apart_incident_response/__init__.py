@@ -40,6 +40,7 @@ _EXPERIMENT_EXPORTS = {
     "write_condition_index",
     "RunDirectory",
     "RunPathError",
+    "copy_file_if_absent",
     "create_run_directory",
     "decode_model_slug",
     "encode_model_slug",
@@ -81,7 +82,7 @@ def __getattr__(name: str) -> Any:
 
             value = getattr(run_artifacts, name)
         elif name in {
-            "RunDirectory", "RunPathError", "create_run_directory", "decode_model_slug",
+            "RunDirectory", "RunPathError", "copy_file_if_absent", "create_run_directory", "decode_model_slug",
             "encode_model_slug", "find_run_by_uuid", "split_model_id", "validate_uuid4",
         }:
             from . import run_paths
@@ -152,6 +153,7 @@ __all__ = [
     "write_condition_index",
     "RunDirectory",
     "RunPathError",
+    "copy_file_if_absent",
     "create_run_directory",
     "decode_model_slug",
     "encode_model_slug",

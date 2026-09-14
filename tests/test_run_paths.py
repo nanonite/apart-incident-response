@@ -6,6 +6,7 @@ import unittest
 from apart_incident_response.controller import ExperimentController
 from apart_incident_response.run_paths import (
     RunPathError,
+    copy_file_if_absent,
     create_run_directory,
     decode_model_slug,
     find_run_by_uuid,
@@ -20,7 +21,16 @@ class RunPathContractTests(unittest.TestCase):
         provider, model, slug = split_model_id("openrouter/openai/gpt-4o-mini")
         self.assertEqual(provider, "openrouter")
         self.assertEqual(model, "openrouter/openai/gpt-4o-mini")
-        self.assertEqual(decode_model_slug(slug), "openai/gpt-4o-mini")
+        self.assertEqual(decode_model_slug(slug), model)
+        _, unprefixed_model, unprefixed_slug = split_model_id(
+            "openai/gpt-4o-mini", provider="openrouter"
+        )
+        _, prefixed_model, prefixed_slug = split_model_id(
+            "openrouter/openai/gpt-4o-mini", provider="openrouter"
+        )
+        self.assertNotEqual(unprefixed_slug, prefixed_slug)
+        self.assertEqual(decode_model_slug(unprefixed_slug), unprefixed_model)
+        self.assertEqual(decode_model_slug(prefixed_slug), prefixed_model)
         for invalid in ("", "../escape", "/absolute", r"C:\\absolute", "provider//model", "provider/./model"):
             with self.subTest(invalid=invalid):
                 with self.assertRaises(RunPathError):
@@ -36,6 +46,17 @@ class RunPathContractTests(unittest.TestCase):
             self.assertEqual(find_run_by_uuid(root, first.run_uuid).path, first.path)
             with self.assertRaises(RunPathError):
                 create_run_directory(root, first.model, run_uuid=first.run_uuid)
+
+    def test_compatibility_copy_never_replaces_an_existing_artifact(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "source.json"
+            destination = root / "legacy" / "failure.json"
+            source.write_text("first", encoding="utf-8")
+            self.assertTrue(copy_file_if_absent(source, destination))
+            source.write_text("second", encoding="utf-8")
+            self.assertFalse(copy_file_if_absent(source, destination))
+            self.assertEqual(destination.read_text(encoding="utf-8"), "first")
 
     def test_harness_matrix_has_one_uuid_and_resolvable_condition_links(self):
         with tempfile.TemporaryDirectory() as temporary:
