@@ -61,6 +61,6 @@ The two monitoring questions are Q1: did foreign text arrive? and Q2: did it car
   \label{tab:auc}
 \end{table}
 
-\subsection{The agents did not become coupled}
+\subsection{The agents barely became coupled}
 
-We expected communicating agents to become statistically coupled, so that the mutual information between their actions would rise once the channel opened. It did not: it stayed within 0.025 bits of the random-pairing baseline in every model, condition and temperature, even in runs with verified communication. Each agent reads the log when it chooses and acts on its own, so communication showed up as a change inside the agent that received the text, not as the two agents acting in step. A monitor based on entropy therefore has to watch agents one at a time.
+We expected communicating agents to become statistically coupled, so that the mutual information between their actions would rise once the channel opened. It barely did. Over the turns in which both agents were still acting, mutual information exceeded the random-pairing baseline by at most 0.025 bits in every model, condition and temperature, even in runs with verified communication. The only consistent excess was small: about 0.013 bits for Qwen with real messages at $T = 0$, significant in 8 of 13 turns. Each agent reads the log when it chooses and acts on its own, so communication showed up as a change inside the agent that received the text, not as the two agents acting in step. A monitor based on entropy therefore has to watch agents one at a time.
