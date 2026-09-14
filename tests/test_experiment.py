@@ -211,6 +211,33 @@ class ControlledExperimentTests(unittest.TestCase):
                 self.assertLessEqual(budget["tokens_used"], 120)
                 self.assertEqual(len(list((run.artifact_root / "agents").iterdir())), count)
 
+    def test_two_agent_matrix_keeps_all_triplets_and_two_agent_artifacts(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            controller = ExperimentController(
+                fixture_config(), Path(temporary), extension=EXTENSION, run_class="harness_check"
+            )
+            for seed in (3, 6):
+                with self.subTest(seed=seed):
+                    runs = controller.run_triplet(
+                        seed=seed,
+                        triplet_id=f"entropy-seed-{seed}",
+                        agent_count=2,
+                    )
+                    self.assertEqual(
+                        [run.condition for run in runs],
+                        [Condition.C0, Condition.C1, Condition.C2],
+                    )
+                    for run in runs:
+                        manifest = json.loads((run.artifact_root / "manifest.json").read_text())
+                        self.assertEqual(manifest["factor_assignment"]["agent_count"], 2)
+                        self.assertEqual(len(manifest["assignment"]), 2)
+                        agent_dirs = list((run.artifact_root / "agents").iterdir())
+                        self.assertEqual(len(agent_dirs), 2)
+                        self.assertEqual(
+                            len(json.loads((run.artifact_root / "results.json").read_text())["results"]),
+                            2,
+                        )
+
     def test_transformation_cadence_changes_scheduled_board_read_opportunities(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

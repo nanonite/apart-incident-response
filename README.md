@@ -200,6 +200,21 @@ provider to preserve logprob parameters, validates the returned token array,
 and writes a sanitized response plus a `partial-token-probability-v1`
 artifact. Missing or malformed probabilities produce `failure.json`.
 
+### Running the real anchor matrix with local Ollama
+
+The containerized `runtime` image includes the pinned Pi checkout, Bun, and
+Bubblewrap. With Ollama serving `qwen3:8b` on the host, run:
+
+```bash
+just qwen3-experiment output=runs/qwen3-8b/s0001 seeds="1 2 3 4 5" agent_count=2
+```
+
+`--agent-count 2` selects the genuine two-role Task 1 fixture; omit it to use
+the default three-agent fixture. The command prints the resolved UUID root and
+stores each seed and C0/C1/C2 condition below that invocation. The output is
+labelled diagnostic data until its condition triplets and agent artifacts pass
+the analysis validation contract.
+
 The `run` command writes metadata, raw JSONL, stderr, parsed events, the final
 response, budget usage, and exit status under the agent artifact directory.
 Experiment output under `runs/` is intentionally versioned for sharing between
@@ -213,9 +228,8 @@ implements the versioned protocol in
 [docs/experiment-protocol.md](docs/experiment-protocol.md). It starts one
 threaded, isolated `AgentRun` per agent, gives every condition triplet the same
 prompt/fixture/model/n/timeout/aggregate budget, and owns one board database
-per non-C0 swarm. The aggregate budget is reserved atomically before provider
-launch; for n variations the per-agent envelope is the integer division of the
-same aggregate ceiling.
+per non-C0 swarm. The per-agent envelope is pinned from configuration, while
+the aggregate ceiling scales with the selected agent count.
 
 Run a real Task 1 pilot only after configuring the Pi root and controller-owned
 OAuth store described above:
@@ -224,7 +238,8 @@ OAuth store described above:
 PYTHONPATH=src python scripts/run_experiment.py \
   --real-anchor --seeds 1 2 3 4 5 \
   --output runs/t1 \
-  --run-id task-1-anchor
+  --run-id task-1-anchor \
+  --agent-count 3
 ```
 
 The command writes one model-scoped UUID directory, then a condition directory

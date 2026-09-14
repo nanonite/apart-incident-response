@@ -37,5 +37,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix board IPC integration and CLI tool wiring (#58)
 
 ### Changed
+- Support genuine two-role Task 1 fixtures and explicit real-anchor swarm sizes (#100, #94)
+- Capture Ollama per-turn probability records with stable per-agent sampling seeds (#91)
 - Confirm OpenRouter logprob support for a pinned model and route (#93)
 - Run single-agent task calibration (#47)

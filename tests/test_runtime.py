@@ -23,8 +23,11 @@ from apart_incident_response.runtime import (
     RuntimeConfigError,
     SystemBudget,
     _ModelEgressProxy,
+    _SseLogprobCapture,
+    _attach_ollama_probability_captures,
     _bubblewrap_failure_reason,
     _model_request_metadata,
+    _ollama_sampling_seed,
     _opencode_session_id,
     _prepare_auth_file,
     _prepare_model_limits,
@@ -296,9 +299,10 @@ class RuntimeContractTests(unittest.TestCase):
 
     def test_ollama_model_limits_stage_openai_compatibility_config(self):
         with tempfile.TemporaryDirectory() as temp:
-            workspace = create_isolated_workspace(Path(temp), self.identity())
+            identity = self.identity()
+            workspace = create_isolated_workspace(Path(temp), identity)
             config = self.config(per_agent_token_budget=17).for_model("ollama/qwen3:8b")
-            path = _prepare_model_limits(workspace, config)
+            path = _prepare_model_limits(workspace, config, identity)
             payload = json.loads(path.read_text(encoding="utf-8"))
             provider = payload["providers"]["ollama"]
             self.assertEqual(provider["baseUrl"], "http://127.0.0.1:11434/v1")
@@ -306,6 +310,76 @@ class RuntimeContractTests(unittest.TestCase):
             self.assertEqual(provider["models"], [{"id": "qwen3:8b", "name": "Qwen3 8B 4-bit"}])
             self.assertEqual(provider["modelOverrides"]["qwen3:8b"]["maxTokens"], 17)
             self.assertFalse(provider["modelOverrides"]["qwen3:8b"]["samplingParams"]["think"])
+            self.assertTrue(provider["modelOverrides"]["qwen3:8b"]["samplingParams"]["logprobs"])
+            self.assertEqual(provider["modelOverrides"]["qwen3:8b"]["samplingParams"]["top_logprobs"], 5)
+            self.assertEqual(
+                provider["modelOverrides"]["qwen3:8b"]["samplingParams"]["seed"],
+                _ollama_sampling_seed(identity),
+            )
+
+    def test_ollama_sampling_seed_is_stable_and_agent_specific(self):
+        first = self.identity("agent-1")
+        second = self.identity("agent-2")
+        self.assertEqual(_ollama_sampling_seed(first), _ollama_sampling_seed(first))
+        self.assertNotEqual(_ollama_sampling_seed(first), _ollama_sampling_seed(second))
+        self.assertNotEqual(
+            _ollama_sampling_seed(first),
+            _ollama_sampling_seed(self.identity("agent-1", Condition.C1)),
+        )
+
+    def test_ollama_sse_capture_preserves_records_across_chunks(self):
+        capture = _SseLogprobCapture()
+        first = json.dumps({
+            "id": "ollama-response-1",
+            "choices": [{
+                "delta": {"reasoning": "Okay"},
+                "logprobs": {"content": [{
+                    "token": "Okay",
+                    "logprob": -0.0001,
+                    "top_logprobs": [{"token": "Okay", "logprob": -0.0001}],
+                }]},
+            }],
+        })
+        second = json.dumps({
+            "id": "ollama-response-1",
+            "choices": [{
+                "delta": {"content": "done"},
+                "logprobs": {"content": [{"token": "done", "logprob": -0.5, "top_logprobs": []}]},
+            }],
+        })
+        raw = f"data: {first}\n\ndata: {second}\n\ndata: [DONE]\n\n".encode()
+        capture.feed(raw[:37])
+        capture.feed(raw[37:])
+        record = capture.finalize()
+        self.assertEqual(record["status"], "complete")
+        self.assertEqual(record["request_id"], "ollama-response-1")
+        self.assertEqual([item["token"] for item in record["token_records"]], ["Okay", "done"])
+
+    def test_ollama_sse_capture_marks_missing_probability_data(self):
+        capture = _SseLogprobCapture()
+        capture.feed(b": heartbeat\n\ndata: {\"choices\": []}\n\ndata: [DONE]\n\n")
+        record = capture.finalize()
+        self.assertEqual(record["status"], "unavailable")
+        self.assertEqual(record["token_records"], [])
+
+    def test_ollama_capture_uses_shared_probability_event_shape(self):
+        events = [{
+            "type": "message_end",
+            "message": {
+                "role": "assistant",
+                "responseId": "ollama-response-1",
+                "content": [{"type": "text", "text": "done"}],
+            },
+        }]
+        _attach_ollama_probability_captures(events, [{
+            "status": "complete",
+            "request_id": "ollama-response-1",
+            "token_records": [{"token": "done", "logprob": -0.5, "top_logprobs": []}],
+        }])
+        self.assertEqual(
+            events[0]["message"]["probabilityCapture"]["token_records"][0]["token"],
+            "done",
+        )
 
     def test_ollama_relay_allows_only_controller_selected_local_target(self):
         relay = _ModelEgressProxy(
@@ -530,7 +604,7 @@ class RuntimeContractTests(unittest.TestCase):
             identity = self.identity()
             workspace = create_isolated_workspace(Path(temp), identity)
             config = self.config(per_agent_token_budget=17)
-            path = _prepare_model_limits(workspace, config)
+            path = _prepare_model_limits(workspace, config, identity)
             self.assertIsNotNone(path)
             payload = json.loads(path.read_text(encoding="utf-8"))
             self.assertEqual(
@@ -1005,8 +1079,8 @@ class RuntimeContractTests(unittest.TestCase):
         self.assertEqual(config.model, "openai-codex/gpt-5.6-luna")
         self.assertEqual(config.pi_auth_file_env, "APART_PI_AUTH_FILE")
         self.assertEqual(config.pi_auth_store_env, "APART_PI_AUTH_STORE")
-        self.assertEqual(config.per_agent_token_budget, 16_000)
-        self.assertEqual(config.aggregate_token_budget, 48_000)
+        self.assertEqual(config.per_agent_token_budget, 26_000)
+        self.assertEqual(config.aggregate_token_budget, 78_000)
         self.assertTrue(config.isolation.model_network)
         self.assertEqual(config.isolation.model_hosts, ("chatgpt.com",))
         self.assertEqual(config.isolation.oauth_hosts, ("auth.openai.com",))

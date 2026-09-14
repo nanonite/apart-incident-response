@@ -109,3 +109,32 @@ qwen mode="logprobs" prompt="The capital of France is" seed="1" output="" model=
 # Build the isolated CUDA runtime; weights remain in the compose-mounted cache.
 qwen-runtime:
     docker compose -f compose.qwen3.yaml build qwen3
+
+# Run the real C0/C1/C2 anchor matrix against local Ollama Qwen3-8B inside the
+# same containerized runtime image used elsewhere in the repository. Pass
+# agent_count=2 for the genuine two-role Task 1 fixture.
+qwen3-experiment output="runs/qwen3-8b/manual" seeds="1" agent_count="" ollama_host="http://localhost:11434": build
+    #!/usr/bin/env bash
+    set -euo pipefail
+    output="{{ output }}"; output="${output#output=}"
+    seeds="{{ seeds }}"; seeds="${seeds#seeds=}"
+    ollama_host="{{ ollama_host }}"; ollama_host="${ollama_host#ollama_host=}"
+    agent_count="{{ agent_count }}"; agent_count="${agent_count#agent_count=}"
+    read -r -a seed_values <<< "$seeds"
+    args=(--real-anchor --model ollama/qwen3:8b --seeds "${seed_values[@]}" --output "$output")
+    if [[ -n "$agent_count" ]]; then
+        args+=(--agent-count "$agent_count")
+    fi
+    docker run --rm --network host \
+        --cap-add SYS_ADMIN --cap-add NET_ADMIN \
+        --security-opt seccomp=unconfined --security-opt apparmor=unconfined \
+        -e APART_PI_ROOT=/opt/pi \
+        -e OLLAMA_HOST="$ollama_host" \
+        -v "$(pwd)/scripts:/app/scripts" \
+        -v "$(pwd)/pi-extension:/app/pi-extension" \
+        -v "$(pwd)/config:/app/config" \
+        -v "$(pwd)/runs:/app/runs" \
+        --entrypoint python \
+        apart-incident-response:local scripts/run_experiment.py "${args[@]}"
+    docker run --rm -v "$(pwd)/runs:/runs" alpine chown -R "$(id -u):$(id -g)" /runs
+    find "$output" -type d -name home -exec rm -rf {} +

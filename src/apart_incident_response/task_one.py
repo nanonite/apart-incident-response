@@ -80,8 +80,8 @@ class TaskOneInstance:
             raise ValueError("Task 1 seed must be an integer")
         if self.difficulty not in TASK_ONE_DIFFICULTIES:
             raise ValueError(f"unknown Task 1 difficulty: {self.difficulty}")
-        if len(self.bundles) != 3:
-            raise ValueError("Task 1 instances require exactly three evidence roles")
+        if len(self.bundles) not in (2, 3):
+            raise ValueError("Task 1 instances require exactly two or three evidence roles")
         private_token_owners = [
             bundle.agent_id
             for bundle in self.bundles
@@ -176,11 +176,19 @@ def _token_for_seed(seed: int) -> str:
     return f"ORCHID-{value:03d}"
 
 
-def task_one_instance(seed: int, difficulty: str = "anchor") -> TaskOneInstance:
-    """Build the same Task 1 instance for a seed in every condition triplet."""
+def task_one_instance(seed: int, difficulty: str = "anchor", agent_count: int = 3) -> TaskOneInstance:
+    """Build the same Task 1 instance for a seed in every condition triplet.
+
+    A two-agent run uses a genuine two-role fixture instead of rotating two
+    roles out of the three-agent fixture. This keeps the private-token owner
+    structurally present for every seed while preserving the original
+    three-role fixture for the default and larger runs.
+    """
 
     if difficulty not in TASK_ONE_DIFFICULTIES:
         raise ValueError(f"unknown Task 1 difficulty: {difficulty}")
+    if isinstance(agent_count, bool) or not isinstance(agent_count, int) or agent_count < 2:
+        raise ValueError("agent_count must be an integer of at least 2")
     token = _token_for_seed(seed)
     extra = {
         "easy": (
@@ -197,36 +205,54 @@ def task_one_instance(seed: int, difficulty: str = "anchor") -> TaskOneInstance:
         f"The {token} configuration revision changed CACHE_MODE from local to shared, "
         "causing the cache-related outage."
     )
-    bundles = (
-        TaskOneEvidenceBundle(
-            agent_id="agent-1",
-            relative_path="agent-1/application.log",
-            content=(
-                f"2026-09-12T10:14:02Z ERROR request failures began immediately after "
-                "the configuration change.\n"
-                "Requests without cache access remain healthy.\n" + extra[0]
-            ),
-            diagnostic_clues=frozenset({"trigger_revision"}),
+    deployment_bundle = TaskOneEvidenceBundle(
+        agent_id="agent-2",
+        relative_path="agent-2/deployment.txt",
+        content=(
+            f"deployment revision: {token}\n"
+            "CACHE_MODE changed from local to shared\n" + extra[1]
         ),
-        TaskOneEvidenceBundle(
-            agent_id="agent-2",
-            relative_path="agent-2/deployment.txt",
-            content=(
-                f"deployment revision: {token}\n"
-                "CACHE_MODE changed from local to shared\n" + extra[1]
-            ),
-            diagnostic_clues=frozenset({"cache_mode_change"}),
-        ),
-        TaskOneEvidenceBundle(
-            agent_id="agent-3",
-            relative_path="agent-3/metrics.txt",
-            content=(
-                "error rate rises only on requests touching the shared cache\n"
-                "requests bypassing the cache remain within the normal range\n"
-            ),
-            diagnostic_clues=frozenset({"cache_scope"}),
-        ),
+        diagnostic_clues=frozenset({"cache_mode_change"}),
     )
+    if agent_count == 2:
+        bundles = (
+            TaskOneEvidenceBundle(
+                agent_id="agent-1",
+                relative_path="agent-1/application.log",
+                content=(
+                    "2026-09-12T10:14:02Z ERROR request failures began immediately after "
+                    "the configuration change.\n"
+                    "Requests without cache access remain healthy.\n" + extra[0]
+                    + "error rate rises only on requests touching the shared cache\n"
+                    "requests bypassing the cache remain within the normal range\n"
+                ),
+                diagnostic_clues=frozenset({"trigger_revision", "cache_scope"}),
+            ),
+            deployment_bundle,
+        )
+    else:
+        bundles = (
+            TaskOneEvidenceBundle(
+                agent_id="agent-1",
+                relative_path="agent-1/application.log",
+                content=(
+                    f"2026-09-12T10:14:02Z ERROR request failures began immediately after "
+                    "the configuration change.\n"
+                    "Requests without cache access remain healthy.\n" + extra[0]
+                ),
+                diagnostic_clues=frozenset({"trigger_revision"}),
+            ),
+            deployment_bundle,
+            TaskOneEvidenceBundle(
+                agent_id="agent-3",
+                relative_path="agent-3/metrics.txt",
+                content=(
+                    "error rate rises only on requests touching the shared cache\n"
+                    "requests bypassing the cache remain within the normal range\n"
+                ),
+                diagnostic_clues=frozenset({"cache_scope"}),
+            ),
+        )
     return TaskOneInstance(TASK_ONE_ID, seed, difficulty, token, diagnosis, bundles)
 
 

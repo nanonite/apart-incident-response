@@ -9,6 +9,8 @@ from apart_incident_response.task_one import (
     TASK_ONE_TOKEN,
     materialize_task_one,
     materialize_task_one_bundle,
+    task_one_bundle_for_agent,
+    task_one_instance,
     validate_task_one_answer,
 )
 
@@ -82,6 +84,36 @@ class TaskOneTests(unittest.TestCase):
         result = validate_task_one_answer(None)  # type: ignore[arg-type]
         self.assertFalse(result.accepted)
         self.assertEqual(result.missing_terms, ("answer must be text",))
+
+
+class TaskOneTwoAgentFixtureTests(unittest.TestCase):
+    def test_two_agent_fixture_covers_both_roles_for_seeds_three_and_six(self):
+        for seed in (3, 6):
+            with self.subTest(seed=seed):
+                instance = task_one_instance(seed, agent_count=2)
+                self.assertEqual(len(instance.bundles), 2)
+                assigned = {
+                    task_one_bundle_for_agent(instance, number).agent_id
+                    for number in (1, 2)
+                }
+                self.assertEqual(assigned, {"agent-1", "agent-2"})
+                self.assertEqual(
+                    instance.manifest()["token_provenance"]["private_token_owner_roles"],
+                    {instance.token: ["agent-2"]},
+                )
+
+    def test_two_agent_fixture_is_jointly_sufficient_and_three_agent_default_is_unchanged(self):
+        two_agent = task_one_instance(1, agent_count=2)
+        self.assertEqual([bundle.agent_id for bundle in two_agent.bundles], ["agent-1", "agent-2"])
+        self.assertTrue(two_agent.validate_answer(two_agent.diagnosis).accepted)
+        self.assertTrue(all(not two_agent.validate_answer(bundle.content).accepted for bundle in two_agent.bundles))
+
+        three_agent = task_one_instance(1)
+        self.assertEqual(len(three_agent.bundles), 3)
+        self.assertEqual(
+            [bundle.agent_id for bundle in three_agent.bundles],
+            ["agent-1", "agent-2", "agent-3"],
+        )
 
 
 if __name__ == "__main__":

@@ -37,7 +37,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from threading import Event, Lock, Thread
-from typing import Any, IO, Iterable, Iterator, Mapping, Sequence
+from typing import Any, Callable, IO, Iterable, Iterator, Mapping, Sequence
 
 from .task_prompts import DEFAULT_TASK_PROMPTS, TaskPromptCatalog, TaskPromptConfigError
 
@@ -91,6 +91,7 @@ _OLLAMA_PROXY_HOST = "127.0.0.1"
 _OLLAMA_PROXY_PORT = 11434
 _OLLAMA_PROXY_PATH = "/v1/chat/completions"
 _OLLAMA_DUMMY_API_KEY = "ollama-local"
+_OLLAMA_LOGPROBS_TOP_K = 5
 _DEFAULT_PROVIDER_USER_AGENT = "apart-incident-response/1"
 
 
@@ -1456,7 +1457,26 @@ def _persist_auth_stage(stage: _AuthStage | None) -> None:
                 lock_handle.close()
 
 
-def _prepare_model_limits(workspace: IsolatedWorkspace, config: RuntimeConfig) -> Path | None:
+def _ollama_sampling_seed(identity: AgentIdentity) -> int:
+    """Derive a stable, agent-specific sampling seed from run identity."""
+
+    material = "\0".join(
+        (
+            identity.run_id,
+            identity.agent_id,
+            identity.condition.value,
+            identity.task_id,
+            str(identity.seed),
+        )
+    )
+    return int(hashlib.sha256(material.encode("utf-8")).hexdigest()[:8], 16)
+
+
+def _prepare_model_limits(
+    workspace: IsolatedWorkspace,
+    config: RuntimeConfig,
+    identity: AgentIdentity | None = None,
+) -> Path | None:
     """Stage Pi's provider max-output override when its provider supports it.
 
     Pi's generic provider APIs honor ``models.json`` ``maxTokens``. The
@@ -1490,6 +1510,9 @@ def _prepare_model_limits(workspace: IsolatedWorkspace, config: RuntimeConfig) -
                             "maxTokens": config.per_agent_token_budget,
                             "samplingParams": {
                                 "think": config.thinking_level != "off",
+                                "logprobs": True,
+                                "top_logprobs": _OLLAMA_LOGPROBS_TOP_K,
+                                **({"seed": _ollama_sampling_seed(identity)} if identity is not None else {}),
                             },
                         }
                     },
@@ -1565,6 +1588,117 @@ def _resolve_launch_command(config: RuntimeConfig) -> tuple[list[str], Path | No
     return [part.replace("{pi_root}", str(pi_root)) for part in command], pi_root
 
 
+class _SseLogprobCapture:
+    """Extract raw per-token logprobs from an Ollama SSE response."""
+
+    def __init__(self) -> None:
+        self._buffer = bytearray()
+        self._tokens: list[dict[str, Any]] = []
+        self._request_id: str | None = None
+
+    def feed(self, chunk: bytes) -> None:
+        self._buffer.extend(chunk)
+        while b"\n" in self._buffer:
+            line, _, rest = self._buffer.partition(b"\n")
+            self._buffer = bytearray(rest)
+            self._consume_line(line)
+
+    def _consume_line(self, line: bytes) -> None:
+        payload = line.strip()
+        if not payload.startswith(b"data:"):
+            return
+        payload = payload[len(b"data:"):].strip()
+        if not payload or payload == b"[DONE]":
+            return
+        try:
+            event = json.loads(payload.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            return
+        if not isinstance(event, Mapping):
+            return
+        if isinstance(event.get("id"), str) and event["id"]:
+            self._request_id = event["id"]
+        choices = event.get("choices")
+        if not isinstance(choices, list) or not choices or not isinstance(choices[0], Mapping):
+            return
+        choice = choices[0]
+        logprobs = choice.get("logprobs")
+        entries = logprobs.get("content") if isinstance(logprobs, Mapping) else None
+        if not isinstance(entries, list):
+            return
+        for entry in entries:
+            if not isinstance(entry, Mapping):
+                continue
+            token = entry.get("token")
+            logprob = entry.get("logprob")
+            if (
+                not isinstance(token, str)
+                or isinstance(logprob, bool)
+                or not isinstance(logprob, (int, float))
+            ):
+                continue
+            alternatives = [
+                {"token": item.get("token"), "logprob": item.get("logprob")}
+                for item in entry.get("top_logprobs") or []
+                if (
+                    isinstance(item, Mapping)
+                    and isinstance(item.get("token"), str)
+                    and not isinstance(item.get("logprob"), bool)
+                    and isinstance(item.get("logprob"), (int, float))
+                )
+            ]
+            self._tokens.append({
+                "token": token,
+                "logprob": float(logprob),
+                "top_logprobs": alternatives,
+            })
+
+    def finalize(self) -> dict[str, Any]:
+        if self._buffer:
+            self._consume_line(bytes(self._buffer))
+            self._buffer.clear()
+        return {
+            "schema_version": 1,
+            "status": "complete" if self._tokens else "unavailable",
+            "request_id": self._request_id,
+            "token_records": list(self._tokens),
+            **({} if self._tokens else {
+                "missing_data_reason": "Ollama returned no token probability records",
+            }),
+        }
+
+
+def _attach_ollama_probability_captures(
+    events: list[dict[str, Any]], captures: Sequence[Mapping[str, Any]]
+) -> None:
+    """Attach proxy captures to assistant events for shared normalization."""
+
+    remaining = list(captures)
+    for event in events:
+        if event.get("type") != "message_end":
+            continue
+        message = event.get("message")
+        if not isinstance(message, Mapping) or message.get("role") != "assistant":
+            continue
+        if any(key in message for key in ("probabilityCapture", "probability_capture")):
+            continue
+        if not remaining:
+            break
+        response_id = message.get("responseId") or message.get("response_id")
+        capture_index = next(
+            (
+                index
+                for index, capture in enumerate(remaining)
+                if isinstance(response_id, str)
+                and capture.get("request_id") == response_id
+            ),
+            0,
+        )
+        enriched_message = dict(message)
+        enriched_message["probabilityCapture"] = dict(remaining.pop(capture_index))
+        event["message"] = enriched_message
+
+
 class _ModelEgressProxy:
     """Host-side allowlisted relay for the isolated model process."""
 
@@ -1574,6 +1708,7 @@ class _ModelEgressProxy:
         allowed_hosts: Iterable[str],
         *,
         local_target: tuple[str, int] | None = None,
+        probability_sink: Callable[[Mapping[str, Any]], None] | None = None,
     ) -> None:
         self.socket_path = socket_path
         self.allowed_hosts = frozenset(host.lower() for host in allowed_hosts)
@@ -1584,6 +1719,7 @@ class _ModelEgressProxy:
             self.local_target = (host.lower().rstrip("."), port)
         else:
             self.local_target = None
+        self.probability_sink = probability_sink
         self._listener: socket.socket | None = None
         self._stopping = Event()
         self._thread: Thread | None = None
@@ -1660,7 +1796,19 @@ class _ModelEgressProxy:
                 upstream = socket.create_connection(self.local_target, timeout=30)
                 try:
                     upstream.sendall(normalized_request + remainder)
-                    self._relay(client, upstream)
+                    capture = _SseLogprobCapture() if self.probability_sink is not None else None
+                    self._relay(
+                        client,
+                        upstream,
+                        on_right_chunk=capture.feed if capture is not None else None,
+                    )
+                    if capture is not None:
+                        try:
+                            self.probability_sink(capture.finalize())
+                        except Exception:
+                            # Probability capture is telemetry and must not
+                            # change the model response or agent lifecycle.
+                            pass
                 finally:
                     upstream.close()
                 return
@@ -1780,7 +1928,12 @@ class _ModelEgressProxy:
             pass
 
     @staticmethod
-    def _relay(left: socket.socket, right: socket.socket) -> None:
+    def _relay(
+        left: socket.socket,
+        right: socket.socket,
+        *,
+        on_right_chunk: Callable[[bytes], None] | None = None,
+    ) -> None:
         left.settimeout(None)
         right.settimeout(None)
         open_sockets = [left, right]
@@ -1798,6 +1951,12 @@ class _ModelEgressProxy:
                         pass
                     open_sockets.remove(source)
                     continue
+                if source is right and on_right_chunk is not None:
+                    try:
+                        on_right_chunk(payload)
+                    except Exception:
+                        # Telemetry capture must never interrupt the relay.
+                        on_right_chunk = None
                 destination.sendall(payload)
 
 
@@ -2333,6 +2492,21 @@ class AgentRun:
         persistence_failure: str | None = None
         provider_api_key: str | None = None
         secret_values: tuple[str, ...] = ()
+        ollama_probability_captures: list[Mapping[str, Any]] = []
+
+        def record_ollama_probability_capture(capture: Mapping[str, Any]) -> None:
+            if not isinstance(capture, Mapping):
+                return
+            ollama_probability_captures.append({
+                **dict(capture),
+                "provider": _OLLAMA_PROVIDER,
+                "model": self.config.model,
+                "parameters": {
+                    "logprobs": True,
+                    "top_logprobs": _OLLAMA_LOGPROBS_TOP_K,
+                    "seed": _ollama_sampling_seed(self.identity),
+                },
+            })
 
         def settle_claim() -> None:
             nonlocal claim, settlement, status, failure_reason
@@ -2404,6 +2578,7 @@ class AgentRun:
                         model_socket,
                         (),
                         local_target=(ollama_host, ollama_port),
+                        probability_sink=record_ollama_probability_capture,
                     )
                 else:
                     proxy = _ModelEgressProxy(
@@ -2453,7 +2628,7 @@ class AgentRun:
                   ),
                   extra_env=tool_environment,
             )
-            _prepare_model_limits(self.workspace, self.config)
+            _prepare_model_limits(self.workspace, self.config, self.identity)
             self._write_json(artifact_dir / "metadata.json", {
                 "identity": self.identity.to_dict(),
                 "runtime": self.config.to_dict(),
@@ -2641,6 +2816,7 @@ class AgentRun:
                     # being written. Keep the diagnostic type-only because
                     # the exception may contain paths or sensitive data.
                     persistence_failure = _submission_finalization_failure_diagnostic(exc)
+            _attach_ollama_probability_captures(events, ollama_probability_captures)
             result = self._finish(
                 status, exit_code, started_at, _utc_now(), started_clock,
                 final_response, failure_reason, command, events,
