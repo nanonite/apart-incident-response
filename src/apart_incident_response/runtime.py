@@ -708,15 +708,23 @@ class IsolatedWorkspace:
     artifact_dir: Path
 
 
-def create_isolated_workspace(root: Path, identity: AgentIdentity) -> IsolatedWorkspace:
+def create_isolated_workspace(
+    root: Path,
+    identity: AgentIdentity,
+    *,
+    run_root: Path | None = None,
+) -> IsolatedWorkspace:
     """Create an agent-only directory tree with restrictive permissions."""
 
     root = root.expanduser().resolve()
-    run_root = root / identity.run_id
-    agent_root = run_root / "agents" / identity.agent_id
+    workspace_root = root.expanduser().resolve()
+    selected_run_root = (
+        run_root.expanduser().resolve() if run_root is not None else workspace_root / identity.run_id
+    )
+    agent_root = selected_run_root / "agents" / identity.agent_id
     if agent_root.exists():
         raise RuntimeConfigError(f"agent workspace already exists: {agent_root}")
-    for path in (run_root, run_root / "agents", agent_root):
+    for path in (selected_run_root, selected_run_root / "agents", agent_root):
         path.mkdir(mode=0o700, parents=True, exist_ok=True)
         path.chmod(0o700)
     task_dir = agent_root / "task"
@@ -726,8 +734,8 @@ def create_isolated_workspace(root: Path, identity: AgentIdentity) -> IsolatedWo
         path.mkdir(mode=0o700)
         path.chmod(0o700)
     return IsolatedWorkspace(
-        workspace_root=root,
-        run_root=run_root,
+        workspace_root=workspace_root,
+        run_root=selected_run_root,
         root=agent_root,
         task_dir=task_dir,
         session_dir=session_dir,

@@ -18,7 +18,6 @@ import os
 import urllib.error
 import urllib.parse
 import urllib.request
-from datetime import datetime, timezone
 from pathlib import Path
 import sys
 from typing import Any
@@ -32,6 +31,7 @@ from apart_incident_response.probability_artifacts import (
     normalize_token_probability,
     unavailable_probability_artifact,
 )
+from apart_incident_response.run_paths import create_run_directory
 
 
 DEFAULT_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
@@ -182,15 +182,31 @@ def _write_json(path: Path, payload: object) -> None:
     path.chmod(0o600)
 
 
+def _mirror_file(path: Path, legacy_root: Path) -> None:
+    """Keep a single requested output leaf readable for old callers."""
+
+    destination = legacy_root / path.name
+    if destination == path:
+        return
+    try:
+        destination.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+        destination.write_bytes(path.read_bytes())
+        destination.chmod(0o600)
+    except OSError:
+        return
+
+
 def _write_failure(
     output: Path,
     *,
     run_id: str,
+    run_uuid: str,
     model: str,
     endpoint: str,
     parameters: Mapping[str, object],
     error: Exception,
     secret: str,
+    legacy_root: Path | None = None,
 ) -> None:
     failure_model = model.removeprefix("openrouter/") or "unknown"
     provenance = {
@@ -204,6 +220,7 @@ def _write_failure(
         "provider": "openrouter",
         "status": "failed",
         "run_id": run_id,
+        "run_uuid": run_uuid,
         "model": model,
         "route": {
             "endpoint": endpoint,
@@ -220,6 +237,8 @@ def _write_failure(
     }
     try:
         _write_json(output / "failure.json", artifact)
+        if legacy_root is not None:
+            _mirror_file(output / "failure.json", legacy_root)
     except OSError:
         return
 
@@ -237,8 +256,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path("runs/openrouter/logprobs/seed-1"),
-        help="Directory to write the JSON artifact into",
+        default=Path("runs/openrouter/logprobs"),
+        help="Base directory; the resolved provider/model/UUID path is printed",
     )
     parser.add_argument("--run-id", default=None, help="Stable run identifier")
     args = parser.parse_args(argv)
@@ -248,8 +267,16 @@ def main(argv: list[str] | None = None) -> int:
     if not args.prompt and not args.prompt_file:
         parser.error("one of --prompt or --prompt-file is required")
 
-    output = args.output.expanduser().resolve()
-    run_id = args.run_id or datetime.now(timezone.utc).isoformat()
+    requested_output = args.output.expanduser().resolve()
+    invocation = create_run_directory(
+        requested_output,
+        args.model,
+        provider="openrouter",
+        run_id=args.run_id,
+        metadata={"mode": "logprobs", "run_class": "goal_inference"},
+    )
+    output = invocation.path
+    run_id = invocation.run_id
     parameters = {
         "logprobs": True,
         "top_logprobs": args.top_logprobs,
@@ -302,7 +329,10 @@ def main(argv: list[str] | None = None) -> int:
             "experimental_data": True,
             "status": "complete",
             "run_id": run_id,
+            "run_uuid": invocation.run_uuid,
             "provider": "openrouter",
+            "model_id": args.model,
+            "artifact_root": str(output),
             "model": args.model,
             "prompt": {
                 "text": _redact(prompt, api_key),
@@ -329,24 +359,32 @@ def main(argv: list[str] | None = None) -> int:
             "probability_artifact": probability_artifact,
         }
         _write_json(output / "goal_inference.json", artifact)
+        _mirror_file(output / "goal_inference.json", requested_output)
     except (OSError, ValueError, TypeError, KeyError, json.JSONDecodeError, urllib.error.URLError, ProbabilityArtifactError, RuntimeError) as exc:
         _write_failure(
             output,
             run_id=run_id,
+            run_uuid=invocation.run_uuid,
             model=args.model,
             endpoint=args.endpoint,
             parameters=parameters,
             error=exc,
             secret=api_key,
+            legacy_root=requested_output,
         )
         print(json.dumps({
             "status": "failed",
             "run_id": run_id,
+            "run_uuid": invocation.run_uuid,
+            "artifact_root": str(output),
             "error": _redact(str(exc), api_key),
         }, indent=2))
         return 2
     print(json.dumps({
         "artifact": str(output / "goal_inference.json"),
+        "artifact_root": str(output),
+        "run_id": run_id,
+        "run_uuid": invocation.run_uuid,
         "response_id": response.get("id"),
         "model": response.get("model", args.model),
         "route": artifact["route"],

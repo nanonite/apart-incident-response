@@ -89,10 +89,10 @@ def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     if args.output is None:
         if args.mode == "openrouter":
-            args.output = Path("runs/openrouter/logprobs") / f"seed-{args.seed}"
+            args.output = Path("runs/openrouter/logprobs")
         else:
             directory = "logprobs" if args.mode == "logprobs" else "full-logits"
-            args.output = Path("runs/qwen3-8b") / directory / f"seed-{args.seed}"
+            args.output = Path("runs/qwen3-8b") / directory
     forwarded = _forward_args(args)
     if args.mode == "logprobs":
         return ollama_main(forwarded)

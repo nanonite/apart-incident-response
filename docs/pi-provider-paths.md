@@ -146,7 +146,9 @@ records `controller=docker-compose-matrix-service`,
 `docker_access_scope=outer-controller-only`, and whether a Docker socket was
 visible to the controller. The controller still stages per-agent credentials,
 keeps Pi's `--unshare-net`, preserves the provider-specific HTTPS allowlist,
-and writes the full raw artifact layout.
+and writes the full raw artifact layout. `--output` is a base directory; the
+controller prints a model-scoped UUID root below it. One matrix UUID covers all
+seed triplets and C0/C1/C2 conditions.
 
 The pre-existing host launch remains distinct and is useful for approved
 runtime debugging:

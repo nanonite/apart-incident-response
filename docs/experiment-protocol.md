@@ -76,6 +76,16 @@ labeling.
 
 ## Artifacts and replay
 
+Every new invocation uses the shared path contract
+`<output>/<provider>/<encoded-model>/<uuid>/`. The provider and model segments
+contain no secrets and the model slug reversibly encodes separators. `run.json`
+records `run_uuid`, the full model ID, provider, and optional `run_id` label.
+Matrix output keeps one UUID across all seeds and conditions, with each triplet
+at `<uuid>/s0001/C0`, `<uuid>/s0001/C1`, and `<uuid>/s0001/C2`. A standalone
+one shot invocation writes its response or `failure.json` directly in its UUID
+directory. The `--output` argument names the base directory; the resolved path
+is printed after launch.
+
 Every condition directory contains `manifest.json`, `budget.json`,
 `results.json`, `index.json`, an append-only `board.sqlite3` when applicable,
 controller `artifacts/board_events.jsonl`, derived `metrics.json`,
@@ -93,7 +103,14 @@ runs. Inspect one agent with:
 
 ```bash
 PYTHONPATH=src python scripts/inspect_run.py \
-  --run-root runs/t1/s0001-C1 --agent-id agent-1
+  --run-root runs/<provider>/<encoded-model>/<uuid>/s0001/C1 --agent-id agent-1
+```
+
+The same condition can be selected by UUID:
+
+```bash
+PYTHONPATH=src python scripts/inspect_run.py \
+  --run-uuid <uuid> --runs-root runs --seed 1 --condition C1 --agent-id agent-1
 ```
 
 Fixture-driven calibration or harness-check runs carry `run_class=harness_check`
@@ -117,7 +134,7 @@ export OPENROUTER_API_KEY='provided-outside-the-repository'
 PYTHONPATH=src python scripts/qwen3_goal.py --mode openrouter \
   --model openrouter/openai/gpt-4o-mini --prompt 'The capital of France is' \
   --seed 1 --temperature 0 --top-logprobs 5 --max-tokens 16 \
-  --output runs/openrouter/smoke/seed-1
+  --output runs/openrouter/smoke
 ```
 
 The isolated low-token pilot uses the same model and route through the

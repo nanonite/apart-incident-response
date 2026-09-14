@@ -12,6 +12,7 @@ SOURCE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SOURCE_ROOT / "src"))
 
 from apart_incident_response.run_artifacts import build_agent_timeline  # noqa: E402
+from apart_incident_response.run_paths import RunPathError, find_run_by_uuid  # noqa: E402
 
 
 def _entry_text(entry: dict[str, object]) -> str:
@@ -37,11 +38,26 @@ def _entry_text(entry: dict[str, object]) -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--run-root", type=Path, required=True)
+    root_group = parser.add_mutually_exclusive_group(required=True)
+    root_group.add_argument("--run-root", type=Path)
+    root_group.add_argument("--run-uuid", help="resolve a new invocation below --runs-root")
+    parser.add_argument("--runs-root", type=Path, default=Path("runs"))
+    parser.add_argument("--seed", type=int, help="seed directory when using --run-uuid")
+    parser.add_argument("--condition", choices=("C0", "C1", "C2"), help="condition directory when using --run-uuid")
     parser.add_argument("--agent-id", required=True)
     parser.add_argument("--json", action="store_true", dest="as_json")
     args = parser.parse_args()
-    timeline = build_agent_timeline(args.run_root, args.agent_id, persist=True)
+    if args.run_uuid is not None:
+        if args.seed is None or args.condition is None:
+            parser.error("--run-uuid requires --seed and --condition")
+        try:
+            invocation = find_run_by_uuid(args.runs_root, args.run_uuid)
+        except RunPathError as exc:
+            parser.error(str(exc))
+        root = invocation.path / f"s{args.seed:04d}" / args.condition
+    else:
+        root = args.run_root
+    timeline = build_agent_timeline(root, args.agent_id, persist=True)
     if args.as_json:
         print(json.dumps(timeline, ensure_ascii=False, indent=2, sort_keys=True))
         return 0

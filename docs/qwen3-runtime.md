@@ -16,7 +16,7 @@ docker compose -f compose.qwen3.yaml run --rm qwen3 \
     --mode full-logits \
     --prompt "The capital of France is" \
     --seed 1 \
-    --output runs/qwen3-8b/full-logits/seed-1
+    --output runs/qwen3-8b/full-logits
 ```
 
 The first run downloads the pinned checkpoint into `./qwen3-cache` (or the

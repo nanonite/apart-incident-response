@@ -65,7 +65,10 @@ class ToolAuditLog:
         response: Mapping[str, Any],
     ) -> None:
         identity = credentials.identity
-        path = self._artifact_root / identity.run_id / "agents" / identity.agent_id / "artifacts" / "tool_calls.jsonl"
+        run_root = self._artifact_root
+        if not (run_root / "agents").is_dir():
+            run_root = run_root / identity.run_id
+        path = run_root / "agents" / identity.agent_id / "artifacts" / "tool_calls.jsonl"
         path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
         path.parent.chmod(0o700)
         with self._lock:

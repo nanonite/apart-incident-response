@@ -40,9 +40,8 @@ write `failure.json` with an unavailable artifact and an explicit reason.
 The authenticated standalone adapter and the documented `qwen3_goal.py`
 dispatcher both ran successfully on 2026-09-13 with
 `openrouter/openai/gpt-4o-mini` over `openrouter.ai:443`. Each response
-captured 7 tokens. The resulting artifacts are
-`runs/openrouter/logprobs/seed-1/goal_inference.json` and
-`runs/openrouter/smoke/seed-1/goal_inference.json`; the key was supplied from
+captured 7 tokens. The resulting artifacts are under the printed model-scoped
+UUID roots below `runs/openrouter/logprobs` and `runs/openrouter/smoke`; the key was supplied from
 `.env` in memory and was not written to either artifact.
 
 The containerized pilot also reached OpenRouter after the Pi compatibility fix
@@ -62,7 +61,7 @@ export OPENROUTER_API_KEY='provided-outside-the-repository'
 PYTHONPATH=src python scripts/qwen3_goal.py --mode openrouter \
   --model openrouter/openai/gpt-4o-mini --prompt 'The capital of France is' \
   --seed 1 --temperature 0 --top-logprobs 5 --max-tokens 16 \
-  --output runs/openrouter/smoke/seed-1
+  --output runs/openrouter/smoke
 ```
 
 Then run one isolated controller pilot using a private key file mounted only
@@ -80,7 +79,7 @@ Inspect a pilot agent with:
 
 ```bash
 PYTHONPATH=src python scripts/inspect_run.py \
-  --run-root runs/openrouter/pilot/task1-seed-1-C1 --agent-id agent-1
+  --run-uuid <matrix-uuid> --runs-root runs --seed 1 --condition C1 --agent-id agent-1
 ```
 
 Check `probability_artifacts.json`, `timeline.json`, `index.json`, and the

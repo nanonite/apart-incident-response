@@ -22,7 +22,7 @@ Command:
 
 ```text
 PYTHONPATH=src python scripts/run_experiment.py \
-  --harness-check --output runs/t1/harness-seed-0001
+  --harness-check --output runs/t1 --run-id harness-seed-0001
 ```
 
 The deterministic C0/C1/C2 triplet completed all three agents in every
@@ -102,13 +102,14 @@ remain historical launch diagnostics and do not satisfy the real anchor gate.
 
 ## Workspace Layout
 
-Run data belongs under `runs/<experiment>/`. The captured deterministic results
-are available at `runs/t1/harness-seed-0001/matrix.json` and
+The captured historical results remain available at
+`runs/t1/harness-seed-0001/matrix.json` and
 `runs/t1/live-configured-seed-0001/matrix.json`. The OpenCode live ledger is
-`runs/opencode-go/live-summary.json` with the retained triplet metrics under
-`runs/opencode-go/triplet-s0001/`. For new Task 1 anchor runs, use `runs/t1/`;
-it contains one `matrix.json` index, one `sNNNN.json` triplet summary per seed,
-and one `sNNNN-C{0,1,2}/` condition directory per condition. Each condition
-directory contains its manifest, budget, results, board database when
-applicable, agent artifacts, and derived telemetry files. Run directories are
-generated data and are excluded from source commits.
+`runs/opencode-go/live-summary.json` with retained triplet metrics under
+`runs/opencode-go/triplet-s0001/`. New Task 1 anchor runs use
+`runs/<provider>/<encoded-model>/<uuid>/`, with one `matrix.json` index, one
+`sNNNN.json` triplet summary per seed, and
+`sNNNN/C{0,1,2}/` condition directories. Each condition directory contains
+its manifest, budget, results, board database when applicable, agent artifacts,
+and derived telemetry files. The resolved UUID root is printed by the launcher;
+historical flat directories remain readable.

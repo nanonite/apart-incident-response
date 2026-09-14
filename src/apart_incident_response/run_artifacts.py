@@ -555,6 +555,13 @@ def write_condition_index(
         "schema_version": 1,
         "run": sanitize_artifact({
             "run_id": manifest.get("run_id", root.name),
+            "run_uuid": manifest.get("run_uuid"),
+            "provider": manifest.get("provider"),
+            "model": manifest.get("model") or (
+                manifest.get("factor_assignment", {}).get("model")
+                if isinstance(manifest.get("factor_assignment"), Mapping)
+                else None
+            ),
             "triplet_id": manifest.get("triplet_id"),
             "condition": manifest.get("condition"),
             "seed": manifest.get("seed"),

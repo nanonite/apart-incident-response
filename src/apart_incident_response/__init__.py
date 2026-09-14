@@ -38,6 +38,14 @@ _EXPERIMENT_EXPORTS = {
     "sanitize_artifact",
     "triplet_artifact_links",
     "write_condition_index",
+    "RunDirectory",
+    "RunPathError",
+    "create_run_directory",
+    "decode_model_slug",
+    "encode_model_slug",
+    "find_run_by_uuid",
+    "split_model_id",
+    "validate_uuid4",
     "Qwen3ArtifactError",
     "LoadedLogitsArtifact",
     "derive_entropy_from_tensor",
@@ -72,6 +80,13 @@ def __getattr__(name: str) -> Any:
             from . import run_artifacts
 
             value = getattr(run_artifacts, name)
+        elif name in {
+            "RunDirectory", "RunPathError", "create_run_directory", "decode_model_slug",
+            "encode_model_slug", "find_run_by_uuid", "split_model_id", "validate_uuid4",
+        }:
+            from . import run_paths
+
+            value = getattr(run_paths, name)
         elif name in {
             "Qwen3ArtifactError", "LoadedLogitsArtifact", "derive_entropy_from_tensor",
             "entropy_from_rows", "load_full_logits_artifact", "replay_entropy",
@@ -135,6 +150,14 @@ __all__ = [
     "sanitize_artifact",
     "triplet_artifact_links",
     "write_condition_index",
+    "RunDirectory",
+    "RunPathError",
+    "create_run_directory",
+    "decode_model_slug",
+    "encode_model_slug",
+    "find_run_by_uuid",
+    "split_model_id",
+    "validate_uuid4",
     "Qwen3ArtifactError",
     "LoadedLogitsArtifact",
     "derive_entropy_from_tensor",

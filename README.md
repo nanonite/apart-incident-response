@@ -19,8 +19,19 @@ just report
 The runtime contract is in `config/runtime.json`. It pins the Pi CLI version,
 the `openai-codex/gpt-5.6-luna` model identifier at `xhigh` thinking level, per-agent and aggregate budgets,
 timeout, and the fixed C0/C1/C2 condition set. The containerized launcher uses
-the pinned Pi checkout at `/opt/pi`. Each run receives a controller-issued identity and a private
-`artifacts/<run-id>/agents/<agent-id>/` directory.
+the pinned Pi checkout at `/opt/pi`. New invocations are stored under
+`runs/<provider>/<encoded-model>/<uuid>/`; matrix conditions are below that root
+at `<triplet>/<condition>/agents/<agent-id>/`. Historical flat run directories
+remain readable. Every new root has a `run.json` containing the UUID, full model
+ID, provider, and optional stable `--run-id` label.
+
+The `--output` option is always a base directory. The launcher creates the
+provider, reversible encoded model slug, and UUID below it, then prints the
+resolved `artifact_root`. A matrix invocation allocates one UUID for all seeds
+and C0/C1/C2 conditions. One shot logprob and full-logit invocations allocate
+one UUID each. Failed launches write `failure.json` into the same resolved
+directory. Use `--run-id stable-label` when a reproducible human label is useful;
+the UUID remains the collision resistant path identity.
 
 The real matrix must be launched from a dedicated trusted outer Codex session
 with explicit full host access. This is an opt-in launch choice for this
@@ -163,7 +174,7 @@ PYTHONPATH=src python scripts/qwen3_goal.py --mode openrouter \
   --model openrouter/openai/gpt-4o-mini \
   --prompt-file prompts/task-1.txt --seed 1 --temperature 0 \
   --top-logprobs 5 --max-tokens 512 \
-  --output runs/openrouter/logprobs/seed-1
+  --output runs/openrouter/logprobs
 ```
 
 The adapter sends one non-streaming chat-completions request, requires the
@@ -194,14 +205,15 @@ OAuth store described above:
 ```bash
 PYTHONPATH=src python scripts/run_experiment.py \
   --real-anchor --seeds 1 2 3 4 5 \
-  --output runs/t1
+  --output runs/t1 \
+  --run-id task-1-anchor
 ```
 
-The command writes a condition directory and a paired triplet summary for each
-seed. It preserves credential-redacted Pi JSONL/stderr, parsed events,
+The command writes one model-scoped UUID directory, then a condition directory
+and paired triplet summary for each seed. It preserves credential-redacted Pi JSONL/stderr, parsed events,
 response/tokenizer artifacts, tool audits, board state/events, submissions,
 budget/failure data, and derived provenance/replay metrics. `index.json` links
-the matrix through each condition to every agent `timeline.json`; inspect one agent with `PYTHONPATH=src python scripts/inspect_run.py --run-root <condition> --agent-id agent-1`. `U` requires a prior cross-agent board read followed by
+the matrix through each condition to every agent `timeline.json`; inspect one agent with `PYTHONPATH=src python scripts/inspect_run.py --run-root <uuid-root>/s0001/C1 --agent-id agent-1`. The same lookup can use `--run-uuid <uuid> --runs-root runs --seed 1 --condition C1`. `U` requires a prior cross-agent board read followed by
 later recipient use of a seeded token; token overlap and task success are not
 substitutes for that trace. Five-seed output is descriptive pilot evidence
 only.

@@ -17,6 +17,7 @@ sys.path.insert(0, str(SOURCE_ROOT / "src"))
 from apart_incident_response.controller import ExperimentController  # noqa: E402
 from apart_incident_response.runtime import IsolationPolicy, RuntimeConfig  # noqa: E402
 from apart_incident_response.run_artifacts import triplet_artifact_links  # noqa: E402
+from apart_incident_response.run_paths import RunDirectory, RunPathError, create_run_directory, validate_uuid4  # noqa: E402
 
 
 def _write(path: Path, payload: object) -> None:
@@ -42,7 +43,41 @@ def _execution_context() -> dict[str, object]:
     }
 
 
-def run_harness_check(output: Path) -> dict[str, object]:
+def _new_invocation(
+    output: Path,
+    model: str,
+    *,
+    run_id: str | None,
+    run_class: str,
+    extra: Mapping[str, object] | None = None,
+) -> RunDirectory:
+    invocation = create_run_directory(output, model, run_id=run_id)
+    invocation.write_metadata({"run_class": run_class, **dict(extra or {})})
+    return invocation
+
+
+def _invocation_failure(
+    invocation: RunDirectory,
+    error: Exception,
+    *,
+    run_class: str,
+) -> dict[str, object]:
+    payload = {
+        "schema_version": 1,
+        "run_class": run_class,
+        "status": "failed",
+        "run_id": invocation.run_id,
+        "run_uuid": invocation.run_uuid,
+        "model": invocation.model,
+        "artifact_root": str(invocation.path),
+        "error_type": type(error).__name__,
+        "error": str(error),
+    }
+    _write(invocation.path / "failure.json", payload)
+    return payload
+
+
+def run_harness_check(output: Path, *, run_id: str | None = None) -> dict[str, object]:
     """Run only deterministic infrastructure checks with a fake provider."""
 
     fake = SOURCE_ROOT / "tests" / "fixtures" / "controlled_fake_agent.py"
@@ -58,30 +93,39 @@ def run_harness_check(output: Path) -> dict[str, object]:
         timeout_seconds=10,
         isolation=IsolationPolicy(sandbox="none", allow_unsafe_for_tests=True),
     )
+    invocation = _new_invocation(output, config.model, run_id=run_id, run_class="harness_check")
     controller = ExperimentController(
         config,
-        output,
+        invocation.path,
+        invocation=invocation,
         extension=SOURCE_ROOT / "pi-extension" / "incident-tools.ts",
         run_class="harness_check",
     )
-    triplets = controller.run_anchor_matrix((1,))
+    try:
+        triplets = controller.run_anchor_matrix((1,))
+    except Exception as exc:
+        return _invocation_failure(invocation, exc, run_class="harness_check")
     result = {
         "schema_version": 1,
         "run_class": "harness_check",
         "experimental_data": False,
+        "run_id": invocation.run_id,
         "execution_context": _execution_context(),
+        "run_uuid": invocation.run_uuid,
+        "model": invocation.model,
+        "artifact_root": str(invocation.path),
         "reason": "deterministic fake provider used for lifecycle, access, telemetry, and pairing checks",
         "triplets": [
             {
                 "conditions": [run.condition.value for run in triplet],
                 "run_ids": [run.run_id for run in triplet],
                 "metrics": {run.condition.value: run.metrics for run in triplet},
-                "artifacts": triplet_artifact_links(triplet, output),
+                "artifacts": triplet_artifact_links(triplet, invocation.path),
             }
             for triplet in triplets
         ],
     }
-    _write(output / "matrix.json", result)
+    _write(invocation.path / "matrix.json", result)
     return result
 
 
@@ -99,6 +143,7 @@ def _matrix_validity(triplets: list[tuple[object, ...]]) -> dict[str, object]:
     for index, triplet in enumerate(triplets):
         conditions = [getattr(run, "condition").value for run in triplet]
         reasons: list[str] = []
+        triplet_run_uuids: set[str] = set()
         if tuple(conditions) != expected_conditions:
             reasons.append("triplet does not contain exactly one C0, C1, and C2 run")
         for run in triplet:
@@ -115,6 +160,16 @@ def _matrix_validity(triplets: list[tuple[object, ...]]) -> dict[str, object]:
             if not isinstance(manifest, Mapping):
                 reasons.append(f"{condition}: run manifest is missing or invalid")
                 continue
+            run_uuid = manifest.get("run_uuid")
+            if run_uuid is not None:
+                try:
+                    normalized_uuid = validate_uuid4(run_uuid)
+                except RunPathError:
+                    reasons.append(f"{condition}: manifest has an invalid run UUID")
+                else:
+                    triplet_run_uuids.add(normalized_uuid)
+                    if artifact_root.parents[1].name != normalized_uuid:
+                        reasons.append(f"{condition}: run UUID does not match its directory")
 
             factor_assignment = manifest.get("factor_assignment")
             expected_count = factor_assignment.get("agent_count") if isinstance(factor_assignment, Mapping) else None
@@ -163,6 +218,8 @@ def _matrix_validity(triplets: list[tuple[object, ...]]) -> dict[str, object]:
             manifest_errors = manifest.get("controller_errors")
             if not isinstance(manifest_errors, list) or manifest_errors:
                 reasons.append(f"{condition}: manifest controller errors are present")
+        if triplet_run_uuids and len(triplet_run_uuids) != 1:
+            reasons.append("triplet conditions do not share one invocation UUID")
         unique_reasons = list(dict.fromkeys(reasons))
         assessments.append({
             "triplet_index": index,
@@ -188,23 +245,38 @@ def run_real_anchor(
     output: Path,
     seeds: tuple[int, ...],
     model: str | None = None,
+    run_id: str | None = None,
 ) -> dict[str, object]:
     config = RuntimeConfig.from_json(SOURCE_ROOT / "config" / "runtime.json")
     if model is not None:
         config = config.for_model(model)
+    invocation = _new_invocation(
+        output,
+        config.model,
+        run_id=run_id,
+        run_class="experimental",
+    )
     controller = ExperimentController(
         config,
-        output,
+        invocation.path,
+        invocation=invocation,
         extension=SOURCE_ROOT / "pi-extension" / "incident-tools.ts",
         run_class="experimental",
     )
-    triplets = controller.run_anchor_matrix(seeds)
+    try:
+        triplets = controller.run_anchor_matrix(seeds)
+    except Exception as exc:
+        return _invocation_failure(invocation, exc, run_class="experimental")
     validity = _matrix_validity(triplets)
     result = {
         "schema_version": 1,
         "run_class": "experimental",
         "experimental_data": validity["experimental_data"],
+        "run_id": invocation.run_id,
         "execution_context": _execution_context(),
+        "run_uuid": invocation.run_uuid,
+        "model": invocation.model,
+        "artifact_root": str(invocation.path),
         "data_status": validity["data_status"],
         "claim_scope": (
             "descriptive pilot evidence only"
@@ -217,16 +289,16 @@ def run_real_anchor(
                 "conditions": [run.condition.value for run in triplet],
                 "run_ids": [run.run_id for run in triplet],
                 "metrics": {run.condition.value: run.metrics for run in triplet},
-                "artifacts": triplet_artifact_links(triplet, output),
+                "artifacts": triplet_artifact_links(triplet, invocation.path),
             }
             for triplet in triplets
         ],
     }
-    _write(output / "matrix.json", result)
+    _write(invocation.path / "matrix.json", result)
     return result
 
 
-def run_harness_factor_checks(output: Path) -> dict[str, object]:
+def run_harness_factor_checks(output: Path, *, run_id: str | None = None) -> dict[str, object]:
     """Exercise every predeclared factor path with the fake provider only."""
 
     fake = SOURCE_ROOT / "tests" / "fixtures" / "controlled_fake_agent.py"
@@ -242,7 +314,14 @@ def run_harness_factor_checks(output: Path) -> dict[str, object]:
         timeout_seconds=10,
         isolation=IsolationPolicy(sandbox="none", allow_unsafe_for_tests=True),
     )
-    controller = ExperimentController(config, output, extension=SOURCE_ROOT / "pi-extension" / "incident-tools.ts", run_class="harness_check")
+    invocation = _new_invocation(output, config.model, run_id=run_id, run_class="harness_check", extra={"factor_run": True})
+    controller = ExperimentController(
+        config,
+        invocation.path,
+        invocation=invocation,
+        extension=SOURCE_ROOT / "pi-extension" / "incident-tools.ts",
+        run_class="harness_check",
+    )
     factors = {
         "agent_count": (2, 3, 4),
         "capability_profile": ("task-diagnostic-v1", "task-read-submit-v1"),
@@ -251,22 +330,43 @@ def run_harness_factor_checks(output: Path) -> dict[str, object]:
         "model": ("configured", "fixture/controlled-agent-tier-2"),
     }
     records = []
-    for factor, levels in factors.items():
-        triplets = controller.run_factor_pilot(factor, levels, seeds=(1,))
-        records.append({
-            "factor": factor,
-            "levels": list(levels),
-            "triplet_count": len(triplets),
-            "run_ids": [[run.run_id for run in triplet] for triplet in triplets],
-        })
+    try:
+        for factor, levels in factors.items():
+            triplets = controller.run_factor_pilot(factor, levels, seeds=(1,))
+            records.append({
+                "factor": factor,
+                "levels": list(levels),
+                "triplet_count": len(triplets),
+                "run_ids": [[run.run_id for run in triplet] for triplet in triplets],
+                "run_uuids": sorted({
+                    manifest.get("run_uuid")
+                    for triplet in triplets
+                    for run in triplet
+                    for manifest in [
+                        json.loads((run.artifact_root / "manifest.json").read_text(encoding="utf-8"))
+                    ]
+                    if isinstance(manifest, Mapping) and isinstance(manifest.get("run_uuid"), str)
+                }),
+                "artifact_roots": sorted({
+                    str(run.artifact_root)
+                    for triplet in triplets
+                    for run in triplet
+                }),
+            })
+    except Exception as exc:
+        return _invocation_failure(invocation, exc, run_class="harness_check")
     result = {
         "schema_version": 1,
         "run_class": "harness_check",
         "experimental_data": False,
+        "run_id": invocation.run_id,
+        "run_uuid": invocation.run_uuid,
+        "model": invocation.model,
+        "artifact_root": str(invocation.path),
         "reason": "fake provider exercises all predeclared #66-#71 controller paths; real-model access is a separate gate",
         "factors": records,
     }
-    _write(output / "factor-checks.json", result)
+    _write(invocation.path / "factor-checks.json", result)
     return result
 
 
@@ -282,16 +382,18 @@ def main() -> int:
         help="provider/model-id for real runs; defaults to the configured Codex model",
     )
     parser.add_argument("--seeds", type=int, nargs="+", default=[1])
+    parser.add_argument("--run-id", help="stable label stored with this invocation")
     args = parser.parse_args()
     if args.harness_check:
-        result = run_harness_check(args.output.expanduser().resolve())
+        result = run_harness_check(args.output.expanduser().resolve(), run_id=args.run_id)
     elif args.harness_factors:
-        result = run_harness_factor_checks(args.output.expanduser().resolve())
+        result = run_harness_factor_checks(args.output.expanduser().resolve(), run_id=args.run_id)
     else:
         result = run_real_anchor(
             args.output.expanduser().resolve(),
             tuple(args.seeds),
             args.model,
+            args.run_id,
         )
     print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
     return 0 if not args.real_anchor or result["experimental_data"] else 2

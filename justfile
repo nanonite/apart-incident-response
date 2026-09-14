@@ -38,18 +38,22 @@ container-isolation: setup
 # Run the real C0/C1/C2 controller in the container. This host-specific target
 # is opt-in. The host credential is mounted read-only for the controller only;
 # it is never placed in argv.
-container-anchor output="t1-container" seeds="1" model="": setup
+container-anchor output="t1-container" seeds="1" model="" run_id="": setup
     #!/usr/bin/env bash
     set -euo pipefail
     output="{{ output }}"; output="${output#output=}"
     seeds="{{ seeds }}"; seeds="${seeds#seeds=}"
     model="{{ model }}"; model="${model#model=}"
+    run_id="{{ run_id }}"; run_id="${run_id#run_id=}"
     read -r -a seed_values <<< "$seeds"
     args=(--real-anchor --seeds "${seed_values[@]}" --output "/app/runs/$output")
     mount_args=()
     selected_model="$model"
     if [[ -n "$selected_model" ]]; then
         args+=(--model "$selected_model")
+    fi
+    if [[ -n "$run_id" ]]; then
+        args+=(--run-id "$run_id")
     fi
     if [[ "$selected_model" == opencode-go/* ]]; then
         : "${APART_OPENCODE_API_KEY_FILE:?set APART_OPENCODE_API_KEY_FILE to a private OpenCode key file}"
@@ -74,7 +78,7 @@ ollama-pull:
 
 goal-model := "qwen3:8b"
 goal-host := "http://localhost:11434"
-goal-output := "runs/qwen3-8b/logprobs/compat-goal"
+goal-output := "runs/qwen3-8b/logprobs"
 
 goal: ollama-pull
     just qwen logprobs \
@@ -88,16 +92,18 @@ goal: ollama-pull
 # Transformers/Unsloth mode. Empty output/model values use mode-specific
 
 # defaults; explicit values make paired prompts, seeds, and run IDs reproducible.
-qwen mode="logprobs" prompt="The capital of France is" seed="1" output="" model="" host="http://localhost:11434":
+qwen mode="logprobs" prompt="The capital of France is" seed="1" output="" model="" host="http://localhost:11434" run_id="":
     @mode="{{ mode }}"; mode="${mode#mode=}"; \
     prompt="{{ prompt }}"; prompt="${prompt#prompt=}"; \
     seed="{{ seed }}"; seed="${seed#seed=}"; \
     output="{{ output }}"; output="${output#output=}"; \
     model="{{ model }}"; model="${model#model=}"; \
     host="{{ host }}"; host="${host#host=}"; \
+    run_id="{{ run_id }}"; run_id="${run_id#run_id=}"; \
     set -- python3 scripts/qwen3_goal.py --mode "$mode" --prompt "$prompt" --seed "$seed" --host "$host"; \
     if [ -n "$output" ]; then set -- "$@" --output "$output"; fi; \
     if [ -n "$model" ]; then set -- "$@" --model "$model"; fi; \
+    if [ -n "$run_id" ]; then set -- "$@" --run-id "$run_id"; fi; \
     "$@"
 
 # Build the isolated CUDA runtime; weights remain in the compose-mounted cache.

@@ -29,7 +29,7 @@ PYTHONPATH=src python3 scripts/qwen3_goal.py --mode openrouter \
     --model openrouter/openai/gpt-4o-mini \
     --prompt-file prompts/task-1.txt --seed 1 --temperature 0 \
     --top-logprobs 5 --max-tokens 512 \
-    --output runs/openrouter/logprobs/seed-1
+    --output runs/openrouter/logprobs
 ```
 
 The request is non-streaming and sets `logprobs: true`, `top_logprobs`, and
@@ -74,7 +74,7 @@ python3 scripts/qwen3_goal.py --mode logprobs \
     --top-logprobs 5 \
     --temperature 0 \
     --num-predict 512 \
-    --output runs/qwen3-8b/logprobs/seed-1
+    --output runs/qwen3-8b/logprobs
 ```
 
 `--think` is off by default so the model emits the answer directly rather than
@@ -126,7 +126,7 @@ docker compose -f compose.qwen3.yaml run --rm qwen3 \
     --mode full-logits \
     --prompt "The capital of France is" \
     --seed 1 \
-    --output runs/qwen3-8b/full-logits/seed-1
+    --output runs/qwen3-8b/full-logits
 ```
 
 Each run contains:
@@ -144,8 +144,12 @@ Each run contains:
 Replay requires the same isolated runtime:
 
 ```console
-python3 -c 'from apart_incident_response.qwen3_artifacts import replay_entropy; print(replay_entropy("runs/qwen3-8b/full-logits/seed-1"))'
+python3 -c 'from apart_incident_response.qwen3_artifacts import replay_entropy; print(replay_entropy("<resolved-uuid-root>"))'
 ```
+
+The command output gives the resolved UUID root. Pass that path to replay and
+inspection tools; a base containing exactly one new UUID run is also accepted
+by the full-logits reader. Existing flat `seed-*` roots continue to work.
 
 The binary artifact's full-vocabulary entropy is not interchangeable with the
 Ollama top-K entropy lower bound above. Both artifacts retain the sampled-token
