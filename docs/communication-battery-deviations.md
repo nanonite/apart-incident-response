@@ -16,3 +16,9 @@ Version: `two-agent-iso-full-comm-v1`
   lacks `numpy`, `cryptography`, and `bubblewrap`; focused new-battery and
   legacy experiment tests pass.
 - No credentials, answer keys, or raw sensitive artifacts were added.
+- A separate bottom-of-reasoning smoke harness now supports the supplied
+  OpenRouter `:free` models, capped at three requests. It has not made a live
+  request; its default plan costs `$0.00`.
+- `uv sync --group dev` resolved Python dependencies. Full tests pass when run
+  in a temporary Nix shell supplying `numpy`, `cryptography`, `zlib`, and
+  `bubblewrap`; those host packages are not project dependencies.

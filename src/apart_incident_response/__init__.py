@@ -41,6 +41,11 @@ _EXPERIMENT_EXPORTS = {
     "generate_instance",
     "generate_grid",
     "validate_family_grid",
+    "BaselineResponse",
+    "BaselineRunner",
+    "OpenRouterFreeProvider",
+    "ReasoningCase",
+    "default_cases",
     "CAPABILITY_PROFILES",
     "CapabilityProfile",
     "ExperimentController",
@@ -113,6 +118,10 @@ def __getattr__(name: str) -> Any:
             from . import task_families
 
             value = getattr(task_families, name)
+        elif name in {"BaselineResponse", "BaselineRunner", "OpenRouterFreeProvider", "ReasoningCase", "default_cases"}:
+            from . import reasoning_baseline
+
+            value = getattr(reasoning_baseline, name)
         elif name in {"classify_uptake_outcomes", "compute_metrics", "detect_uptake", "replay_trace", "write_derived_artifacts"}:
             from . import telemetry
 
@@ -194,6 +203,11 @@ __all__ = [
     "generate_instance",
     "generate_grid",
     "validate_family_grid",
+    "BaselineResponse",
+    "BaselineRunner",
+    "OpenRouterFreeProvider",
+    "ReasoningCase",
+    "default_cases",
     "CAPABILITY_PROFILES",
     "CapabilityProfile",
     "ExperimentController",
