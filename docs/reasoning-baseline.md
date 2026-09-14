@@ -21,6 +21,11 @@ Opt-in free smoke, after capability approval:
 PYTHONPATH=src uv run python -m apart_incident_response.reasoning_baseline --live
 ```
 
+The provider reads `OPENROUTER_API_KEY` or `OPEN_ROUTER_API_KEY` from the
+controller environment, then falls back to the existing local
+`~/.config/apart-incident-response/openrouter.env` convention. The key is only
+used in the authorization header.
+
 The report records correct/incorrect/invalid/unavailable outcomes, response
 hashes, timing, and logprob coverage. It does not retain raw responses or
 credentials and is not included in ISO/FULL/COMM outcome estimates.

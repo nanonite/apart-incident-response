@@ -50,7 +50,7 @@ class ReasoningBaselineTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             OpenRouterFreeProvider("openai/gpt-4o-mini")
         with patch.dict(os.environ, {"OPENROUTER_API_KEY": "", "OPEN_ROUTER_API_KEY": ""}, clear=False):
-            response = OpenRouterFreeProvider(api_key=None).complete("test", max_tokens=8, seed=0)
+            response = OpenRouterFreeProvider(api_key="").complete("test", max_tokens=8, seed=0)
         self.assertEqual(response.status, "unavailable")
 
     def test_cli_without_live_is_zero_cost_plan_only(self):

@@ -24,6 +24,7 @@ from typing import Any, Callable, Mapping, Protocol, Sequence
 
 OPENROUTER_CHAT_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
 DEFAULT_FREE_MODEL = "inclusionai/ling-3.0-flash-vl:free"
+OPENROUTER_ENV_FILE = Path.home() / ".config" / "apart-incident-response" / "openrouter.env"
 FREE_MODEL_CANDIDATES = (
     "inclusionai/ling-3.0-flash-vl:free",
     "nex-agi/nex-n2.5-mini:free",
@@ -70,6 +71,19 @@ class BaselineProvider(Protocol):
         ...
 
 
+def _load_openrouter_key() -> str | None:
+    for name in ("OPENROUTER_API_KEY", "OPEN_ROUTER_API_KEY"):
+        value = os.environ.get(name, "").strip()
+        if value:
+            return value
+    if OPENROUTER_ENV_FILE.is_file():
+        for line in OPENROUTER_ENV_FILE.read_text(encoding="utf-8").splitlines():
+            name, separator, value = line.partition("=")
+            if separator and name.strip() in {"OPENROUTER_API_KEY", "OPEN_ROUTER_API_KEY"} and value.strip():
+                return value.strip().strip('"').strip("'")
+    return None
+
+
 def _answer_checker(response: str, expected: str) -> bool:
     match = re.search(r"answer\s*:\s*([^\n.]+)", response, flags=re.IGNORECASE)
     return bool(match and match.group(1).strip().casefold() == expected.casefold())
@@ -108,7 +122,7 @@ class OpenRouterFreeProvider:
             raise ValueError("top_logprobs must be between 0 and 20")
         self.model = model
         self.endpoint = endpoint
-        self.api_key = api_key or os.environ.get("OPENROUTER_API_KEY") or os.environ.get("OPEN_ROUTER_API_KEY")
+        self.api_key = _load_openrouter_key() if api_key is None else api_key
         self.top_logprobs = top_logprobs
         self.timeout = timeout
 
