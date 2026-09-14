@@ -1,0 +1,208 @@
+{
+  "events": [
+    {
+      "agent_id": "agent-2",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0003-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:51:14.437332Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "error"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0003-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:51:41.100375Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "incident"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0003-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:51:59.124282Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "incident|failure|problem|log"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0003-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:52:15.213403Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "error log"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0003-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:52:44.415234Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "diagnosis|error|log|incident|failure|problem"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0003-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:53:20.245760Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "report|analysis|summary|case|ticket|issue"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0003-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:54:19.607602Z",
+      "validated_input": {
+        "max_results": 1,
+        "query": "incident.log"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0003-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:54:50.335690Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "evidence"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0003-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:55:15.447277Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "report"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "final_response": null,
+      "source": "agent_result",
+      "status": "timed_out",
+      "timestamp": "2026-09-14T03:55:47.078739Z"
+    },
+    {
+      "agent_id": "agent-1",
+      "final_response": null,
+      "source": "agent_result",
+      "status": "timed_out",
+      "timestamp": "2026-09-14T03:55:47.129095Z"
+    }
+  ],
+  "schema_version": 1
+}

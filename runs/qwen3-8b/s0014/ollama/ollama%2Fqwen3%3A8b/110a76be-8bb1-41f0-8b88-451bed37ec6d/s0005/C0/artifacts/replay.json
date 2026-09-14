@@ -1,0 +1,207 @@
+{
+  "events": [
+    {
+      "agent_id": "agent-2",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0005-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T04:26:14.385582Z",
+      "validated_input": {
+        "query": "incident error log"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0005-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T04:26:47.592287Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "incident evidence"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0005-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T04:27:03.275547Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "error incident log"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0005-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T04:27:28.365597Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "error log"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0005-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T04:27:58.255237Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "error log"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0005-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T04:28:44.264010Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "log"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0005-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T04:29:15.261965Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "report error"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0005-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T04:29:41.511619Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "analysis"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0005-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T04:30:30.768269Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "error log"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "final_response": null,
+      "source": "agent_result",
+      "status": "timed_out",
+      "timestamp": "2026-09-14T04:30:52.977648Z"
+    },
+    {
+      "agent_id": "agent-2",
+      "final_response": null,
+      "source": "agent_result",
+      "status": "timed_out",
+      "timestamp": "2026-09-14T04:30:52.982700Z"
+    }
+  ],
+  "schema_version": 1
+}

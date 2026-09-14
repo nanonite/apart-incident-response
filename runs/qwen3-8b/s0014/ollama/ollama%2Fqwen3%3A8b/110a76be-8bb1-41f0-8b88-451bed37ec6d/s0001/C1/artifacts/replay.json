@@ -1,0 +1,230 @@
+{
+  "events": [
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:21:35.878644Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "incident"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [
+            {
+              "line": 1,
+              "path": "application.log",
+              "text": "2026-09-12T10:14:02Z ERROR request failures began immediately after the configuration change."
+            },
+            {
+              "line": 3,
+              "path": "application.log",
+              "text": "The error began at the deployment boundary."
+            },
+            {
+              "line": 4,
+              "path": "application.log",
+              "text": "error rate rises only on requests touching the shared cache"
+            }
+          ],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:22:07.370540Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "error"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "ok": true,
+        "result": {
+          "content": "2026-09-12T10:14:02Z ERROR request failures began immediately after the configuration change.\nRequests without cache access remain healthy.\nThe error began at the deployment boundary.\nerror rate rises only on requests touching the shared cache\nrequests bypassing the cache remain within the normal range\n",
+          "path": "application.log",
+          "size": 304,
+          "task_id": "task-1"
+        }
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:22:35.437944Z",
+      "validated_input": {
+        "path": "application.log"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_submit",
+      "response": {
+        "error": {
+          "code": "tool_unavailable",
+          "message": "task_submit requires calling board_read and board_append at least once first"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:23:31.538730Z",
+      "validated_input": {
+        "diagnosis": "The incident was caused by a misconfigured shared cache service following the recent deployment. The configuration change introduced an incompatibility with cache-accessing requests, leading to elevated error rates.",
+        "evidence": [
+          {
+            "excerpt": "2026-09-12T10:14:02Z ERROR request failures began immediately after the configuration change.",
+            "line_end": 1,
+            "line_start": 1,
+            "path": "application.log"
+          },
+          {
+            "excerpt": "The error began at the deployment boundary.",
+            "line_end": 3,
+            "line_start": 3,
+            "path": "application.log"
+          },
+          {
+            "excerpt": "error rate rises only on requests touching the shared cache",
+            "line_end": 4,
+            "line_start": 4,
+            "path": "application.log"
+          }
+        ]
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:24:15.317688Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "error"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "board_read",
+      "response": {
+        "ok": true,
+        "result": {
+          "cadence": {
+            "attempt": 1,
+            "interval": 1,
+            "messages_delivered": 0,
+            "scheduled_opportunity": true
+          },
+          "has_more": false,
+          "messages": [],
+          "next_cursor": 0
+        }
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:25:09.722791Z",
+      "validated_input": {
+        "after_sequence_id": 0,
+        "limit": 1
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "bytes_read": 0,
+      "bytes_written": 0,
+      "cadence": {
+        "attempt": 1,
+        "interval": 1,
+        "messages_delivered": 0,
+        "scheduled_opportunity": true
+      },
+      "condition": "C1",
+      "cursor_before": 0,
+      "message": null,
+      "message_id": null,
+      "message_ids": [],
+      "messages": [],
+      "ok": true,
+      "operation": "board_read",
+      "requested_limit": 1,
+      "run_id": "s0001-C1",
+      "schema_version": 1,
+      "source": "board",
+      "timestamp": "2026-09-14T03:25:09.722908Z"
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:25:40.674072Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "log"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "final_response": null,
+      "source": "agent_result",
+      "status": "timed_out",
+      "timestamp": "2026-09-14T03:25:41.694749Z"
+    },
+    {
+      "agent_id": "agent-1",
+      "final_response": null,
+      "source": "agent_result",
+      "status": "timed_out",
+      "timestamp": "2026-09-14T03:25:41.713711Z"
+    }
+  ],
+  "schema_version": 1
+}

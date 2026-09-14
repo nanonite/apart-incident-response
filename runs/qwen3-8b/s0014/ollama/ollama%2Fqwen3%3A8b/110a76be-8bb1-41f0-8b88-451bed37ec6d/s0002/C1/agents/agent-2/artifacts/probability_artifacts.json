@@ -1,0 +1,274 @@
+{
+  "artifact_schema": "agent-turn-probability-v1",
+  "coverage": {
+    "by_kind": {
+      "reasoning": {
+        "complete": 0,
+        "partial": 0,
+        "tokens": 0,
+        "turns": 0,
+        "unavailable": 0
+      },
+      "text": {
+        "complete": 0,
+        "partial": 0,
+        "tokens": 0,
+        "turns": 0,
+        "unavailable": 0
+      },
+      "tool_call": {
+        "complete": 0,
+        "partial": 0,
+        "tokens": 0,
+        "turns": 3,
+        "unavailable": 3
+      },
+      "unsupported": {
+        "complete": 0,
+        "partial": 0,
+        "tokens": 0,
+        "turns": 4,
+        "unavailable": 4
+      }
+    },
+    "complete": 0,
+    "partial": 0,
+    "tokens": 0,
+    "turns": 7,
+    "unavailable": 7
+  },
+  "schema_version": 1,
+  "turns": [
+    {
+      "event_type": "message_end",
+      "kind": "tool_call",
+      "model": "qwen3:8b",
+      "probability_artifact": {
+        "artifact_schema": "partial-token-probability-v1",
+        "coverage": {
+          "alternative_count": 0,
+          "token_count": 0,
+          "tokens_with_alternatives": 0
+        },
+        "full_vocabulary_compatible": false,
+        "missing_data_reason": "provider did not expose probability capture for this assistant turn",
+        "probability_class": "partial_top_k",
+        "provenance": {
+          "model": "qwen3:8b",
+          "parameters": {},
+          "provider": "ollama"
+        },
+        "schema_version": 1,
+        "status": "unavailable",
+        "tokens": []
+      },
+      "provider": "ollama",
+      "replay": {
+        "status": "unavailable",
+        "token_count": 0
+      },
+      "request_id": "chatcmpl-507",
+      "session_id": null,
+      "source_sequence": 396,
+      "status": "unavailable"
+    },
+    {
+      "event_type": "message_end",
+      "kind": "unsupported",
+      "model": "qwen3:8b",
+      "probability_artifact": {
+        "artifact_schema": "partial-token-probability-v1",
+        "coverage": {
+          "alternative_count": 0,
+          "token_count": 0,
+          "tokens_with_alternatives": 0
+        },
+        "full_vocabulary_compatible": false,
+        "missing_data_reason": "provider did not expose probability capture for this assistant turn",
+        "probability_class": "partial_top_k",
+        "provenance": {
+          "model": "qwen3:8b",
+          "parameters": {},
+          "provider": "ollama"
+        },
+        "schema_version": 1,
+        "status": "unavailable",
+        "tokens": []
+      },
+      "provider": "ollama",
+      "replay": {
+        "status": "unavailable",
+        "token_count": 0
+      },
+      "request_id": null,
+      "session_id": null,
+      "source_sequence": 404,
+      "status": "unavailable"
+    },
+    {
+      "event_type": "message_end",
+      "kind": "tool_call",
+      "model": "qwen3:8b",
+      "probability_artifact": {
+        "artifact_schema": "partial-token-probability-v1",
+        "coverage": {
+          "alternative_count": 0,
+          "token_count": 0,
+          "tokens_with_alternatives": 0
+        },
+        "full_vocabulary_compatible": false,
+        "missing_data_reason": "provider did not expose probability capture for this assistant turn",
+        "probability_class": "partial_top_k",
+        "provenance": {
+          "model": "qwen3:8b",
+          "parameters": {},
+          "provider": "ollama"
+        },
+        "schema_version": 1,
+        "status": "unavailable",
+        "tokens": []
+      },
+      "provider": "ollama",
+      "replay": {
+        "status": "unavailable",
+        "token_count": 0
+      },
+      "request_id": "chatcmpl-679",
+      "session_id": null,
+      "source_sequence": 658,
+      "status": "unavailable"
+    },
+    {
+      "event_type": "message_end",
+      "kind": "unsupported",
+      "model": "qwen3:8b",
+      "probability_artifact": {
+        "artifact_schema": "partial-token-probability-v1",
+        "coverage": {
+          "alternative_count": 0,
+          "token_count": 0,
+          "tokens_with_alternatives": 0
+        },
+        "full_vocabulary_compatible": false,
+        "missing_data_reason": "provider did not expose probability capture for this assistant turn",
+        "probability_class": "partial_top_k",
+        "provenance": {
+          "model": "qwen3:8b",
+          "parameters": {},
+          "provider": "ollama"
+        },
+        "schema_version": 1,
+        "status": "unavailable",
+        "tokens": []
+      },
+      "provider": "ollama",
+      "replay": {
+        "status": "unavailable",
+        "token_count": 0
+      },
+      "request_id": null,
+      "session_id": null,
+      "source_sequence": 667,
+      "status": "unavailable"
+    },
+    {
+      "event_type": "message_end",
+      "kind": "unsupported",
+      "model": "qwen3:8b",
+      "probability_artifact": {
+        "artifact_schema": "partial-token-probability-v1",
+        "coverage": {
+          "alternative_count": 0,
+          "token_count": 0,
+          "tokens_with_alternatives": 0
+        },
+        "full_vocabulary_compatible": false,
+        "missing_data_reason": "provider did not expose probability capture for this assistant turn",
+        "probability_class": "partial_top_k",
+        "provenance": {
+          "model": "qwen3:8b",
+          "parameters": {},
+          "provider": "ollama"
+        },
+        "schema_version": 1,
+        "status": "unavailable",
+        "tokens": []
+      },
+      "provider": "ollama",
+      "replay": {
+        "status": "unavailable",
+        "token_count": 0
+      },
+      "request_id": null,
+      "session_id": null,
+      "source_sequence": 674,
+      "status": "unavailable"
+    },
+    {
+      "event_type": "message_end",
+      "kind": "unsupported",
+      "model": "qwen3:8b",
+      "probability_artifact": {
+        "artifact_schema": "partial-token-probability-v1",
+        "coverage": {
+          "alternative_count": 0,
+          "token_count": 0,
+          "tokens_with_alternatives": 0
+        },
+        "full_vocabulary_compatible": false,
+        "missing_data_reason": "provider did not expose probability capture for this assistant turn",
+        "probability_class": "partial_top_k",
+        "provenance": {
+          "model": "qwen3:8b",
+          "parameters": {},
+          "provider": "ollama"
+        },
+        "schema_version": 1,
+        "status": "unavailable",
+        "tokens": []
+      },
+      "provider": "ollama",
+      "replay": {
+        "status": "unavailable",
+        "token_count": 0
+      },
+      "request_id": null,
+      "session_id": null,
+      "source_sequence": 681,
+      "status": "unavailable"
+    },
+    {
+      "event_type": "message_end",
+      "kind": "tool_call",
+      "model": "qwen3:8b",
+      "probability_artifact": {
+        "artifact_schema": "partial-token-probability-v1",
+        "coverage": {
+          "alternative_count": 0,
+          "token_count": 0,
+          "tokens_with_alternatives": 0
+        },
+        "full_vocabulary_compatible": false,
+        "missing_data_reason": "provider did not expose probability capture for this assistant turn",
+        "probability_class": "partial_top_k",
+        "provenance": {
+          "model": "qwen3:8b",
+          "parameters": {},
+          "provider": "ollama"
+        },
+        "schema_version": 1,
+        "status": "unavailable",
+        "tokens": []
+      },
+      "provider": "ollama",
+      "replay": {
+        "status": "unavailable",
+        "token_count": 0
+      },
+      "request_id": "chatcmpl-95",
+      "session_id": null,
+      "source_sequence": 886,
+      "status": "unavailable"
+    }
+  ]
+}

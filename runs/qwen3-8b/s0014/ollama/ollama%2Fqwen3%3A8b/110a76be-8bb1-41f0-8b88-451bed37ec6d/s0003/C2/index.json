@@ -1,0 +1,355 @@
+{
+  "agents": {
+    "agent-1": {
+      "artifacts": {
+        "agent_telemetry.json": {
+          "path": "agents/agent-1/artifacts/agent_telemetry.json",
+          "present": true
+        },
+        "events.json": {
+          "path": "agents/agent-1/artifacts/events.json",
+          "present": true
+        },
+        "final_response.txt": {
+          "path": "agents/agent-1/artifacts/final_response.txt",
+          "present": true
+        },
+        "metadata.json": {
+          "path": "agents/agent-1/artifacts/metadata.json",
+          "present": true
+        },
+        "probability_artifacts.json": {
+          "path": "agents/agent-1/artifacts/probability_artifacts.json",
+          "present": true
+        },
+        "response.json": {
+          "path": "agents/agent-1/artifacts/response.json",
+          "present": true
+        },
+        "result.json": {
+          "path": "agents/agent-1/artifacts/result.json",
+          "present": true
+        },
+        "stderr.log": {
+          "path": "agents/agent-1/artifacts/stderr.log",
+          "present": true
+        },
+        "stdout.jsonl": {
+          "path": "agents/agent-1/artifacts/stdout.jsonl",
+          "present": true
+        },
+        "task_submission.json": {
+          "path": "agents/agent-1/artifacts/task_submission.json",
+          "present": false
+        },
+        "timeline.json": {
+          "path": "agents/agent-1/artifacts/timeline.json",
+          "present": false
+        },
+        "tool_calls.jsonl": {
+          "path": "agents/agent-1/artifacts/tool_calls.jsonl",
+          "present": true
+        }
+      },
+      "failure_reasons": [
+        "agent exceeded runtime timeout"
+      ],
+      "identity": {
+        "agent_id": "agent-1",
+        "capability_profile": "task-diagnostic-v1",
+        "condition": "C2",
+        "credential_id": "b062578ec975799a162412dc1725a04eadad08441861b68e491d193d33a42ead",
+        "run_id": "s0003-C2",
+        "seed": 3,
+        "task_id": "task-1"
+      },
+      "probability_artifacts": {
+        "coverage": {
+          "by_kind": {
+            "reasoning": {
+              "complete": 0,
+              "partial": 0,
+              "tokens": 0,
+              "turns": 0,
+              "unavailable": 0
+            },
+            "text": {
+              "complete": 0,
+              "partial": 0,
+              "tokens": 0,
+              "turns": 0,
+              "unavailable": 0
+            },
+            "tool_call": {
+              "complete": 0,
+              "partial": 0,
+              "tokens": 0,
+              "turns": 3,
+              "unavailable": 3
+            },
+            "unsupported": {
+              "complete": 0,
+              "partial": 0,
+              "tokens": 0,
+              "turns": 4,
+              "unavailable": 4
+            }
+          },
+          "complete": 0,
+          "partial": 0,
+          "tokens": 0,
+          "turns": 7,
+          "unavailable": 7
+        },
+        "path": "agents/agent-1/artifacts/probability_artifacts.json",
+        "present": true
+      },
+      "status": "timed_out",
+      "timeline": {
+        "path": "agents/agent-1/artifacts/timeline.json",
+        "present": true
+      },
+      "usage": {
+        "provider_tokens": 6833,
+        "tool_calls": 3,
+        "turns": 7
+      }
+    },
+    "agent-2": {
+      "artifacts": {
+        "agent_telemetry.json": {
+          "path": "agents/agent-2/artifacts/agent_telemetry.json",
+          "present": true
+        },
+        "events.json": {
+          "path": "agents/agent-2/artifacts/events.json",
+          "present": true
+        },
+        "final_response.txt": {
+          "path": "agents/agent-2/artifacts/final_response.txt",
+          "present": true
+        },
+        "metadata.json": {
+          "path": "agents/agent-2/artifacts/metadata.json",
+          "present": true
+        },
+        "probability_artifacts.json": {
+          "path": "agents/agent-2/artifacts/probability_artifacts.json",
+          "present": true
+        },
+        "response.json": {
+          "path": "agents/agent-2/artifacts/response.json",
+          "present": true
+        },
+        "result.json": {
+          "path": "agents/agent-2/artifacts/result.json",
+          "present": true
+        },
+        "stderr.log": {
+          "path": "agents/agent-2/artifacts/stderr.log",
+          "present": true
+        },
+        "stdout.jsonl": {
+          "path": "agents/agent-2/artifacts/stdout.jsonl",
+          "present": true
+        },
+        "task_submission.json": {
+          "path": "agents/agent-2/artifacts/task_submission.json",
+          "present": false
+        },
+        "timeline.json": {
+          "path": "agents/agent-2/artifacts/timeline.json",
+          "present": false
+        },
+        "tool_calls.jsonl": {
+          "path": "agents/agent-2/artifacts/tool_calls.jsonl",
+          "present": true
+        }
+      },
+      "failure_reasons": [
+        "agent exceeded runtime timeout"
+      ],
+      "identity": {
+        "agent_id": "agent-2",
+        "capability_profile": "task-diagnostic-v1",
+        "condition": "C2",
+        "credential_id": "5b02811a3cf2065513c7608a7c08ba76b24783d1a5dcbdad19dc7625a8ff6382",
+        "run_id": "s0003-C2",
+        "seed": 3,
+        "task_id": "task-1"
+      },
+      "probability_artifacts": {
+        "coverage": {
+          "by_kind": {
+            "reasoning": {
+              "complete": 0,
+              "partial": 0,
+              "tokens": 0,
+              "turns": 0,
+              "unavailable": 0
+            },
+            "text": {
+              "complete": 0,
+              "partial": 0,
+              "tokens": 0,
+              "turns": 0,
+              "unavailable": 0
+            },
+            "tool_call": {
+              "complete": 0,
+              "partial": 0,
+              "tokens": 0,
+              "turns": 4,
+              "unavailable": 4
+            },
+            "unsupported": {
+              "complete": 0,
+              "partial": 0,
+              "tokens": 0,
+              "turns": 2,
+              "unavailable": 2
+            }
+          },
+          "complete": 0,
+          "partial": 0,
+          "tokens": 0,
+          "turns": 6,
+          "unavailable": 6
+        },
+        "path": "agents/agent-2/artifacts/probability_artifacts.json",
+        "present": true
+      },
+      "status": "timed_out",
+      "timeline": {
+        "path": "agents/agent-2/artifacts/timeline.json",
+        "present": true
+      },
+      "usage": {
+        "provider_tokens": 10599,
+        "tool_calls": 4,
+        "turns": 6
+      }
+    }
+  },
+  "artifacts": {
+    "budget": {
+      "path": "budget.json",
+      "present": true
+    },
+    "manifest": {
+      "path": "manifest.json",
+      "present": true
+    },
+    "metrics": {
+      "path": "artifacts/metrics.json",
+      "present": true
+    },
+    "replay": {
+      "path": "artifacts/replay.json",
+      "present": true
+    },
+    "results": {
+      "path": "results.json",
+      "present": true
+    }
+  },
+  "failure_reasons": [
+    {
+      "agent_id": "agent-1",
+      "reason": "agent exceeded runtime timeout"
+    },
+    {
+      "agent_id": "agent-2",
+      "reason": "agent exceeded runtime timeout"
+    }
+  ],
+  "probability_coverage": {
+    "agent-1": {
+      "by_kind": {
+        "reasoning": {
+          "complete": 0,
+          "partial": 0,
+          "tokens": 0,
+          "turns": 0,
+          "unavailable": 0
+        },
+        "text": {
+          "complete": 0,
+          "partial": 0,
+          "tokens": 0,
+          "turns": 0,
+          "unavailable": 0
+        },
+        "tool_call": {
+          "complete": 0,
+          "partial": 0,
+          "tokens": 0,
+          "turns": 3,
+          "unavailable": 3
+        },
+        "unsupported": {
+          "complete": 0,
+          "partial": 0,
+          "tokens": 0,
+          "turns": 4,
+          "unavailable": 4
+        }
+      },
+      "complete": 0,
+      "partial": 0,
+      "tokens": 0,
+      "turns": 7,
+      "unavailable": 7
+    },
+    "agent-2": {
+      "by_kind": {
+        "reasoning": {
+          "complete": 0,
+          "partial": 0,
+          "tokens": 0,
+          "turns": 0,
+          "unavailable": 0
+        },
+        "text": {
+          "complete": 0,
+          "partial": 0,
+          "tokens": 0,
+          "turns": 0,
+          "unavailable": 0
+        },
+        "tool_call": {
+          "complete": 0,
+          "partial": 0,
+          "tokens": 0,
+          "turns": 4,
+          "unavailable": 4
+        },
+        "unsupported": {
+          "complete": 0,
+          "partial": 0,
+          "tokens": 0,
+          "turns": 2,
+          "unavailable": 2
+        }
+      },
+      "complete": 0,
+      "partial": 0,
+      "tokens": 0,
+      "turns": 6,
+      "unavailable": 6
+    }
+  },
+  "prompt": "Diagnose the incident described by the evidence assigned to you. Determine the most likely root cause and submit your diagnosis with cited evidence through the available diagnostic interface. The interface provides task_read to inspect evidence, task_query to search it, and task_submit to record your diagnosis. Return a concise final explanation after submitting.",
+  "run": {
+    "condition": "C2",
+    "model": "ollama/qwen3:8b",
+    "provider": null,
+    "run_class": "experimental",
+    "run_id": "s0003-C2",
+    "run_uuid": "110a76be-8bb1-41f0-8b88-451bed37ec6d",
+    "seed": 3,
+    "triplet_id": "s0003"
+  },
+  "schema_version": 1,
+  "status": "failed"
+}

@@ -1,0 +1,11 @@
+{
+  "artifact_schema": "model-run-v1",
+  "model": "ollama/qwen3:8b",
+  "model_slug": "ollama%2Fqwen3%3A8b",
+  "path": "/app/runs/qwen3-8b/s0014/ollama/ollama%2Fqwen3%3A8b/110a76be-8bb1-41f0-8b88-451bed37ec6d",
+  "provider": "ollama",
+  "run_class": "experimental",
+  "run_id": "110a76be-8bb1-41f0-8b88-451bed37ec6d",
+  "run_uuid": "110a76be-8bb1-41f0-8b88-451bed37ec6d",
+  "schema_version": 1
+}

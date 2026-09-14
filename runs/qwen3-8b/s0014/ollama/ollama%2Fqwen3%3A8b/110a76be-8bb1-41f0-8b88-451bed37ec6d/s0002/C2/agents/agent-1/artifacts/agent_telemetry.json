@@ -1,0 +1,45 @@
+{
+  "ended_at": "2026-09-14T03:40:44.708457Z",
+  "event_counts": {
+    "agent_end": 2,
+    "agent_start": 3,
+    "auto_retry_end": 2,
+    "auto_retry_start": 2,
+    "message_end": 13,
+    "message_start": 14,
+    "message_update": 1138,
+    "session": 1,
+    "tool_execution_end": 5,
+    "tool_execution_start": 5,
+    "turn_end": 7,
+    "turn_start": 8
+  },
+  "failure_reason": "agent exceeded runtime timeout",
+  "identity": {
+    "agent_id": "agent-1",
+    "capability_profile": "task-diagnostic-v1",
+    "condition": "C2",
+    "credential_id": "1b6f86ac4ecc46043236ee75a464646bb825308ebd8a82d54c8e37d10a04c0b8",
+    "run_id": "s0002-C2",
+    "seed": 2,
+    "task_id": "task-1"
+  },
+  "logits": {
+    "channel_counts": {
+      "content": 26,
+      "reasoning": 414
+    },
+    "mean_surprise_bits": 0.143605,
+    "mean_top_k_entropy_bits": 1.091478,
+    "token_count": 440,
+    "turn_count": 1
+  },
+  "provider_started_at": "2026-09-14T03:35:44.743723Z",
+  "provider_tokens": 13302,
+  "schema_version": 1,
+  "started_at": "2026-09-14T03:35:44.704719Z",
+  "status": "timed_out",
+  "tool_call_count": 5,
+  "turn_count": 7,
+  "wall_clock_seconds": 300.067163
+}

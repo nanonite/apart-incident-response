@@ -1,0 +1,5 @@
+2026-09-12T10:14:02Z ERROR request failures began immediately after the configuration change.
+Requests without cache access remain healthy.
+The error began at the deployment boundary.
+error rate rises only on requests touching the shared cache
+requests bypassing the cache remain within the normal range
