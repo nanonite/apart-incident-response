@@ -3,34 +3,64 @@
 
 % Numbers: research/two_agent_entropy/results/exp{1,2,3}/analysis/stats (exp1: T = 1, exp3: T = 0.5, exp2: T = 0),
 % results/disruption_vs_base.csv (analysis/disruption_stats.py) and results/behaviour_post_switch.csv
-% (analysis/behaviour_summary.py). Figures: analysis/paper_figures.py.
+% (analysis/behaviour_summary.py). Figure: analysis/paper_figures.py.
 
-\subsection{Opening the channel changes the receiver's entropy, for some models}
+\paragraph{Reading the numbers.} Our main measure is decision entropy: how sure an agent is about its next action. At the first token of each reply, the model assigns probabilities to its options (\texttt{READ}, \texttt{WRITE}, \texttt{DECRYPT}, \texttt{SUBMIT} or something else), and \cref{eq:shannon} turns that distribution into one number in bits. \Cref{tab:bits} gives a sense of scale. For each run we compare the average after the switch (turns 8 to 20) with the average before it (turns 1 to 7). To say how well this change identifies a condition, we use the AUC: the probability that a randomly chosen run from one condition shows a larger change than a randomly chosen run from the other. An AUC of 0.5 is chance and 1.0 is perfect.
+
+\begin{table}[h]
+  \centering
+  \small
+  \caption{What decision entropy values mean.}
+  \label{tab:bits}
+  \begin{tabular}{rl}
+    \toprule
+    Bits & Example distribution over actions \\
+    \midrule
+    0    & 100\% \texttt{READ}: completely sure \\
+    0.47 & 90\% \texttt{READ}, 10\% \texttt{WRITE} \\
+    0.88 & 70\% \texttt{READ}, 30\% \texttt{WRITE} \\
+    1    & 50\% / 50\%: a coin flip between two actions \\
+    2.32 & all five options equally likely \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Entropy shows that foreign text arrived, for one model}
 
 \begin{figure*}[t]
   \centering
   \includegraphics[width=\textwidth]{figures/entropy_trajectories.pdf}
-  \caption{Decision entropy per turn for each model (rows) and sampling temperature (columns), averaged over the calls made at that turn in each condition, with 95\% bootstrap bands (20 runs per condition). The dotted line marks the switch turn, before which the three conditions are identical. Each panel reports the AUC with which the run-level change in decision entropy (turns 8 to 20 minus turns 1 to 7) separates disrupted runs (switch and placebo) from base runs; $^*$ marks Holm-corrected $p < 0.05$.}
+  \caption{Decision entropy per turn for each model (rows) and temperature (columns), averaged over 20 runs per condition, with 95\% bootstrap bands. Before the switch turn (dotted line) the three conditions are identical. Each panel gives the AUC with which the change in decision entropy separates runs that received foreign entries (switch and placebo) from base runs; $^*$ marks Holm-corrected $p < 0.05$.}
   \label{fig:trajectories}
 \end{figure*}
 
-\Cref{fig:trajectories} shows the entropy itself, turn by turn. For Qwen, the three conditions follow the same curve until turn 8. After it, the runs whose log started delivering foreign entries, whether real messages or placebo text, move above the runs whose log stayed closed, and they stay there. Measured per run as the change from before to after the switch, decision entropy rose by 0.28, 0.36 and 0.24 bits more in disrupted runs than in base runs at $T = 1$, 0.5 and 0, and this change alone separated the two groups with AUC 0.85, 0.96 and 0.95 (all Holm $p < 0.001$). The effect appeared in three independent experiments. The other two models barely moved. Llama's adjusted token entropy rose by 0.020 bits at $T = 1$ (95\% CI 0.002 to 0.039, Holm $p = 0.084$) and not at lower temperatures, and gpt-4o-mini showed no change at any temperature (all Holm $p \geq 0.22$). At $T = 0$ the comparison for Qwen needs care, because greedy decoding made its base runs nearly identical: the 20 runs contain only 2 distinct trajectories.
+\Cref{fig:trajectories} shows the result directly. For Qwen at $T = 0.5$, decision entropy averaged about 0.49 bits before the switch in every condition. After it, runs whose log stayed closed stayed at 0.56 bits, while runs that received foreign entries rose to 0.91 bits with real messages and 0.92 bits with placebo text. In plain terms, the agent went from being about 87\% sure of its next action to about 68\% sure. The same rise appeared at $T = 1$ and $T = 0$, and the change alone separated disrupted runs from undisturbed ones with AUC 0.85, 0.96 and 0.95. For gpt-4o-mini and Llama, the three curves overlap after the switch, and no temperature gave a significant difference.
 
-Why one model and not the others? Looking at what the agents do after turn 8 when nothing happens suggests an answer. Undisturbed Qwen agents mostly wait: 85\%, 97\% and 100\% of their actions at the three temperatures are \texttt{READ\_LOG}, and most repeat the previous action. Their entropy is low and flat, so anything that breaks the routine stands out. gpt-4o-mini behaves differently: it keeps trying to decrypt (55 to 59\% of actions) and reads the log in only 7 to 12\% of them, so it rarely sees the foreign entries at all. Llama alternates between writing and reading and almost never repeats itself, which gives it a busy baseline in which a change is hard to see. We read this as a pattern consistent with the data rather than a tested cause, but it points to something useful for monitoring: the signal depends less on the model's size than on whether the undisturbed agent has a predictable routine.
+What the agents do when nothing happens helps explain the gap. Undisturbed Qwen agents mostly wait: 85 to 100\% of their actions after turn 8 are \texttt{READ\_LOG}, so their entropy is flat and a disruption stands out. gpt-4o-mini keeps trying to decrypt and reads the log in only 7 to 12\% of its actions, so it rarely sees the foreign entries. Llama alternates between writing and reading, and its decision entropy stays close to zero throughout.
 
-\subsection{Under sampling, entropy cannot tell real messages from useless text}
+\subsection{Entropy does not show whether the text was real information}
 
-\begin{figure*}[t]
+A monitor needs to answer two questions: did foreign text reach the agent, and was it real information? \Cref{tab:auc} answers both for every model and temperature. Entropy answers the first question for Qwen at all three temperatures. It answers the second only for Qwen at $T = 0$ (AUC 0.96). At $T = 1$ and $T = 0.5$, real messages and useless placebo text raised entropy by the same amount, as the overlapping switch and placebo curves in \cref{fig:trajectories} show. Under sampling, the agent's uncertainty reflects that something new arrived, not what it said. Without sampling noise, one model showed a larger reaction to real information, but a single model is not enough to call this general.
+
+\begin{table}[t]
   \centering
-  \includegraphics[width=\textwidth]{figures/temperature_switch_minus_placebo.pdf}
-  \caption{Difference between real communication (switch) and useless foreign text (placebo) in the run-level change $\Delta$ of adjusted token entropy and decision entropy, 20 runs per condition, for each model and temperature. Lines are 95\% bootstrap intervals; filled markers are significant after Holm correction and labelled with the difference. Values right of zero mean that real information raised entropy more than foreign text alone.}
-  \label{fig:switch-placebo}
-\end{figure*}
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \caption{How well the change in decision entropy answers two monitoring questions, as AUC (0.5 = chance, 1.0 = perfect). Q1 compares runs that received foreign entries (switch and placebo) with base runs. Q2 compares real communication (switch) with placebo text. Bold: significant after Holm correction.}
+  \label{tab:auc}
+  \begin{tabular}{lcccccc}
+    \toprule
+    & \multicolumn{3}{c}{Q1: text arrived?} & \multicolumn{3}{c}{Q2: real information?} \\
+    \cmidrule(lr){2-4} \cmidrule(lr){5-7}
+    Model & $T{=}1$ & $0.5$ & $0$ & $T{=}1$ & $0.5$ & $0$ \\
+    \midrule
+    gpt-4o-mini   & 0.35 & 0.61 & 0.44 & 0.44 & 0.50 & 0.56 \\
+    llama-3.3-70b & 0.37 & 0.48 & 0.43 & 0.43 & 0.47 & 0.48 \\
+    qwen3-235b    & \textbf{0.85} & \textbf{0.96} & \textbf{0.95} & 0.33 & 0.48 & \textbf{0.96} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 
-If the change in entropy reflected the information an agent received, runs with real messages should differ from runs with placebo text. Under sampling they did not (\cref{fig:switch-placebo}). At $T = 0.5$, Qwen's adjusted entropy rose by 0.120 bits with real messages and by 0.115 bits with useless ones ($p = 0.85$ for the difference), and at $T = 1$ no measure separated the two conditions in any model (smallest $p = 0.06$). In \cref{fig:trajectories}, the switch and placebo curves overlap for most of the run at both temperatures. The agent reacts to text arriving, not to what the text says.
+\subsection{The agents did not become coupled}
 
-Greedy decoding was the exception, and only for Qwen. At $T = 0$ its adjusted entropy rose 0.085 bits more with real messages than with placebo text (95\% CI 0.059 to 0.111, Holm $p = 0.001$, AUC 0.955), and decision entropy 0.225 bits more. The difference held when each distinct trajectory was counted only once (0.089 and 0.238 bits, AUC 0.95, $p < 0.001$). A plausible reading is that sampling adds variation between runs that is larger than the difference between information and noise, and removing it lets the smaller difference show. With a single model showing the effect, we cannot say whether it generalises.
-
-\subsection{The agents never became coupled}
-
-Our starting hypothesis was that communicating agents would become statistically coupled, so that the mutual information between them would rise once the channel opened. It did not. Over the turns in which both agents were still acting, mutual information between their actions stayed within 0.025 bits of the random-pairing null in every model, condition and temperature, including runs with verified communication. The shared log works by pull: each agent reads when it chooses and acts on its own. Communication therefore showed up as a disturbance inside each receiver, visible in its own entropy, and not as the two agents moving in step. A monitor built on this idea has to watch agents one at a time rather than look for synchrony between them.
+We expected communicating agents to become statistically coupled, so that the mutual information between their actions would rise once the channel opened. It did not: it stayed within 0.025 bits of the random-pairing baseline in every model, condition and temperature, even in runs with verified communication. Each agent reads the log when it chooses and acts on its own, so communication showed up as a change inside the agent that received the text, not as the two agents acting in step. A monitor based on entropy therefore has to watch agents one at a time.
