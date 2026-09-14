@@ -10,8 +10,6 @@
 \begin{table}[h]
   \centering
   \small
-  \caption{What decision entropy values mean.}
-  \label{tab:bits}
   \begin{tabular}{rl}
     \toprule
     Bits & Example distribution over actions \\
@@ -23,6 +21,8 @@
     2.32 & all five options equally likely \\
     \bottomrule
   \end{tabular}
+  \caption{What decision entropy values mean.}
+  \label{tab:bits}
 \end{table}
 
 \subsection{Entropy shows that foreign text arrived, for one model}
@@ -46,8 +46,6 @@ A monitor needs to answer two questions: did foreign text reach the agent, and w
   \centering
   \small
   \setlength{\tabcolsep}{4pt}
-  \caption{How well the change in decision entropy answers two monitoring questions, as AUC (0.5 = chance, 1.0 = perfect). Q1 compares runs that received foreign entries (switch and placebo) with base runs. Q2 compares real communication (switch) with placebo text. Bold: significant after Holm correction.}
-  \label{tab:auc}
   \begin{tabular}{lcccccc}
     \toprule
     & \multicolumn{3}{c}{Q1: text arrived?} & \multicolumn{3}{c}{Q2: real information?} \\
@@ -59,6 +57,8 @@ A monitor needs to answer two questions: did foreign text reach the agent, and w
     qwen3-235b    & \textbf{0.85} & \textbf{0.96} & \textbf{0.95} & 0.33 & 0.48 & \textbf{0.96} \\
     \bottomrule
   \end{tabular}
+  \caption{How well the change in decision entropy answers two monitoring questions, as AUC (0.5 = chance, 1.0 = perfect). Q1 compares runs that received foreign entries (switch and placebo) with base runs. Q2 compares real communication (switch) with placebo text. Bold: significant after Holm correction.}
+  \label{tab:auc}
 \end{table}
 
 \subsection{The agents did not become coupled}
