@@ -12,7 +12,11 @@ Es la versión de análisis de la compuerta que `checker.logprob_integrity` apli
 línea; sirve para auditar corridas antiguas que no la llevan.
 
 Entrada : --root <dir>/full con la estructura <modelo>/<condicion>/s<NNN>/
-Salidas : <out>/E2_integridad_llamadas.csv.gz, E2_integridad_corridas.csv, E2_resumen.csv
+Salida  : <out>/E2_integridad_corridas.csv (una fila por corrida, con el veredicto)
+
+La tabla por llamada y el resumen por celda del informe se derivaron de este mismo recorrido
+en celdas aparte y no los escribe este script; el DataFrame `calls` queda en memoria si se
+ejecuta de forma interactiva.
 """
 
 import argparse as _argparse

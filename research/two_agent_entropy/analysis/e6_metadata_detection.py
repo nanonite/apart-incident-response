@@ -9,10 +9,12 @@ volumen, sólo turno de entrega, y sin volumen ni latencia (el más honesto: la 
 crece con el prompt y actúa como volumen encubierto). Incluye ventana deslizante de 3
 turnos y retardo de alarma con falsa alarma controlada por corrida.
 
-Entrada : --root <dir>/full ; --exp1-stats <dir con J_roc.csv y J_cusum_summary.csv>
+Entrada : --root <dir>/full ; --exp1-stats <dir con J_roc.csv>
           (opcional, para la comparación con la entropía del Exp1)
-Salidas : <out>/E6_rasgos_corrida.csv, E6_auc.csv, E6_auc_ventana_deslizante.csv,
-          E6_retardo_deteccion.csv, E6_roc_metadatos.png, E6_auc_ventana_deslizante.png
+Salidas : <out>/E6_rasgos_corrida.csv, E6_auc.csv
+
+La ventana deslizante, el retardo de alarma y las dos figuras del informe se calcularon en
+celdas aparte a partir de `E6_rasgos_corrida.csv` y no los escribe este script.
 """
 
 import argparse as _argparse

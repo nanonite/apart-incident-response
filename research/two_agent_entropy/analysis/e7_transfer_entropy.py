@@ -9,7 +9,9 @@ barajado por bloques de longitud 3 de la secuencia fuente dentro de cada corrida
 emparejamiento cruzado entre corridas.
 
 Entrada : --root <dir>/full ; --exp1-stats <dir con G_system_entropy.csv> (opcional)
-Salidas : <out>/E7_te_resumen.csv, E7_te_por_turno.csv, E7_entropia_transferencia.png
+Salidas : <out>/E7_te_resumen.csv, E7_te_por_turno.csv
+
+La figura del informe se generó en una celda aparte a partir de estas dos tablas.
 """
 
 import argparse as _argparse

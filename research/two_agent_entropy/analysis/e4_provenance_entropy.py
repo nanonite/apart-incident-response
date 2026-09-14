@@ -11,8 +11,10 @@ y no pareados por permutación de la etiqueta de condición; Holm dentro de cada
 Sólo modelos con flujo de logprobs íntegro (véase E2).
 
 Entrada : --root <dir>/full
-Salidas : <out>/E4_tokens_hechos.csv.gz, E4_por_corrida.csv, E4_contrastes.csv,
-          E4_entropia_por_procedencia.png
+Salida  : <out>/E4_por_corrida.csv (H y sorpresa por procedencia y corrida)
+
+Los contrastes con Holm y la figura del informe se calcularon en celdas aparte a partir de
+esta tabla y no los escribe este script.
 """
 
 import argparse as _argparse
