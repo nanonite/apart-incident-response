@@ -8,6 +8,11 @@
     python3 run.py full   --exp ... --runs 20              # base / switch / placebo x models
     python3 run.py analyze --exp ...                       # tables + report.html
 
+Extensions (see harness.RunConfig): ``init`` accepts --switch-range LO,HI (randomised switch turn per seed),
+--close-offset K (switch closes again at switch_eff + K), --n-agents 3 (observer A3, E8) and --max-turns;
+``full`` accepts the condition ``placebo_inert`` (fact-free foreign entries; uses the donor schedule when a
+donor log exists) and --seed-start to place a new matrix in its own seed range.
+
 Runs are resumable: a run directory that already has check.json is skipped.
 All phases share one budget ledger (``budget.json``, cap ``--budget``).
 """
@@ -50,14 +55,34 @@ def cmd_init(args) -> None:
         say(f"scenario already exists in {exp} (use --force to regenerate)")
         return
     exp.mkdir(parents=True, exist_ok=True)
-    S.generate("schema-brand-v1").save(exp / "scenario.json")
-    S.generate("schema-brand-donor-v1").save(exp / "donor_scenario.json")
+    if args.scenario_from:
+        # reuse an earlier experiment's scenario (same assets, identifiers and passwords) for comparability
+        for name in ("scenario.json", "donor_scenario.json"):
+            shutil.copy2(args.scenario_from / name, exp / name)
+    else:
+        S.generate("schema-brand-v1").save(exp / "scenario.json")
+        S.generate("schema-brand-donor-v1").save(exp / "donor_scenario.json")
     (exp / "experiment.json").write_text(json.dumps({
-        "config": asdict(H.RunConfig()), "models": {k: m.to_dict() for k, m in H.MODELS.items()},
+        "config": asdict(H.RunConfig(
+            temperature=args.temperature, max_turns=args.max_turns, early_stop_turn=min(args.early_stop_turn, args.max_turns),
+            switch_turn=args.switch_turn,
+            switch_turn_range=tuple(int(v) for v in args.switch_range.split(",")) if args.switch_range else None,
+            close_turn_offset=args.close_offset, n_agents=args.n_agents)),
+        "scenario_from": str(args.scenario_from) if args.scenario_from else None,
+        "models": {k: m.to_dict() for k, m in H.MODELS.items()},
         "conditions": list(H.CONDITIONS), "prompt_version": H.PROMPT_VERSION,
         "system_prompt": H.SYSTEM_PROMPT, "statement": S.STATEMENT,
     }, indent=1))
     say(f"initialised {exp}")
+
+
+def run_config(exp: Path) -> H.RunConfig:
+    """The RunConfig frozen at init (older experiments without a file fall back to defaults)."""
+    path = exp / "experiment.json"
+    if not path.exists():
+        return H.RunConfig()
+    stored = json.loads(path.read_text()).get("config", {})
+    return H.RunConfig(**{k: v for k, v in stored.items() if k in H.RunConfig.__dataclass_fields__})
 
 
 def _models(args) -> list[H.ModelSpec]:
@@ -67,6 +92,9 @@ def _models(args) -> list[H.ModelSpec]:
 
 def _execute(jobs: list[dict], args, budget: H.Budget) -> list[dict]:
     api_key = H.load_api_key()
+    cfg = run_config(args.exp)
+    say(f"  run config: temperature={cfg.temperature} max_turns={cfg.max_turns} switch_turn={cfg.switch_turn} "
+        f"switch_turn_range={cfg.switch_turn_range} close_turn_offset={cfg.close_turn_offset} n_agents={cfg.n_agents}")
     results: list[dict] = []
     stop = threading.Event()
 
@@ -80,7 +108,7 @@ def _execute(jobs: list[dict], args, budget: H.Budget) -> list[dict]:
         if out.exists():
             shutil.rmtree(out)
         try:
-            result = H.run_one(api_key=api_key, budget=budget, cfg=H.RunConfig(), **{k: v for k, v in job.items() if k != "label"})
+            result = H.run_one(api_key=api_key, budget=budget, cfg=cfg, **{k: v for k, v in job.items() if k != "label"})
         except H.BudgetExceeded as exc:
             stop.set()
             say(f"  BUDGET STOP: {exc}")
@@ -116,7 +144,8 @@ def _summary(results: list[dict], group_keys=("model", "condition")) -> list[dic
             "task_success": sum(r["check"]["task_success"] for r in items) / n,
             "communication_verified": sum(r["check"]["communication_verified"] for r in items) / n,
             "complete_via_channel": sum(r["check"]["complete_via_verified_channel"] for r in items) / n,
-            "both_complete": sum(r["check"]["n_complete"] == 2 for r in items) / n,
+            "both_complete": sum(r["check"]["n_complete"] >= 2 for r in items) / n,
+            "entropy_valid": sum(bool((r["check"].get("logprob_integrity") or {}).get("entropy_valid")) for r in items) / n,
             "invalid": sum(not r["check"]["valid"] for r in items),
             "mean_parse_fail": sum(r["check"]["parse_fail_rate"] for r in items) / n,
             "mean_turns": sum(r["meta"]["turns_executed"] for r in items) / n,
@@ -180,14 +209,19 @@ def cmd_full(args) -> None:
         donor_file = args.exp / "donor" / m.label / "donor_log.json"
         donor_entries = json.loads(donor_file.read_text())["entries"] if donor_file.exists() else None
         for condition in args.conditions.split(","):
+            if condition not in H.CONDITIONS:
+                raise SystemExit(f"unknown condition {condition!r}; choose from {H.CONDITIONS}")
             if condition == "placebo" and not donor_entries:
                 say(f"skip placebo for {m.label}: no donor log (run `donor` first)")
                 continue
-            for seed in range(1, 1 + args.runs):
+            if condition == "placebo_inert" and not donor_entries:
+                say(f"note: placebo_inert for {m.label} without donor log -> default schedule (one entry per agent every 2 turns)")
+            uses_donor = condition in ("placebo", "placebo_inert")
+            for seed in range(args.seed_start, args.seed_start + args.runs):
                 jobs.append({"label": f"full {m.label} {condition} s{seed}", "sc": sc, "model": m,
                              "condition": condition, "seed": seed, "phase": "full",
-                             "donor": donor_sc if condition == "placebo" else None,
-                             "donor_entries": donor_entries if condition == "placebo" else None,
+                             "donor": donor_sc if uses_donor else None,
+                             "donor_entries": donor_entries if uses_donor else None,
                              "out_dir": args.exp / "full" / m.label / condition / f"s{seed:03d}"})
     say(f"FULL: {len(jobs)} runs, budget spent so far ${budget.spent:.3f}")
     rows = _summary(_execute(jobs, args, budget))
@@ -213,6 +247,15 @@ def main() -> None:
         p.add_argument("--budget", type=float, default=10.0)
         p.add_argument("--force", action="store_true")
         p.add_argument("--phase", default="full")
+        p.add_argument("--temperature", type=float, default=1.0, help="init only: sampling temperature for every call")
+        p.add_argument("--scenario-from", type=Path, default=None, help="init only: copy scenario files from this experiment")
+        p.add_argument("--max-turns", type=int, default=30, help="init only")
+        p.add_argument("--early-stop-turn", type=int, default=20, help="init only")
+        p.add_argument("--switch-turn", type=int, default=8, help="init only: fixed switch turn (ignored if --switch-range)")
+        p.add_argument("--switch-range", default=None, help="init only: LO,HI -> switch turn drawn per seed (deterministic)")
+        p.add_argument("--close-offset", type=int, default=None, help="init only: read policy closes at switch_eff + K")
+        p.add_argument("--n-agents", type=int, default=2, choices=(2, 3), help="init only: 3 adds observer A3 (E8)")
+        p.add_argument("--seed-start", type=int, default=1, help="full only: first seed of the matrix")
     args = parser.parse_args()
     args.exp = args.exp.resolve()
     {"init": cmd_init, "gate": cmd_gate, "donor": cmd_donor, "full": cmd_full, "analyze": cmd_analyze}[args.command](args)
