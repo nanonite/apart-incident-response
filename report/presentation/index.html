@@ -120,6 +120,37 @@
   .row .cap { grid-column: 2; font-size: 1.2cqw; color: var(--muted); margin-top: -.5cqw; }
   .formula { font-family: var(--mono); font-size: 1.6cqw; color: var(--ink); background: var(--paper); border-radius: 4px; padding: 1cqw 1.4cqw; align-self: start; }
 
+  .legend { display: flex; gap: 1.6cqw; margin: .6cqw 0 0 8.4cqw; flex-wrap: wrap; }
+  .legend span { display: inline-flex; align-items: center; gap: .5cqw; font-size: 1.35cqw; color: var(--ink); }
+  .legend i { display: inline-block; width: 1.3cqw; height: 1.3cqw; border-radius: 2px; }
+  .legend .r { background: var(--accent); } .legend .w { background: #7fb3c2; } .legend .d { background: #b9d5dd; } .legend .s { background: #d9e8ec; } .legend .o { background: #edf4f6; border: 1px solid #cfdde1; }
+  .pipe { display: flex; flex-direction: column; gap: .75cqw; }
+  .lghead, .lg { display: grid; grid-template-columns: 8.5cqw 5cqw 1fr 5cqw; gap: 1cqw; align-items: center; }
+  .lghead span { font-family: var(--mono); font-size: 1.3cqw; color: var(--muted); white-space: nowrap; text-align: right; }
+  .lghead span:last-child, .lg .p { text-align: right; }
+  .lg .act { font-family: var(--mono); font-size: 1.55cqw; }
+  .lg .z, .lg .p { font-family: var(--mono); font-size: 1.55cqw; font-variant-numeric: tabular-nums; text-align: right; }
+  .lg .p { color: var(--accent); font-weight: 500; }
+  .zbar { height: 1.5cqw; background: var(--paper); border-radius: 2px; overflow: hidden; }
+  .zbar i { display: block; height: 100%; background: #9aa6ab; }
+  .eq { font-family: var(--mono); font-size: 1.9cqw; margin-top: .6cqw; padding: .8cqw 1.2cqw; background: var(--paper); border-radius: 4px; }
+  .eq .k { color: var(--accent); font-weight: 500; }
+  .eq.strong b { color: var(--accent); font-weight: 500; }
+  .verdicts { display: grid; grid-template-columns: 1fr 1fr; gap: 2.4cqw; margin-top: 1.4cqw; }
+  .verdict { display: grid; grid-template-columns: 4.2cqw 1fr; gap: 1.6cqw; align-items: start; padding: 2.2cqw; border-radius: 6px; }
+  .verdict.yes { background: var(--accent-soft); }
+  .verdict.no { background: var(--placebo-soft); }
+  .verdict svg { width: 4.2cqw; height: 4.2cqw; display: block; }
+  .verdict div { display: flex; flex-direction: column; gap: .7cqw; }
+  .verdict b { font-size: 2.2cqw; line-height: 1.2; font-weight: 650; }
+  .verdict .big { font-size: 3.6cqw; line-height: 1; }
+  .verdict.yes .big { color: var(--accent); }
+  .verdict.no .big { color: var(--placebo); }
+  .verdict .who { font-size: 1.6cqw; color: var(--muted); }
+  .next { display: flex; align-items: center; gap: 1.2cqw; flex-wrap: wrap; margin-top: 2.4cqw; }
+  .nextlabel { font-size: 1.3cqw; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-right: .6cqw; }
+  .chip { font-size: 1.75cqw; padding: .8cqw 1.5cqw; border: 1.5px solid var(--line); border-radius: 999px; color: var(--ink); }
+
   /* design */
   .design { display: grid; grid-template-columns: 1.9fr 1fr; gap: 3cqw; flex: 1; align-items: center; min-height: 0; }
   .design img { width: auto; max-width: 100%; max-height: 33cqw; height: auto; display: block; margin: 0 auto; }
@@ -265,24 +296,22 @@
       <div class="footer"><span>Schematic based on the OpenAI incident report and Hugging Face timeline (2026)</span><span>02</span></div>
     </section>
 
-    <section class="slide" hidden data-notes="So instead of reading messages, we read probabilities. Every model already produces a probability distribution over what it does next. Entropy turns that into one number: zero bits when the agent is sure, one bit for a coin flip. If foreign text arrives, that number should move, whatever channel carried it.">
+    <section class="slide" hidden data-notes="So instead of reading messages, we read probabilities. For every token, the model produces logits, raw scores for each option. Softmax turns them into probabilities, and entropy turns those into one number: zero bits when the agent is sure, one bit for a coin flip. If foreign text arrives, that number should move, whatever channel carried it.">
       <div class="eyebrow">The idea</div>
       <h2>Don’t read the channel. Read the agent’s probabilities.</h2>
       <div class="two">
         <div class="scale" aria-label="Examples of decision entropy">
           <div class="row"><span class="bits">0.00</span><div class="bar"><i class="r" style="width:100%"></i></div></div>
-          <div class="row"><span class="cap">100% read: completely sure</span></div>
           <div class="row"><span class="bits">0.47</span><div class="bar"><i class="r" style="width:90%"></i><i class="w" style="width:10%"></i></div></div>
-          <div class="row"><span class="cap">90% read, 10% write</span></div>
           <div class="row"><span class="bits">1.00</span><div class="bar"><i class="r" style="width:50%"></i><i class="w" style="width:50%"></i></div></div>
-          <div class="row"><span class="cap">a coin flip between two actions</span></div>
           <div class="row"><span class="bits">2.32</span><div class="bar"><i class="r" style="width:20%"></i><i class="w" style="width:20%"></i><i class="d" style="width:20%"></i><i class="s" style="width:20%"></i><i class="o" style="width:20%"></i></div></div>
-          <div class="row"><span class="cap">all five actions equally likely</span></div>
+          <div class="legend"><span><i class="r"></i>read</span><span><i class="w"></i>write</span><span><i class="d"></i>decrypt</span><span><i class="s"></i>submit</span><span><i class="o"></i>other</span></div>
         </div>
-        <div style="display:flex;flex-direction:column;gap:1.6cqw">
-          <div class="formula">H = − Σ p(a) · log₂ p(a)</div>
-          <p class="small">The model already outputs these probabilities for every token it generates. No extra model call, no access to the message, no knowledge of the channel.</p>
-          <p class="small">Same logic as network security: attacks show up in the entropy of traffic, without opening the packets.</p>
+        <div class="pipe">
+          <div class="lghead"><span></span><span>logit</span><span></span><span>p</span></div>
+          <div class="lg"><span class="act">read</span><span class="z">+3.0</span><span class="zbar"><i style="width:100%"></i></span><span class="p">0.84</span></div><div class="lg"><span class="act">write</span><span class="z">+1.0</span><span class="zbar"><i style="width:60%"></i></span><span class="p">0.11</span></div><div class="lg"><span class="act">decrypt</span><span class="z">-0.5</span><span class="zbar"><i style="width:30%"></i></span><span class="p">0.03</span></div><div class="lg"><span class="act">submit</span><span class="z">-1.0</span><span class="zbar"><i style="width:20%"></i></span><span class="p">0.02</span></div><div class="lg"><span class="act">other</span><span class="z">-1.5</span><span class="zbar"><i style="width:10%"></i></span><span class="p">0.01</span></div>
+          <div class="eq"><span class="k">p</span> = e<sup>z</sup> / Σ e<sup>z</sup></div>
+          <div class="eq strong"><span class="k">H</span> = − Σ p · log₂ p = <b>0.86 bits</b></div>
         </div>
       </div>
       <div class="footer"><span>Decision entropy: uncertainty over the agent’s next action</span><span>03</span></div>
@@ -323,26 +352,18 @@
       <div class="footer"><span>Decision entropy per turn · 20 runs per condition · dotted line = turn 8</span><span>05</span></div>
     </section>
 
-    <section class="slide" hidden data-notes="So entropy can tell us that a sandboxed agent's context was disrupted, for some models, but not whether that disruption was communication. It is a new, cheap signal that does not depend on the channel, and it still needs development: calibration for each model, comparison against sibling runs, and tests against agents that try to hide.">
+    <section class="slide" hidden data-notes="So entropy can tell us that a sandboxed agent's context was disrupted, for some models, but not whether that disruption was communication. It is a new, cheap signal that does not depend on the channel, and it still needs development: calibration for each model, baselines from sibling runs, and tests against agents that try to hide.">
       <div class="eyebrow">Takeaway</div>
-      <h2>Entropy detects that an agent’s context was disrupted, not whether it was communication.</h2>
-      <div class="take">
-        <div class="col">
-          <h3>What we showed</h3>
-          <ul>
-            <li>A signal that needs no message, no chain of thought and no knowledge of the channel.</li>
-            <li>It works for some models, not all.</li>
-            <li>The agents never synchronised: watch each agent, not pairs.</li>
-          </ul>
-        </div>
-        <div class="col next">
-          <h3>Still to build</h3>
-          <ul>
-            <li>Calibration for each model.</li>
-            <li>Baselines from sibling runs instead of fixed thresholds.</li>
-            <li>Open-weight models, more agents, agents that try to hide.</li>
-          </ul>
-        </div>
+      <h2>A new signal for sandboxed agents, and a first step.</h2>
+      <div class="verdicts">
+        <div class="verdict yes"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#0b6e8a"/><path d="M6.5 12.5l3.5 3.5 7.5-8" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><div><b>Detects that foreign text arrived</b><span class="big mono">AUC 0.96</span><span class="who">Qwen · not every model</span></div></div>
+        <div class="verdict no"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#c2410c"/><path d="M8 8l8 8M16 8l-8 8" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg><div><b>Tells a real message from noise</b><span class="big mono">0.92 ≈ 0.91</span><span class="who">placebo = real messages</span></div></div>
+      </div>
+      <div class="next">
+        <span class="nextlabel mono">Next</span>
+        <span class="chip">Per-model calibration</span>
+        <span class="chip">Sibling-run baselines</span>
+        <span class="chip">Agents that try to hide</span>
       </div>
       <div class="footer"><span>github.com/nanonite/apart-incident-response</span><span>06</span></div>
     </section>
