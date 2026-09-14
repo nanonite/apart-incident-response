@@ -162,8 +162,6 @@ export default function (pi: ExtensionAPI) {
 				top_logprobs: OPENROUTER_TOP_LOGPROBS,
 				provider: {
 					...provider,
-					order: ["openai"],
-					allow_fallbacks: false,
 					require_parameters: true,
 				},
 			};

@@ -1,0 +1,373 @@
+{
+  "artifact_schema": "agent-turn-probability-v1",
+  "coverage": {
+    "by_kind": {
+      "reasoning": {
+        "complete": 0,
+        "partial": 0,
+        "tokens": 0,
+        "turns": 0,
+        "unavailable": 0
+      },
+      "text": {
+        "complete": 0,
+        "partial": 0,
+        "tokens": 0,
+        "turns": 0,
+        "unavailable": 0
+      },
+      "tool_call": {
+        "complete": 0,
+        "partial": 0,
+        "tokens": 0,
+        "turns": 10,
+        "unavailable": 10
+      },
+      "unsupported": {
+        "complete": 0,
+        "partial": 0,
+        "tokens": 0,
+        "turns": 0,
+        "unavailable": 0
+      }
+    },
+    "complete": 0,
+    "partial": 0,
+    "tokens": 0,
+    "turns": 10,
+    "unavailable": 10
+  },
+  "schema_version": 1,
+  "turns": [
+    {
+      "event_type": "message_end",
+      "kind": "tool_call",
+      "model": "inclusionai/ling-3.0-flash-vl:free",
+      "probability_artifact": {
+        "artifact_schema": "partial-token-probability-v1",
+        "coverage": {
+          "alternative_count": 0,
+          "token_count": 0,
+          "tokens_with_alternatives": 0
+        },
+        "full_vocabulary_compatible": false,
+        "missing_data_reason": "provider omitted logprobs for this assistant turn",
+        "probability_class": "partial_top_k",
+        "provenance": {
+          "model": "inclusionai/ling-3.0-flash-vl:free",
+          "parameters": {},
+          "provider": "openrouter"
+        },
+        "schema_version": 1,
+        "status": "unavailable",
+        "tokens": []
+      },
+      "provider": "openrouter",
+      "replay": {
+        "status": "unavailable",
+        "token_count": 0
+      },
+      "request_id": "gen-1789357053-KgO9ArXsAz2J1EHpqfXf",
+      "session_id": "01a09dfd-d57f-70a2-80c6-ab4967fbe3ba",
+      "source_sequence": 80,
+      "status": "unavailable"
+    },
+    {
+      "event_type": "message_end",
+      "kind": "tool_call",
+      "model": "inclusionai/ling-3.0-flash-vl:free",
+      "probability_artifact": {
+        "artifact_schema": "partial-token-probability-v1",
+        "coverage": {
+          "alternative_count": 0,
+          "token_count": 0,
+          "tokens_with_alternatives": 0
+        },
+        "full_vocabulary_compatible": false,
+        "missing_data_reason": "provider omitted logprobs for this assistant turn",
+        "probability_class": "partial_top_k",
+        "provenance": {
+          "model": "inclusionai/ling-3.0-flash-vl:free",
+          "parameters": {},
+          "provider": "openrouter"
+        },
+        "schema_version": 1,
+        "status": "unavailable",
+        "tokens": []
+      },
+      "provider": "openrouter",
+      "replay": {
+        "status": "unavailable",
+        "token_count": 0
+      },
+      "request_id": "gen-1789357055-mZD8Gc1QVfWNBJPT3brR",
+      "session_id": "01a09dfd-d57f-70a2-80c6-ab4967fbe3ba",
+      "source_sequence": 138,
+      "status": "unavailable"
+    },
+    {
+      "event_type": "message_end",
+      "kind": "tool_call",
+      "model": "inclusionai/ling-3.0-flash-vl:free",
+      "probability_artifact": {
+        "artifact_schema": "partial-token-probability-v1",
+        "coverage": {
+          "alternative_count": 0,
+          "token_count": 0,
+          "tokens_with_alternatives": 0
+        },
+        "full_vocabulary_compatible": false,
+        "missing_data_reason": "provider omitted logprobs for this assistant turn",
+        "probability_class": "partial_top_k",
+        "provenance": {
+          "model": "inclusionai/ling-3.0-flash-vl:free",
+          "parameters": {},
+          "provider": "openrouter"
+        },
+        "schema_version": 1,
+        "status": "unavailable",
+        "tokens": []
+      },
+      "provider": "openrouter",
+      "replay": {
+        "status": "unavailable",
+        "token_count": 0
+      },
+      "request_id": "gen-1789357056-LeOdOba2GtdbGWaG6tBP",
+      "session_id": "01a09dfd-d57f-70a2-80c6-ab4967fbe3ba",
+      "source_sequence": 210,
+      "status": "unavailable"
+    },
+    {
+      "event_type": "message_end",
+      "kind": "tool_call",
+      "model": "inclusionai/ling-3.0-flash-vl:free",
+      "probability_artifact": {
+        "artifact_schema": "partial-token-probability-v1",
+        "coverage": {
+          "alternative_count": 0,
+          "token_count": 0,
+          "tokens_with_alternatives": 0
+        },
+        "full_vocabulary_compatible": false,
+        "missing_data_reason": "provider omitted logprobs for this assistant turn",
+        "probability_class": "partial_top_k",
+        "provenance": {
+          "model": "inclusionai/ling-3.0-flash-vl:free",
+          "parameters": {},
+          "provider": "openrouter"
+        },
+        "schema_version": 1,
+        "status": "unavailable",
+        "tokens": []
+      },
+      "provider": "openrouter",
+      "replay": {
+        "status": "unavailable",
+        "token_count": 0
+      },
+      "request_id": "gen-1789357057-d58nN7HZ0epzEwZeUD47",
+      "session_id": "01a09dfd-d57f-70a2-80c6-ab4967fbe3ba",
+      "source_sequence": 279,
+      "status": "unavailable"
+    },
+    {
+      "event_type": "message_end",
+      "kind": "tool_call",
+      "model": "inclusionai/ling-3.0-flash-vl:free",
+      "probability_artifact": {
+        "artifact_schema": "partial-token-probability-v1",
+        "coverage": {
+          "alternative_count": 0,
+          "token_count": 0,
+          "tokens_with_alternatives": 0
+        },
+        "full_vocabulary_compatible": false,
+        "missing_data_reason": "provider omitted logprobs for this assistant turn",
+        "probability_class": "partial_top_k",
+        "provenance": {
+          "model": "inclusionai/ling-3.0-flash-vl:free",
+          "parameters": {},
+          "provider": "openrouter"
+        },
+        "schema_version": 1,
+        "status": "unavailable",
+        "tokens": []
+      },
+      "provider": "openrouter",
+      "replay": {
+        "status": "unavailable",
+        "token_count": 0
+      },
+      "request_id": "gen-1789357058-M1RMZ37461DVIbku3JF5",
+      "session_id": "01a09dfd-d57f-70a2-80c6-ab4967fbe3ba",
+      "source_sequence": 387,
+      "status": "unavailable"
+    },
+    {
+      "event_type": "message_end",
+      "kind": "tool_call",
+      "model": "inclusionai/ling-3.0-flash-vl:free",
+      "probability_artifact": {
+        "artifact_schema": "partial-token-probability-v1",
+        "coverage": {
+          "alternative_count": 0,
+          "token_count": 0,
+          "tokens_with_alternatives": 0
+        },
+        "full_vocabulary_compatible": false,
+        "missing_data_reason": "provider omitted logprobs for this assistant turn",
+        "probability_class": "partial_top_k",
+        "provenance": {
+          "model": "inclusionai/ling-3.0-flash-vl:free",
+          "parameters": {},
+          "provider": "openrouter"
+        },
+        "schema_version": 1,
+        "status": "unavailable",
+        "tokens": []
+      },
+      "provider": "openrouter",
+      "replay": {
+        "status": "unavailable",
+        "token_count": 0
+      },
+      "request_id": "gen-1789357060-NIIxUtaty1WChACFZUcw",
+      "session_id": "01a09dfd-d57f-70a2-80c6-ab4967fbe3ba",
+      "source_sequence": 506,
+      "status": "unavailable"
+    },
+    {
+      "event_type": "message_end",
+      "kind": "tool_call",
+      "model": "inclusionai/ling-3.0-flash-vl:free",
+      "probability_artifact": {
+        "artifact_schema": "partial-token-probability-v1",
+        "coverage": {
+          "alternative_count": 0,
+          "token_count": 0,
+          "tokens_with_alternatives": 0
+        },
+        "full_vocabulary_compatible": false,
+        "missing_data_reason": "provider omitted logprobs for this assistant turn",
+        "probability_class": "partial_top_k",
+        "provenance": {
+          "model": "inclusionai/ling-3.0-flash-vl:free",
+          "parameters": {},
+          "provider": "openrouter"
+        },
+        "schema_version": 1,
+        "status": "unavailable",
+        "tokens": []
+      },
+      "provider": "openrouter",
+      "replay": {
+        "status": "unavailable",
+        "token_count": 0
+      },
+      "request_id": "gen-1789357062-cfgHCkaeWBNO6BCFaXDq",
+      "session_id": "01a09dfd-d57f-70a2-80c6-ab4967fbe3ba",
+      "source_sequence": 614,
+      "status": "unavailable"
+    },
+    {
+      "event_type": "message_end",
+      "kind": "tool_call",
+      "model": "inclusionai/ling-3.0-flash-vl:free",
+      "probability_artifact": {
+        "artifact_schema": "partial-token-probability-v1",
+        "coverage": {
+          "alternative_count": 0,
+          "token_count": 0,
+          "tokens_with_alternatives": 0
+        },
+        "full_vocabulary_compatible": false,
+        "missing_data_reason": "provider omitted logprobs for this assistant turn",
+        "probability_class": "partial_top_k",
+        "provenance": {
+          "model": "inclusionai/ling-3.0-flash-vl:free",
+          "parameters": {},
+          "provider": "openrouter"
+        },
+        "schema_version": 1,
+        "status": "unavailable",
+        "tokens": []
+      },
+      "provider": "openrouter",
+      "replay": {
+        "status": "unavailable",
+        "token_count": 0
+      },
+      "request_id": "gen-1789357064-qZcxBrd9i0KkPej55ucq",
+      "session_id": "01a09dfd-d57f-70a2-80c6-ab4967fbe3ba",
+      "source_sequence": 699,
+      "status": "unavailable"
+    },
+    {
+      "event_type": "message_end",
+      "kind": "tool_call",
+      "model": "inclusionai/ling-3.0-flash-vl:free",
+      "probability_artifact": {
+        "artifact_schema": "partial-token-probability-v1",
+        "coverage": {
+          "alternative_count": 0,
+          "token_count": 0,
+          "tokens_with_alternatives": 0
+        },
+        "full_vocabulary_compatible": false,
+        "missing_data_reason": "provider omitted logprobs for this assistant turn",
+        "probability_class": "partial_top_k",
+        "provenance": {
+          "model": "inclusionai/ling-3.0-flash-vl:free",
+          "parameters": {},
+          "provider": "openrouter"
+        },
+        "schema_version": 1,
+        "status": "unavailable",
+        "tokens": []
+      },
+      "provider": "openrouter",
+      "replay": {
+        "status": "unavailable",
+        "token_count": 0
+      },
+      "request_id": "gen-1789357066-rTdx4uRkN7w0mwDD3G9M",
+      "session_id": "01a09dfd-d57f-70a2-80c6-ab4967fbe3ba",
+      "source_sequence": 816,
+      "status": "unavailable"
+    },
+    {
+      "event_type": "message_end",
+      "kind": "tool_call",
+      "model": "inclusionai/ling-3.0-flash-vl:free",
+      "probability_artifact": {
+        "artifact_schema": "partial-token-probability-v1",
+        "coverage": {
+          "alternative_count": 0,
+          "token_count": 0,
+          "tokens_with_alternatives": 0
+        },
+        "full_vocabulary_compatible": false,
+        "missing_data_reason": "provider omitted logprobs for this assistant turn",
+        "probability_class": "partial_top_k",
+        "provenance": {
+          "model": "inclusionai/ling-3.0-flash-vl:free",
+          "parameters": {},
+          "provider": "openrouter"
+        },
+        "schema_version": 1,
+        "status": "unavailable",
+        "tokens": []
+      },
+      "provider": "openrouter",
+      "replay": {
+        "status": "unavailable",
+        "token_count": 0
+      },
+      "request_id": "gen-1789357068-FQtS9scCeT0UPZQiyXS2",
+      "session_id": "01a09dfd-d57f-70a2-80c6-ab4967fbe3ba",
+      "source_sequence": 937,
+      "status": "unavailable"
+    }
+  ]
+}

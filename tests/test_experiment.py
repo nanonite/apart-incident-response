@@ -41,6 +41,14 @@ class ControlledExperimentTests(unittest.TestCase):
         document = protocol.to_dict()
         self.assertEqual(document["protocol_version"], "controlled-n-agent-c0-c1-c2-v1")
         self.assertEqual(document["conditions"], ["C0", "C1", "C2"])
+        self.assertEqual(
+            document["condition_summary"],
+            {
+                "C0": {"board_access": "none", "peer_visibility": "none"},
+                "C1": {"board_access": "append_and_read", "peer_visibility": "all_peer_messages"},
+                "C2": {"board_access": "append_and_read", "peer_visibility": "own_messages_only"},
+            },
+        )
         self.assertEqual(document["primary_contrast"], "C1 versus C2")
         self.assertEqual(set(document["factor_levels"]), {
             "agent_count", "capability_profile", "difficulty", "transformation_cadence", "model"

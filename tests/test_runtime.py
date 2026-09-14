@@ -218,6 +218,14 @@ class RuntimeContractTests(unittest.TestCase):
         self.assertEqual(metadata["openrouter_model"], "openai/gpt-4o-mini")
         self.assertEqual(metadata["openrouter_route"], "openrouter.ai:443")
 
+    def test_ling_model_id_is_preserved_for_openrouter_requests(self):
+        config = self.config().for_model("openrouter/inclusionai/ling-3.0-flash-vl:free")
+        self.assertEqual(config.model, "openrouter/inclusionai/ling-3.0-flash-vl:free")
+        self.assertEqual(
+            _model_request_metadata(config)["openrouter_model"],
+            "inclusionai/ling-3.0-flash-vl:free",
+        )
+
     def test_openrouter_switch_restores_codex_egress(self):
         config = self.config().for_model("openrouter/openai/gpt-4o-mini")
         codex = config.for_model("openai-codex/gpt-5.6-luna")

@@ -32,7 +32,6 @@ class OpenRouterContractTests(unittest.TestCase):
         self.assertTrue(payload["logprobs"])
         self.assertEqual(payload["top_logprobs"], 5)
         self.assertEqual(payload["provider"]["require_parameters"], True)
-        self.assertEqual(payload["provider"]["allow_fallbacks"], False)
 
     def test_missing_logprobs_fixture_is_explicitly_unavailable(self):
         payload = self.load("openrouter-chat-completion-missing-logprobs.json")

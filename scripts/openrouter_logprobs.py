@@ -40,7 +40,7 @@ from pathlib import Path
 API = "https://openrouter.ai/api/v1"
 ENV_FILE = Path.home() / ".config" / "apart-incident-response" / "openrouter.env"
 KEY_NAMES = ("OPEN_ROUTER_API_KEY", "OPENROUTER_API_KEY")
-DEFAULT_MODEL = "meta-llama/llama-3.1-8b-instruct"
+DEFAULT_MODEL = "inclusionai/ling-3.0-flash-vl:free"
 DEFAULT_OUTPUT = Path(__file__).resolve().parents[1] / "artifacts" / "openrouter-logprobs"
 
 

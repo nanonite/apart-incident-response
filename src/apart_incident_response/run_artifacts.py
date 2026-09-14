@@ -10,6 +10,7 @@ from typing import Any, Iterable, Mapping, Sequence
 from .probability_artifacts import (
     ProbabilityArtifactError,
     build_probability_artifact,
+    is_complete_probability_artifact,
     replay_partial_entropy,
     unavailable_probability_artifact,
 )
@@ -461,6 +462,43 @@ def build_agent_timeline(
         timeline["artifacts"]["probability_artifacts.json"]["present"] = True
         _write_json(artifact_dir / "timeline.json", timeline)
     return timeline
+
+
+def entropy_eligibility(
+    run_root: Path | str,
+    *,
+    expected_agent_count: int = 2,
+) -> dict[str, Any]:
+    """Check the strict gate for using token entropy from one condition run."""
+
+    root = Path(run_root).expanduser().resolve()
+    manifest = _load_json(root / "manifest.json")
+    assignments = manifest.get("assignment") if isinstance(manifest, Mapping) else None
+    agent_ids = [
+        item.get("agent_id")
+        for item in assignments
+        if isinstance(item, Mapping) and isinstance(item.get("agent_id"), str)
+    ] if isinstance(assignments, list) else []
+    reasons: list[str] = []
+    if len(agent_ids) != expected_agent_count or len(set(agent_ids)) != expected_agent_count:
+        reasons.append(f"expected exactly {expected_agent_count} assigned agents")
+    agents: dict[str, dict[str, Any]] = {}
+    for agent_id in agent_ids:
+        path = root / "agents" / agent_id / "artifacts" / "probability_artifacts.json"
+        try:
+            artifact = _load_json(path)
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+            artifact = None
+        eligible = is_complete_probability_artifact(artifact)
+        agents[agent_id] = {"path": _relative(root, path), "eligible": eligible}
+        if not eligible:
+            reasons.append(f"{agent_id}: probability_artifacts.json is incomplete or unavailable")
+    return {
+        "eligible": not reasons,
+        "expected_agent_count": expected_agent_count,
+        "agents": agents,
+        "reasons": list(dict.fromkeys(reasons)),
+    }
 
 
 def write_condition_index(

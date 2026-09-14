@@ -1,0 +1,36 @@
+{
+  "ended_at": "2026-09-14T03:37:31.053355Z",
+  "event_counts": {
+    "agent_end": 4,
+    "agent_settled": 1,
+    "agent_start": 4,
+    "auto_retry_end": 1,
+    "auto_retry_start": 3,
+    "message_end": 41,
+    "message_start": 41,
+    "message_update": 617,
+    "session": 1,
+    "tool_execution_end": 26,
+    "tool_execution_start": 26,
+    "turn_end": 14,
+    "turn_start": 14
+  },
+  "failure_reason": "Pi provider error: 429: {\"message\":\"Rate limit exceeded: free-models-per-min. \",\"code\":429,\"metadata\":{\"headers\":{\"X-RateLimit-Limit\":\"20\",\"X-RateLimit-Remaining\":\"0\",\"X-RateLimit-Reset\":\"1789357080000\"},\"limit_source\":\"openrouter_free_tier_per_minute\",\"remedy_hint\":\"Slow down requests to free models, or retry after the per-minute window resets.\",\"provider_name\":null}}",
+  "identity": {
+    "agent_id": "agent-2",
+    "capability_profile": "task-diagnostic-v1",
+    "condition": "C1",
+    "credential_id": "686e4e421ee300e531cfeceae52fa1dfb083f46a5c473e325ae3dd2c6ae8c997",
+    "run_id": "s0003-C1",
+    "seed": 3,
+    "task_id": "task-1"
+  },
+  "provider_started_at": "2026-09-14T03:37:01.504148Z",
+  "provider_tokens": 20571,
+  "schema_version": 1,
+  "started_at": "2026-09-14T03:37:01.494710Z",
+  "status": "failed",
+  "tool_call_count": 26,
+  "turn_count": 14,
+  "wall_clock_seconds": 29.571219
+}

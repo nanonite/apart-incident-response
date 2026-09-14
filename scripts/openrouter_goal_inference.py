@@ -35,7 +35,7 @@ from apart_incident_response.run_paths import create_run_directory
 
 
 DEFAULT_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
-DEFAULT_MODEL = "openai/gpt-4o-mini"
+DEFAULT_MODEL = "inclusionai/ling-3.0-flash-vl:free"
 DEFAULT_TOP_LOGPROBS = 5
 DEFAULT_MAX_TOKENS = 512
 OPENROUTER_ROUTE = "openrouter.ai:443"
@@ -92,8 +92,6 @@ def _request_payload(
         "max_tokens": max_tokens,
         "temperature": temperature,
         "provider": {
-            "order": ["openai"],
-            "allow_fallbacks": False,
             "require_parameters": True,
         },
     }
@@ -268,8 +266,6 @@ def main(argv: list[str] | None = None) -> int:
         "seed": args.seed,
         "stream": False,
         "provider": {
-            "order": ["openai"],
-            "allow_fallbacks": False,
             "require_parameters": True,
         },
     }
@@ -335,8 +331,8 @@ def main(argv: list[str] | None = None) -> int:
                 "host": urllib.parse.urlparse(args.endpoint).hostname,
                 "openrouter_route": OPENROUTER_ROUTE,
                 "provider": response.get("provider", "openai"),
-                "fallbacks_allowed": False,
                 "parameters_required": True,
+                "provider_order": "OpenRouter-selected",
             },
             "raw_response": _redact(response, api_key),
             "probability_artifact": probability_artifact,

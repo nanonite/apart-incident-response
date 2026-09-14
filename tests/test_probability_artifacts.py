@@ -8,6 +8,7 @@ from unittest.mock import patch
 from apart_incident_response.probability_artifacts import (
     ProbabilityArtifactError,
     build_probability_artifact,
+    is_complete_probability_artifact,
     normalize_token_probability,
     replay_partial_entropy,
 )
@@ -98,6 +99,20 @@ class PartialProbabilityArtifactTests(unittest.TestCase):
             artifact["tokens"][0]["entropy"]["partial_entropy_bits"],
         )
         self.assertEqual(artifact["coverage"]["alternative_count"], 1)
+
+    def test_entropy_gate_requires_every_turn_to_be_complete(self):
+        artifact = build_probability_artifact([self.record()], provenance=self.provenance)
+        turn_artifact = {
+            "artifact_schema": "agent-turn-probability-v1",
+            "coverage": {"turns": 1, "complete": 1, "partial": 0, "unavailable": 0},
+            "turns": [{
+                "status": "complete",
+                "probability_artifact": artifact,
+            }],
+        }
+        self.assertTrue(is_complete_probability_artifact(turn_artifact))
+        turn_artifact["coverage"]["partial"] = 1
+        self.assertFalse(is_complete_probability_artifact(turn_artifact))
 
     def test_ollama_goal_artifact_uses_shared_normalization(self):
         fixture_path = Path(__file__).parent / "fixtures" / "openrouter-chat-completion-logprobs.json"

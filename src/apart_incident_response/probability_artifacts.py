@@ -229,6 +229,42 @@ def build_probability_artifact(
     }
 
 
+def is_complete_probability_artifact(artifact: Any) -> bool:
+    """Return whether every recorded assistant turn has usable probabilities."""
+
+    if not isinstance(artifact, Mapping):
+        return False
+    if artifact.get("artifact_schema") == ARTIFACT_SCHEMA:
+        tokens = artifact.get("tokens")
+        return artifact.get("status") == "complete" and isinstance(tokens, list) and bool(tokens)
+    if artifact.get("artifact_schema") != "agent-turn-probability-v1":
+        return False
+    coverage = artifact.get("coverage")
+    turns = artifact.get("turns")
+    if not isinstance(coverage, Mapping) or not isinstance(turns, list):
+        return False
+    turn_count = coverage.get("turns")
+    if (
+        isinstance(turn_count, bool)
+        or not isinstance(turn_count, int)
+        or turn_count < 1
+        or coverage.get("complete") != turn_count
+        or coverage.get("partial", 0) != 0
+        or coverage.get("unavailable", 0) != 0
+        or len(turns) != turn_count
+    ):
+        return False
+    return all(
+        isinstance(turn, Mapping)
+        and turn.get("status") == "complete"
+        and isinstance(turn.get("probability_artifact"), Mapping)
+        and turn["probability_artifact"].get("status") == "complete"
+        and isinstance(turn["probability_artifact"].get("tokens"), list)
+        and bool(turn["probability_artifact"]["tokens"])
+        for turn in turns
+    )
+
+
 def replay_partial_entropy(artifact: Mapping[str, Any]) -> dict[str, Any]:
     """Recompute per-token partial entropy from a stored artifact."""
 

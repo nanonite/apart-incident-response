@@ -132,7 +132,7 @@ For the verified low-cost OpenRouter candidate, the one-shot smoke command is:
 ```bash
 export OPENROUTER_API_KEY='provided-outside-the-repository'
 PYTHONPATH=src python scripts/qwen3_goal.py --mode openrouter \
-  --model openrouter/openai/gpt-4o-mini --prompt 'The capital of France is' \
+  --model openrouter/inclusionai/ling-3.0-flash-vl:free --prompt 'The capital of France is' \
   --seed 1 --temperature 0 --top-logprobs 5 --max-tokens 16 \
   --output runs/openrouter/smoke
 ```
@@ -144,8 +144,9 @@ controller:
 export APART_PI_ROOT="$PWD/pi"
 export APART_OPENROUTER_API_KEY_FILE="$HOME/.config/openrouter/api-key"
 PYTHONPATH=src python scripts/run_experiment.py \
-  --real-anchor --model openrouter/openai/gpt-4o-mini --seeds 1 \
-  --output runs/openrouter/pilot
+    --real-anchor --model openrouter/inclusionai/ling-3.0-flash-vl:free \
+    --seeds 1 2 3 4 5 6 --output runs/openrouter/ling-3.0-flash-vl-free-2agent \
+    --agent-count 2
 ```
 
 The controller limits child egress to `openrouter.ai:443`, keeps the key

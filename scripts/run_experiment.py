@@ -16,8 +16,11 @@ sys.path.insert(0, str(SOURCE_ROOT / "src"))
 
 from apart_incident_response.controller import ExperimentController  # noqa: E402
 from apart_incident_response.runtime import IsolationPolicy, RuntimeConfig  # noqa: E402
-from apart_incident_response.run_artifacts import triplet_artifact_links  # noqa: E402
+from apart_incident_response.run_artifacts import entropy_eligibility, triplet_artifact_links  # noqa: E402
 from apart_incident_response.run_paths import RunDirectory, RunPathError, create_run_directory, validate_uuid4  # noqa: E402
+
+
+LING_MODEL = "openrouter/inclusionai/ling-3.0-flash-vl:free"
 
 
 def _write(path: Path, payload: object) -> None:
@@ -129,7 +132,11 @@ def run_harness_check(output: Path, *, run_id: str | None = None) -> dict[str, o
     return result
 
 
-def _matrix_validity(triplets: list[tuple[object, ...]]) -> dict[str, object]:
+def _matrix_validity(
+    triplets: list[tuple[object, ...]],
+    *,
+    expected_agent_count: int | None = None,
+) -> dict[str, object]:
     """Assess execution integrity separately from task success.
 
     A run is usable as experimental execution data when every expected agent
@@ -144,6 +151,7 @@ def _matrix_validity(triplets: list[tuple[object, ...]]) -> dict[str, object]:
         conditions = [getattr(run, "condition").value for run in triplet]
         reasons: list[str] = []
         triplet_run_uuids: set[str] = set()
+        manifests: list[Mapping[str, object]] = []
         if tuple(conditions) != expected_conditions:
             reasons.append("triplet does not contain exactly one C0, C1, and C2 run")
         for run in triplet:
@@ -160,6 +168,7 @@ def _matrix_validity(triplets: list[tuple[object, ...]]) -> dict[str, object]:
             if not isinstance(manifest, Mapping):
                 reasons.append(f"{condition}: run manifest is missing or invalid")
                 continue
+            manifests.append(manifest)
             run_uuid = manifest.get("run_uuid")
             if run_uuid is not None:
                 try:
@@ -176,6 +185,8 @@ def _matrix_validity(triplets: list[tuple[object, ...]]) -> dict[str, object]:
             if isinstance(expected_count, bool) or not isinstance(expected_count, int) or expected_count < 1:
                 reasons.append(f"{condition}: manifest is missing a valid expected agent count")
                 continue
+            if expected_agent_count is not None and expected_count != expected_agent_count:
+                reasons.append(f"{condition}: expected exactly {expected_agent_count} agents")
             assignments = manifest.get("assignment")
             assigned_ids = [
                 item.get("agent_id")
@@ -218,6 +229,21 @@ def _matrix_validity(triplets: list[tuple[object, ...]]) -> dict[str, object]:
             manifest_errors = manifest.get("controller_errors")
             if not isinstance(manifest_errors, list) or manifest_errors:
                 reasons.append(f"{condition}: manifest controller errors are present")
+        prompt_hashes = {
+            manifest.get("prompt_sha256")
+            for manifest in manifests
+            if isinstance(manifest.get("prompt_sha256"), str)
+        }
+        fixture_hashes = {
+            manifest.get("task", {}).get("fixture_sha256")
+            for manifest in manifests
+            if isinstance(manifest.get("task"), Mapping)
+            and isinstance(manifest.get("task", {}).get("fixture_sha256"), str)
+        }
+        if len(prompt_hashes) > 1:
+            reasons.append("condition prompts do not share one Task 1 prompt hash")
+        if len(fixture_hashes) > 1:
+            reasons.append("condition runs do not share one Task 1 fixture hash")
         if triplet_run_uuids and len(triplet_run_uuids) != 1:
             reasons.append("triplet conditions do not share one invocation UUID")
         unique_reasons = list(dict.fromkeys(reasons))
@@ -249,8 +275,11 @@ def run_real_anchor(
     agent_count: int | None = None,
 ) -> dict[str, object]:
     config = RuntimeConfig.from_json(SOURCE_ROOT / "config" / "runtime.json")
-    if model is not None:
-        config = config.for_model(model)
+    selected_model = model or LING_MODEL
+    config = config.for_model(selected_model)
+    selected_agent_count = 2 if agent_count is None else agent_count
+    if selected_agent_count != 2:
+        raise ValueError("the Ling entropy matrix requires exactly two agents")
     invocation = _new_invocation(
         output,
         config.model,
@@ -265,20 +294,32 @@ def run_real_anchor(
         run_class="experimental",
     )
     try:
-        if agent_count is None:
-            triplets = controller.run_anchor_matrix(seeds)
-        else:
-            triplets = [
-                controller.run_triplet(
-                    seed=seed,
-                    triplet_id=f"s{seed:04d}",
-                    agent_count=agent_count,
-                )
-                for seed in seeds
-            ]
+        triplets = [
+            controller.run_triplet(
+                seed=seed,
+                triplet_id=f"s{seed:04d}",
+                agent_count=selected_agent_count,
+            )
+            for seed in seeds
+        ]
     except Exception as exc:
         return _invocation_failure(invocation, exc, run_class="experimental")
-    validity = _matrix_validity(triplets)
+    validity = _matrix_validity(triplets, expected_agent_count=2)
+    entropy_gate: dict[str, object] = {
+        "eligible": bool(triplets),
+        "conditions": {},
+        "definition": (
+            "all two-agent condition runs require complete probability artifacts "
+            "for every intended agent turn"
+        ),
+    }
+    for triplet in triplets:
+        for run in triplet:
+            gate = entropy_eligibility(run.artifact_root, expected_agent_count=2)
+            conditions = entropy_gate["conditions"]
+            assert isinstance(conditions, dict)
+            conditions.setdefault(run.condition.value, []).append(gate)
+            entropy_gate["eligible"] = bool(entropy_gate["eligible"]) and bool(gate["eligible"])
     result = {
         "schema_version": 1,
         "run_class": "experimental",
@@ -295,6 +336,7 @@ def run_real_anchor(
             else "non-experimental diagnostic; incomplete agent execution or controller evidence"
         ),
         "validity": validity,
+        "entropy_eligibility": entropy_gate,
         "triplets": [
             {
                 "conditions": [run.condition.value for run in triplet],
@@ -390,14 +432,16 @@ def main() -> int:
     parser.add_argument("--output", type=Path, default=SOURCE_ROOT / "runs" / "t1")
     parser.add_argument(
         "--model",
-        help="provider/model-id for real runs; defaults to the configured Codex model",
+        help=f"provider/model-id for real runs; defaults to {LING_MODEL}",
     )
     parser.add_argument("--seeds", type=int, nargs="+", default=[1])
     parser.add_argument("--run-id", help="stable label stored with this invocation")
     parser.add_argument(
         "--agent-count",
         type=int,
-        help="override the anchor swarm size (predeclared: 2, 3, or 4); defaults to the anchor (3)",
+        choices=(2,),
+        default=2,
+        help="the Ling entropy matrix uses exactly two agents",
     )
     args = parser.parse_args()
     if args.harness_check:

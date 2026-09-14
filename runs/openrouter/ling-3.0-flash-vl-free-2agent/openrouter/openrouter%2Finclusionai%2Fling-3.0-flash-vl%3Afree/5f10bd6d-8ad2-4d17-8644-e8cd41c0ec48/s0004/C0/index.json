@@ -1,0 +1,355 @@
+{
+  "agents": {
+    "agent-1": {
+      "artifacts": {
+        "agent_telemetry.json": {
+          "path": "agents/agent-1/artifacts/agent_telemetry.json",
+          "present": true
+        },
+        "events.json": {
+          "path": "agents/agent-1/artifacts/events.json",
+          "present": true
+        },
+        "final_response.txt": {
+          "path": "agents/agent-1/artifacts/final_response.txt",
+          "present": true
+        },
+        "metadata.json": {
+          "path": "agents/agent-1/artifacts/metadata.json",
+          "present": true
+        },
+        "probability_artifacts.json": {
+          "path": "agents/agent-1/artifacts/probability_artifacts.json",
+          "present": true
+        },
+        "response.json": {
+          "path": "agents/agent-1/artifacts/response.json",
+          "present": true
+        },
+        "result.json": {
+          "path": "agents/agent-1/artifacts/result.json",
+          "present": true
+        },
+        "stderr.log": {
+          "path": "agents/agent-1/artifacts/stderr.log",
+          "present": true
+        },
+        "stdout.jsonl": {
+          "path": "agents/agent-1/artifacts/stdout.jsonl",
+          "present": true
+        },
+        "task_submission.json": {
+          "path": "agents/agent-1/artifacts/task_submission.json",
+          "present": false
+        },
+        "timeline.json": {
+          "path": "agents/agent-1/artifacts/timeline.json",
+          "present": false
+        },
+        "tool_calls.jsonl": {
+          "path": "agents/agent-1/artifacts/tool_calls.jsonl",
+          "present": true
+        }
+      },
+      "failure_reasons": [
+        "Pi provider error: 429: {\"message\":\"Rate limit exceeded: free-models-per-min. \",\"code\":429,\"metadata\":{\"headers\":{\"X-RateLimit-Limit\":\"20\",\"X-RateLimit-Remaining\":\"0\",\"X-RateLimit-Reset\":\"1789357080000\"},\"limit_source\":\"openrouter_free_tier_per_minute\",\"remedy_hint\":\"Slow down requests to free models, or retry after the per-minute window resets.\",\"provider_name\":null}}"
+      ],
+      "identity": {
+        "agent_id": "agent-1",
+        "capability_profile": "task-diagnostic-v1",
+        "condition": "C0",
+        "credential_id": "fdfe8c5dd0a2da538cd799d9845a8c9448f48523197518de1d3ae50a1c1ff5ed",
+        "run_id": "s0004-C0",
+        "seed": 4,
+        "task_id": "task-1"
+      },
+      "probability_artifacts": {
+        "coverage": {
+          "by_kind": {
+            "reasoning": {
+              "complete": 0,
+              "partial": 0,
+              "tokens": 0,
+              "turns": 0,
+              "unavailable": 0
+            },
+            "text": {
+              "complete": 0,
+              "partial": 0,
+              "tokens": 0,
+              "turns": 0,
+              "unavailable": 0
+            },
+            "tool_call": {
+              "complete": 0,
+              "partial": 0,
+              "tokens": 0,
+              "turns": 1,
+              "unavailable": 1
+            },
+            "unsupported": {
+              "complete": 0,
+              "partial": 0,
+              "tokens": 0,
+              "turns": 4,
+              "unavailable": 4
+            }
+          },
+          "complete": 0,
+          "partial": 0,
+          "tokens": 0,
+          "turns": 5,
+          "unavailable": 5
+        },
+        "path": "agents/agent-1/artifacts/probability_artifacts.json",
+        "present": true
+      },
+      "status": "failed",
+      "timeline": {
+        "path": "agents/agent-1/artifacts/timeline.json",
+        "present": true
+      },
+      "usage": {
+        "provider_tokens": 1263,
+        "tool_calls": 2,
+        "turns": 5
+      }
+    },
+    "agent-2": {
+      "artifacts": {
+        "agent_telemetry.json": {
+          "path": "agents/agent-2/artifacts/agent_telemetry.json",
+          "present": true
+        },
+        "events.json": {
+          "path": "agents/agent-2/artifacts/events.json",
+          "present": true
+        },
+        "final_response.txt": {
+          "path": "agents/agent-2/artifacts/final_response.txt",
+          "present": true
+        },
+        "metadata.json": {
+          "path": "agents/agent-2/artifacts/metadata.json",
+          "present": true
+        },
+        "probability_artifacts.json": {
+          "path": "agents/agent-2/artifacts/probability_artifacts.json",
+          "present": true
+        },
+        "response.json": {
+          "path": "agents/agent-2/artifacts/response.json",
+          "present": true
+        },
+        "result.json": {
+          "path": "agents/agent-2/artifacts/result.json",
+          "present": true
+        },
+        "stderr.log": {
+          "path": "agents/agent-2/artifacts/stderr.log",
+          "present": true
+        },
+        "stdout.jsonl": {
+          "path": "agents/agent-2/artifacts/stdout.jsonl",
+          "present": true
+        },
+        "task_submission.json": {
+          "path": "agents/agent-2/artifacts/task_submission.json",
+          "present": false
+        },
+        "timeline.json": {
+          "path": "agents/agent-2/artifacts/timeline.json",
+          "present": false
+        },
+        "tool_calls.jsonl": {
+          "path": "agents/agent-2/artifacts/tool_calls.jsonl",
+          "present": true
+        }
+      },
+      "failure_reasons": [
+        "agent exceeded per-agent tool-call budget; provider usage exceeded its claimed envelope (token overage=0, tool-call overage=4)"
+      ],
+      "identity": {
+        "agent_id": "agent-2",
+        "capability_profile": "task-diagnostic-v1",
+        "condition": "C0",
+        "credential_id": "39ada90a8c84ae9784952db882c521edb9b295d7b7f363ead14749e3e7e08644",
+        "run_id": "s0004-C0",
+        "seed": 4,
+        "task_id": "task-1"
+      },
+      "probability_artifacts": {
+        "coverage": {
+          "by_kind": {
+            "reasoning": {
+              "complete": 0,
+              "partial": 0,
+              "tokens": 0,
+              "turns": 0,
+              "unavailable": 0
+            },
+            "text": {
+              "complete": 0,
+              "partial": 0,
+              "tokens": 0,
+              "turns": 0,
+              "unavailable": 0
+            },
+            "tool_call": {
+              "complete": 0,
+              "partial": 0,
+              "tokens": 0,
+              "turns": 10,
+              "unavailable": 10
+            },
+            "unsupported": {
+              "complete": 0,
+              "partial": 0,
+              "tokens": 0,
+              "turns": 0,
+              "unavailable": 0
+            }
+          },
+          "complete": 0,
+          "partial": 0,
+          "tokens": 0,
+          "turns": 10,
+          "unavailable": 10
+        },
+        "path": "agents/agent-2/artifacts/probability_artifacts.json",
+        "present": true
+      },
+      "status": "budget_exhausted",
+      "timeline": {
+        "path": "agents/agent-2/artifacts/timeline.json",
+        "present": true
+      },
+      "usage": {
+        "provider_tokens": 21875,
+        "tool_calls": 36,
+        "turns": 9
+      }
+    }
+  },
+  "artifacts": {
+    "budget": {
+      "path": "budget.json",
+      "present": true
+    },
+    "manifest": {
+      "path": "manifest.json",
+      "present": true
+    },
+    "metrics": {
+      "path": "artifacts/metrics.json",
+      "present": true
+    },
+    "replay": {
+      "path": "artifacts/replay.json",
+      "present": true
+    },
+    "results": {
+      "path": "results.json",
+      "present": true
+    }
+  },
+  "failure_reasons": [
+    {
+      "agent_id": "agent-1",
+      "reason": "Pi provider error: 429: {\"message\":\"Rate limit exceeded: free-models-per-min. \",\"code\":429,\"metadata\":{\"headers\":{\"X-RateLimit-Limit\":\"20\",\"X-RateLimit-Remaining\":\"0\",\"X-RateLimit-Reset\":\"1789357080000\"},\"limit_source\":\"openrouter_free_tier_per_minute\",\"remedy_hint\":\"Slow down requests to free models, or retry after the per-minute window resets.\",\"provider_name\":null}}"
+    },
+    {
+      "agent_id": "agent-2",
+      "reason": "agent exceeded per-agent tool-call budget; provider usage exceeded its claimed envelope (token overage=0, tool-call overage=4)"
+    }
+  ],
+  "probability_coverage": {
+    "agent-1": {
+      "by_kind": {
+        "reasoning": {
+          "complete": 0,
+          "partial": 0,
+          "tokens": 0,
+          "turns": 0,
+          "unavailable": 0
+        },
+        "text": {
+          "complete": 0,
+          "partial": 0,
+          "tokens": 0,
+          "turns": 0,
+          "unavailable": 0
+        },
+        "tool_call": {
+          "complete": 0,
+          "partial": 0,
+          "tokens": 0,
+          "turns": 1,
+          "unavailable": 1
+        },
+        "unsupported": {
+          "complete": 0,
+          "partial": 0,
+          "tokens": 0,
+          "turns": 4,
+          "unavailable": 4
+        }
+      },
+      "complete": 0,
+      "partial": 0,
+      "tokens": 0,
+      "turns": 5,
+      "unavailable": 5
+    },
+    "agent-2": {
+      "by_kind": {
+        "reasoning": {
+          "complete": 0,
+          "partial": 0,
+          "tokens": 0,
+          "turns": 0,
+          "unavailable": 0
+        },
+        "text": {
+          "complete": 0,
+          "partial": 0,
+          "tokens": 0,
+          "turns": 0,
+          "unavailable": 0
+        },
+        "tool_call": {
+          "complete": 0,
+          "partial": 0,
+          "tokens": 0,
+          "turns": 10,
+          "unavailable": 10
+        },
+        "unsupported": {
+          "complete": 0,
+          "partial": 0,
+          "tokens": 0,
+          "turns": 0,
+          "unavailable": 0
+        }
+      },
+      "complete": 0,
+      "partial": 0,
+      "tokens": 0,
+      "turns": 10,
+      "unavailable": 10
+    }
+  },
+  "prompt": "Diagnose the incident described by the evidence assigned to you. Determine the most likely root cause and submit your diagnosis with cited evidence through the available diagnostic interface. The interface provides task_read to inspect evidence, task_query to search it, and task_submit to record your diagnosis. Return a concise final explanation after submitting.",
+  "run": {
+    "condition": "C0",
+    "model": "openrouter/inclusionai/ling-3.0-flash-vl:free",
+    "provider": null,
+    "run_class": "experimental",
+    "run_id": "s0004-C0",
+    "run_uuid": "5f10bd6d-8ad2-4d17-8644-e8cd41c0ec48",
+    "seed": 4,
+    "triplet_id": "s0004"
+  },
+  "schema_version": 1,
+  "status": "failed"
+}

@@ -1,0 +1,355 @@
+{
+  "agents": {
+    "agent-1": {
+      "artifacts": {
+        "agent_telemetry.json": {
+          "path": "agents/agent-1/artifacts/agent_telemetry.json",
+          "present": true
+        },
+        "events.json": {
+          "path": "agents/agent-1/artifacts/events.json",
+          "present": true
+        },
+        "final_response.txt": {
+          "path": "agents/agent-1/artifacts/final_response.txt",
+          "present": true
+        },
+        "metadata.json": {
+          "path": "agents/agent-1/artifacts/metadata.json",
+          "present": true
+        },
+        "probability_artifacts.json": {
+          "path": "agents/agent-1/artifacts/probability_artifacts.json",
+          "present": true
+        },
+        "response.json": {
+          "path": "agents/agent-1/artifacts/response.json",
+          "present": true
+        },
+        "result.json": {
+          "path": "agents/agent-1/artifacts/result.json",
+          "present": true
+        },
+        "stderr.log": {
+          "path": "agents/agent-1/artifacts/stderr.log",
+          "present": true
+        },
+        "stdout.jsonl": {
+          "path": "agents/agent-1/artifacts/stdout.jsonl",
+          "present": true
+        },
+        "task_submission.json": {
+          "path": "agents/agent-1/artifacts/task_submission.json",
+          "present": false
+        },
+        "timeline.json": {
+          "path": "agents/agent-1/artifacts/timeline.json",
+          "present": false
+        },
+        "tool_calls.jsonl": {
+          "path": "agents/agent-1/artifacts/tool_calls.jsonl",
+          "present": true
+        }
+      },
+      "failure_reasons": [
+        "agent exceeded per-agent token budget; provider usage exceeded its claimed envelope (token overage=1345, tool-call overage=0)"
+      ],
+      "identity": {
+        "agent_id": "agent-1",
+        "capability_profile": "task-diagnostic-v1",
+        "condition": "C2",
+        "credential_id": "f67bc682522c1343686cd82b9dac80ac79d799036a3deb293589ae41eea0243b",
+        "run_id": "s0006-C2",
+        "seed": 6,
+        "task_id": "task-1"
+      },
+      "probability_artifacts": {
+        "coverage": {
+          "by_kind": {
+            "reasoning": {
+              "complete": 0,
+              "partial": 0,
+              "tokens": 0,
+              "turns": 0,
+              "unavailable": 0
+            },
+            "text": {
+              "complete": 0,
+              "partial": 0,
+              "tokens": 0,
+              "turns": 0,
+              "unavailable": 0
+            },
+            "tool_call": {
+              "complete": 0,
+              "partial": 0,
+              "tokens": 0,
+              "turns": 11,
+              "unavailable": 11
+            },
+            "unsupported": {
+              "complete": 0,
+              "partial": 0,
+              "tokens": 0,
+              "turns": 6,
+              "unavailable": 6
+            }
+          },
+          "complete": 0,
+          "partial": 0,
+          "tokens": 0,
+          "turns": 17,
+          "unavailable": 17
+        },
+        "path": "agents/agent-1/artifacts/probability_artifacts.json",
+        "present": true
+      },
+      "status": "budget_exhausted",
+      "timeline": {
+        "path": "agents/agent-1/artifacts/timeline.json",
+        "present": true
+      },
+      "usage": {
+        "provider_tokens": 27345,
+        "tool_calls": 28,
+        "turns": 17
+      }
+    },
+    "agent-2": {
+      "artifacts": {
+        "agent_telemetry.json": {
+          "path": "agents/agent-2/artifacts/agent_telemetry.json",
+          "present": true
+        },
+        "events.json": {
+          "path": "agents/agent-2/artifacts/events.json",
+          "present": true
+        },
+        "final_response.txt": {
+          "path": "agents/agent-2/artifacts/final_response.txt",
+          "present": true
+        },
+        "metadata.json": {
+          "path": "agents/agent-2/artifacts/metadata.json",
+          "present": true
+        },
+        "probability_artifacts.json": {
+          "path": "agents/agent-2/artifacts/probability_artifacts.json",
+          "present": true
+        },
+        "response.json": {
+          "path": "agents/agent-2/artifacts/response.json",
+          "present": true
+        },
+        "result.json": {
+          "path": "agents/agent-2/artifacts/result.json",
+          "present": true
+        },
+        "stderr.log": {
+          "path": "agents/agent-2/artifacts/stderr.log",
+          "present": true
+        },
+        "stdout.jsonl": {
+          "path": "agents/agent-2/artifacts/stdout.jsonl",
+          "present": true
+        },
+        "task_submission.json": {
+          "path": "agents/agent-2/artifacts/task_submission.json",
+          "present": false
+        },
+        "timeline.json": {
+          "path": "agents/agent-2/artifacts/timeline.json",
+          "present": false
+        },
+        "tool_calls.jsonl": {
+          "path": "agents/agent-2/artifacts/tool_calls.jsonl",
+          "present": true
+        }
+      },
+      "failure_reasons": [
+        "agent exceeded per-agent token budget; provider usage exceeded its claimed envelope (token overage=19134, tool-call overage=0)"
+      ],
+      "identity": {
+        "agent_id": "agent-2",
+        "capability_profile": "task-diagnostic-v1",
+        "condition": "C2",
+        "credential_id": "d60e200fc56d98d900e0062c4d0410c2c8da354b7102635fe0bd58b5747610c7",
+        "run_id": "s0006-C2",
+        "seed": 6,
+        "task_id": "task-1"
+      },
+      "probability_artifacts": {
+        "coverage": {
+          "by_kind": {
+            "reasoning": {
+              "complete": 0,
+              "partial": 0,
+              "tokens": 0,
+              "turns": 0,
+              "unavailable": 0
+            },
+            "text": {
+              "complete": 0,
+              "partial": 0,
+              "tokens": 0,
+              "turns": 0,
+              "unavailable": 0
+            },
+            "tool_call": {
+              "complete": 0,
+              "partial": 0,
+              "tokens": 0,
+              "turns": 8,
+              "unavailable": 8
+            },
+            "unsupported": {
+              "complete": 0,
+              "partial": 0,
+              "tokens": 0,
+              "turns": 0,
+              "unavailable": 0
+            }
+          },
+          "complete": 0,
+          "partial": 0,
+          "tokens": 0,
+          "turns": 8,
+          "unavailable": 8
+        },
+        "path": "agents/agent-2/artifacts/probability_artifacts.json",
+        "present": true
+      },
+      "status": "budget_exhausted",
+      "timeline": {
+        "path": "agents/agent-2/artifacts/timeline.json",
+        "present": true
+      },
+      "usage": {
+        "provider_tokens": 45134,
+        "tool_calls": 18,
+        "turns": 8
+      }
+    }
+  },
+  "artifacts": {
+    "budget": {
+      "path": "budget.json",
+      "present": true
+    },
+    "manifest": {
+      "path": "manifest.json",
+      "present": true
+    },
+    "metrics": {
+      "path": "artifacts/metrics.json",
+      "present": true
+    },
+    "replay": {
+      "path": "artifacts/replay.json",
+      "present": true
+    },
+    "results": {
+      "path": "results.json",
+      "present": true
+    }
+  },
+  "failure_reasons": [
+    {
+      "agent_id": "agent-1",
+      "reason": "agent exceeded per-agent token budget; provider usage exceeded its claimed envelope (token overage=1345, tool-call overage=0)"
+    },
+    {
+      "agent_id": "agent-2",
+      "reason": "agent exceeded per-agent token budget; provider usage exceeded its claimed envelope (token overage=19134, tool-call overage=0)"
+    }
+  ],
+  "probability_coverage": {
+    "agent-1": {
+      "by_kind": {
+        "reasoning": {
+          "complete": 0,
+          "partial": 0,
+          "tokens": 0,
+          "turns": 0,
+          "unavailable": 0
+        },
+        "text": {
+          "complete": 0,
+          "partial": 0,
+          "tokens": 0,
+          "turns": 0,
+          "unavailable": 0
+        },
+        "tool_call": {
+          "complete": 0,
+          "partial": 0,
+          "tokens": 0,
+          "turns": 11,
+          "unavailable": 11
+        },
+        "unsupported": {
+          "complete": 0,
+          "partial": 0,
+          "tokens": 0,
+          "turns": 6,
+          "unavailable": 6
+        }
+      },
+      "complete": 0,
+      "partial": 0,
+      "tokens": 0,
+      "turns": 17,
+      "unavailable": 17
+    },
+    "agent-2": {
+      "by_kind": {
+        "reasoning": {
+          "complete": 0,
+          "partial": 0,
+          "tokens": 0,
+          "turns": 0,
+          "unavailable": 0
+        },
+        "text": {
+          "complete": 0,
+          "partial": 0,
+          "tokens": 0,
+          "turns": 0,
+          "unavailable": 0
+        },
+        "tool_call": {
+          "complete": 0,
+          "partial": 0,
+          "tokens": 0,
+          "turns": 8,
+          "unavailable": 8
+        },
+        "unsupported": {
+          "complete": 0,
+          "partial": 0,
+          "tokens": 0,
+          "turns": 0,
+          "unavailable": 0
+        }
+      },
+      "complete": 0,
+      "partial": 0,
+      "tokens": 0,
+      "turns": 8,
+      "unavailable": 8
+    }
+  },
+  "prompt": "Diagnose the incident described by the evidence assigned to you. Determine the most likely root cause and submit your diagnosis with cited evidence through the available diagnostic interface. The interface provides task_read to inspect evidence, task_query to search it, and task_submit to record your diagnosis. Return a concise final explanation after submitting.",
+  "run": {
+    "condition": "C2",
+    "model": "openrouter/inclusionai/ling-3.0-flash-vl:free",
+    "provider": null,
+    "run_class": "experimental",
+    "run_id": "s0006-C2",
+    "run_uuid": "5f10bd6d-8ad2-4d17-8644-e8cd41c0ec48",
+    "seed": 6,
+    "triplet_id": "s0006"
+  },
+  "schema_version": 1,
+  "status": "failed"
+}

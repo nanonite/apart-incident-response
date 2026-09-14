@@ -1,0 +1,1326 @@
+{
+  "events": [
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "error": {
+          "code": "invalid_arguments",
+          "message": "path must be a relative POSIX path"
+        },
+        "ok": false
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:37:55.123146Z",
+      "validated_input": {
+        "max_results": 50,
+        "path": "/workspace/task",
+        "query": "incident evidence"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "error": {
+          "code": "invalid_arguments",
+          "message": "path must be a relative POSIX path"
+        },
+        "ok": false
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:37:55.123505Z",
+      "validated_input": {
+        "max_results": 50,
+        "path": "/workspace/task",
+        "query": "error log"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:37:55.134032Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "root cause"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:37:55.134458Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "evidence incident"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "error": {
+          "code": "invalid_arguments",
+          "message": "path contains an unsupported path component"
+        },
+        "ok": false
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:37:56.498123Z",
+      "validated_input": {
+        "max_results": 50,
+        "path": ".",
+        "query": "incident evidence"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "error": {
+          "code": "invalid_arguments",
+          "message": "path contains an unsupported path component"
+        },
+        "ok": false
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:37:56.498268Z",
+      "validated_input": {
+        "max_results": 50,
+        "path": ".",
+        "query": "error log"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:37:56.812170Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "log"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [
+            {
+              "line": 1,
+              "path": "application.log",
+              "text": "2026-09-12T10:14:02Z ERROR request failures began immediately after the configuration change."
+            },
+            {
+              "line": 3,
+              "path": "application.log",
+              "text": "The error began at the deployment boundary."
+            },
+            {
+              "line": 4,
+              "path": "application.log",
+              "text": "error rate rises only on requests touching the shared cache"
+            }
+          ],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:37:56.812583Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "error"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:37:56.812790Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "crash"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:37:58.843626Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "application"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [
+            {
+              "line": 3,
+              "path": "application.log",
+              "text": "The error began at the deployment boundary."
+            }
+          ],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:37:58.844342Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "deployment"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [
+            {
+              "line": 1,
+              "path": "application.log",
+              "text": "2026-09-12T10:14:02Z ERROR request failures began immediately after the configuration change."
+            }
+          ],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:37:58.844684Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "config"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [
+            {
+              "line": 2,
+              "path": "application.log",
+              "text": "Requests without cache access remain healthy."
+            },
+            {
+              "line": 4,
+              "path": "application.log",
+              "text": "error rate rises only on requests touching the shared cache"
+            },
+            {
+              "line": 5,
+              "path": "application.log",
+              "text": "requests bypassing the cache remain within the normal range"
+            }
+          ],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:37:58.845535Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "cache"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:37:58.845607Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "database"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:37:59.066939Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "error"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:37:59.067129Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "incident"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:00.487744Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "log"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:00.487968Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "trace"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:00.488023Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "crash"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:00.670314Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "server"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "ok": true,
+        "result": {
+          "content": "2026-09-12T10:14:02Z ERROR request failures began immediately after the configuration change.\nRequests without cache access remain healthy.\nThe error began at the deployment boundary.\nerror rate rises only on requests touching the shared cache\nrequests bypassing the cache remain within the normal range\n",
+          "path": "application.log",
+          "size": 304,
+          "task_id": "task-1"
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:00.670740Z",
+      "validated_input": {
+        "path": "application.log"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:00.671154Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "system"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:00.671364Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "performance"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:02.140476Z",
+      "validated_input": {
+        "path": "README.md"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:02.140677Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "*"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:02.789734Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "memory"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:02.791467Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "timeout"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:02.802066Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "network"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [
+            {
+              "line": 1,
+              "path": "application.log",
+              "text": "2026-09-12T10:14:02Z ERROR request failures began immediately after the configuration change."
+            }
+          ],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:02.802972Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "fail"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [
+            {
+              "line": 2,
+              "path": "application.log",
+              "text": "Requests without cache access remain healthy."
+            }
+          ],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:02.803803Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "access"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:04.037410Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "txt"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:04.037842Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "yaml"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:04.037911Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "python"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:04.038362Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "json"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:05.537604Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "incident"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:05.538039Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "latency"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:05.538777Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "proxy"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:05.539158Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "service"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:05.539224Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "version"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:05.642703Z",
+      "validated_input": {
+        "path": "diagnosis.md"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:05.643192Z",
+      "validated_input": {
+        "path": "evidence.md"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:05.643262Z",
+      "validated_input": {
+        "path": "incident.md"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:05.643342Z",
+      "validated_input": {
+        "path": "evidence.txt"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [
+            {
+              "line": 1,
+              "path": "application.log",
+              "text": "2026-09-12T10:14:02Z ERROR request failures began immediately after the configuration change."
+            }
+          ],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:07.188394Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "2026"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [
+            {
+              "line": 2,
+              "path": "application.log",
+              "text": "Requests without cache access remain healthy."
+            }
+          ],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:07.189258Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "health"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [
+            {
+              "line": 1,
+              "path": "application.log",
+              "text": "2026-09-12T10:14:02Z ERROR request failures began immediately after the configuration change."
+            },
+            {
+              "line": 2,
+              "path": "application.log",
+              "text": "Requests without cache access remain healthy."
+            },
+            {
+              "line": 4,
+              "path": "application.log",
+              "text": "error rate rises only on requests touching the shared cache"
+            },
+            {
+              "line": 5,
+              "path": "application.log",
+              "text": "requests bypassing the cache remain within the normal range"
+            }
+          ],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:07.189351Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "request"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [
+            {
+              "line": 3,
+              "path": "application.log",
+              "text": "The error began at the deployment boundary."
+            }
+          ],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:07.189717Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "deploy"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "board_read",
+      "response": {
+        "ok": true,
+        "result": {
+          "cadence": {
+            "attempt": 1,
+            "interval": 1,
+            "messages_delivered": 0,
+            "scheduled_opportunity": true
+          },
+          "has_more": false,
+          "messages": [],
+          "next_cursor": 0
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:07.365160Z",
+      "validated_input": {
+        "after_sequence_id": 0,
+        "limit": 50
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "bytes_read": 0,
+      "bytes_written": 0,
+      "cadence": {
+        "attempt": 1,
+        "interval": 1,
+        "messages_delivered": 0,
+        "scheduled_opportunity": true
+      },
+      "condition": "C1",
+      "cursor_before": 0,
+      "message": null,
+      "message_id": null,
+      "message_ids": [],
+      "messages": [],
+      "ok": true,
+      "operation": "board_read",
+      "requested_limit": 50,
+      "run_id": "s0004-C1",
+      "schema_version": 1,
+      "source": "board",
+      "timestamp": "2026-09-14T03:38:07.365267Z"
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:09.212187Z",
+      "validated_input": {
+        "path": "task.md"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:09.212361Z",
+      "validated_input": {
+        "path": "log.txt"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:09.212450Z",
+      "validated_input": {
+        "path": "data.json"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:09.212531Z",
+      "validated_input": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [
+            {
+              "line": 1,
+              "path": "application.log",
+              "text": "2026-09-12T10:14:02Z ERROR request failures began immediately after the configuration change."
+            }
+          ],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:09.700189Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "change"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [
+            {
+              "line": 4,
+              "path": "application.log",
+              "text": "error rate rises only on requests touching the shared cache"
+            }
+          ],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:09.700609Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "shared"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [
+            {
+              "line": 5,
+              "path": "application.log",
+              "text": "requests bypassing the cache remain within the normal range"
+            }
+          ],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:09.700785Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "bypass"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [
+            {
+              "line": 5,
+              "path": "application.log",
+              "text": "requests bypassing the cache remain within the normal range"
+            }
+          ],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0004-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:38:09.700915Z",
+      "validated_input": {
+        "max_results": 50,
+        "query": "normal"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "final_response": "Let me try a few more searches to be thorough.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
+      "source": "agent_result",
+      "status": "budget_exhausted",
+      "timestamp": "2026-09-14T03:38:17.500164Z"
+    },
+    {
+      "agent_id": "agent-1",
+      "final_response": "Let me try to explore the workspace directory structure.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
+      "source": "agent_result",
+      "status": "budget_exhausted",
+      "timestamp": "2026-09-14T03:41:09.370949Z"
+    }
+  ],
+  "schema_version": 1
+}

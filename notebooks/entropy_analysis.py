@@ -23,29 +23,20 @@ def _(mo):
 
         ## Framework
 
-        **Token-level predictive entropy** (Eq. 3) — the model's uncertainty about the next token:
+        **Top-5 partial token entropy** — the entropy of the returned top-5 token
+        probabilities after renormalising their covered mass. This is not true
+        full-vocabulary entropy.
 
         $$H_t = -\sum_{v \in V} p(v \mid x_{<t}) \log_2 p(v \mid x_{<t})$$
 
-        Approximated from top-$K$ logprobs by renormalising the covered probability mass.
-
-        **Per-agent entropy** (Eq. 4 operationalisation) — mean token entropy over a generation:
+        **Per-agent top-5 partial entropy** — mean token entropy over a generation:
 
         $$H(X_i) = -\sum_{k=1}^{K} \tilde{p}_i(x_k) \log_2 \tilde{p}_i(x_k)$$
 
         where $\tilde{p}$ is the top-$K$ distribution renormalised via softmax (Eq. 2).
 
-        **Two-agent system entropy** (Eq. 5):
-
-        $$H(X_1, X_2) = H(X_1) + H(X_2) - I(X_1; X_2)$$
-
-        **Mutual information / total correlation** (Eq. 6):
-
-        $$I(X_1; X_2) = \sum_{x_1 \in \mathcal{X}_1} \sum_{x_2 \in \mathcal{X}_2}
-          p(x_1, x_2) \log_2 \frac{p(x_1, x_2)}{p(x_1)\, p(x_2)}$$
-
-        Under the independence baseline $p(x_1, x_2) = p(x_1)p(x_2)$,
-        $I = 0$ and $H(X_1, X_2) = H(X_1) + H(X_2)$.
+        **Two-agent independence sum** — $H_1 + H_2$. This notebook does not
+        estimate true joint entropy or mutual information.
         """
     )
     return
@@ -112,6 +103,7 @@ def _(np, token_entropy_bits, renormalize_top_k, sampled_surprise_bits):
     REPO_ROOT = Path(__file__).parent.parent
     sys.path.insert(0, str(REPO_ROOT / "src"))
     from apart_incident_response.run_paths import select_canonical_run_documents
+    from apart_incident_response.probability_artifacts import is_complete_probability_artifact
 
     @dataclass
     class TokenRecord:
@@ -130,6 +122,7 @@ def _(np, token_entropy_bits, renormalize_top_k, sampled_surprise_bits):
         source: str
         provider: str
         model: str
+        agent_id: str = None
         tokens: list = field(default_factory=list)
 
         @property
@@ -190,24 +183,34 @@ def _(np, token_entropy_bits, renormalize_top_k, sampled_surprise_bits):
         return rec
 
     def _load_agent_turn_artifact(path):
-        d = json.loads(path.read_text())
+        artifact = json.loads(path.read_text())
+        if not is_complete_probability_artifact(artifact):
+            return []
+        agent_id = path.parent.parent.name
+        condition_id = path.parent.parent.parent.name
         records = []
-        for turn in d.get("turns", []):
+        for turn in artifact.get("turns", []):
             pa = turn.get("probability_artifact")
             if not pa or not pa.get("tokens"):
                 continue
-            run_id = (
-                f"{path.parent.parent.parent.name}"
-                f"/{path.parent.parent.name}"
-                f"/turn{turn.get('source_sequence', '?')}"
-            )
             records.append(_load_prob_artifact(
                 pa,
-                run_id=run_id,
+                run_id=f"{condition_id}/{agent_id}",
                 provider=turn.get("provider", "unknown"),
                 model=turn.get("model", "unknown"),
             ))
-        return records
+        if not records:
+            return []
+        combined = ExperimentRecord(
+            run_id=f"{condition_id}/{agent_id}",
+            source="agent_turn",
+            provider=records[0].provider,
+            model=records[0].model,
+            agent_id=agent_id,
+        )
+        for record in records:
+            combined.tokens.extend(record.tokens)
+        return [combined]
 
     def load_all_experiments():
         experiments = []
@@ -219,7 +222,7 @@ def _(np, token_entropy_bits, renormalize_top_k, sampled_surprise_bits):
             run_id = rel.replace("/goal_inference.json", "")
 
             pa = d.get("probability_artifact", {})
-            if pa and pa.get("tokens"):
+            if pa and is_complete_probability_artifact(pa) and pa.get("tokens"):
                 experiments.append(_load_prob_artifact(
                     pa,
                     run_id=run_id,
@@ -466,6 +469,12 @@ def _(selected, plt, np, agent_mean_entropy, system_entropy_independent, mo):
             kind="info",
         ))
 
+    if len(selected) != 2:
+        mo.stop(True, mo.callout(
+            mo.md("Select exactly **2 complete agent artifacts** for the independence sum."),
+            kind="info",
+        ))
+
     _h_agents = [agent_mean_entropy(_e.token_entropies) for _e in selected]
     _h_sum = system_entropy_independent(_h_agents)
     _agent_labels = [
@@ -482,8 +491,8 @@ def _(selected, plt, np, agent_mean_entropy, system_entropy_independent, mo):
         _h_sum / len(selected), color="black", linestyle="--", alpha=0.5,
         label=f"Mean = {_h_sum/len(selected):.3f} bits",
     )
-    _ax4a.set_ylabel("Mean $H(X_i)$ (bits)")
-    _ax4a.set_title("Per-agent mean entropy")
+    _ax4a.set_ylabel("Mean top-5 partial entropy $H_i$ (bits)")
+    _ax4a.set_title("Per-agent top-5 partial entropy")
     _ax4a.legend(fontsize=9)
     _ax4a.grid(True, alpha=0.3, axis="y")
     for _b, _v in zip(_bars, _h_agents):
@@ -499,8 +508,8 @@ def _(selected, plt, np, agent_mean_entropy, system_entropy_independent, mo):
     _ax4b.bar(_cats, _vals, color=_bcols2, edgecolor="white", zorder=3)
     _ax4b.set_ylabel("Entropy (bits)")
     _ax4b.set_title(
-        f"System entropy — independence baseline\n"
-        f"$H_{{sys}} = {_h_sum:.4f}$ bits  (TC = 0 assumed)"
+        f"Independence sum $H_1 + H_2 = {_h_sum:.4f}$ bits\n"
+        "not true joint entropy or mutual information"
     )
     _ax4b.grid(True, alpha=0.3, axis="y")
 
@@ -553,9 +562,10 @@ def _(mo, experiments, REPO_ROOT):
     ---
     **Runs directory:** `{REPO_ROOT / "runs"}`  |  **Experiments loaded:** {len(experiments)}
 
-    Implements Equations (1)–(6). The MI estimator (Eq. 6) returns 0 (independence bound);
-    a full estimate requires joint token co-occurrence from simultaneous multi-agent generation.
-    Agent-run `probability_artifacts.json` are loaded automatically once populated.
+      Reports top-5 partial entropy and the two-agent independence sum only.
+      It does not report true joint entropy or mutual information. Agent-run
+      `probability_artifacts.json` files are used only when every intended turn
+      is complete; incomplete agents are excluded rather than imputed.
     """)
     return
 

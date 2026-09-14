@@ -26,14 +26,14 @@ provider/model slug:
 
 ```console
 PYTHONPATH=src python3 scripts/qwen3_goal.py --mode openrouter \
-    --model openrouter/openai/gpt-4o-mini \
+    --model openrouter/inclusionai/ling-3.0-flash-vl:free \
     --prompt-file prompts/task-1.txt --seed 1 --temperature 0 \
     --top-logprobs 5 --max-tokens 512 \
     --output runs/openrouter/logprobs
 ```
 
 The request is non-streaming and sets `logprobs: true`, `top_logprobs`, and
-`provider.require_parameters: true` with fallbacks disabled. The adapter keeps
+`provider.require_parameters: true` without a model-specific provider order. The adapter keeps
 the response ID, usage, selected route, and sanitized raw response beside the
 normalized probability artifact. An omitted or malformed token array writes an
 explicit `failure.json` instead of fabricating probabilities.

@@ -1,0 +1,32 @@
+{
+  "ended_at": "2026-09-14T03:41:09.370949Z",
+  "event_counts": {
+    "agent_start": 1,
+    "message_end": 34,
+    "message_start": 35,
+    "message_update": 26767,
+    "session": 1,
+    "tool_execution_end": 24,
+    "tool_execution_start": 24,
+    "turn_end": 9,
+    "turn_start": 10
+  },
+  "failure_reason": "agent exceeded per-agent token budget; provider usage exceeded its claimed envelope (token overage=22500, tool-call overage=0)",
+  "identity": {
+    "agent_id": "agent-1",
+    "capability_profile": "task-diagnostic-v1",
+    "condition": "C1",
+    "credential_id": "6bceec95c7bb3a42daafbb3fc29027714d994862a825432b20a4781b3fbf7120",
+    "run_id": "s0004-C1",
+    "seed": 4,
+    "task_id": "task-1"
+  },
+  "provider_started_at": "2026-09-14T03:37:52.464929Z",
+  "provider_tokens": 48500,
+  "schema_version": 1,
+  "started_at": "2026-09-14T03:37:52.456456Z",
+  "status": "budget_exhausted",
+  "tool_call_count": 24,
+  "turn_count": 9,
+  "wall_clock_seconds": 197.46766
+}

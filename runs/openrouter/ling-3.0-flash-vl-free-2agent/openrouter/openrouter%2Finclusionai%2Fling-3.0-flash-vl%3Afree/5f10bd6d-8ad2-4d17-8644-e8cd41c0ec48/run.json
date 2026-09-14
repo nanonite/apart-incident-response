@@ -1,0 +1,11 @@
+{
+  "artifact_schema": "model-run-v1",
+  "model": "openrouter/inclusionai/ling-3.0-flash-vl:free",
+  "model_slug": "openrouter%2Finclusionai%2Fling-3.0-flash-vl%3Afree",
+  "path": "/app/runs/openrouter/ling-3.0-flash-vl-free-2agent/openrouter/openrouter%2Finclusionai%2Fling-3.0-flash-vl%3Afree/5f10bd6d-8ad2-4d17-8644-e8cd41c0ec48",
+  "provider": "openrouter",
+  "run_class": "experimental",
+  "run_id": "5f10bd6d-8ad2-4d17-8644-e8cd41c0ec48",
+  "run_uuid": "5f10bd6d-8ad2-4d17-8644-e8cd41c0ec48",
+  "schema_version": 1
+}

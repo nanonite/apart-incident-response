@@ -28,7 +28,7 @@ flowchart TD
 | Experimental controls | Same C0/C1/C2 controller, task fixtures, constrained tools, per-agent/aggregate budgets, and artifact schema | Same controls; select the model with `--model` and compare only under a matched triplet contract |
 
 OpenRouter is selected with a full provider/model slug such as
-`openrouter/openai/gpt-4o-mini`. The controller reads the dedicated
+`openrouter/inclusionai/ling-3.0-flash-vl:free`. The controller reads the dedicated
 `APART_OPENROUTER_API_KEY_FILE` file (or the controller-only
 `OPENROUTER_API_KEY` fallback), stages an `openrouter` entry in the run-local
 Pi auth file, and removes it during cleanup. The child receives neither the
@@ -37,7 +37,7 @@ Codex OAuth hosts and the OpenCode host are removed when the provider is
 selected. The provider-specific `models.json` override keeps each agent's
 configured `maxTokens` envelope.
 
-The current OpenRouter catalog lists `openai/gpt-4o-mini` with `logprobs` and
+The current OpenRouter catalog lists `inclusionai/ling-3.0-flash-vl:free` with `logprobs` and
 `top_logprobs` support. Its chat-completions endpoint is
 `https://openrouter.ai/api/v1/chat/completions`; `top_logprobs` accepts 0–20
 and requires `logprobs: true`. Requests that depend on these fields must set
@@ -69,8 +69,8 @@ repository:
 
 ```bash
 export APART_OPENROUTER_API_KEY_FILE="$HOME/.config/openrouter/api-key"
-just container-anchor output=openrouter-container seeds="1" \
-  model=openrouter/openai/gpt-4o-mini
+  just container-anchor output=openrouter-container seeds="1" \
+    model=openrouter/inclusionai/ling-3.0-flash-vl:free
 ```
 
 The outer container controller mounts that file read-only, copies it to a

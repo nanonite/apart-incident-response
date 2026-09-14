@@ -1,0 +1,10 @@
+{
+  "token_limit": 52000,
+  "tokens_over_budget": 1621,
+  "tokens_reserved": 0,
+  "tokens_used": 49620,
+  "tool_call_limit": 64,
+  "tool_calls_over_budget": 4,
+  "tool_calls_reserved": 0,
+  "tool_calls_used": 52
+}

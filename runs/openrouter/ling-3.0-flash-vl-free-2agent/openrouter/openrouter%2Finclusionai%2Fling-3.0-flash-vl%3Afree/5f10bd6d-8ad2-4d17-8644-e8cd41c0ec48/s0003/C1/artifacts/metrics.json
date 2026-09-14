@@ -1,0 +1,64 @@
+{
+  "U": 0.0,
+  "agent_count": 2,
+  "aggregate_token_budget": 52000,
+  "board_bytes_read": 0,
+  "board_bytes_written": 0,
+  "board_reads_R": 2,
+  "board_writes_W": 0,
+  "cadence_read_attempts": 2,
+  "completed_agents": 0,
+  "coordination_overhead": {
+    "extra_board_reads_vs_baseline": 2,
+    "extra_board_writes_vs_baseline": 0,
+    "extra_tokens_vs_baseline": -27795,
+    "extra_tool_calls_vs_baseline": -17
+  },
+  "cross_agent_messages_X": 0,
+  "evidence_to_message_opportunities": 0,
+  "failures": [
+    {
+      "agent_id": "agent-1",
+      "reason": "Pi provider error: 429: {\"message\":\"Rate limit exceeded: free-models-per-min. \",\"code\":429,\"metadata\":{\"headers\":{\"X-RateLimit-Limit\":\"20\",\"X-RateLimit-Remaining\":\"0\",\"X-RateLimit-Reset\":\"1789357080000\"},\"limit_source\":\"openrouter_free_tier_per_minute\",\"remedy_hint\":\"Slow down requests to free models, or retry after the per-minute window resets.\",\"provider_name\":null}}",
+      "status": "failed"
+    },
+    {
+      "agent_id": "agent-2",
+      "reason": "Pi provider error: 429: {\"message\":\"Rate limit exceeded: free-models-per-min. \",\"code\":429,\"metadata\":{\"headers\":{\"X-RateLimit-Limit\":\"20\",\"X-RateLimit-Remaining\":\"0\",\"X-RateLimit-Reset\":\"1789357080000\"},\"limit_source\":\"openrouter_free_tier_per_minute\",\"remedy_hint\":\"Slow down requests to free models, or retry after the per-minute window resets.\",\"provider_name\":null}}",
+      "status": "failed"
+    }
+  ],
+  "mean_uptake_latency_seconds": null,
+  "message_read_ratio_M": 0.0,
+  "message_to_answer_opportunities": 0,
+  "pilot_claim_scope": "descriptive; no causal or inferential claim from this metric alone",
+  "private_token_owners": {
+    "ORCHID-413": [
+      "agent-2"
+    ]
+  },
+  "scheduled_board_read_opportunities": 2,
+  "schema_version": 1,
+  "submitted_agents": 0,
+  "success_per_1000_tokens": 0.0,
+  "task_success": false,
+  "task_success_rate": 0.0,
+  "total_tokens": 44247,
+  "total_tool_calls": 45,
+  "total_turns": 30,
+  "transformation_events": [],
+  "transformation_opportunities": 0,
+  "transformation_rate": 0.0,
+  "uptake": [],
+  "uptake_defined": false,
+  "uptake_definition": "recipient use after a prior board read of a seeded-token message from a declared private owner; every recipient with private exposure is excluded",
+  "uptake_events": 0,
+  "uptake_latency_seconds": [],
+  "uptake_opportunities": 0,
+  "uptake_outcomes": [],
+  "uptake_provenance_error": null,
+  "uptake_provenance_valid": true,
+  "uptake_recipients": 0,
+  "validator_outcomes": [],
+  "wall_clock_seconds": 30.076241
+}

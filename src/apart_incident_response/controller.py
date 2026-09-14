@@ -67,6 +67,11 @@ class ExperimentProtocol:
             "protocol_version": self.version,
             "run_unit": "one isolated swarm, one condition, one task instance and one aggregate budget",
             "conditions": [condition.value for condition in self.conditions],
+            "condition_summary": {
+                "C0": {"board_access": "none", "peer_visibility": "none"},
+                "C1": {"board_access": "append_and_read", "peer_visibility": "all_peer_messages"},
+                "C2": {"board_access": "append_and_read", "peer_visibility": "own_messages_only"},
+            },
             "primary_contrast": "C1 versus C2",
             "secondary_contrasts": ["C1 versus C0", "C2 versus C0"],
             "condition_order": "deterministic seed-rotated counterbalance; analysis returns C0/C1/C2 order",

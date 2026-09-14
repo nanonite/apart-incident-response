@@ -1,0 +1,1022 @@
+{
+  "events": [
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "error": {
+          "code": "invalid_arguments",
+          "message": "path must be a relative POSIX path"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:14.867609Z",
+      "validated_input": {
+        "path": "/workspace/task",
+        "query": "incident evidence diagnosis"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "error": {
+          "code": "invalid_arguments",
+          "message": "path must be a relative POSIX path"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:15.082326Z",
+      "validated_input": {
+        "max_results": 50,
+        "path": "/workspace/task",
+        "query": "root cause"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "error": {
+          "code": "invalid_arguments",
+          "message": "path must be a relative POSIX path"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:15.082618Z",
+      "validated_input": {
+        "max_results": 50,
+        "path": "/workspace/task",
+        "query": "incident evidence diagnosis"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:15.790831Z",
+      "validated_input": {
+        "query": "incident evidence"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "error": {
+          "code": "invalid_arguments",
+          "message": "path contains an unsupported path component"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:16.399547Z",
+      "validated_input": {
+        "max_results": 50,
+        "path": ".",
+        "query": "root cause"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "error": {
+          "code": "invalid_arguments",
+          "message": "path contains an unsupported path component"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:16.399765Z",
+      "validated_input": {
+        "max_results": 50,
+        "path": ".",
+        "query": "incident evidence diagnosis"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:16.865582Z",
+      "validated_input": {
+        "query": "evidence"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:16.865751Z",
+      "validated_input": {
+        "query": "diagnosis"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "error": {
+          "code": "invalid_arguments",
+          "message": "path contains an unsupported path component"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:17.555753Z",
+      "validated_input": {
+        "max_results": 50,
+        "path": ".",
+        "query": "evidence"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:17.958544Z",
+      "validated_input": {
+        "path": "README.md"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:17.958824Z",
+      "validated_input": {
+        "path": "evidence"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:18.724153Z",
+      "validated_input": {
+        "max_results": 50,
+        "path": "evidence",
+        "query": "incident"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:19.321179Z",
+      "validated_input": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:19.321424Z",
+      "validated_input": {
+        "path": "task.md"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:19.321695Z",
+      "validated_input": {
+        "path": "log.txt"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "error": {
+          "code": "invalid_arguments",
+          "message": "path must be a relative POSIX path"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:20.330632Z",
+      "validated_input": {
+        "max_results": 50,
+        "path": "/workspace/task",
+        "query": "incident"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "board_read",
+      "response": {
+        "ok": true,
+        "result": {
+          "cadence": {
+            "attempt": 1,
+            "interval": 1,
+            "messages_delivered": 0,
+            "scheduled_opportunity": true
+          },
+          "has_more": false,
+          "messages": [],
+          "next_cursor": 0
+        }
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:20.463370Z",
+      "validated_input": {
+        "after_sequence_id": 0,
+        "limit": 50
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "bytes_read": 0,
+      "bytes_written": 0,
+      "cadence": {
+        "attempt": 1,
+        "interval": 1,
+        "messages_delivered": 0,
+        "scheduled_opportunity": true
+      },
+      "condition": "C1",
+      "cursor_before": 0,
+      "message": null,
+      "message_id": null,
+      "message_ids": [],
+      "messages": [],
+      "ok": true,
+      "operation": "board_read",
+      "requested_limit": 50,
+      "run_id": "s0001-C1",
+      "schema_version": 1,
+      "source": "board",
+      "timestamp": "2026-09-14T03:30:20.463506Z"
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:21.767824Z",
+      "validated_input": {
+        "max_results": 50,
+        "path": "task",
+        "query": "incident"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:21.777387Z",
+      "validated_input": {
+        "query": "root cause"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:21.778372Z",
+      "validated_input": {
+        "query": "failure"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:21.779375Z",
+      "validated_input": {
+        "query": "error"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "error": {
+          "code": "invalid_arguments",
+          "message": "path contains an unsupported path component"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:23.120482Z",
+      "validated_input": {
+        "path": ".",
+        "query": "test"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:23.391395Z",
+      "validated_input": {
+        "path": "README.md"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:23.391684Z",
+      "validated_input": {
+        "path": "evidence.txt"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:23.391973Z",
+      "validated_input": {
+        "path": "notes.txt"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "invalid_arguments",
+          "message": "path must be a relative POSIX path"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:24.513885Z",
+      "validated_input": {
+        "path": "/workspace/task"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:24.514094Z",
+      "validated_input": {
+        "path": "workspace"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:24.514154Z",
+      "validated_input": {
+        "path": "task"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:25.316889Z",
+      "validated_input": {
+        "path": "evidence.md"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:25.317193Z",
+      "validated_input": {
+        "path": "log.txt"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:25.317254Z",
+      "validated_input": {
+        "path": "incident.md"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "invalid_arguments",
+          "message": "path contains an unsupported path component"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:25.757994Z",
+      "validated_input": {
+        "path": "task/"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:25.758157Z",
+      "validated_input": {
+        "path": "workspace/task"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "invalid_arguments",
+          "message": "path contains an unsupported path component"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:25.758779Z",
+      "validated_input": {
+        "path": "."
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "board_read",
+      "response": {
+        "ok": true,
+        "result": {
+          "cadence": {
+            "attempt": 1,
+            "interval": 1,
+            "messages_delivered": 0,
+            "scheduled_opportunity": true
+          },
+          "has_more": false,
+          "messages": [],
+          "next_cursor": 0
+        }
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:26.757924Z",
+      "validated_input": {
+        "after_sequence_id": 0,
+        "limit": 50
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "bytes_read": 0,
+      "bytes_written": 0,
+      "cadence": {
+        "attempt": 1,
+        "interval": 1,
+        "messages_delivered": 0,
+        "scheduled_opportunity": true
+      },
+      "condition": "C1",
+      "cursor_before": 0,
+      "message": null,
+      "message_id": null,
+      "message_ids": [],
+      "messages": [],
+      "ok": true,
+      "operation": "board_read",
+      "requested_limit": 50,
+      "run_id": "s0001-C1",
+      "schema_version": 1,
+      "source": "board",
+      "timestamp": "2026-09-14T03:30:26.758043Z"
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:28.408875Z",
+      "validated_input": {
+        "path": "task.md"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:28.409143Z",
+      "validated_input": {
+        "path": "diagnosis.md"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:28.409311Z",
+      "validated_input": {
+        "path": "problem.md"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:30.566860Z",
+      "validated_input": {
+        "path": "test.md"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:30.567018Z",
+      "validated_input": {
+        "path": "1.txt"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:30.567084Z",
+      "validated_input": {
+        "path": "a.txt"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:33.952077Z",
+      "validated_input": {
+        "path": "incident.json"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:33.952467Z",
+      "validated_input": {
+        "path": "data.json"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:33.952551Z",
+      "validated_input": {
+        "path": "log.json"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_read",
+      "response": {
+        "error": {
+          "code": "permission_denied",
+          "message": "path is outside the authenticated task permission set"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:33.952686Z",
+      "validated_input": {
+        "path": "report.md"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "final_response": "Let me try with very simple filenames.\n\n\n\n\n\n\n\n",
+      "source": "agent_result",
+      "status": "budget_exhausted",
+      "timestamp": "2026-09-14T03:30:33.989304Z"
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:42.670110Z",
+      "validated_input": {
+        "query": "symptom"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:42.670466Z",
+      "validated_input": {
+        "query": "assign"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C1",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0001-C1",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-14T03:30:42.670600Z",
+      "validated_input": {
+        "query": "detail"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "final_response": "\n\n",
+      "source": "agent_result",
+      "status": "budget_exhausted",
+      "timestamp": "2026-09-14T03:30:58.518215Z"
+    }
+  ],
+  "schema_version": 1
+}

@@ -6,6 +6,7 @@ import unittest
 from unittest.mock import patch
 
 from scripts.openrouter_goal_inference import (
+    DEFAULT_MODEL,
     _post_chat_completion,
     _request_payload,
     main,
@@ -21,7 +22,7 @@ class OpenRouterGoalInferenceTests(unittest.TestCase):
         self.assertIsInstance(payload, dict)
         return payload
 
-    def test_request_payload_is_one_shot_and_requires_the_pinned_route(self):
+    def test_request_payload_is_one_shot_and_requires_probability_support(self):
         payload = _request_payload(
             "openrouter/openai/gpt-4o-mini",
             "capital?",
@@ -39,8 +40,21 @@ class OpenRouterGoalInferenceTests(unittest.TestCase):
         self.assertEqual(payload["seed"], 23)
         self.assertEqual(
             payload["provider"],
-            {"order": ["openai"], "allow_fallbacks": False, "require_parameters": True},
+            {"require_parameters": True},
         )
+
+    def test_default_model_is_the_exact_ling_openrouter_id(self):
+        self.assertEqual(DEFAULT_MODEL, "inclusionai/ling-3.0-flash-vl:free")
+        payload = _request_payload(
+            "openrouter/inclusionai/ling-3.0-flash-vl:free",
+            "incident",
+            top_logprobs=5,
+            max_tokens=128,
+            temperature=0.0,
+            seed=1,
+        )
+        self.assertEqual(payload["model"], "inclusionai/ling-3.0-flash-vl:free")
+        self.assertEqual(payload["provider"], {"require_parameters": True})
 
     def test_api_key_is_sent_only_as_an_authorization_header(self):
         class FakeResponse:

@@ -1,0 +1,30 @@
+{
+  "final_response": "\n\n\n\n",
+  "identity": {
+    "agent_id": "agent-2",
+    "capability_profile": "task-diagnostic-v1",
+    "condition": "C2",
+    "credential_id": "6024b076e1c5ca1b8a40ec337eb67c13395e0c63ada41e715ed52ac16d99381f",
+    "run_id": "s0004-C2",
+    "seed": 4,
+    "task_id": "task-1"
+  },
+  "provider_token_count": 23620,
+  "response_sha256": "545c38b0922de19734fbffde62792c37c2aef6a3216cfa472449173165220f7d",
+  "schema_version": 1,
+  "token_count": 4,
+  "token_count_definition": "derived UTF-8 byte token count; provider_token_count is authoritative usage",
+  "token_ids": [
+    10,
+    10,
+    10,
+    10
+  ],
+  "tokenizer": {
+    "encoding": "utf-8",
+    "name": "utf8-byte-v1",
+    "normalization": "none",
+    "version": "1"
+  },
+  "tokenizer_config_sha256": "e7490e50182263bbff315d5acae82b42565065df73e18bf96c103963fca4b46f"
+}
