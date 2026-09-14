@@ -34,13 +34,13 @@
   \label{fig:trajectories}
 \end{figure*}
 
-\Cref{fig:trajectories} shows the result directly. For Qwen at $T = 0.5$, decision entropy averaged about 0.49 bits before the switch in every condition. After it, runs whose log stayed closed stayed at 0.56 bits, while runs that received foreign entries rose to 0.91 bits with real messages and 0.92 bits with placebo text. In plain terms, the agent went from being about 87\% sure of its next action to about 68\% sure. The same rise appeared at $T = 1$ and $T = 0$, and the change alone separated disrupted runs from undisturbed ones with AUC 0.85, 0.96 and 0.95. For gpt-4o-mini and Llama, the three curves overlap after the switch, and no temperature gave a significant difference.
+\Cref{fig:trajectories} shows the result directly. For Qwen at $T = 0.5$, decision entropy averaged about 0.49 bits before the switch in every condition. After it, runs whose log stayed closed stayed at 0.56 bits, while runs that received foreign entries rose to 0.91 bits with real messages and 0.92 bits with placebo text. Higher entropy indicates greater uncertainty over actions, but does not uniquely specify the probability of any one action. The same rise appeared at $T = 1$ and $T = 0$, and the change alone separated disrupted runs from undisturbed ones with AUC 0.85, 0.96 and 0.95. For gpt-4o-mini and Llama, the three curves overlap after the switch, and no temperature gave a significant difference.
 
 What the agents do when nothing happens helps explain the gap. Undisturbed Qwen agents mostly wait: 85 to 100\% of their actions after turn 8 are \texttt{READ\_LOG}, so their entropy is flat and a disruption stands out. gpt-4o-mini keeps trying to decrypt and reads the log in only 7 to 12\% of its actions, so it rarely sees the foreign entries. Llama alternates between writing and reading, and its decision entropy stays close to zero throughout.
 
 \subsection{Entropy does not show whether the text was real information}
 
-A monitor needs to answer two questions: did foreign text reach the agent, and was it real information? \Cref{tab:auc} answers both for every model and temperature. Entropy answers the first question for Qwen at all three temperatures. It answers the second only for Qwen at $T = 0$ (AUC 0.96). At $T = 1$ and $T = 0.5$, real messages and useless placebo text raised entropy by the same amount, as the overlapping switch and placebo curves in \cref{fig:trajectories} show. Under sampling, the agent's uncertainty reflects that something new arrived, not what it said. Without sampling noise, one model showed a larger reaction to real information, but a single model is not enough to call this general.
+The two monitoring questions are Q1: did foreign text arrive? and Q2: did it carry usable task facts? \Cref{tab:auc} evaluates condition-level discrimination, not message-by-message usefulness. Q1 contrasts switch and placebo with base; Q2 contrasts valid peer information with unrelated donor entries. Qwen separates Q1 conditions at all three temperatures and Q2 only at $T = 0$ (AUC 0.96). At $T = 1$ and $T = 0.5$, the measured changes do not reliably distinguish useful peer messages from placebo. The overlapping curves in \cref{fig:trajectories} do not establish equal output distributions, unchanged wording or absent information use: different distributions can have the same entropy. The greedy Qwen result remains a model-specific exception.
 
 \begin{table}[t]
   \centering
@@ -48,7 +48,7 @@ A monitor needs to answer two questions: did foreign text reach the agent, and w
   \setlength{\tabcolsep}{4pt}
   \begin{tabular}{lcccccc}
     \toprule
-    & \multicolumn{3}{c}{Q1: text arrived?} & \multicolumn{3}{c}{Q2: real information?} \\
+    & \multicolumn{3}{c}{Q1: foreign text?} & \multicolumn{3}{c}{Q2: usable facts?} \\
     \cmidrule(lr){2-4} \cmidrule(lr){5-7}
     Model & $T{=}1$ & $0.5$ & $0$ & $T{=}1$ & $0.5$ & $0$ \\
     \midrule
@@ -57,7 +57,7 @@ A monitor needs to answer two questions: did foreign text reach the agent, and w
     qwen3-235b    & \textbf{0.85} & \textbf{0.96} & \textbf{0.95} & 0.33 & 0.48 & \textbf{0.96} \\
     \bottomrule
   \end{tabular}
-  \caption{How well the change in decision entropy answers two monitoring questions, as AUC (0.5 = chance, 1.0 = perfect). Q1 compares runs that received foreign entries (switch and placebo) with base runs. Q2 compares real communication (switch) with placebo text. Bold: significant after Holm correction.}
+  \caption{AUC for run-level decision-entropy change (0.5 = chance, 1.0 = perfect). Q1: switch and placebo versus base. Q2: switch versus placebo; usable facts are current-task credentials or asset identifiers. These are condition contrasts; the checker separately verifies delivery and use. Bold: significant after Holm correction.}
   \label{tab:auc}
 \end{table}
 
