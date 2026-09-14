@@ -1,5 +1,6 @@
 {
   "audit_version": "retained-pilot-behavioral-v1",
+  "audited_scope": "legacy_task1_c0_c1_c2",
   "behavioral_valid_count": 0,
   "entropy_valid_count": 0,
   "raw_evidence_rewritten": false,
@@ -278,5 +279,6 @@
     }
   ],
   "run_count": 18,
-  "salvage_decision": "no_salvage_behavioral_execution_invalid"
+  "salvage_decision": "no_salvage_behavioral_execution_invalid",
+  "six_family_iso_full_comm_status": "unknown_not_located_in_retained_artifact_roots"
 }

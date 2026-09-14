@@ -9,7 +9,10 @@ the reconciled `.chainlink/issues.db` and unrelated artifacts.
 
 ## T1 Gate
 
-The retained Ling 18-run artifact audit found 18/18 execution-invalid runs:
+The retained Ling artifact tree was identified as the legacy Task 1 C0/C1/C2
+experiment, not the six-family ISO/FULL/COMM pilot. The six-family pilot was
+not located in retained artifacts and is therefore behaviorally **unknown**.
+The separately labeled legacy audit found 18/18 execution-invalid runs:
 all run indexes were failed, submitted agents were zero, validator outcomes
 were empty, and agent statuses were predominantly `budget_exhausted`.
 The raw evidence was not rewritten. Salvage decision: no salvage.

@@ -203,6 +203,9 @@ class OpenRouterFreeProvider:
             logprob_mass_coverage=response.topk_mass_coverage,
             logprob_status="records_present" if response.logprobs else "unavailable",
             failure_reason=(response.error or "logprobs unavailable") if not response.logprobs else response.error,
+            input_tokens=(response.usage or {}).get("prompt_tokens"),
+            output_tokens=(response.usage or {}).get("completion_tokens"),
+            cost_usd=float((response.usage or {}).get("cost") or 0.0),
         )
 
     def complete(self, prompt: str, *, max_tokens: int, seed: int) -> BaselineResponse:

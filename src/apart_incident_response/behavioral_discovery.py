@@ -173,6 +173,9 @@ class OpenRouterBehavioralProvider:
             output_text=result.text,
             logprob_status="not_requested",
             failure_reason=None if result.status == "complete" else result.error_type,
+            input_tokens=result.usage.get("prompt_tokens") if isinstance(result.usage, Mapping) else None,
+            output_tokens=result.usage.get("completion_tokens") if isinstance(result.usage, Mapping) else None,
+            cost_usd=result.cost_usd,
         )
 
 
@@ -195,6 +198,7 @@ class BehavioralArtifactStore:
             "seed": result.seed,
             "provider": result.provider,
             "provider_version": result.provider_version,
+            "model_id": result.model_id,
             "status": result.status,
             "task_success": result.task_success,
             "invalid_agents": list(result.invalid_agents),
@@ -248,6 +252,8 @@ def audit_retained_pilot(root: Path | str) -> dict[str, Any]:
     valid_behavior = sum(row["behavioral_valid"] for row in rows)
     return {
         "audit_version": "retained-pilot-behavioral-v1",
+        "audited_scope": "legacy_task1_c0_c1_c2",
+        "six_family_iso_full_comm_status": "unknown_not_located_in_retained_artifact_roots",
         "root": str(root),
         "run_count": len(rows),
         "behavioral_valid_count": valid_behavior,

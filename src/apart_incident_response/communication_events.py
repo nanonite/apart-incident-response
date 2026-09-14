@@ -83,7 +83,8 @@ class CommunicationEventLog:
                      logprob_entropy_bits: float | None = None,
                      logprob_coverage: float | None = None,
                      logprob_mass_coverage: float | None = None,
-                     logprob_status: str = "not_requested") -> CommunicationEvent:
+                     logprob_status: str = "not_requested", input_tokens: int | None = None,
+                     output_tokens: int | None = None, cost_usd: float = 0.0) -> CommunicationEvent:
         """Record output-time probability data, never read-time entropy."""
 
         return self.record("model_output", agent_id, output_id=output_id,
@@ -91,7 +92,9 @@ class CommunicationEventLog:
                                     "logprob_entropy_bits": logprob_entropy_bits,
                                     "logprob_coverage": logprob_coverage,
                                     "logprob_mass_coverage": logprob_mass_coverage,
-                                    "logprob_status": logprob_status})
+                                    "logprob_status": logprob_status,
+                                    "input_tokens": input_tokens, "output_tokens": output_tokens,
+                                    "cost_usd": cost_usd})
 
     def verified_use(self, agent_id: str, message: MessageInformation, output_id: str,
                      *, checker_evidence: Mapping[str, Any]) -> CommunicationEvent:
@@ -146,6 +149,9 @@ class CommunicationEventLog:
             "transmitted_bits": sum(transmitted) if transmitted else 0.0,
             "verified_useful_bits": sum(row["delta_i_bits"] for row in useful),
             "communication_tokens": sum(tokens),
+            "input_tokens": sum((event.payload or {}).get("input_tokens") or 0 for event in outputs),
+            "output_tokens": sum((event.payload or {}).get("output_tokens") or 0 for event in outputs),
+            "provider_cost_usd": sum(float((event.payload or {}).get("cost_usd") or 0.0) for event in outputs),
             "bits_per_communication_token": sum(transmitted) / sum(tokens) if sum(tokens) else None,
             "verified_use_count": len(useful),
             "logprob_output_count": len(logprob_rows),

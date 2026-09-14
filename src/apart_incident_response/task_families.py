@@ -89,7 +89,7 @@ class FamilyInstance:
             "private_clues": list(self.private_clues.get(agent, ())),
             "candidate_count": len(self.private_solutions[agent]),
             "candidate_labels": sorted(self.private_solutions[agent]),
-            "task_instruction": "Choose one candidate and reply exactly as ANSWER: <candidate label>. Do not invent a label.",
+            "task_instruction": "Choose one candidate and reply exactly as ANSWER: <candidate label>. In COMM only, you may optionally add MESSAGE: <exact private clue>; silence is allowed. Do not invent a label or claim message use.",
         }
         if condition == "FULL":
             view["joint_clues"] = [claim.text for claim in self.claims]

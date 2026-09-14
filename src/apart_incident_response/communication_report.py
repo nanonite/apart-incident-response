@@ -46,7 +46,7 @@ def report_from_battery(instances: Iterable[FamilyInstance], results: Iterable[A
     rows = [{
         "pair_id": result.pair_id,
         "family": result.family,
-        "model": result.provider,
+        "model": result.model_id,
         "condition": result.condition.value,
         "success": result.task_success,
         "valid": result.status == "completed",

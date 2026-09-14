@@ -7,7 +7,7 @@ from apart_incident_response.communication_events import CommunicationEventLog
 from apart_incident_response.communication_protocol import (
     BatteryCondition, BatteryProtocol, DependenceRegime, directional_d_idx,
 )
-from apart_incident_response.communication_runner import AgentResponse, TwoAgentBatteryRunner
+from apart_incident_response.communication_runner import AgentResponse, ScriptedProvider, TwoAgentBatteryRunner
 from apart_incident_response.finite_information import ExactInformationEvaluator, FeasibleSet, MessageInterpretation
 from apart_incident_response.live_gate import LiveGate, evaluate_capability_smoke
 from apart_incident_response.communication_report import report_from_rows
@@ -78,6 +78,43 @@ class CommunicationBatteryTests(unittest.TestCase):
         self.assertEqual({result.pair_id for result in results}, {f"pair-{instance.instance_id}"})
         self.assertEqual({result.instance_id for result in results}, {instance.instance_id})
         self.assertEqual(results[0].event_summary["message_count"], 0)
+
+    def test_comm_optional_message_is_read_and_machine_verified(self):
+        instance = generate_instance("hypothesis", 51, DependenceRegime.N)
+        answers = {(instance.instance_id, condition, agent): instance.target
+                   for condition in BatteryCondition for agent in ("A", "B")}
+        messages = {
+            (instance.instance_id, BatteryCondition.COMM, "A", 0): instance.claims[0].text,
+            (instance.instance_id, BatteryCondition.COMM, "B", 0): instance.claims[1].text,
+        }
+        result = TwoAgentBatteryRunner(turns=2, finalizing_agent="A").run_condition(
+            instance, BatteryCondition.COMM, ScriptedProvider(answers, messages),
+        )
+        self.assertEqual(result.status, "completed")
+        self.assertGreaterEqual(result.event_summary["message_count"], 1)
+        self.assertGreaterEqual(result.event_summary["verified_use_count"], 1)
+        self.assertEqual(result.artifact["model_id"], "unknown")
+
+    def test_self_reported_use_without_information_or_checker_does_not_pass(self):
+        instance = generate_instance("hypothesis", 52, DependenceRegime.N)
+        answers = {(instance.instance_id, condition, agent): instance.target
+                   for condition in BatteryCondition for agent in ("A", "B")}
+        messages = {(instance.instance_id, BatteryCondition.COMM, "A", 0): "ambiguous self report"}
+        provider = ScriptedProvider(answers, messages)
+        result = TwoAgentBatteryRunner(turns=2, finalizing_agent="A").run_condition(instance, BatteryCondition.COMM, provider)
+        self.assertEqual(result.event_summary["verified_use_count"], 0)
+
+    def test_finalizer_only_scoring_rejects_other_agent_answer(self):
+        instance = generate_instance("hypothesis", 53, DependenceRegime.N)
+        class Provider:
+            provider = "fixture"
+            version = "finalizer-test-v1"
+            model = "fixture-model"
+            def respond(self, context):
+                return AgentResponse(answer=instance.target if context.agent_id == "B" else "not-the-answer")
+        result = TwoAgentBatteryRunner(turns=1, finalizing_agent="A").run_condition(instance, BatteryCondition.ISO, Provider())
+        self.assertFalse(result.task_success)
+        self.assertEqual(result.artifact["model_id"], "fixture-model")
 
     def test_analysis_retains_invalid_denominators_and_does_not_use_volume_for_phi(self):
         rows = [

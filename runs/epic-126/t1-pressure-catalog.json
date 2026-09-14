@@ -314,6 +314,8 @@
       "verified_use_count": 0
     }
   ],
+  "finalizer_scoring_contract": "not_available_for_historical_run; do not use as model result",
+  "historical_protocol_debugging_evidence": true,
   "matched_metrics": [
     {
       "c_need": 0.0,
@@ -1132,6 +1134,7 @@
       "status": "incomplete"
     }
   ],
+  "model_behavior_claim": false,
   "model_relative": true,
   "next_decision": "review uncertainty and validity before expanding any cell",
   "outcome_count": 72,
