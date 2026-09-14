@@ -21,6 +21,26 @@ _TOOL_EXPORTS = {
     "ToolValidationError",
 }
 _EXPERIMENT_EXPORTS = {
+    "BatteryCondition",
+    "BatteryProtocol",
+    "CellAssignment",
+    "DependenceRegime",
+    "ReasoningComplexity",
+    "ExactInformationEvaluator",
+    "FeasibleSet",
+    "MessageInformation",
+    "MessageInterpretation",
+    "CommunicationEvent",
+    "CommunicationEventLog",
+    "TwoAgentBatteryRunner",
+    "AgentContext",
+    "AgentResponse",
+    "BatteryRunResult",
+    "ScriptedProvider",
+    "FamilyInstance",
+    "generate_instance",
+    "generate_grid",
+    "validate_family_grid",
     "CAPABILITY_PROFILES",
     "CapabilityProfile",
     "ExperimentController",
@@ -73,6 +93,26 @@ def __getattr__(name: str) -> Any:
             from . import capabilities
 
             value = getattr(capabilities, name)
+        elif name in {"BatteryCondition", "BatteryProtocol", "CellAssignment", "DependenceRegime", "ReasoningComplexity"}:
+            from . import communication_protocol
+
+            value = getattr(communication_protocol, name)
+        elif name in {"ExactInformationEvaluator", "FeasibleSet", "MessageInformation", "MessageInterpretation"}:
+            from . import finite_information
+
+            value = getattr(finite_information, name)
+        elif name in {"CommunicationEvent", "CommunicationEventLog"}:
+            from . import communication_events
+
+            value = getattr(communication_events, name)
+        elif name in {"TwoAgentBatteryRunner", "AgentContext", "AgentResponse", "BatteryRunResult", "ScriptedProvider"}:
+            from . import communication_runner
+
+            value = getattr(communication_runner, name)
+        elif name in {"FamilyInstance", "generate_instance", "generate_grid", "validate_family_grid"}:
+            from . import task_families
+
+            value = getattr(task_families, name)
         elif name in {"classify_uptake_outcomes", "compute_metrics", "detect_uptake", "replay_trace", "write_derived_artifacts"}:
             from . import telemetry
 
@@ -134,6 +174,26 @@ __all__ = [
     "ToolServiceSocketServer",
     "ToolUnavailableError",
     "ToolValidationError",
+    "BatteryCondition",
+    "BatteryProtocol",
+    "CellAssignment",
+    "DependenceRegime",
+    "ReasoningComplexity",
+    "ExactInformationEvaluator",
+    "FeasibleSet",
+    "MessageInformation",
+    "MessageInterpretation",
+    "CommunicationEvent",
+    "CommunicationEventLog",
+    "TwoAgentBatteryRunner",
+    "AgentContext",
+    "AgentResponse",
+    "BatteryRunResult",
+    "ScriptedProvider",
+    "FamilyInstance",
+    "generate_instance",
+    "generate_grid",
+    "validate_family_grid",
     "CAPABILITY_PROFILES",
     "CapabilityProfile",
     "ExperimentController",
