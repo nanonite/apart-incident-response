@@ -31,7 +31,7 @@ from apart_incident_response.probability_artifacts import (
     normalize_token_probability,
     unavailable_probability_artifact,
 )
-from apart_incident_response.run_paths import copy_file_if_absent, create_run_directory
+from apart_incident_response.run_paths import create_run_directory
 
 
 DEFAULT_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
@@ -182,18 +182,6 @@ def _write_json(path: Path, payload: object) -> None:
     path.chmod(0o600)
 
 
-def _mirror_file(path: Path, legacy_root: Path) -> None:
-    """Keep a single requested output leaf readable for old callers."""
-
-    destination = legacy_root / path.name
-    if destination == path:
-        return
-    try:
-        copy_file_if_absent(path, destination)
-    except OSError:
-        return
-
-
 def _write_failure(
     output: Path,
     *,
@@ -204,7 +192,6 @@ def _write_failure(
     parameters: Mapping[str, object],
     error: Exception,
     secret: str,
-    legacy_root: Path | None = None,
 ) -> None:
     failure_model = model.removeprefix("openrouter/") or "unknown"
     provenance = {
@@ -235,8 +222,6 @@ def _write_failure(
     }
     try:
         _write_json(output / "failure.json", artifact)
-        if legacy_root is not None:
-            _mirror_file(output / "failure.json", legacy_root)
     except OSError:
         return
 
@@ -357,7 +342,6 @@ def main(argv: list[str] | None = None) -> int:
             "probability_artifact": probability_artifact,
         }
         _write_json(output / "goal_inference.json", artifact)
-        _mirror_file(output / "goal_inference.json", requested_output)
     except (OSError, ValueError, TypeError, KeyError, json.JSONDecodeError, urllib.error.URLError, ProbabilityArtifactError, RuntimeError) as exc:
         _write_failure(
             output,
@@ -368,7 +352,6 @@ def main(argv: list[str] | None = None) -> int:
             parameters=parameters,
             error=exc,
             secret=api_key,
-            legacy_root=requested_output,
         )
         print(json.dumps({
             "status": "failed",

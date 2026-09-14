@@ -41,7 +41,7 @@ from apart_incident_response.probability_artifacts import (
     build_probability_artifact,
     normalize_token_probability,
 )
-from apart_incident_response.run_paths import copy_file_if_absent, create_run_directory
+from apart_incident_response.run_paths import create_run_directory
 
 DEFAULT_HOST = "http://localhost:11434"
 DEFAULT_MODEL = "qwen3:8b"
@@ -56,18 +56,6 @@ def _read_prompt(path: Path) -> str:
     return text
 
 
-def _mirror_file(path: Path, legacy_root: Path) -> None:
-    """Keep the requested leaf readable for callers of the old CLI contract."""
-
-    destination = legacy_root / path.name
-    if destination == path:
-        return
-    try:
-        copy_file_if_absent(path, destination)
-    except OSError:
-        return
-
-
 def _write_failure(
     output: Path,
     *,
@@ -75,7 +63,6 @@ def _write_failure(
     run_uuid: str,
     model: str,
     error: Exception,
-    legacy_root: Path | None = None,
 ) -> None:
     try:
         output.mkdir(parents=True, exist_ok=True)
@@ -93,8 +80,6 @@ def _write_failure(
             "error": str(error),
         }, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         path.chmod(0o600)
-        if legacy_root is not None:
-            _mirror_file(path, legacy_root)
     except OSError:
         return
 
@@ -327,7 +312,6 @@ def main(argv: list[str] | None = None) -> int:
             json.dumps(artifact, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
         )
         out_path.chmod(0o600)
-        _mirror_file(out_path, requested_output)
     except (OSError, ValueError, TypeError, KeyError, json.JSONDecodeError, urllib.error.URLError) as exc:
         _write_failure(
             output,
@@ -335,7 +319,6 @@ def main(argv: list[str] | None = None) -> int:
             run_uuid=invocation.run_uuid,
             model=args.model,
             error=exc,
-            legacy_root=requested_output,
         )
         print(json.dumps({"status": "failed", "run_id": run_id, "run_uuid": invocation.run_uuid, "artifact_root": str(output), "error": str(exc)}, indent=2))
         return 2

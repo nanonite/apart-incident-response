@@ -107,8 +107,11 @@ def _(np, token_entropy_bits, renormalize_top_k, sampled_surprise_bits):
     import json
     from pathlib import Path
     from dataclasses import dataclass, field
+    import sys
 
     REPO_ROOT = Path(__file__).parent.parent
+    sys.path.insert(0, str(REPO_ROOT / "src"))
+    from apart_incident_response.run_paths import select_canonical_run_documents
 
     @dataclass
     class TokenRecord:
@@ -209,8 +212,9 @@ def _(np, token_entropy_bits, renormalize_top_k, sampled_surprise_bits):
     def load_all_experiments():
         experiments = []
 
-        for gi_path in sorted(REPO_ROOT.glob("runs/**/goal_inference.json")):
-            d = json.loads(gi_path.read_text())
+        for gi_path, d in select_canonical_run_documents(
+            sorted(REPO_ROOT.glob("runs/**/goal_inference.json"))
+        ):
             rel = str(gi_path.relative_to(REPO_ROOT / "runs"))
             run_id = rel.replace("/goal_inference.json", "")
 

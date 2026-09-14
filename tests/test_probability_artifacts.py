@@ -116,7 +116,7 @@ class PartialProbabilityArtifactTests(unittest.TestCase):
                     0,
                 )
             artifact = json.loads(
-                (Path(temp) / "ollama" / "goal_inference.json").read_text(encoding="utf-8")
+                next((Path(temp) / "ollama").rglob("goal_inference.json")).read_text(encoding="utf-8")
             )
             probability = artifact["probability_artifact"]
             self.assertEqual(probability["artifact_schema"], "partial-token-probability-v1")

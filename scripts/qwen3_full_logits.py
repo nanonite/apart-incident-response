@@ -26,7 +26,7 @@ from apart_incident_response.qwen3_runtime import (  # noqa: E402
     dependency_versions,
     load_qwen3,
 )
-from apart_incident_response.run_paths import copy_file_if_absent, create_run_directory  # noqa: E402
+from apart_incident_response.run_paths import create_run_directory  # noqa: E402
 
 
 DEFAULT_CONFIG = SOURCE_ROOT / "config" / "qwen3-8b.json"
@@ -34,31 +34,6 @@ DEFAULT_CONFIG = SOURCE_ROOT / "config" / "qwen3-8b.json"
 
 def _sha256_text(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
-
-
-def _mirror_tree(source: Path, legacy_root: Path) -> None:
-    """Keep the old direct artifact root usable while new callers use UUID paths."""
-
-    destination = legacy_root / source.name
-    if destination == source:
-        return
-    try:
-        destination.mkdir(mode=0o700, parents=True, exist_ok=True)
-        for path in source.rglob("*"):
-            target = destination / path.relative_to(source)
-            if path.is_dir():
-                target.mkdir(mode=0o700, parents=True, exist_ok=True)
-            elif path.is_file():
-                copy_file_if_absent(path, target)
-    except OSError:
-        return
-
-
-def _mirror_file(path: Path, legacy_root: Path) -> None:
-    try:
-        copy_file_if_absent(path, legacy_root / path.name)
-    except OSError:
-        return
 
 
 def _write_failure(
@@ -69,7 +44,6 @@ def _write_failure(
     model: str,
     stage: str,
     error: Exception,
-    legacy_root: Path | None = None,
 ) -> None:
     try:
         output.mkdir(mode=0o700, parents=True, exist_ok=True)
@@ -89,8 +63,6 @@ def _write_failure(
         path = output / "failure.json"
         path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         path.chmod(0o600)
-        if legacy_root is not None:
-            _mirror_file(path, legacy_root)
     except OSError:
         return
 
@@ -380,11 +352,9 @@ def main(argv: list[str] | None = None) -> int:
             model=path_model,
             stage="full_logits_inference",
             error=exc,
-            legacy_root=requested_output,
         )
         print(json.dumps({"status": "failed", "run_id": run_id, "run_uuid": invocation.run_uuid, "artifact_root": str(args.output), "error": str(exc)}, indent=2))
         return 2
-    _mirror_tree(args.output / "full-logits", requested_output)
     print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
     return 0
 

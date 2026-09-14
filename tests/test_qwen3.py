@@ -107,7 +107,7 @@ class Qwen3ArtifactTests(unittest.TestCase):
             ):
                 status = full_logits_main(["--prompt", "fixture", "--output", str(output)])
             self.assertEqual(status, 2)
-            failure = json.loads((output / "failure.json").read_text(encoding="utf-8"))
+            failure = json.loads(next(output.rglob("failure.json")).read_text(encoding="utf-8"))
             self.assertEqual(failure["status"], "failed")
             self.assertEqual(failure["run_id"], "seed-1")
             self.assertIn("fixture runtime unavailable", failure["error"])
@@ -180,7 +180,7 @@ class Qwen3LiveSmokeTests(unittest.TestCase):
         loaded = load_full_logits_artifact(output)
         self.assertTrue(torch.isfinite(loaded.logits).all().item())
         self.assertEqual(loaded.logits.shape[0], loaded.generated_token_ids.shape[0])
-        generated = json.loads((output / "full-logits" / "generated.json").read_text(encoding="utf-8"))
+        generated = json.loads(next(output.rglob("generated.json")).read_text(encoding="utf-8"))
         self.assertEqual(generated["generated_token_ids"], loaded.generated_token_ids.tolist())
         self.assertIsInstance(generated["completion_text"], str)
         replayed = replay_entropy(output)

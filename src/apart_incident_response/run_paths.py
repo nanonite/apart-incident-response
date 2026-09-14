@@ -13,8 +13,7 @@ from dataclasses import dataclass
 import json
 from pathlib import Path, PureWindowsPath
 import re
-from shutil import copyfileobj
-from typing import Any, Mapping
+from typing import Any, Iterable, Mapping
 from urllib.parse import quote, unquote
 import uuid
 
@@ -88,19 +87,44 @@ def split_model_id(model: str, *, provider: str | None = None) -> tuple[str, str
     return selected_provider, full_model, slug
 
 
-def copy_file_if_absent(source: Path | str, destination: Path | str) -> bool:
-    """Copy a compatibility artifact without replacing an earlier invocation."""
+def select_canonical_run_documents(
+    paths: Iterable[Path | str],
+) -> list[tuple[Path, Mapping[str, Any]]]:
+    """Select one document per UUID, preferring the canonical UUID directory.
 
-    source_path = Path(source)
-    destination_path = Path(destination)
-    destination_path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
-    try:
-        with source_path.open("rb") as source_handle, destination_path.open("xb") as destination_handle:
-            copyfileobj(source_handle, destination_handle)
-    except FileExistsError:
-        return False
-    destination_path.chmod(0o600)
-    return True
+    Older one-shot writers may have left a compatibility copy at the output
+    base beside the canonical artifact.  The copy has the same ``run_uuid``;
+    a sibling ``run.json`` identifies the canonical document.  Documents
+    without a UUID remain independent historical artifacts.
+    """
+
+    documents = []
+    for raw_path in paths:
+        path = Path(raw_path)
+        document = json.loads(path.read_text(encoding="utf-8"))
+        if isinstance(document, Mapping):
+            documents.append((path, document))
+
+    canonical_by_uuid: dict[str, Path] = {}
+    for path, document in documents:
+        run_uuid = document.get("run_uuid")
+        if isinstance(run_uuid, str) and (path.parent / "run.json").is_file():
+            canonical_by_uuid.setdefault(run_uuid, path)
+
+    selected: list[tuple[Path, Mapping[str, Any]]] = []
+    selected_uuids: set[str] = set()
+    for path, document in documents:
+        run_uuid = document.get("run_uuid")
+        if isinstance(run_uuid, str):
+            canonical_path = canonical_by_uuid.get(run_uuid)
+            if canonical_path is not None:
+                if path != canonical_path:
+                    continue
+            elif run_uuid in selected_uuids:
+                continue
+            selected_uuids.add(run_uuid)
+        selected.append((path, document))
+    return selected
 
 
 def validate_uuid4(value: str | uuid.UUID) -> str:
@@ -213,10 +237,10 @@ __all__ = [
     "RunDirectory",
     "RunPathError",
     "create_run_directory",
-    "copy_file_if_absent",
     "decode_model_slug",
     "encode_model_slug",
     "find_run_by_uuid",
+    "select_canonical_run_documents",
     "split_model_id",
     "validate_uuid4",
 ]

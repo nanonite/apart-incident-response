@@ -6,10 +6,10 @@ import unittest
 from apart_incident_response.controller import ExperimentController
 from apart_incident_response.run_paths import (
     RunPathError,
-    copy_file_if_absent,
     create_run_directory,
     decode_model_slug,
     find_run_by_uuid,
+    select_canonical_run_documents,
     split_model_id,
 )
 from scripts.run_experiment import run_harness_check
@@ -31,7 +31,7 @@ class RunPathContractTests(unittest.TestCase):
         self.assertNotEqual(unprefixed_slug, prefixed_slug)
         self.assertEqual(decode_model_slug(unprefixed_slug), unprefixed_model)
         self.assertEqual(decode_model_slug(prefixed_slug), prefixed_model)
-        for invalid in ("", "../escape", "/absolute", r"C:\\absolute", "provider//model", "provider/./model"):
+        for invalid in ("", "../escape", "/absolute", r"C:\absolute", "provider//model", "provider/./model"):
             with self.subTest(invalid=invalid):
                 with self.assertRaises(RunPathError):
                     split_model_id(invalid)
@@ -47,16 +47,26 @@ class RunPathContractTests(unittest.TestCase):
             with self.assertRaises(RunPathError):
                 create_run_directory(root, first.model, run_uuid=first.run_uuid)
 
-    def test_compatibility_copy_never_replaces_an_existing_artifact(self):
+    def test_canonical_document_selection_avoids_entropy_double_counting(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            source = root / "source.json"
-            destination = root / "legacy" / "failure.json"
-            source.write_text("first", encoding="utf-8")
-            self.assertTrue(copy_file_if_absent(source, destination))
-            source.write_text("second", encoding="utf-8")
-            self.assertFalse(copy_file_if_absent(source, destination))
-            self.assertEqual(destination.read_text(encoding="utf-8"), "first")
+            invocation = create_run_directory(root, "openai/gpt-4o-mini", provider="openrouter")
+            canonical = invocation.path / "goal_inference.json"
+            document = {
+                "run_uuid": invocation.run_uuid,
+                "probability_artifact": {"tokens": [{"sampled_token": "ok"}]},
+            }
+            canonical.write_text(json.dumps(document), encoding="utf-8")
+            compatibility = root / "goal_inference.json"
+            compatibility.write_text(json.dumps(document), encoding="utf-8")
+            historical = root / "legacy" / "goal_inference.json"
+            historical.parent.mkdir()
+            historical.write_text(json.dumps({"logprobs": [{"token": "old"}]}), encoding="utf-8")
+
+            selected = select_canonical_run_documents(
+                [compatibility, canonical, historical]
+            )
+            self.assertEqual([path for path, _ in selected], [canonical, historical])
 
     def test_harness_matrix_has_one_uuid_and_resolvable_condition_links(self):
         with tempfile.TemporaryDirectory() as temporary:
