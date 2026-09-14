@@ -84,8 +84,11 @@ def first_post_read_outputs(events: Iterable[CommunicationEvent]) -> list[dict[s
 
 def coverage_gate(observations: Iterable[Mapping[str, Any]]) -> dict[str, Any]:
     rows = list(observations)
-    complete = [row for row in rows if row.get("entropy_bits") is not None and
-                row.get("status") in {"complete", "full_logits"}]
+    complete = [row for row in rows if row.get("entropy_bits") is not None and (
+        row.get("status") in {"complete", "full_logits"} or
+        row.get("coverage_kind") == "topk_probability_mass" and
+        row.get("coverage") is not None and row.get("coverage") >= MIN_TOPK_COVERAGE
+    )]
     return {
         "requested": len(rows), "complete": len(complete),
         "coverage_fraction": len(complete) / len(rows) if rows else 0.0,

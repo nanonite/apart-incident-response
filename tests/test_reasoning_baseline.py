@@ -47,6 +47,7 @@ class ReasoningBaselineTests(unittest.TestCase):
         self.assertEqual(report["rows"][2]["logprob_token_count"], 1)
         self.assertEqual(report["rows"][2]["logprob_status"], "records_present_visible_coverage_unknown")
         self.assertEqual(report["rows"][2]["topk_mass_coverage"], 1.0)
+        self.assertEqual(report["rows"][2]["topk_entropy_bits"], 0.0)
         self.assertFalse(report["raw_responses_retained"])
 
     def test_provider_requires_free_slug_and_missing_key_is_explicit(self):

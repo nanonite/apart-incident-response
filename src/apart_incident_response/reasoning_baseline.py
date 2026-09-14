@@ -86,6 +86,27 @@ class BaselineResponse:
                 masses.append(min(1.0, sum(values.values())))
         return sum(masses) / len(masses) if masses else None
 
+    @property
+    def topk_entropy_bits(self) -> float | None:
+        """Mean returned top-k entropy lower bound, in bits per returned token."""
+
+        if not self.logprobs:
+            return None
+        entropies: list[float] = []
+        for record in self.logprobs:
+            values: dict[str, float] = {}
+            for alternative in record.get("top_logprobs") or []:
+                if not isinstance(alternative, Mapping) or not isinstance(alternative.get("token"), str):
+                    continue
+                logprob = alternative.get("logprob")
+                if isinstance(logprob, (int, float)) and math.isfinite(logprob):
+                    values.setdefault(alternative["token"], math.exp(logprob))
+            token, logprob = record.get("token"), record.get("logprob")
+            if isinstance(token, str) and isinstance(logprob, (int, float)) and math.isfinite(logprob):
+                values.setdefault(token, math.exp(logprob))
+            entropies.append(-sum(probability * math.log2(probability) for probability in values.values() if probability > 0))
+        return sum(entropies) / len(entropies) if entropies else None
+
 
 class BaselineProvider(Protocol):
     model: str
@@ -177,6 +198,7 @@ class OpenRouterFreeProvider:
         return AgentResponse(
             answer=answer,
             output_text=response.text,
+            output_logprob_entropy_bits=response.topk_entropy_bits,
             logprob_coverage=response.logprob_coverage,
             logprob_mass_coverage=response.topk_mass_coverage,
             logprob_status="records_present" if response.logprobs else "unavailable",
@@ -253,6 +275,7 @@ class BaselineRunner:
                 "latency_seconds": time.monotonic() - started,
                 "logprob_status": logprob_status,
                 "logprob_token_count": len(response.logprobs),
+                "topk_entropy_bits": response.topk_entropy_bits,
                 "logprob_coverage": coverage,
                 "topk_mass_coverage": response.topk_mass_coverage,
                 "reasoning_tokens": ((response.usage or {}).get("completion_tokens_details") or {}).get("reasoning_tokens"),
