@@ -1,0 +1,48 @@
+{
+  "protocol_version": "two-agent-iso-full-comm-v1",
+  "conditions": ["ISO", "FULL", "COMM"],
+  "condition_semantics": {
+    "ISO": {"private_information": true, "peer_channel": "none"},
+    "FULL": {"private_information": false, "joint_information": true, "peer_channel": "not_needed"},
+    "COMM": {"private_information": true, "peer_channel": "optional_message_board"}
+  },
+  "families": ["hypothesis", "reference", "planning", "poetry", "legal", "lexicon"],
+  "complexity_levels": ["low", "medium", "high"],
+  "dependence_assignment": {
+    "measure": "average directional normalized feasible-set reduction",
+    "formula": "D_idx=(log2(|S_private|)-log2(|S_joint|))/log2(|S_private|)",
+    "R": "D_idx <= 0.10",
+    "H": "0.10 < D_idx < 0.50",
+    "N": "D_idx >= 0.50",
+    "assignment_basis": "measured values, never generator intent"
+  },
+  "message_information": {
+    "formula_bits": "Delta_I_m=log2(|S_before|)-log2(|S_after|)",
+    "unknown_interpretation": null,
+    "contradictory_claim": "invalid",
+    "duplicate_claim": 0.0,
+    "raw_text_retained": true,
+    "hand_calculation_example": {"before": 8, "after": 2, "delta_i_bits": 2.0}
+  },
+  "outcomes": {
+    "C_need": "P(success|FULL)-P(success|ISO)",
+    "eta_comm": "(p_COMM-p_ISO)/(p_FULL-p_ISO), undefined when denominator is zero",
+    "useful_communication": "checker-verified accepted downstream use only",
+    "phi": "fitted verified-use response surface over experimental factors; message volume excluded"
+  },
+  "event_order": ["board_write", "peer_read_exposure", "model_output", "verified_use"],
+  "entropy_extension": {
+    "alignment": "first model output after actual peer-read exposure",
+    "read_event_entropy": false,
+    "turn8_gate": "separate labeled intervention",
+    "placebo": "timing/presentation/token-volume matched non-useful text",
+    "incomplete_logprob_coverage": "reported as invalid, never silently excluded"
+  },
+  "safety": {
+    "answer_keys_in_agent_artifacts": false,
+    "credentials_in_commits": false,
+    "full_battery_requires_explicit_budget_power_go": true,
+    "bounded_pilot_model": "deepseek/deepseek-v4.1-flash",
+    "bounded_pilot_budget_usd": 20.0
+  }
+}
