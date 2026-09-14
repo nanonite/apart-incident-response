@@ -1,0 +1,21 @@
+% From API log-probabilities to per-agent and system entropy.
+\begin{tikzpicture}[x=1cm, y=1cm]
+  \tikzset{pbox/.style={box, text width=3.4cm, minimum height=1.35cm}}
+  \node[pbox, line width=0.8pt] (lp) at (0,0) {\textbf{Top-20 log-}\\\textbf{probabilities} $\ell_1,\dots,\ell_{20}$\\ for every generated token};
+  % token path
+  \node[pbox] (tok) at (4.25,1.05) {\textbf{Token entropy}\\ $H_t$ over the renormalised\\ top 20, bound $H^{\mathrm{low}}_t$,\\ coverage};
+  \node[pbox] (call) at (8.5,1.05) {\textbf{Call entropy}\\ mean over tokens,\\ adjusted for action\\ type and length};
+  \node[pbox] (runlvl) at (12.75,1.05) {\textbf{Per run}\\ mean over turns 1 to 7\\ and 8 to 20, difference $\Delta$};
+  % decision path
+  \node[pbox] (q) at (4.25,-1.05) {\textbf{Action distribution}\\ $q_i^r(a)$ at the first\\ action token};
+  \node[pbox] (mix) at (8.5,-1.05) {\textbf{Across $N$ runs, turn $t$}\\ $p_1$, $p_2$ and\\ $p_{12}=\frac{1}{N}\sum_r q_1^r\otimes q_2^r$};
+  \node[pbox] (sys) at (12.75,-1.05) {\textbf{System entropy}\\ $H(X_1)+H(X_2)-I(X_1;X_2)$\\ vs.\ re-paired null};
+  \draw[flow] (lp.east) -- ++(0.25,0) |- (tok.west);
+  \draw[flow] (lp.east) -- ++(0.25,0) |- (q.west);
+  \draw[flow] (tok) -- (call);
+  \draw[flow] (call) -- (runlvl);
+  \draw[flow] (q) -- (mix);
+  \draw[flow] (mix) -- (sys);
+  \node[font=\scriptsize\bfseries, anchor=south west, text=logink] at ($(tok.north west)+(0,0.05)$) {per agent};
+  \node[font=\scriptsize\bfseries, anchor=north west, text=logink] at ($(q.south west)+(0,-0.05)$) {two-agent system};
+\end{tikzpicture}

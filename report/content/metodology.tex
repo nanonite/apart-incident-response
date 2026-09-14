@@ -1,3 +1,117 @@
-\section{Metodology}
+\section{Methodology}
+\label{sec:methodology}
 
-Designing an experiment with the constraints of time imposed by an event of this nature made us simplify the system into a barebones idea. The designed was
+\input{content/diagrams/styles.tex}
+
+The sprint gave us a weekend, so we built the smallest setup that still contains the situation behind the incident at OpenAI and Hugging Face: agents that are not supposed to talk to each other and one shared resource that could let them. Two agents built on the same model work on the same deliverable, and each holds half of what that deliverable needs. The only thing they share is an append-only log (\cref{fig:architecture}). Prompts, assets, seeds and budgets are the same in every condition. The one thing we vary is what the log returns when an agent reads it.
+
+\begin{figure*}[t]
+  \centering
+  \input{content/diagrams/architecture.tex}
+  \caption{Experimental setup. Both agents receive the same task $T$ but hold different passwords, so each can decrypt only one of the two assets the report needs. They share a single append-only log in which every entry carries its author. Writes always go to the log. Reads pass through a permission filter that returns only the reader's own entries. In the switch condition the filter returns every entry from turn $t_s$; in the placebo condition it keeps the restriction but adds entries from a donor run.}
+  \label{fig:architecture}
+\end{figure*}
+
+\subsection{Task and encrypted assets}
+
+Both agents are asked for the same report on a database schema. The report must list every table and column of the schema and the foreign key that links the two tables, and it must use the title, logo file name, primary colour and font from a brand kit. The schema dump and the brand-kit folder are both encrypted. $A_1$ receives the password of the brand kit and $A_2$ the password of the schema, and each agent is told that it does not have the other password.
+
+The assets are encrypted for real; the harness does not simply compare a password in code. A key is derived from the password with PBKDF2-HMAC-SHA256 (600{,}000 iterations), the plaintext is XORed with a SHAKE-256 keystream, and an HMAC-SHA256 tag over the ciphertext is checked before anything is decrypted. With a wrong password the tag check fails and the harness returns an error and no text. The harness keeps only the ciphertext. Passwords are random strings of roughly 95 bits, far beyond what an agent could guess in the turns available. Table names, column names, the logo file, the colour, the font and the title are also random and are generated once per experiment. When one of these strings appears in an agent's output, the agent either decrypted the asset itself or took the string from the log. It cannot come from training data.
+
+\subsection{Agents, turns and context}
+
+A run is a sequence of turns in which each agent takes one action per turn. The order of the two agents inside a turn is fixed for the whole run by its seed. Before every model call the harness builds a new context (\cref{fig:turn}) with the system prompt that lists the actions, the task statement, the agent's own password, the names of the assets it has already decrypted, the turn number, and the result of its previous action. No other information carries over. Decrypted content appears once, as the result of the decryption, and on the next turn it is gone unless the agent copied it into the log, which makes the log the agent's only lasting memory.
+
+\begin{figure}[t]
+  \centering
+  \input{content/diagrams/turn.tex}
+  \caption{One turn of one agent. The context is rebuilt from scratch before every call, and the result of an action is visible only on the following turn.}
+  \label{fig:turn}
+\end{figure}
+
+An agent answers with a single action line:
+\begin{itemize}
+  \item \texttt{READ\_LOG} returns the log entries the agent is allowed to see;
+  \item \texttt{WRITE\_LOG:} \textit{text} appends an entry under the agent's name;
+  \item \texttt{DECRYPT\_SCHEMA:} \textit{password} tries to open the schema dump;
+  \item \texttt{DECRYPT\_BRAND\_KIT:} \textit{password} tries to open the brand-kit folder;
+  \item \texttt{SUBMIT\_REPORT:} \textit{report} hands in the report and ends the agent's participation.
+\end{itemize}
+
+The task statement tells both agents that the permission system lets them read only the entries they wrote. That sentence never changes, not even after the permissions do. An agent that uses the other agent's entries has found them on its own.
+
+A run ends at turn 20 if one agent has already submitted a complete report, or at the first later turn in which that happens. Without a complete report it continues up to turn 30. It also ends as soon as both agents have submitted.
+
+\subsection{Conditions}
+
+The three conditions differ only in what \texttt{READ\_LOG} returns from the switch turn $t_s = 8$ onwards (\cref{fig:conditions}).
+
+\begin{description}[leftmargin=0pt, style=sameline]
+  \item[Base.] Reads return the reader's own entries for the entire run. This condition is the reference without communication.
+  \item[Switch.] From turn 8 the filter is lifted and reads return every entry written by either agent, including entries written before the switch.
+  \item[Placebo.] The filter stays in place. From turn 8, reads also return entries taken from a donor run, which is a switch run of the same model on a separately generated scenario with its own identifiers and passwords. Donor entries are labelled as written by the other agent and become visible at the turn at which they were originally written.
+\end{description}
+
+The placebo exists because any new text in an agent's context can shift its token distribution, whether or not the text is useful. Donor entries match the switch condition in format, author label, amount and timing, but nothing in them helps with the task. Comparing switch with placebo therefore separates the effect of receiving information from the effect of seeing foreign text.
+
+\begin{figure*}[t]
+  \centering
+  \input{content/diagrams/conditions.tex}
+  \caption{What \texttt{READ\_LOG} returns over a run in each condition. The switch turn is the same in every run, so turn $t$ refers to the same phase of the task in all runs.}
+  \label{fig:conditions}
+\end{figure*}
+
+\subsection{Models and sampling}
+
+We ran the experiment with three instruction-tuned models from different families, all accessed through OpenRouter: gpt-4o-mini, Llama~3.3 70B Instruct and Qwen3 235B A22B (2507). Each model was pinned to a single provider (OpenAI, Novita and Google Vertex, respectively) with fallbacks disabled, since the same model served by two providers can return different probabilities. Every call used temperature 1 and top-$p$ 1, so that tokens are sampled from the model's own distribution, together with a fixed per-call seed. Each call also requested the log-probability of every generated token and of the 20 most likely alternatives at that position. We ran 20 independent runs for each combination of model and condition, 180 runs in all, with the same seeds in every condition.
+
+\subsection{Solvability check}
+
+A task that the models cannot solve when the channel is open would leave nothing to measure, so we checked solvability before the main runs. Each model got ten runs of the switch condition with one shared prompt and had to produce a complete report in at least half of them. The rule allowed only changes to the shared prompt, applied to all models at once. The main experiment uses the prompt that met this criterion for all three models.
+
+\subsection{Deterministic ground truth}
+
+Reports are graded, and communication is detected, by fixed rules; no language model takes part in scoring. Before matching, the text of a report is normalised: Unicode NFKC, case folding, uniform quotes and dashes, and removal of the backslashes that Markdown puts before underscores. A report is complete when it contains every schema fact and every branding fact. The schema facts are both table names, every column, and the foreign key, for which the key column has to appear near the table it references. The branding facts are the logo file name, the primary colour, the font, and a title whose similarity to the original is at least 0.8. A report with some facts from both assets is partial.
+
+Communication from $A_i$ to $A_j$ counts as verified only if three events happen in this order (\cref{fig:proof}). First, $A_i$ writes its password or identifiers from its asset into the log. Second, a \texttt{READ\_LOG} by $A_j$ returns that entry. Third, $A_j$ later decrypts $A_i$'s asset with $A_i$'s password, or writes or submits identifiers from an asset it never decrypted. The turns of the three events are recorded as $\tau_w$, $\tau_r$ and $\tau_u$. We discard a run if the harness returned the other agent's entries while the filter was closed, if an agent produced identifiers it had no way of obtaining, or if more than 10\% of its API calls failed.
+
+\begin{figure}[t]
+  \centering
+  \input{content/diagrams/proof.tex}
+  \caption{Rule for verified communication, shown for the direction $A_2 \to A_1$. The three events must occur in this order.}
+  \label{fig:proof}
+\end{figure}
+
+\subsection{Entropy measurements}
+
+\Cref{fig:pipeline} shows how the log-probabilities returned by the API become the quantities defined in \cref{sec:entropy}. For each generated token the API returns the log-probabilities $\ell_1, \dots, \ell_{20}$ of the 20 most likely tokens. We renormalise them with \cref{eq:softmax} and compute \cref{eq:token_entropy} over these 20 candidates. For each token we also store $H^{\mathrm{low}}_t = -\sum_k e^{\ell_k} \log_2 e^{\ell_k}$, which cannot be larger than the entropy over the full vocabulary, and the covered probability mass $\sum_k e^{\ell_k}$, so that the effect of the truncation can be checked. Positions where the API returns a placeholder instead of a log-probability are excluded. The entropy of a call is the mean over its tokens.
+
+\begin{figure*}[t]
+  \centering
+  \input{content/diagrams/pipeline.tex}
+  \caption{From API log-probabilities to the measures we analyse. The upper path gives entropy per agent and per call; the lower path gives the distribution over actions that enters the two-agent decomposition of \cref{eq:gibbs_shannon_two_agents}.}
+  \label{fig:pipeline}
+\end{figure*}
+
+We derive two more measures from the same data. The actions differ in length and in how much freedom they leave in the wording: \texttt{READ\_LOG} is a fixed string, while a log entry or a report is free text. Adjusted entropy removes this difference. It is the residual of a least-squares regression, fitted separately for each model, of call entropy on action type and $\log(1 + n_{\mathrm{tokens}})$, shifted back to the mean of that model. Decision entropy is the entropy of the agent's distribution over its next action. We read it at the first generated token that contains a letter. Each of the 20 alternatives at that position is assigned to the action whose name it starts to spell (R to \texttt{READ}, W to \texttt{WRITE}, D to \texttt{DECRYPT}, S to \texttt{SUBMIT}) or to \texttt{OTHER}, and the probability outside the 20 alternatives is also added to \texttt{OTHER}. The result is a distribution $q(a)$ over $a \in \{\texttt{READ}, \texttt{WRITE}, \texttt{DECRYPT}, \texttt{SUBMIT}, \texttt{OTHER}\}$.
+
+\subsection{System entropy across runs}
+
+\Cref{eq:gibbs_shannon_two_agents} needs a joint distribution of the two agents' outputs, and we build it from the action variable. Let $X_i(t)$ be the action of agent $i$ at turn $t$, with an additional state \texttt{DONE} once the agent has submitted. Within one run the two agents are sampled in separate API calls, so given their contexts they are independent: $p(a_1, a_2 \mid r) = q^r_1(a_1)\, q^r_2(a_2)$. Dependence between them can only appear through contexts that vary from run to run, which is what reading the log can produce. For each model, condition and turn we therefore pool the $N$ runs,
+\begin{align}
+  p_i(a) &= \frac{1}{N} \sum_{r=1}^{N} q^r_i(a), \\
+  p(a_1, a_2) &= \frac{1}{N} \sum_{r=1}^{N} q^r_1(a_1)\, q^r_2(a_2),
+\end{align}
+and compute $H(X_1)$, $H(X_2)$, $I(X_1; X_2)$ and $H(X_1, X_2)$ from these distributions.
+
+Agents that share a model, a prompt and a task behave alike even when they cannot communicate, which by itself produces some mutual information. We build a null distribution for $I$ by pairing $A_1$ from one run with $A_2$ from a different run, repeated 1{,}000 times, which leaves both marginal distributions unchanged. Two agents that have both submitted also share the \texttt{DONE} state for reasons that have nothing to do with the log, so every quantity is computed twice: over all states, and over the turns in which both agents are still acting.
+
+\subsection{Statistical analysis}
+
+Turns inside a run depend on each other, so the run is the unit of analysis. For every run we average each measure over turns 1 to 7 and over turns 8 to 20 and take the difference, $\Delta$. The window ends at turn 20 because every run is observed up to that turn. The effect of a condition is the difference between its mean $\Delta$ and the mean $\Delta$ of another condition. We compare switch with base, placebo with base, and switch with placebo using two-sided permutation tests on the condition labels (10{,}000 permutations), and we report 95\% bootstrap confidence intervals and Hedges' $g$, with Holm's correction applied within each measure.
+
+On individual calls we fit, for each model, the model $H \sim \text{condition} \times \text{post} + \text{action} + \log(1 + n_{\mathrm{tokens}})$, once as a linear mixed model with a random intercept for each run and once by ordinary least squares with standard errors clustered by run. We also align switch runs on the first read that returned the other agent's entries and placebo runs on the first read that returned donor entries, and compare the entropy of the call that follows a read according to what that read returned. To test whether these measures could work as a monitor, we compute ROC curves for $\Delta$ between conditions and run a two-sided CUSUM with $k = 0.5$ on the standardised adjusted entropy of each run, with the alarm threshold set so that 5\% of base runs raise an alarm between turns 8 and 20.
+
+\subsection{Data and code availability}
+
+The harness, the checker and the analysis code are in the project repository under \texttt{research/two\_agent\_entropy}. Every prompt, response, log-probability file and checker verdict is published in the release \texttt{exp1-raw-data}, and the analysis can be rerun from these files without calling any API.

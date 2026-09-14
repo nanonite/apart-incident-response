@@ -1,0 +1,17 @@
+% One turn of one agent.
+\begin{tikzpicture}[x=1cm, y=1cm, node distance=0.42cm]
+  \node[step=6.9cm] (ctx) {\textbf{1. Build a fresh context}\\ task $T$, own password, names of decrypted assets,\\ turn $t$, previous action and its result};
+  \node[step=6.9cm, below=of ctx] (call) {\textbf{2. Model call}: temperature 1, top-$p$ 1, fixed seed,\\ log-probabilities of the top 20 tokens at every position};
+  \node[step=6.9cm, below=of call] (parse) {\textbf{3. Parse exactly one action line}};
+  \node[box, text width=1.45cm, font=\scriptsize, below=0.55cm of parse.south west, anchor=north west] (r) {\texttt{READ\_LOG}\\ Filter(log)};
+  \node[box, text width=1.45cm, font=\scriptsize, right=0.12cm of r] (w) {\texttt{WRITE\_LOG}\\ append entry};
+  \node[box, text width=1.45cm, font=\scriptsize, right=0.12cm of w] (d) {\texttt{DECRYPT}\\ check tag,\\ show once};
+  \node[box, text width=1.45cm, font=\scriptsize, right=0.12cm of d] (s) {\texttt{SUBMIT}\\ grade report,\\ agent stops};
+  \node[step=6.9cm, below=0.55cm of $(r.south)!0.5!(s.south)$, anchor=north] (res) {\textbf{4. Result is visible at turn $t+1$ only}};
+  \node[box, dashed, text width=6.9cm, font=\scriptsize, below=of res] (rec) {Recorded for every call: prompt, response,\\ top-20 log-probabilities, parsed action,\\ harness reply, timing and usage};
+  \draw[flow] (ctx) -- (call);
+  \draw[flow] (call) -- (parse);
+  \foreach \n in {r,w,d,s} { \draw[flow] (parse.south -| \n.north) -- (\n.north); \draw[flow] (\n.south) -- (res.north -| \n.south); }
+  \draw[flow, dashed] (res) -- (rec);
+  \draw[flow, draw=agentone] (res.west) -- ++(-0.35,0) |- node[lab, pos=0.25, rotate=90, above] {next turn} (ctx.west);
+\end{tikzpicture}

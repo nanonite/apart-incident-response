@@ -1,0 +1,62 @@
+% Shared log board: two agents, split encrypted assets, permission filter, switch and placebo source.
+\begin{tikzpicture}[x=1cm, y=1cm]
+  % task
+  \node[box, text width=9.6cm, line width=0.8pt] (task) at (8.5,6.55)
+    {\textbf{Task $T$}, identical for both agents: a branded report of the database schema\\
+     (every table, every column, the foreign key) with the title, logo file,\\ primary colour and font of the brand kit};
+
+  % agents
+  \node[agent, draw=agentone] (a1) at (2.1,4.15) {\textbf{Agent $A_1$}\\ model $M$ + harness $H$\\ new context each turn};
+  \node[agent, draw=agenttwo] (a2) at (14.9,4.15) {\textbf{Agent $A_2$}\\ model $M$ + harness $H$\\ new context each turn};
+  \draw[flow] (task.west) -| node[lab, pos=0.25, above] {$T$} (a1.north);
+  \draw[flow] (task.east) -| node[lab, pos=0.25, above] {$T$} (a2.north);
+
+  % private passwords and encrypted assets
+  \node[key] (p1) at (2.1,2.25) {$P_1$: password of the\\ brand-kit folder};
+  \node[asset] (s1) at (2.1,0.55) {\textbf{Brand-kit folder}\\ encrypted: logo, colours,\\ font and title};
+  \node[key] (p2) at (14.9,2.25) {$P_2$: password of the\\ schema dump};
+  \node[asset] (s2) at (14.9,0.55) {\textbf{Schema dump}\\ encrypted: tables,\\ columns and foreign key};
+  \draw[flow, draw=keyc] (a1.south) -- (p1.north);
+  \draw[flow, draw=keyc] (p1.south) -- node[lab, right, xshift=2pt] {\texttt{DECRYPT}} (s1.north);
+  \draw[flow, draw=keyc] (a2.south) -- (p2.north);
+  \draw[flow, draw=keyc] (p2.south) -- node[lab, left, xshift=-2pt] {\texttt{DECRYPT}} (s2.north);
+
+  % shared log board
+  \coordinate (logtl) at (6.85,5.15);
+  \node[font=\footnotesize\bfseries, anchor=south west] at ($(logtl)+(0,0.02)$) {Shared log (append-only)};
+  \node[entry, fill=agentone!12] (e1) at (logtl) {[1] turn 2 \quad $A_1$: $M_1$};
+  \node[entry, fill=agenttwo!12] (e2) at (e1.south west) {[2] turn 2 \quad $A_2$: $M_2$};
+  \node[entry, fill=agenttwo!12] (e3) at (e2.south west) {[3] turn 3 \quad $A_2$: $M_3$};
+  \node[entry, fill=agentone!12] (e4) at (e3.south west) {[4] turn 5 \quad $A_1$: $M_4$};
+  \node[entry, fill=agenttwo!12] (e5) at (e4.south west) {[5] turn 6 \quad $A_2$: $M_5$};
+  \node[entry, fill=white] (e6) at (e5.south west) {\quad $\vdots$};
+  \node[entry, fill=white, minimum height=0.9cm] (e7) at (e6.south west) {\quad every entry is tagged\\ \quad with its author};
+  \node[fit=(e1)(e7), draw=logink, line width=1pt, inner sep=0pt] (log) {};
+
+  % writes (append)
+
+  % reads through the permission filter
+  \node[filter] (f1) at (5.3,2.6) {\textbf{Filter$(\cdot)$}\\ own entries\\ or all entries};
+  \node[filter] (f2) at (11.7,2.6) {\textbf{Filter$(\cdot)$}\\ own entries\\ or all entries};
+
+  \node[lab, font=\scriptsize] at ($(f1.north)+(-0.1,0.95)$) {\texttt{READ\_LOG}};
+  \node[lab, font=\scriptsize] at ($(f2.north)+(0.1,0.95)$) {\texttt{READ\_LOG}};
+  % switch and placebo source
+  \node[box, text width=6.2cm, line width=0.8pt] (switch) at (8.5,0.05)
+    {\textbf{Switch} at turn $t_s = 8$ (switch condition):\\ Filter returns the entries of both agents};
+  \node[box, draw=placebo, text=placebo!80!black, text width=6.2cm, fill=placebo!5] (donor) at (8.5,-1.3)
+    {\textbf{Donor log} (placebo)\\ entries of an unrelated run, shown\\ as the other agent's from turn $t_s$};
+
+  \begin{scope}[on background layer]
+  \draw[flow, draw=agentone] ($(a1.east)+(0,0.35)$) -- node[lab, above] {\texttt{WRITE\_LOG}: append $M$} ($(log.west)+(0,1.45)$);
+  \draw[flow, draw=agenttwo] ($(a2.west)+(0,0.35)$) -- node[lab, above] {\texttt{WRITE\_LOG}: append $M$} ($(log.east)+(0,1.45)$);
+  \draw[flow] ($(log.west)+(0,-0.35)$) -| (f1.north);
+  \draw[flow, draw=agentone] (f1.west) -- ++(-0.55,0) |- ($(a1.east)+(0,-0.35)$);
+  \draw[flow] ($(log.east)+(0,-0.35)$) -| (f2.north);
+  \draw[flow, draw=agenttwo] (f2.east) -- ++(0.55,0) |- ($(a2.west)+(0,-0.35)$);
+  \draw[flow, dashed] (switch.west) -| (f1.south);
+  \draw[flow, dashed] (switch.east) -| (f2.south);
+  \draw[flow, dotted, draw=placebo, line width=0.9pt] (donor.west) -| ($(f1.south)+(-0.45,0)$);
+  \draw[flow, dotted, draw=placebo, line width=0.9pt] (donor.east) -| ($(f2.south)+(0.45,0)$);
+  \end{scope}
+\end{tikzpicture}

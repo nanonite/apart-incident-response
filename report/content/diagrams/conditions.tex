@@ -1,0 +1,35 @@
+% What READ_LOG returns over the run in each condition.
+\begin{tikzpicture}[x=0.52cm, y=1cm]
+  \def\ts{8}
+  \pgfmathsetmacro{\xs}{\ts-1}
+  \pgfmathsetmacro{\xstop}{20-1}
+  % lane names: base (y=2.3), switch (1.15), placebo (0)
+  \foreach \name/\y in {base/2.3, switch/1.15, placebo/0} {
+    \node[anchor=east, font=\footnotesize\bfseries] at (-0.4,\y+0.32) {\name};
+  }
+  % lane fills
+  \fill[softgrey] (0,2.3) rectangle (29,2.95);
+  \fill[softgrey] (0,1.15) rectangle (\xs,1.8);
+  \fill[agentone!22] (\xs,1.15) rectangle (29,1.8);
+  \fill[softgrey] (0,0) rectangle (29,0.65);
+  \fill[pattern=north east lines, pattern color=placebo!55] (\xs,0) rectangle (29,0.65);
+  % markers (above the fills, below the labels)
+  \draw[dashed, line width=0.8pt] (\xs,-0.35) -- (\xs,3.25) node[above, font=\scriptsize] {switch turn $t_s = 8$};
+  \draw[dotted, line width=0.9pt] (\xstop,-0.35) -- (\xstop,3.25) node[above, font=\scriptsize, align=center] {stop here if a report\\ is already complete};
+  \node[above, font=\scriptsize] at (29,3.25) {at most 30 turns};
+  % lane labels
+  \node[font=\scriptsize, fill=softgrey, inner sep=2pt] at (13.5,2.625) {\texttt{READ\_LOG} returns the caller's own entries for the whole run};
+  \node[font=\scriptsize, fill=softgrey, inner sep=2pt] at (\xs/2,1.475) {own entries};
+  \node[font=\scriptsize, fill=agentone!22, inner sep=2pt, align=center] at (13,1.475) {every entry of both agents,\\[-1pt] including earlier ones};
+  \node[font=\scriptsize, fill=softgrey, inner sep=2pt] at (\xs/2,0.325) {own entries};
+  \node[font=\scriptsize, fill=white, inner sep=1.5pt, align=center] at (13,0.325) {own entries + donor-run entries\\[-1pt] labelled as the other agent's};
+  \node[font=\scriptsize, fill=agentone!22, inner sep=2pt] at (24.5,1.475) {(switch condition)};
+  \node[font=\scriptsize, fill=white, inner sep=1.5pt] at (24.5,0.325) {(no usable information)};
+  % axis
+  \draw[logink, line width=0.6pt] (0,-0.35) -- (29,-0.35);
+  \foreach \t in {1,8,20,30} {
+    \draw[logink] (\t-1,-0.35) -- (\t-1,-0.45);
+    \node[font=\scriptsize, below] at (\t-1,-0.45) {\t};
+  }
+  \node[font=\scriptsize, anchor=north] at (14.5,-0.75) {turn};
+\end{tikzpicture}

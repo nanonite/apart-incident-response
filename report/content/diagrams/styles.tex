@@ -1,0 +1,20 @@
+% Shared colours and TikZ styles for the methodology diagrams.
+\definecolor{agentone}{HTML}{0B6E8A}
+\definecolor{agenttwo}{HTML}{6D28D9}
+\definecolor{logink}{HTML}{334155}
+\definecolor{placebo}{HTML}{C2410C}
+\definecolor{keyc}{HTML}{A16207}
+\definecolor{softgrey}{HTML}{E2E8F0}
+
+\tikzset{
+  box/.style={draw=logink, rounded corners=2pt, align=center, font=\footnotesize, inner sep=3pt, fill=white},
+  agent/.style={box, line width=0.9pt, minimum height=1.45cm, text width=3.1cm},
+  asset/.style={box, dashed, text width=3.1cm, fill=softgrey!40},
+  key/.style={box, draw=keyc, text=keyc!70!black, text width=3.1cm, fill=keyc!6},
+  filter/.style={box, draw=logink, fill=softgrey, text width=1.45cm, font=\scriptsize},
+  entry/.style={draw=logink, minimum width=3.3cm, minimum height=0.52cm, font=\scriptsize, anchor=north west, inner sep=2pt, align=left},
+  flow/.style={-{Stealth[length=2.2mm]}, line width=0.7pt, draw=logink},
+  lab/.style={font=\scriptsize, align=center, fill=white, inner sep=1pt},
+  step/.style={box, text width=#1},
+  step/.default={7.2cm},
+}
