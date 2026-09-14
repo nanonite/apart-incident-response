@@ -1,0 +1,22 @@
+{
+  "study_id": "creative_collaboration_v1",
+  "task_ids": ["poetry-duet", "civic-law-1943"],
+  "conditions": ["C0", "C2"],
+  "steps": 5,
+  "repeats": 2,
+  "unlock_step": 3,
+  "adapter": "fixture",
+  "model": "deterministic-fixture-v1",
+  "deadline_seconds": 900,
+  "request_timeout_seconds": 120,
+  "batch_timeout_seconds": 3600,
+  "max_output_tokens": 512,
+  "communication_budget_bytes": 6000,
+  "communication_delay_steps": 0,
+  "communication_cost_per_kib": 0,
+  "communication_request_required": false,
+  "shared_context_mode": "full_history",
+  "engagement_mode": "neutral",
+  "evidence_mode": "split",
+  "role_mode": "specialized"
+}

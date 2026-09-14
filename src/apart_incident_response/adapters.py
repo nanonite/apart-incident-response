@@ -81,24 +81,40 @@ class FixtureAdapter:
         answer = list(choices)[seed % len(choices)]
         update = {'response_text': f'Synthetic plumbing fixture: candidate {answer}. This is not a model generation.', 'answer_class': answer}
         contract = context.get('update_contract')
-        if contract in ('key-insights-v1', 'locked-database-v1', 'collaboration-v1'):
+        if contract in ('key-insights-v1', 'locked-database-v1', 'collaboration-v1', 'creative-collab-v1'):
             update['key_insights'] = []
-        if contract == 'collaboration-v1':
+        if contract in ('collaboration-v1', 'creative-collab-v1'):
             import re
             facts = ' '.join(context['private_evidence'])+' '+json.dumps(context['permitted_history'])
             role = context['agent_role']
-            if 'healthy' in choices:
-                one = re.search(r'sensor_one=([01])',facts)
-                two = re.search(r'sensor_two=([01])',facts)
-                answer = ('healthy','pump','valve','controller')[int(one[1])*2+int(two[1])] if one and two else list(choices)[seed%4]
+            if contract == 'creative-collab-v1':
+                prior = next((e.get('response_text','') for e in reversed(context.get('permitted_history', []))
+                              if e.get('agent') != context.get('agent_id')), '')
+                if role in ('opening_poet', 'historical_drafter'):
+                    answer = 'draft' if role == 'opening_poet' else 'historical_draft'
+                    message_type = 'draft'
+                else:
+                    answer = ('revision' if prior else 'draft') if role == 'editor' else 'rights_revision'
+                    message_type = 'revision'
+                text = 'Synthetic creative fixture. ' + ' '.join(context['private_evidence'])
+                if prior:
+                    text += ' Building on the permitted prior draft: ' + prior[:900]
+                update.update(answer_class=answer, evidence_ids=context['allowed_evidence_ids'],
+                    referenced_message_ids=context['visible_message_ids'], message_type=message_type,
+                    rejected_option='', request_peer_context=True, response_text=text)
             else:
-                answer = 'blue' if 'blue' in choices else 'routing'
-            update.update(answer_class=answer, evidence_ids=context['allowed_evidence_ids'],
-                referenced_message_ids=context['visible_message_ids'],
-                message_type='counterexample' if role=='critic' else 'proposal',
-                rejected_option=('amber' if 'amber' in choices else 'logging') if role=='critic' else '',
-                request_peer_context=True,
-                response_text='Synthetic fixture. '+ ' '.join(context['private_evidence']))
+                if 'healthy' in choices:
+                    one = re.search(r'sensor_one=([01])',facts)
+                    two = re.search(r'sensor_two=([01])',facts)
+                    answer = ('healthy','pump','valve','controller')[int(one[1])*2+int(two[1])] if one and two else list(choices)[seed%4]
+                else:
+                    answer = 'blue' if 'blue' in choices else 'routing'
+                update.update(answer_class=answer, evidence_ids=context['allowed_evidence_ids'],
+                    referenced_message_ids=context['visible_message_ids'],
+                    message_type='counterexample' if role=='critic' else 'proposal',
+                    rejected_option=('amber' if 'amber' in choices else 'logging') if role=='critic' else '',
+                    request_peer_context=True,
+                    response_text='Synthetic fixture. '+ ' '.join(context['private_evidence']))
         if contract == 'locked-database-v1':
             key = ''
             if context['agent_role'] == 'feedback_only':
