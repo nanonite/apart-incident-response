@@ -17,6 +17,7 @@ from .task_tools import TaskCatalog, TaskDefinition, TaskToolService
 from .tool_service import BoardToolService, ConstrainedToolService
 from .telemetry import JsonlEventLog, write_derived_artifacts
 from .run_artifacts import artifact_links_for_run, write_condition_index
+from .run_paths import RunDirectory, RunPathError, create_run_directory
 
 
 PROTOCOL_VERSION = "controlled-n-agent-c0-c1-c2-v1"
@@ -128,6 +129,7 @@ class ExperimentController:
         config: RuntimeConfig,
         artifact_root: Path | str,
         *,
+        invocation: RunDirectory | None = None,
         extension: Path | None = None,
         protocol: ExperimentProtocol | None = None,
         run_class: str = "experimental",
@@ -136,6 +138,9 @@ class ExperimentController:
         self.config = config
         self.protocol = protocol or ExperimentProtocol()
         self.artifact_root = Path(artifact_root).expanduser().resolve()
+        self.invocation = invocation
+        if invocation is not None and invocation.path != self.artifact_root:
+            raise RuntimeConfigError("invocation path must match artifact_root")
         self.extension = extension.expanduser().resolve() if extension is not None else None
         if self.extension is not None and not self.extension.is_file():
             raise RuntimeConfigError(f"experiment extension does not exist: {self.extension}")
@@ -144,11 +149,22 @@ class ExperimentController:
         self.run_class = run_class
         self.verified_models = frozenset(verified_models)
 
+    @property
+    def run_uuid(self) -> str | None:
+        return self.invocation.run_uuid if self.invocation is not None else None
+
+    @property
+    def output_base(self) -> Path:
+        return self.invocation.base_dir if self.invocation is not None else self.artifact_root
+
     def _config_for_n(self, agent_count: int, model: str | None = None) -> RuntimeConfig:
         if agent_count not in self.protocol.supported_agent_counts:
             raise RuntimeConfigError(f"agent count {agent_count} is not predeclared")
-        token_budget = self.config.aggregate_token_budget // agent_count
-        tool_budget = self.config.aggregate_tool_call_budget // agent_count
+        # Per-agent envelope is pinned by config and held constant across swarm
+        # sizes so that varying agent_count studies coordination, not a shrinking
+        # per-agent budget. The aggregate ceiling scales up with agent_count instead.
+        token_budget = self.config.per_agent_token_budget
+        tool_budget = self.config.per_agent_tool_call_budget
         if token_budget <= 0 or tool_budget <= 0:
             raise RuntimeConfigError("aggregate budget cannot provide a positive envelope to every agent")
         selected_config = self.config if model is None else self.config.for_model(model)
@@ -157,6 +173,8 @@ class ExperimentController:
             agent_count=agent_count,
             per_agent_token_budget=token_budget,
             per_agent_tool_call_budget=tool_budget,
+            aggregate_token_budget=token_budget * agent_count,
+            aggregate_tool_call_budget=tool_budget * agent_count,
         )
 
     def _run_manifest(
@@ -216,6 +234,11 @@ class ExperimentController:
             "run_class": self.run_class,
             "protocol": self.protocol.to_dict(),
             "run_id": run_id,
+            **({
+                "invocation_run_id": self.invocation.run_id,
+                "run_uuid": self.invocation.run_uuid,
+                "model": run_config.model,
+            } if self.invocation is not None else {}),
             "triplet_id": triplet_id,
             "condition": condition.value,
             "seed": seed,
@@ -255,6 +278,11 @@ class ExperimentController:
                 "token_overlap_alone_is_not_uptake": True,
                 "task_success_is_separate_from_uptake": True,
             },
+            "artifact_contract": {
+                "agent_timeline_pattern": "agents/{agent_id}/artifacts/timeline.json",
+                "agent_probability_pattern": "agents/{agent_id}/artifacts/probability_artifacts.json",
+                "probability_schema": "agent-turn-probability-v1 / partial-token-probability-v1",
+            },
         }
 
     @staticmethod
@@ -286,15 +314,29 @@ class ExperimentController:
         get_capability_profile(profile_name)
         instance = task_one_instance(seed, difficulty)
         run_config = self._config_for_n(count, model)
+        if self.invocation is not None and run_config.model != self.invocation.model:
+            raise RuntimeConfigError(
+                "a model-scoped invocation cannot contain a different model; create a new invocation"
+            )
         selected_ollama_probe = _ollama_probe
         if selected_ollama_probe is None:
             selected_ollama_probe = probe_ollama(run_config)
         triplet = _safe_component(triplet_id or f"task1-seed-{seed}", "triplet_id")
         identifier = _safe_component(run_id or f"{triplet}-{selected_condition.value}", "run_id")
-        run_root = self.artifact_root / identifier
-        if run_root.exists():
-            raise RuntimeConfigError(f"experiment run already exists: {run_root}")
-        run_root.mkdir(mode=0o700, parents=True)
+        if self.invocation is None:
+            run_root = self.artifact_root / identifier
+            if run_root.exists():
+                raise RuntimeConfigError(f"experiment run already exists: {run_root}")
+            run_root.mkdir(mode=0o700, parents=True)
+        else:
+            # The invocation UUID is allocated once by the launcher. Seed and
+            # condition remain visible below it, while the condition label is
+            # retained as the runtime identity used by the board and agents.
+            run_root = self.artifact_root / triplet / selected_condition.value
+            try:
+                run_root.mkdir(mode=0o700, parents=True, exist_ok=False)
+            except FileExistsError as exc:
+                raise RuntimeConfigError(f"experiment condition already exists: {run_root}") from exc
         (run_root / "artifacts").mkdir(mode=0o700)
         (run_root / "artifacts" / "board_events.jsonl").touch(mode=0o600)
         prompt = run_config.prompt_for(instance.task_id, seed)
@@ -329,7 +371,11 @@ class ExperimentController:
                     seed=seed,
                     capability_profile=profile_name,
                 )
-                workspace = create_isolated_workspace(self.artifact_root, identity)
+                workspace = create_isolated_workspace(
+                    self.artifact_root if self.invocation is None else run_root,
+                    identity,
+                    run_root=None if self.invocation is None else run_root,
+                )
                 bundle = task_one_bundle_for_agent(instance, number)
                 materialize_task_one_bundle(workspace.task_dir, bundle.agent_id, instance)
                 workspaces.append(workspace)
@@ -352,7 +398,7 @@ class ExperimentController:
                 services.append(ConstrainedToolService(
                     TaskToolService(catalog),
                     board_service,
-                    artifact_root=self.artifact_root,
+                    artifact_root=run_root,
                     telemetry=board_log.record,
                     board_read_interval=observation_window_turns,
                 ))
@@ -389,6 +435,7 @@ class ExperimentController:
             controller_failure = {
                 "schema_version": 1,
                 "run_id": identifier,
+                **({"run_uuid": self.invocation.run_uuid, "model": self.invocation.model} if self.invocation is not None else {}),
                 "status": "controller_failure",
                 "error_type": type(exc).__name__,
                 "error": str(exc),
@@ -453,6 +500,8 @@ class ExperimentController:
         _write_json(self.artifact_root / f"{triplet}.json", {
             "schema_version": 1,
             "run_class": self.run_class,
+            **({"run_id": self.invocation.run_id} if self.invocation is not None else {}),
+            **({"run_uuid": self.invocation.run_uuid, "model": self.invocation.model} if self.invocation is not None else {}),
             "triplet_id": triplet,
             "matched_seed": seed,
             "conditions": [run.condition.value for run in runs],
@@ -514,7 +563,38 @@ class ExperimentController:
                                 f"model tier {level!r} has not passed live access validation"
                             )
                         kwargs["model"] = str(level)
-                output.append(self.run_triplet(
+                selected_controller = self
+                selected_model = kwargs.get("model")
+                if (
+                    factor == "model"
+                    and self.invocation is not None
+                    and isinstance(selected_model, str)
+                    and selected_model != self.config.model
+                ):
+                    try:
+                        invocation = create_run_directory(
+                            self.output_base,
+                            selected_model,
+                            run_id=f"factor-model-{_safe_level(selected_model)}-seed-{seed}",
+                        )
+                    except RunPathError as exc:
+                        raise RuntimeConfigError(str(exc)) from exc
+                    invocation.write_metadata({
+                        "run_class": self.run_class,
+                        "factor": factor,
+                        "factor_level": str(level),
+                    })
+                    selected_controller = ExperimentController(
+                        self.config.for_model(selected_model),
+                        invocation.path,
+                        invocation=invocation,
+                        extension=self.extension,
+                        protocol=self.protocol,
+                        run_class=self.run_class,
+                        verified_models=self.verified_models,
+                    )
+                    kwargs.pop("model", None)
+                output.append(selected_controller.run_triplet(
                     seed=seed,
                     triplet_id=f"factor-{_safe_level(factor)}-{_safe_level(level)}-seed-{seed}",
                     **kwargs,

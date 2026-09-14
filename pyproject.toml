@@ -8,7 +8,11 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = []
+dev = [
+    "marimo>=0.24.2",
+    "matplotlib>=3.11.2",
+    "numpy>=2.5.3",
+]
 
 [tool.uv]
 package = false

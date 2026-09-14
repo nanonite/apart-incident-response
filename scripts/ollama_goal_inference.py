@@ -16,7 +16,7 @@ Typical usage::
     python scripts/ollama_goal_inference.py \
         --prompt-file prompts/task-1.txt \
         --top-logprobs 5 \
-        --output artifacts/goal/qwen3-8b/seed-1
+        --output runs/qwen3-8b/logprobs
 
 The harness is intentionally prompt-only and never exposes tool, network, or
 filesystem capabilities to the model. It is a deterministic single completion.
@@ -31,8 +31,17 @@ import math
 import sys
 import urllib.error
 import urllib.request
-from datetime import datetime, timezone
 from pathlib import Path
+
+SOURCE_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(SOURCE_ROOT / "src"))
+
+from apart_incident_response.probability_artifacts import (
+    ProbabilityArtifactError,
+    build_probability_artifact,
+    normalize_token_probability,
+)
+from apart_incident_response.run_paths import create_run_directory
 
 DEFAULT_HOST = "http://localhost:11434"
 DEFAULT_MODEL = "qwen3:8b"
@@ -47,7 +56,29 @@ def _read_prompt(path: Path) -> str:
     return text
 
 
-def _write_failure(output: Path, *, run_id: str, error: Exception) -> None:
+def _mirror_file(path: Path, legacy_root: Path) -> None:
+    """Keep the requested leaf readable for callers of the old CLI contract."""
+
+    destination = legacy_root / path.name
+    if destination == path:
+        return
+    try:
+        destination.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+        destination.write_bytes(path.read_bytes())
+        destination.chmod(0o600)
+    except OSError:
+        return
+
+
+def _write_failure(
+    output: Path,
+    *,
+    run_id: str,
+    run_uuid: str,
+    model: str,
+    error: Exception,
+    legacy_root: Path | None = None,
+) -> None:
     try:
         output.mkdir(parents=True, exist_ok=True)
         path = output / "failure.json"
@@ -56,11 +87,16 @@ def _write_failure(output: Path, *, run_id: str, error: Exception) -> None:
             "run_class": "goal_inference",
             "status": "failed",
             "run_id": run_id,
+            "run_uuid": run_uuid,
+            "provider": "ollama",
+            "model": model,
             "mode": "logprobs",
             "error_type": type(error).__name__,
             "error": str(error),
         }, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         path.chmod(0o600)
+        if legacy_root is not None:
+            _mirror_file(path, legacy_root)
     except OSError:
         return
 
@@ -110,18 +146,32 @@ def _per_token_entropy(logprob: float, top_logprobs: list[dict[str, object]]) ->
     this surface, so we report the top-K entropy (a lower bound) alongside the
     log probability of the token that was actually sampled.
     """
-    tokens = [{"logprob": logprob}] + [
-        {"logprob": float(item["logprob"])} for item in top_logprobs
-    ]
-    max_logprob = max(t["logprob"] for t in tokens)
-    probs = [math.exp(t["logprob"] - max_logprob) for t in tokens]
-    total = sum(probs)
-    normalized = [p / total for p in probs]
-    entropy = -sum(p * math.log2(p) for p in normalized if p > 0)
+    # The historical helper is kept for the Qwen tests and callers that pass
+    # only logprobs. Real provider records go through the shared normalizer,
+    # which uses token text to remove a repeated sampled alternative.
+    record = {
+        "token": "__sampled__",
+        "logprob": logprob,
+        "top_logprobs": [
+            {
+                "token": item.get("token", f"__alternative_{index}__"),
+                "logprob": item.get("logprob"),
+            }
+            for index, item in enumerate(top_logprobs)
+        ],
+    }
+    normalized = normalize_token_probability(record)
+    entropy = normalized["entropy"]
     return {
         "sampled_logprob": float(logprob),
-        "sampled_prob": math.exp(float(logprob)),
-        "top_k_entropy_bits": round(entropy, 6),
+        "sampled_prob": float(normalized["sampled_probability"]),
+        "top_k_entropy_bits": round(float(entropy["partial_entropy_bits"]), 6),
+        "partial_entropy_bits": round(float(entropy["partial_entropy_bits"]), 6),
+        "residual_bucket_entropy_bits": round(
+            float(entropy["residual_bucket_entropy_bits"]), 6
+        ),
+        "covered_mass": round(float(normalized["covered_mass"]), 6),
+        "residual_mass": round(float(normalized["residual_mass"]), 6),
     }
 
 
@@ -129,17 +179,27 @@ def _summarize(logprobs: list[dict[str, object]]) -> dict[str, float]:
     if not logprobs:
         return {"token_count": 0}
     surprise_bits = 0.0
-    top_k_entropy_bits = 0.0
+    partial_entropy_bits = 0.0
+    residual_bucket_entropy_bits = 0.0
     for entry in logprobs:
         lp = float(entry["logprob"])
         surprise_bits += -lp / math.log(2)
-        top_k_entropy_bits += float(entry["_entropy"]["top_k_entropy_bits"])
+        partial_entropy_bits += float(entry["_entropy"]["partial_entropy_bits"])
+        residual_bucket_entropy_bits += float(
+            entry["_entropy"]["residual_bucket_entropy_bits"]
+        )
     return {
         "token_count": len(logprobs),
         "total_surprise_bits": round(surprise_bits, 6),
         "mean_surprise_bits": round(surprise_bits / len(logprobs), 6),
-        "total_top_k_entropy_bits": round(top_k_entropy_bits, 6),
-        "mean_top_k_entropy_bits": round(top_k_entropy_bits / len(logprobs), 6),
+        "total_top_k_entropy_bits": round(partial_entropy_bits, 6),
+        "mean_top_k_entropy_bits": round(partial_entropy_bits / len(logprobs), 6),
+        "total_partial_entropy_bits": round(partial_entropy_bits, 6),
+        "mean_partial_entropy_bits": round(partial_entropy_bits / len(logprobs), 6),
+        "total_residual_bucket_entropy_bits": round(residual_bucket_entropy_bits, 6),
+        "mean_residual_bucket_entropy_bits": round(
+            residual_bucket_entropy_bits / len(logprobs), 6
+        ),
     }
 
 
@@ -162,8 +222,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path("artifacts/goal/qwen3-8b"),
-        help="Directory to write the JSON artifact into",
+        default=Path("runs/qwen3-8b/logprobs"),
+        help="Base directory; the resolved provider/model/UUID path is printed",
     )
     parser.add_argument("--run-id", default=None, help="Stable run identifier")
     args = parser.parse_args(argv)
@@ -173,8 +233,16 @@ def main(argv: list[str] | None = None) -> int:
     if not args.prompt and not args.prompt_file:
         parser.error("one of --prompt or --prompt-file is required")
 
-    output = args.output.expanduser().resolve()
-    run_id = args.run_id or datetime.now(timezone.utc).isoformat()
+    requested_output = args.output.expanduser().resolve()
+    invocation = create_run_directory(
+        requested_output,
+        args.model,
+        provider="ollama",
+        run_id=args.run_id,
+        metadata={"mode": "logprobs", "run_class": "goal_inference"},
+    )
+    output = invocation.path
+    run_id = invocation.run_id
     try:
         if args.top_logprobs < 0 or args.num_predict < 1:
             raise ValueError("top-logprobs must be non-negative and num-predict must be positive")
@@ -190,20 +258,46 @@ def main(argv: list[str] | None = None) -> int:
             seed=args.seed,
         )
 
-        raw_logprobs = response.get("logprobs") or []
+        raw_logprobs = response.get("logprobs")
+        if raw_logprobs is None:
+            raise ProbabilityArtifactError("provider omitted logprobs")
+        if not isinstance(raw_logprobs, list):
+            raise ProbabilityArtifactError("provider logprobs must be an array")
         enriched: list[dict[str, object]] = []
         for entry in raw_logprobs:
             item = dict(entry)
-            item["_entropy"] = _per_token_entropy(
-                float(item["logprob"]), item.get("top_logprobs") or []
-            )
+            normalized = normalize_token_probability(item)
+            item["_entropy"] = {
+                **normalized["entropy"],
+                "covered_mass": normalized["covered_mass"],
+                "residual_mass": normalized["residual_mass"],
+            }
             enriched.append(item)
+
+        probability_artifact = build_probability_artifact(
+            raw_logprobs,
+            provenance={
+                "provider": "ollama",
+                "model": args.model,
+                "parameters": {
+                    "top_logprobs": args.top_logprobs,
+                    "num_predict": args.num_predict,
+                    "temperature": args.temperature,
+                    "think": args.think,
+                    "seed": args.seed,
+                },
+            },
+        )
 
         artifact = {
             "schema_version": 1,
             "run_class": "goal_inference",
             "experimental_data": True,
             "run_id": run_id,
+            "run_uuid": invocation.run_uuid,
+            "provider": invocation.provider,
+            "model_id": args.model,
+            "artifact_root": str(output),
             "checkpoint": {
                 "model_id": args.checkpoint_id,
                 "revision": args.checkpoint_revision,
@@ -225,6 +319,7 @@ def main(argv: list[str] | None = None) -> int:
             "eval_count": response.get("eval_count"),
             "total_duration": response.get("total_duration"),
             "logprobs": enriched,
+            "probability_artifact": probability_artifact,
             "summary": _summarize(enriched),
         }
 
@@ -234,11 +329,19 @@ def main(argv: list[str] | None = None) -> int:
             json.dumps(artifact, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
         )
         out_path.chmod(0o600)
+        _mirror_file(out_path, requested_output)
     except (OSError, ValueError, TypeError, KeyError, json.JSONDecodeError, urllib.error.URLError) as exc:
-        _write_failure(output, run_id=run_id, error=exc)
-        print(json.dumps({"status": "failed", "run_id": run_id, "error": str(exc)}, indent=2))
+        _write_failure(
+            output,
+            run_id=run_id,
+            run_uuid=invocation.run_uuid,
+            model=args.model,
+            error=exc,
+            legacy_root=requested_output,
+        )
+        print(json.dumps({"status": "failed", "run_id": run_id, "run_uuid": invocation.run_uuid, "artifact_root": str(output), "error": str(exc)}, indent=2))
         return 2
-    print(json.dumps({"artifact": str(out_path), "summary": artifact["summary"]}, indent=2))
+    print(json.dumps({"artifact": str(out_path), "artifact_root": str(output), "run_id": run_id, "run_uuid": invocation.run_uuid, "summary": artifact["summary"]}, indent=2))
     return 0
 
 

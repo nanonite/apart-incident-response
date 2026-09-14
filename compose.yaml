@@ -24,6 +24,39 @@ services:
       - apparmor=unconfined
     command: ["validate-config", "config/runtime.json"]
 
+  # The trusted outer controller path. This service is deliberately separate
+  # and opt-in; it does not change the default `runtime` service, which only
+  # validates configuration. Other hosts can use the repository normally.
+  # Credentials are supplied as one-off read-only mounts by the Just targets;
+  # the Pi child never receives the Docker socket or the source credential.
+  matrix:
+    image: apart-incident-response:local
+    build:
+      context: .
+      target: runtime
+    environment:
+      APART_CONTAINERIZED: "1"
+      APART_PI_ROOT: /opt/pi
+      APART_PI_AUTH_FILE: /run/secrets/pi-auth.json
+      APART_PI_AUTH_STORE: /controller-state/codex-auth.json
+      APART_OPENCODE_API_KEY_FILE: /run/secrets/opencode-key
+      APART_OPENROUTER_API_KEY_FILE: /run/secrets/openrouter-key
+    volumes:
+      - type: bind
+        source: ./runs
+        target: /app/runs
+      - type: volume
+        source: controller-auth-state
+        target: /controller-state
+    cap_add:
+      - SYS_ADMIN
+      - NET_ADMIN
+    security_opt:
+      - seccomp=unconfined
+      - apparmor=unconfined
+    entrypoint: ["/usr/bin/tini", "--", "/bin/sh", "/app/scripts/container_matrix_entrypoint.sh"]
+    command: ["--harness-check", "--output", "/app/runs/container-harness"]
+
   # Local model for the one-shot /goal logprobs data path. Serves Qwen3-8B
   # (4-bit) and exposes token-level logprobs via /api/generate so the entropy
   # metrics in entropy-metrics-mvp.md can be computed from raw probabilities.
@@ -44,3 +77,9 @@ services:
         target: /root/.ollama
     ports:
       - "11434:11434"
+
+volumes:
+  # Persistent controller-only OAuth refresh state. It is not part of the
+  # image, repository, agent workspace, or Pi Bubblewrap mounts.
+  controller-auth-state:
+    name: apart-incident-response-controller-auth-state

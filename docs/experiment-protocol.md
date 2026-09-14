@@ -76,6 +76,16 @@ labeling.
 
 ## Artifacts and replay
 
+Every new invocation uses the shared path contract
+`<output>/<provider>/<encoded-model>/<uuid>/`. The provider and model segments
+contain no secrets and the model slug reversibly encodes separators. `run.json`
+records `run_uuid`, the full model ID, provider, and optional `run_id` label.
+Matrix output keeps one UUID across all seeds and conditions, with each triplet
+at `<uuid>/s0001/C0`, `<uuid>/s0001/C1`, and `<uuid>/s0001/C2`. A standalone
+one shot invocation writes its response or `failure.json` directly in its UUID
+directory. The `--output` argument names the base directory; the resolved path
+is printed after launch.
+
 Every condition directory contains `manifest.json`, `budget.json`,
 `results.json`, `index.json`, an append-only `board.sqlite3` when applicable,
 controller `artifacts/board_events.jsonl`, derived `metrics.json`,
@@ -93,9 +103,54 @@ runs. Inspect one agent with:
 
 ```bash
 PYTHONPATH=src python scripts/inspect_run.py \
-  --run-root runs/t1/s0001-C1 --agent-id agent-1
+  --run-root runs/<provider>/<encoded-model>/<uuid>/s0001/C1 --agent-id agent-1
+```
+
+The same condition can be selected by UUID:
+
+```bash
+PYTHONPATH=src python scripts/inspect_run.py \
+  --run-uuid <uuid> --runs-root runs --seed 1 --condition C1 --agent-id agent-1
 ```
 
 Fixture-driven calibration or harness-check runs carry `run_class=harness_check`
 and are never included as model data. API keys and controller credentials are
 redacted before these retained artifacts are written.
+
+OpenRouter runs add `probability_artifacts.json` under each agent's artifact
+directory. It contains one `partial-token-probability-v1` record per assistant
+turn, response/session correlation, provider/model/parameter provenance, replay
+output, and coverage counts for text, tool-call, reasoning, and unsupported
+turns. A turn without usable provider logprobs is retained as `unavailable`
+with a reason. The OpenRouter measurement reports sampled-token surprise and
+bounded top-K partial entropy; it is not a full vocabulary entropy measurement.
+The Qwen3 full-logits path remains the separate source for raw pre-sampling
+vocabulary entropy.
+
+For the verified low-cost OpenRouter candidate, the one-shot smoke command is:
+
+```bash
+export OPENROUTER_API_KEY='provided-outside-the-repository'
+PYTHONPATH=src python scripts/qwen3_goal.py --mode openrouter \
+  --model openrouter/openai/gpt-4o-mini --prompt 'The capital of France is' \
+  --seed 1 --temperature 0 --top-logprobs 5 --max-tokens 16 \
+  --output runs/openrouter/smoke
+```
+
+The isolated low-token pilot uses the same model and route through the
+controller:
+
+```bash
+export APART_PI_ROOT="$PWD/pi"
+export APART_OPENROUTER_API_KEY_FILE="$HOME/.config/openrouter/api-key"
+PYTHONPATH=src python scripts/run_experiment.py \
+  --real-anchor --model openrouter/openai/gpt-4o-mini --seeds 1 \
+  --output runs/openrouter/pilot
+```
+
+The controller limits child egress to `openrouter.ai:443`, keeps the key
+controller-only, and writes redacted 0600 artifacts. A live smoke or pilot is
+eligible for experimental labeling only after the model response contains the
+requested probability data and the normal C0/C1/C2 execution-integrity checks
+pass. If no controller credential is present, retain the deterministic test
+results and record the live run as not executed.

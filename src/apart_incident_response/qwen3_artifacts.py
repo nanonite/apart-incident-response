@@ -9,6 +9,8 @@ import math
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from .run_paths import RunPathError, validate_uuid4
+
 
 ARTIFACT_SCHEMA = "qwen3-full-logits-v1"
 ARTIFACT_SCHEMA_VERSION = 1
@@ -72,6 +74,11 @@ def validate_metadata(metadata: Mapping[str, Any]) -> None:
     if metadata.get("artifact_schema") != ARTIFACT_SCHEMA:
         raise Qwen3ArtifactError("unexpected logits artifact schema")
     _require_text(metadata.get("run_id"), "run_id")
+    if "run_uuid" in metadata:
+        try:
+            validate_uuid4(metadata.get("run_uuid"))
+        except RunPathError as exc:
+            raise Qwen3ArtifactError("run_uuid must be a valid UUID v4") from exc
     model = _require_mapping(metadata.get("model"), "model")
     _require_text(model.get("id"), "model.id")
     _require_text(model.get("revision"), "model.revision")
@@ -255,6 +262,18 @@ def load_full_logits_artifact(output_root: Path | str) -> LoadedLogitsArtifact:
     except ImportError as exc:
         raise Qwen3ArtifactError("safetensors is required to load logits") from exc
     root = Path(output_root).expanduser().resolve()
+    if not (root / "full-logits").is_dir():
+        candidates = sorted(
+            path.parent
+            for path in root.glob("*/*/*/full-logits")
+            if path.is_dir()
+        )
+        if len(candidates) == 1:
+            root = candidates[0]
+        elif len(candidates) > 1:
+            raise Qwen3ArtifactError(
+                "multiple UUID run directories found; pass the resolved UUID artifact root"
+            )
     binary_dir = root / "full-logits"
     metadata = json.loads((binary_dir / METADATA_FILENAME).read_text(encoding="utf-8"))
     validate_metadata(metadata)

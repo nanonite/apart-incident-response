@@ -8,6 +8,7 @@ import hashlib
 import json
 from pathlib import Path
 import random
+import shutil
 import sys
 import time
 from typing import Any, Mapping
@@ -26,6 +27,7 @@ from apart_incident_response.qwen3_runtime import (  # noqa: E402
     dependency_versions,
     load_qwen3,
 )
+from apart_incident_response.run_paths import create_run_directory  # noqa: E402
 
 
 DEFAULT_CONFIG = SOURCE_ROOT / "config" / "qwen3-8b.json"
@@ -35,7 +37,46 @@ def _sha256_text(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
 
-def _write_failure(output: Path, *, run_id: str, stage: str, error: Exception) -> None:
+def _mirror_tree(source: Path, legacy_root: Path) -> None:
+    """Keep the old direct artifact root usable while new callers use UUID paths."""
+
+    destination = legacy_root / source.name
+    if destination == source:
+        return
+    try:
+        destination.mkdir(mode=0o700, parents=True, exist_ok=True)
+        for path in source.rglob("*"):
+            target = destination / path.relative_to(source)
+            if path.is_dir():
+                target.mkdir(mode=0o700, parents=True, exist_ok=True)
+            elif path.is_file():
+                target.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+                shutil.copy2(path, target)
+                target.chmod(0o600)
+    except OSError:
+        return
+
+
+def _mirror_file(path: Path, legacy_root: Path) -> None:
+    try:
+        legacy_root.mkdir(mode=0o700, parents=True, exist_ok=True)
+        target = legacy_root / path.name
+        shutil.copy2(path, target)
+        target.chmod(0o600)
+    except OSError:
+        return
+
+
+def _write_failure(
+    output: Path,
+    *,
+    run_id: str,
+    run_uuid: str,
+    model: str,
+    stage: str,
+    error: Exception,
+    legacy_root: Path | None = None,
+) -> None:
     try:
         output.mkdir(mode=0o700, parents=True, exist_ok=True)
         payload = {
@@ -43,6 +84,9 @@ def _write_failure(output: Path, *, run_id: str, stage: str, error: Exception) -
             "run_class": "goal_inference",
             "status": "failed",
             "run_id": run_id,
+            "run_uuid": run_uuid,
+            "provider": "qwen3",
+            "model_id": model,
             "stage": stage,
             "error_type": type(error).__name__,
             "error": str(error),
@@ -51,6 +95,8 @@ def _write_failure(output: Path, *, run_id: str, stage: str, error: Exception) -
         path = output / "failure.json"
         path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         path.chmod(0o600)
+        if legacy_root is not None:
+            _mirror_file(path, legacy_root)
     except OSError:
         return
 
@@ -211,6 +257,10 @@ def _run_generation(args: argparse.Namespace, config: Mapping[str, Any], prompt:
     }
     metadata = {
         "run_id": args.run_id,
+        "run_uuid": args.run_uuid,
+        "provider": "qwen3",
+        "model_id": model_config.model_id,
+        "artifact_root": str(args.output),
         "model": {
             "id": model_config.model_id,
             "revision": model_config.revision,
@@ -246,6 +296,7 @@ def _run_generation(args: argparse.Namespace, config: Mapping[str, Any], prompt:
     generated_record = {
         "schema_version": 1,
         "run_id": args.run_id,
+        "run_uuid": args.run_uuid,
         "prompt": prompt,
         "rendered_prompt": rendered_prompt,
         "generated_token_ids": generated_ids.detach().cpu().tolist(),
@@ -266,6 +317,9 @@ def _run_generation(args: argparse.Namespace, config: Mapping[str, Any], prompt:
         "run_class": "goal_inference",
         "status": "completed",
         "run_id": args.run_id,
+        "run_uuid": args.run_uuid,
+        "provider": "qwen3",
+        "model_id": model_config.model_id,
         "response": response,
         "thinking": thinking,
         "generated_token_count": int(generated_ids.shape[0]),
@@ -283,7 +337,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--revision")
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
     parser.add_argument("--cache-dir", type=Path)
-    parser.add_argument("--output", type=Path, default=Path("runs/qwen3-8b/full-logits/seed-1"))
+    parser.add_argument("--output", type=Path, default=Path("runs/qwen3-8b/full-logits"))
     parser.add_argument("--run-id", default="seed-1")
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--max-new-tokens", type=int, default=128)
@@ -299,18 +353,44 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    args.output = args.output.expanduser().resolve()
+    requested_output = args.output.expanduser().resolve()
     args.config = args.config.expanduser().resolve()
     args.cache_dir = args.cache_dir.expanduser().resolve() if args.cache_dir else None
     run_id = args.run_id
+    path_model = args.model or "Qwen/Qwen3-8B"
+    try:
+        preview_config = _load_config(args.config)
+        path_model = args.model or str(preview_config["model_id"])
+    except (Qwen3RuntimeError, OSError, ValueError):
+        # Preserve a failure artifact even when the configuration itself is
+        # unreadable; the default model keeps the path contract deterministic.
+        pass
+    invocation = create_run_directory(
+        requested_output,
+        path_model,
+        provider="qwen3",
+        run_id=run_id,
+        metadata={"mode": "full-logits", "run_class": "goal_inference"},
+    )
+    args.output = invocation.path
+    args.run_uuid = invocation.run_uuid
     try:
         prompt = _read_prompt(args.prompt, args.prompt_file)
         config = _load_config(args.config)
         result = _run_generation(args, config, prompt)
-    except (Qwen3ArtifactError, Qwen3RuntimeError, OSError, ValueError) as exc:
-        _write_failure(args.output, run_id=run_id, stage="full_logits_inference", error=exc)
-        print(json.dumps({"status": "failed", "run_id": run_id, "error": str(exc)}, indent=2))
+    except (Qwen3ArtifactError, Qwen3RuntimeError, OSError, ValueError, RuntimeError, ImportError, MemoryError) as exc:
+        _write_failure(
+            args.output,
+            run_id=run_id,
+            run_uuid=invocation.run_uuid,
+            model=path_model,
+            stage="full_logits_inference",
+            error=exc,
+            legacy_root=requested_output,
+        )
+        print(json.dumps({"status": "failed", "run_id": run_id, "run_uuid": invocation.run_uuid, "artifact_root": str(args.output), "error": str(exc)}, indent=2))
         return 2
+    _mirror_tree(args.output / "full-logits", requested_output)
     print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
     return 0
 

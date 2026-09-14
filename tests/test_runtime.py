@@ -24,10 +24,13 @@ from apart_incident_response.runtime import (
     SystemBudget,
     _ModelEgressProxy,
     _bubblewrap_failure_reason,
+    _model_request_metadata,
     _opencode_session_id,
     _prepare_auth_file,
     _prepare_model_limits,
+    _resolve_provider_api_key,
     _resolve_auth_store,
+    _resolve_auth_file,
     build_pi_command,
     create_isolated_workspace,
     load_identity,
@@ -196,6 +199,88 @@ class RuntimeContractTests(unittest.TestCase):
             _opencode_session_id(self.identity("agent-1")),
             _opencode_session_id(self.identity("agent-2")),
         )
+
+    def test_opencode_does_not_require_codex_auth_file(self):
+        config = self.config().for_model("opencode-go/kimi-k2.6")
+        with patch.dict(os.environ, {"TEST_PI_AUTH": "/missing/codex-auth.json"}):
+            self.assertIsNone(_resolve_auth_file(config))
+
+    def test_openrouter_selection_uses_only_provider_egress_and_preserves_model_slug(self):
+        config = self.config().for_model("openrouter/openai/gpt-4o-mini")
+        self.assertEqual(config.model, "openrouter/openai/gpt-4o-mini")
+        self.assertEqual(config.isolation.model_hosts, ("openrouter.ai",))
+        self.assertEqual(config.isolation.oauth_hosts, ())
+        metadata = _model_request_metadata(config)
+        self.assertEqual(metadata["openrouter_base_url"], "https://openrouter.ai/api/v1")
+        self.assertEqual(metadata["openrouter_model"], "openai/gpt-4o-mini")
+        self.assertEqual(metadata["openrouter_route"], "openrouter.ai:443")
+
+    def test_openrouter_switch_restores_codex_egress(self):
+        config = self.config().for_model("openrouter/openai/gpt-4o-mini")
+        codex = config.for_model("openai-codex/gpt-5.6-luna")
+        self.assertEqual(codex.isolation.model_hosts, ("chatgpt.com",))
+        self.assertEqual(codex.isolation.oauth_hosts, ("auth.openai.com",))
+
+    def test_openrouter_rejects_model_without_author_and_slug(self):
+        with self.assertRaises(RuntimeConfigError):
+            self.config().for_model("openrouter/gpt-4o-mini")
+
+    def test_openrouter_relay_allows_only_openrouter_https(self):
+        relay = _ModelEgressProxy(Path("/tmp/unused-openrouter-relay.sock"), ("openrouter.ai",))
+        self.assertTrue(relay._allowed("openrouter.ai", 443))
+        self.assertTrue(relay._allowed("OPENROUTER.AI.", 443))
+        self.assertFalse(relay._allowed("openrouter.ai", 80))
+        self.assertFalse(relay._allowed("chatgpt.com", 443))
+        self.assertEqual(relay._parse_connect_target("openrouter.ai:443"), ("openrouter.ai", 443))
+
+    def test_openrouter_model_limits_use_the_configured_agent_envelope(self):
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = create_isolated_workspace(Path(temp), self.identity())
+            config = self.config(per_agent_token_budget=17).for_model(
+                "openrouter/openai/gpt-4o-mini"
+            )
+            path = _prepare_model_limits(workspace, config)
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            provider = payload["providers"]["openrouter"]
+            self.assertEqual(
+                provider["modelOverrides"]["openai/gpt-4o-mini"]["maxTokens"],
+                17,
+            )
+
+    def test_openrouter_key_is_controller_only_and_staged_for_pi(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            secret = "openrouter-secret-for-test"
+            key_file = root / "openrouter-key"
+            key_file.write_text(
+                json.dumps({"openrouter": {"type": "api_key", "key": secret}}) + "\n",
+                encoding="utf-8",
+            )
+            key_file.chmod(0o600)
+            config = self.config().for_model("openrouter/openai/gpt-4o-mini")
+            with patch.dict(
+                os.environ,
+                {
+                    "APART_OPENROUTER_API_KEY_FILE": str(key_file),
+                    "OPENROUTER_API_KEY": "ambient-value-must-not-win",
+                },
+                clear=True,
+            ):
+                self.assertEqual(_resolve_provider_api_key(config), secret)
+            workspace = create_isolated_workspace(root / "runs", self.identity())
+            stage = _prepare_auth_file(None, workspace, config, api_key=secret)
+            self.assertIsNotNone(stage)
+            self.assertEqual(
+                json.loads(stage.target.read_text(encoding="utf-8"))["openrouter"]["key"],
+                secret,
+            )
+            self.assertIsNone(_resolve_auth_store(config, None, workspace))
+
+    def test_openrouter_key_is_required_when_no_controller_input_exists(self):
+        config = self.config().for_model("openrouter/openai/gpt-4o-mini")
+        with patch.dict(os.environ, {}, clear=True):
+            with self.assertRaisesRegex(RuntimeConfigError, "OpenRouter API key is unavailable"):
+                _resolve_provider_api_key(config)
 
     def test_ollama_selection_uses_loopback_endpoint_and_disables_oauth(self):
         config = self.config().for_model("ollama/qwen3:8b")

@@ -79,6 +79,11 @@ _REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 _OPENCODE_PROVIDER = "opencode-go"
 _OPENCODE_HOST = "opencode.ai"
 _CODEX_PROVIDER = "openai-codex"
+_OPENROUTER_PROVIDER = "openrouter"
+_OPENROUTER_HOST = "openrouter.ai"
+_OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+_OPENROUTER_API_KEY_FILE_ENV = "APART_OPENROUTER_API_KEY_FILE"
+_OPENROUTER_API_KEY_ENV = "OPENROUTER_API_KEY"
 _OLLAMA_PROVIDER = "ollama"
 _OLLAMA_DEFAULT_HOST = "127.0.0.1"
 _OLLAMA_DEFAULT_PORT = 11434
@@ -351,6 +356,17 @@ class RuntimeConfig:
                 )
             if self.isolation.oauth_hosts:
                 raise RuntimeConfigError("OpenCode Go must not allow unrelated OAuth egress hosts")
+        if separator and provider == _OPENROUTER_PROVIDER:
+            if not _is_openrouter_model_id(_model_id):
+                raise RuntimeConfigError(
+                    "OpenRouter models must use openrouter/<author>/<model>"
+                )
+            if self.isolation.model_hosts != (_OPENROUTER_HOST,):
+                raise RuntimeConfigError(
+                    "OpenRouter requires the model egress allowlist to contain only openrouter.ai"
+                )
+            if self.isolation.oauth_hosts:
+                raise RuntimeConfigError("OpenRouter must not allow unrelated OAuth egress hosts")
         if separator and provider == _OLLAMA_PROVIDER:
             pinned = _pinned_ollama_config()
             if _model_id != pinned["ollama_model"]:
@@ -470,6 +486,12 @@ class RuntimeConfig:
         current_provider = self.model.partition("/")[0]
         if provider == _OPENCODE_PROVIDER:
             isolation = replace(isolation, model_hosts=(_OPENCODE_HOST,), oauth_hosts=())
+        elif provider == _OPENROUTER_PROVIDER:
+            if not _is_openrouter_model_id(model_id):
+                raise RuntimeConfigError(
+                    "OpenRouter models must use openrouter/<author>/<model>"
+                )
+            isolation = replace(isolation, model_hosts=(_OPENROUTER_HOST,), oauth_hosts=())
         elif provider == _OLLAMA_PROVIDER:
             pinned = _pinned_ollama_config()
             if model_id != pinned["ollama_model"]:
@@ -484,7 +506,11 @@ class RuntimeConfig:
             # Pi's generic --thinking flag is not Ollama's native `think` field.
             # Local runs are explicitly non-thinking unless the caller overrides it.
             return replace(self, model=model, thinking_level="off", isolation=isolation)
-        elif provider == _CODEX_PROVIDER or current_provider in {_OPENCODE_PROVIDER, _OLLAMA_PROVIDER}:
+        elif provider == _CODEX_PROVIDER or current_provider in {
+            _OPENCODE_PROVIDER,
+            _OPENROUTER_PROVIDER,
+            _OLLAMA_PROVIDER,
+        }:
             isolation = replace(
                 isolation,
                 model_hosts=("chatgpt.com",),
@@ -682,15 +708,23 @@ class IsolatedWorkspace:
     artifact_dir: Path
 
 
-def create_isolated_workspace(root: Path, identity: AgentIdentity) -> IsolatedWorkspace:
+def create_isolated_workspace(
+    root: Path,
+    identity: AgentIdentity,
+    *,
+    run_root: Path | None = None,
+) -> IsolatedWorkspace:
     """Create an agent-only directory tree with restrictive permissions."""
 
     root = root.expanduser().resolve()
-    run_root = root / identity.run_id
-    agent_root = run_root / "agents" / identity.agent_id
+    workspace_root = root.expanduser().resolve()
+    selected_run_root = (
+        run_root.expanduser().resolve() if run_root is not None else workspace_root / identity.run_id
+    )
+    agent_root = selected_run_root / "agents" / identity.agent_id
     if agent_root.exists():
         raise RuntimeConfigError(f"agent workspace already exists: {agent_root}")
-    for path in (run_root, run_root / "agents", agent_root):
+    for path in (selected_run_root, selected_run_root / "agents", agent_root):
         path.mkdir(mode=0o700, parents=True, exist_ok=True)
         path.chmod(0o700)
     task_dir = agent_root / "task"
@@ -700,8 +734,8 @@ def create_isolated_workspace(root: Path, identity: AgentIdentity) -> IsolatedWo
         path.mkdir(mode=0o700)
         path.chmod(0o700)
     return IsolatedWorkspace(
-        workspace_root=root,
-        run_root=run_root,
+        workspace_root=workspace_root,
+        run_root=selected_run_root,
         root=agent_root,
         task_dir=task_dir,
         session_dir=session_dir,
@@ -791,7 +825,11 @@ def _create_bind_mount_placeholder(path: Path) -> None:
 def _resolve_auth_file(config: RuntimeConfig) -> Path | None:
     """Resolve an optional host-side Pi auth file without placing secrets in env."""
 
-    if _model_provider(config.model) == _OLLAMA_PROVIDER:
+    if _model_provider(config.model) in {
+        _OPENCODE_PROVIDER,
+        _OPENROUTER_PROVIDER,
+        _OLLAMA_PROVIDER,
+    }:
         return None
     if config.pi_auth_file_env is None:
         return None
@@ -840,6 +878,13 @@ def _path_is_within(path: Path, directory: Path) -> bool:
 
 def _model_provider(model: str) -> str:
     return model.partition("/")[0]
+
+
+def _is_openrouter_model_id(model_id: str) -> bool:
+    """Validate the author/model slug kept after the OpenRouter prefix."""
+
+    author, separator, model_name = model_id.partition("/")
+    return model_id.count("/") == 1 and bool(author and separator and model_name)
 
 
 def _resolve_ollama_target() -> tuple[str, int, str, str]:
@@ -941,6 +986,13 @@ def _model_request_metadata(config: RuntimeConfig) -> dict[str, Any]:
             "ollama_model": config.model.partition("/")[2],
             "ollama_think": config.thinking_level != "off",
         })
+    elif _model_provider(config.model) == _OPENROUTER_PROVIDER:
+        metadata.update({
+            "openrouter_base_url": _OPENROUTER_BASE_URL,
+            "openrouter_host": _OPENROUTER_HOST,
+            "openrouter_model": config.model.partition("/")[2],
+            "openrouter_route": "openrouter.ai:443",
+        })
     return metadata
 
 
@@ -951,29 +1003,29 @@ def _opencode_session_id(identity: AgentIdentity) -> str:
     return f"apart-{hashlib.sha256(material).hexdigest()[:32]}"
 
 
-def _read_private_api_key(path: Path) -> str:
+def _read_private_api_key(path: Path, provider: str = _OPENCODE_PROVIDER) -> str:
     """Read a controller-owned key file without putting its value in env or argv."""
 
     if path.is_symlink() or not path.is_file():
-        raise RuntimeConfigError("OpenCode API key file is not a regular file")
+        raise RuntimeConfigError(f"{provider} API key file is not a regular file")
     info = path.stat()
     if info.st_uid != os.geteuid() or stat.S_IMODE(info.st_mode) & 0o077:
-        raise RuntimeConfigError("OpenCode API key file must be controller-owned and mode 0600")
+        raise RuntimeConfigError(f"{provider} API key file must be controller-owned and mode 0600")
     try:
         value = path.read_text(encoding="utf-8").strip()
     except OSError as exc:
-        raise RuntimeConfigError("cannot read OpenCode API key file") from exc
+        raise RuntimeConfigError(f"cannot read {provider} API key file") from exc
     if not value:
-        raise RuntimeConfigError("OpenCode API key file is empty")
+        raise RuntimeConfigError(f"{provider} API key file is empty")
     if value.startswith("{"):
         try:
             payload = json.loads(value)
         except json.JSONDecodeError as exc:
-            raise RuntimeConfigError("OpenCode API key file is not valid JSON") from exc
-        provider_payload = payload.get(_OPENCODE_PROVIDER) if isinstance(payload, Mapping) else None
+            raise RuntimeConfigError(f"{provider} API key file is not valid JSON") from exc
+        provider_payload = payload.get(provider) if isinstance(payload, Mapping) else None
         candidate = provider_payload.get("key") if isinstance(provider_payload, Mapping) else None
         if not isinstance(candidate, str) or not candidate.strip():
-            raise RuntimeConfigError("OpenCode API key JSON is missing its provider key")
+            raise RuntimeConfigError(f"{provider} API key JSON is missing its provider key")
         value = candidate.strip()
     return value
 
@@ -984,6 +1036,21 @@ def _resolve_provider_api_key(config: RuntimeConfig) -> str | None:
     provider = _model_provider(config.model)
     if provider == _OLLAMA_PROVIDER:
         return _OLLAMA_DUMMY_API_KEY
+    if provider == _OPENROUTER_PROVIDER:
+        raw_path = os.environ.get(_OPENROUTER_API_KEY_FILE_ENV)
+        if raw_path:
+            return _read_private_api_key(
+                Path(raw_path).expanduser().resolve(), _OPENROUTER_PROVIDER
+            )
+        value = os.environ.get(_OPENROUTER_API_KEY_ENV)
+        if value:
+            value = value.strip()
+            if value:
+                return value
+        raise RuntimeConfigError(
+            "OpenRouter API key is unavailable; provide a private key file through "
+            f"{_OPENROUTER_API_KEY_FILE_ENV} or the controller-only {_OPENROUTER_API_KEY_ENV} variable"
+        )
     if provider != _OPENCODE_PROVIDER:
         return None
     if config.api_key_file_env:
@@ -1034,9 +1101,10 @@ def _resolve_auth_store(
 
     if config.pi_auth_store_env is None or _model_provider(config.model) in {
         _OPENCODE_PROVIDER,
+        _OPENROUTER_PROVIDER,
         _OLLAMA_PROVIDER,
     }:
-        # OpenCode and Ollama credentials are staged only in the run-local Pi auth file.
+        # API-key provider credentials are staged only in the run-local Pi auth file.
         # Keep the configured Codex store intact so switching back to Codex
         # preserves its existing credential lifecycle.
         return None
@@ -1282,8 +1350,14 @@ def _prepare_auth_file(
     """Stage credentials and optionally hold the controller refresh lease."""
 
     transient_provider = _model_provider(config.model) if api_key is not None else None
-    if api_key is not None and transient_provider not in {_OPENCODE_PROVIDER, _OLLAMA_PROVIDER}:
-        raise RuntimeConfigError("a transient API key can only be staged for OpenCode Go or Ollama")
+    if api_key is not None and transient_provider not in {
+        _OPENCODE_PROVIDER,
+        _OPENROUTER_PROVIDER,
+        _OLLAMA_PROVIDER,
+    }:
+        raise RuntimeConfigError(
+            "a transient API key can only be staged for OpenCode Go, OpenRouter, or Ollama"
+        )
     store = _resolve_auth_store(config, source, workspace)
     lock_handle: IO[str] | None = None
     baseline_revision = 0
@@ -1477,6 +1551,15 @@ def _resolve_launch_command(config: RuntimeConfig) -> tuple[list[str], Path | No
             raise RuntimeConfigError("pinned Pi OpenCode Go provider is incomplete")
         if "x-opencode-session" not in header_source:
             raise RuntimeConfigError("pinned Pi OpenCode session-header support is incomplete")
+    if _model_provider(config.model) == _OPENROUTER_PROVIDER:
+        provider_path = pi_root / "packages" / "ai" / "src" / "providers" / "openrouter.ts"
+        if not provider_path.is_file():
+            raise RuntimeConfigError(
+                "pinned Pi does not provide built-in OpenRouter support; refusing a custom fallback"
+            )
+        provider_source = provider_path.read_text(encoding="utf-8")
+        if "openrouterProvider" not in provider_source or "OPENROUTER_API_KEY" not in provider_source:
+            raise RuntimeConfigError("pinned Pi OpenRouter provider is incomplete")
     if not any("{pi_root}" in part for part in command):
         raise RuntimeConfigError("launch_command must reference {pi_root} for a local Pi checkout")
     return [part.replace("{pi_root}", str(pi_root)) for part in command], pi_root

@@ -37,8 +37,35 @@ just report
 The runtime contract is in `config/runtime.json`. It pins the Pi CLI version,
 the `openai-codex/gpt-5.6-luna` model identifier at `xhigh` thinking level, per-agent and aggregate budgets,
 timeout, and the fixed C0/C1/C2 condition set. The containerized launcher uses
-the pinned Pi checkout at `/opt/pi`. Each run receives a controller-issued identity and a private
-`artifacts/<run-id>/agents/<agent-id>/` directory.
+the pinned Pi checkout at `/opt/pi`. New invocations are stored under
+`runs/<provider>/<encoded-model>/<uuid>/`; matrix conditions are below that root
+at `<triplet>/<condition>/agents/<agent-id>/`. Historical flat run directories
+remain readable. Every new root has a `run.json` containing the UUID, full model
+ID, provider, and optional stable `--run-id` label.
+
+The `--output` option is always a base directory. The launcher creates the
+provider, reversible encoded model slug, and UUID below it, then prints the
+resolved `artifact_root`. A matrix invocation allocates one UUID for all seeds
+and C0/C1/C2 conditions. One shot logprob and full-logit invocations allocate
+one UUID each. Failed launches write `failure.json` into the same resolved
+directory. Use `--run-id stable-label` when a reproducible human label is useful;
+the UUID remains the collision resistant path identity.
+
+The real matrix must be launched from a dedicated trusted outer Codex session
+with explicit full host access. This is an opt-in launch choice for this
+repository; it does not change the global Codex default:
+
+```bash
+cd /path/to/apart-incident-response
+codex --sandbox danger-full-access --ask-for-approval never --cd "$PWD"
+```
+
+In that outer session, `just docker-check` verifies Docker access before any
+controller starts. Docker control belongs only to this outer session and the
+container controller; the Pi process never receives the Docker socket.
+This is a host-specific opt-in path for machines that provide a trusted
+full-access outer session. It is not required by, or enabled by default for,
+other machines using this repository.
 
 Task prompts are configured under the top-level `prompts` object by task ID.
 When a run omits `--prompt` and `--prompt-file`, the controller selects the
@@ -115,6 +142,8 @@ run.
 OpenCode Go uses Pi 0.85.1's built-in opencode-go provider. The controller
 checks the pinned checkout for that provider and its session-header support
 before launch; it refuses a custom fallback when those sources are absent.
+The two Pi provider paths and their execution boundaries are compared in
+[`docs/pi-provider-paths.md`](docs/pi-provider-paths.md).
 The default Codex model and OAuth egress stay unchanged. Select OpenCode Go
 for a real run with a model override and a private key file outside the
 repository:
@@ -136,6 +165,40 @@ allowlist and removes the Codex OAuth host. Each agent gets a stable
 x-opencode-session value derived from its run and agent identity and a
 distinct User-Agent; the existing per-agent and aggregate token/tool-call
 limits remain in force.
+
+OpenRouter uses Pi's built-in `openrouter` provider. Select a model with its
+full provider/model slug, such as `openrouter/openai/gpt-4o-mini`:
+
+```bash
+export APART_PI_ROOT="$PWD/pi"
+export APART_OPENROUTER_API_KEY_FILE="$HOME/.config/openrouter/api-key"
+PYTHONPATH=src python scripts/run_experiment.py \
+  --real-anchor --model openrouter/openai/gpt-4o-mini --seeds 1 \
+  --output runs/openrouter
+```
+
+The controller reads the private key file, stages it only in the run-local Pi
+auth file, and removes it after the run. A controller-only `OPENROUTER_API_KEY`
+environment value is also supported. OpenRouter selection allows only
+`openrouter.ai:443` through the model relay and removes the Codex OAuth and
+OpenCode hosts. See [`docs/pi-provider-paths.md`](docs/pi-provider-paths.md)
+for the container command and the verified logprob request contract. For a
+prompt-only OpenRouter probability capture, use the shared one-shot dispatcher
+with the dedicated controller environment variable:
+
+```bash
+export OPENROUTER_API_KEY='provided-outside-the-repository'
+PYTHONPATH=src python scripts/qwen3_goal.py --mode openrouter \
+  --model openrouter/openai/gpt-4o-mini \
+  --prompt-file prompts/task-1.txt --seed 1 --temperature 0 \
+  --top-logprobs 5 --max-tokens 512 \
+  --output runs/openrouter/logprobs
+```
+
+The adapter sends one non-streaming chat-completions request, requires the
+provider to preserve logprob parameters, validates the returned token array,
+and writes a sanitized response plus a `partial-token-probability-v1`
+artifact. Missing or malformed probabilities produce `failure.json`.
 
 The `run` command writes metadata, raw JSONL, stderr, parsed events, the final
 response, budget usage, and exit status under the agent artifact directory.
@@ -160,14 +223,15 @@ OAuth store described above:
 ```bash
 PYTHONPATH=src python scripts/run_experiment.py \
   --real-anchor --seeds 1 2 3 4 5 \
-  --output runs/t1
+  --output runs/t1 \
+  --run-id task-1-anchor
 ```
 
-The command writes a condition directory and a paired triplet summary for each
-seed. It preserves credential-redacted Pi JSONL/stderr, parsed events,
+The command writes one model-scoped UUID directory, then a condition directory
+and paired triplet summary for each seed. It preserves credential-redacted Pi JSONL/stderr, parsed events,
 response/tokenizer artifacts, tool audits, board state/events, submissions,
 budget/failure data, and derived provenance/replay metrics. `index.json` links
-the matrix through each condition to every agent `timeline.json`; inspect one agent with `PYTHONPATH=src python scripts/inspect_run.py --run-root <condition> --agent-id agent-1`. `U` requires a prior cross-agent board read followed by
+the matrix through each condition to every agent `timeline.json`; inspect one agent with `PYTHONPATH=src python scripts/inspect_run.py --run-root <uuid-root>/s0001/C1 --agent-id agent-1`. The same lookup can use `--run-uuid <uuid> --runs-root runs --seed 1 --condition C1`. `U` requires a prior cross-agent board read followed by
 later recipient use of a seeded token; token overlap and task success are not
 substitutes for that trace. Five-seed output is descriptive pilot evidence
 only.
@@ -322,6 +386,55 @@ Build the runtime image and validate its pinned configuration:
 ```bash
 docker compose build
 docker compose run --rm runtime
+```
+
+The default `runtime` service only validates configuration. The dedicated
+`matrix` service runs the controller inside the image built from the pinned
+`pi` checkout. Run these commands from the trusted outer session above:
+The matrix service and its Just targets are opt-in; normal repository Docker
+commands do not start it or require full host access.
+
+```bash
+just docker-check
+just container-isolation
+just container-harness
+```
+
+`container-harness` writes deterministic, fake-provider checks under
+`runs/container-harness/`; it is harness evidence, never model data.
+`container-isolation` writes sanitized container and Bubblewrap namespace
+evidence to `runs/container-isolation.json`. Both commands fail if a Docker
+socket is visible inside the matrix container.
+
+For a real, explicitly authorized calibration or anchor, provide credentials
+from outside the repository. The Codex path mounts the source auth read-only;
+the controller-owned OAuth refresh state is kept in the named Docker volume
+`apart-incident-response-controller-auth-state`:
+
+```bash
+export APART_PI_AUTH_FILE="$HOME/.codex/auth.json"
+just container-anchor output=t1-container seeds="1"
+```
+
+The OpenCode Go path uses a private key file instead and stages it only for the
+controller. The entrypoint copies the read-only input to a controller-owned
+0600 path, and the runtime removes run-local staged credentials on exit:
+
+```bash
+export APART_OPENCODE_API_KEY_FILE="$HOME/.local/share/opencode/auth.json"
+just container-anchor output=opencode-go-container \
+  model=opencode-go/kimi-k2.6 seeds="1"
+```
+
+The `container-anchor` target never puts credential contents in arguments.
+Its `/app/runs` mount maps to the repository's `runs/` directory, so manifests,
+raw events, failures, usage, and derived telemetry remain available on the
+host. Use the existing host command only when intentionally running the
+controller outside Docker:
+
+```bash
+PYTHONPATH=src python scripts/run_experiment.py \
+  --real-anchor --seeds 1 --output runs/t1-host
 ```
 
 Docker also verifies the repository's build responsibilities directly:

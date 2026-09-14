@@ -285,9 +285,14 @@ class TaskToolService:
 
     def _artifact_path(self, identity: AgentIdentity) -> Path:
         assert self._artifact_root is not None
+        run_root = self._artifact_root
+        # New model-scoped invocations pass the already resolved condition
+        # directory. Historical callers pass the parent and rely on
+        # ``<root>/<run_id>``; accepting both keeps old artifacts readable.
+        if not (run_root / "agents").is_dir():
+            run_root = run_root / identity.run_id
         return (
-            self._artifact_root
-            / identity.run_id
+            run_root
             / "agents"
             / identity.agent_id
             / "artifacts"
