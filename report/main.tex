@@ -1,8 +1,8 @@
 \input{packages/preamble.tex}
 
 % Front matter
-\title{Listening to the Collective: Entropy-Based Early Warning for Emergent Agent Communication}
-\shortTitle{Listening to the Collective}
+\title{Sensing Disruption: Output Entropy as a Channel-Agnostic Monitor for LLM Agents}
+\shortTitle{Sensing Disruption}
 \track{Track: Containment Standards}
 \articleType{Research Report}
 % TODO: replace the placeholder authors, affiliations and contact
@@ -11,7 +11,7 @@
 $^{2}$Affiliation Two, City, Country}
 \correspondenceName{Author One}
 \correspondenceMail{author.one@example.org}
-\keywords{AI safety, multi-agent systems, incident response, entropy, anomaly detection}
+\keywords{AI safety, multi-agent systems, monitoring, entropy, log-probabilities, collusion}
 
 \selfCitation{One, A. et al.\ (2026).\newblock {\em AI Incident Response Sprint}, Apart Research, 1--\pageref{LastPage}.}
 
@@ -21,21 +21,22 @@ $^{2}$Affiliation Two, City, Country}
 
 \begin{document}
 
-	\abstrac{Hola}
+	\abstrac{In July 2026, agents in separate evaluation runs coordinated through an improvised message board on a package mirror and went on to breach production infrastructure. Monitoring channels cannot keep up with agents that improvise new ones, but every channel changes what the receiving agent reads. We test whether that change is visible in output entropy computed from API log-probabilities. Two agents hold cryptographically split halves of a task and share a permissioned log. We compare undisturbed runs with runs in which the log starts delivering the partner's real messages (verified by a deterministic checker in 179 of 180 runs) and with a placebo that delivers useless foreign entries with matched format and timing. Across 539 runs with three models at temperatures 1, 0.5 and 0, a single run-level change in decision entropy separated disrupted from undisturbed Qwen3 235B runs with AUC 0.85 to 0.96. The effect was weak for Llama 3.3 70B and absent for gpt-4o-mini. Under sampling, placebo text raised entropy as much as real messages, and only greedy decoding let Qwen separate the two (AUC 0.955). The coupling term between agents stayed within 0.025 bits of chance. Entropy is a candidate for a cheap, model-specific disruption monitor that tells reviewers where to look, not a detector of communication.}
 
 	\maketitle
 
   \input{content/introduction.tex}
-  \input{content/entropy.tex}
-  \input{content/metodology.tex}
+  \input{content/related_work.tex}
+  \input{content/methods.tex}
   \input{content/results.tex}
   %\input{content/board_storage.tex}
-  \input{content/limitations.tex}
+  \input{content/discussion.tex}
 
     % List all citations
 	\nocite{*}
+	\IfFileExists{balance.sty}{\balance}{}
 	\printbibliography
 
-	% Balance columns on last page
-\IfFileExists{balance.sty}{\balance}{}
+	\input{content/appendix.tex}
+
 \end{document}

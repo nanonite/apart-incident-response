@@ -1,19 +1,20 @@
 \section{Results}
 \label{sec:results}
 
-% Every number in this section comes from research/two_agent_entropy/results/exp{1,2,3}/analysis/stats
-% (exp1: T = 1, exp3: T = 0.5, exp2: T = 0). Figures: research/two_agent_entropy/analysis/paper_figures.py.
+% Numbers come from research/two_agent_entropy/results/exp{1,2,3}/analysis/stats (exp1: T = 1, exp3: T = 0.5,
+% exp2: T = 0) and research/two_agent_entropy/results/disruption_vs_base.csv (analysis/disruption_stats.py).
+% Figures: research/two_agent_entropy/analysis/paper_figures.py.
 
-We ran the full protocol three times with the same scenario, prompts, models and providers, changing only the sampling temperature: 1, 0.5 and 0. Each experiment had 20 runs per model and condition. At temperature 0.5, Qwen's log-probabilities were restored from the provider's temperature-scaled values before computing entropy. Of the 540 runs, one was discarded (a Llama placebo run at temperature 1 with 11\% failed API calls).
+Of the 540 runs, one was discarded (a Llama placebo run at $T = 1$ with 11\% failed API calls), leaving 539.
 
-\subsection{Agents find and use the channel}
+\subsection{The manipulation works: agents find and use the channel}
 
-Opening the read filter was enough for the agents to coordinate. Communication was verified in 179 of the 180 switch runs across the three temperatures, and in none of the 359 base and placebo runs, with no leak or impossible-knowledge flags (\cref{tab:communication}). Llama and Qwen usually read the other agent's entries right after the switch (median first cross-agent read at turn 8 or 9), while gpt-4o-mini took longer (turns 12 to 14). Task success was lowest at temperature 1 and reached 90 to 100\% at the lower temperatures.
+Opening the read filter was enough for the agents to coordinate. Communication was verified in 179 of 180 switch runs and in none of the 359 base and placebo runs, with no leak or impossible-knowledge flags (\cref{tab:communication}). No base or placebo run produced a complete report, which confirms that the task cannot be solved alone and that placebo entries carried no usable information. Llama and Qwen first read their partner's entries right after the switch (median turn 8 or 9), gpt-4o-mini later (turns 12 to 14).
 
 \begin{table}[t]
   \centering
   \small
-  \caption{Switch condition: share of runs with a complete report and with verified communication. Base and placebo runs had 0\% for both at every temperature.}
+  \caption{Switch condition, share of runs (\%) with a complete report / with verified communication, 20 runs per cell. Base and placebo runs had 0 / 0 at every temperature.}
   \label{tab:communication}
   \begin{tabular}{lccc}
     \toprule
@@ -23,36 +24,68 @@ Opening the read filter was enough for the agents to coordinate. Communication w
     llama-3.3-70b & 85 / 100 & 90 / 100  & 100 / 100 \\
     qwen3-235b    & 90 / 95  & 100 / 100 & 100 / 100 \\
     \bottomrule
-  \end{tabular}\\[2pt]
-  {\footnotesize Values are task success / verified communication, in \%.}
+  \end{tabular}
 \end{table}
 
-\subsection{Entropy responds to foreign text}
+\subsection{Entropy detects disruption for Qwen, weakly for Llama, not for gpt-4o-mini}
 
-At temperatures 1 and 0.5, entropy rose after the switch, but the placebo raised it as much as real communication did. At temperature 1, Qwen's decision entropy increased by 0.22 bits relative to base under switch (Holm $p = 0.008$) and by 0.34 bits under placebo (Holm $p < 0.001$), and no measure separated switch from placebo in any model (smallest $p = 0.06$). At temperature 0.5, Qwen's adjusted token entropy rose by 0.120 bits under switch and 0.115 bits under placebo (both Holm $p = 0.001$), and the difference between them was 0.005 bits ($p = 0.85$). The clearest switch-specific effect at 0.5 was small and appeared in Llama: adjusted token entropy rose 0.026 bits more than under placebo (uncorrected $p = 0.007$, Holm $p = 0.052$), and the entropy of its log entries 0.057 bits more (Holm $p = 0.046$). No effect for gpt-4o-mini survived Holm correction at either temperature.
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/qwen_trajectories.pdf}
+  \caption{Decision entropy of Qwen3 235B per turn, averaged over the calls made at that turn in each condition (20 runs per condition; shaded bands are 95\% bootstrap intervals). The three conditions are identical until the switch turn. Afterwards, both runs that receive real messages (switch) and runs that receive useless donor entries (placebo) stay above undisturbed runs (base). At $T = 0$ the base runs contain only two distinct trajectories, so their band is narrow.}
+  \label{fig:trajectories}
+\end{figure*}
 
-The call that follows a read makes this visible (\cref{fig:temperature-post-read}). At temperature 1, entropy after reading placebo entries was at least as high as after reading real peer entries for gpt-4o-mini and Qwen (Qwen: 0.366 against 0.333 bits per token, with 0.244 after reading only its own entries).
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/disruption_vs_base.pdf}
+  \caption{Disruption effect per model and temperature: the mean run-level change $\Delta$ (turns 8 to 20 minus turns 1 to 7) in runs that received foreign log entries (switch and placebo, 40 runs) minus that in undisturbed base runs (20 runs). Lines are 95\% bootstrap intervals. Filled markers are significant after Holm correction ($p < 0.05$) and are labelled with the AUC of $\Delta$ as a classifier of disrupted against base runs.}
+  \label{fig:disruption}
+\end{figure*}
 
-\subsection{At temperature 0, one model separates communication from placebo}
+\paragraph{Observation.} For Qwen, entropy rose after the switch in both disrupted conditions and stayed flat in base runs (\cref{fig:trajectories}). One run-level number, the change in decision entropy, separated disrupted from base runs with AUC 0.85, 0.96 and 0.95 at $T = 1$, 0.5 and 0 (\cref{fig:disruption}; +0.28, +0.36 and +0.24 bits, all Holm $p < 0.001$). Adjusted token entropy gave AUC 0.89 and 0.92 at $T = 0.5$ and 0 (+0.118 and +0.098 bits per token, Holm $p < 0.001$), and a smaller effect at $T = 1$ (+0.054 bits, 95\% CI 0.009 to 0.104, Holm $p = 0.084$). Each disruption type was detectable on its own: at $T = 1$ decision entropy rose by 0.22 bits under switch (Holm $p = 0.008$) and 0.34 bits under placebo (Holm $p < 0.001$) relative to base.
 
-With greedy decoding, Qwen's entropy rose more under real communication than under the placebo (\cref{fig:temperature-switch-placebo}). The run-level change in adjusted token entropy was 0.085 bits higher under switch (95\% CI 0.059 to 0.111, Holm $p = 0.001$, AUC 0.955), and decision entropy was 0.225 bits higher (95\% CI 0.177 to 0.274). The ordering after a read also reversed: 0.514 bits after peer entries, 0.404 after placebo entries and 0.346 after own entries. For gpt-4o-mini and Llama, no difference between switch and placebo survived correction, and Llama's raw token entropy rose under placebo only (0.042 bits above base, Holm $p = 0.017$).
+For Llama, adjusted entropy rose by 0.020 bits at $T = 1$ (95\% CI 0.002 to 0.039, uncorrected $p = 0.028$, Holm $p = 0.084$) and not at lower temperatures. For gpt-4o-mini, no measure differed from base at any temperature (all Holm $p \geq 0.22$).
 
-This result needs care. At temperature 0 many Qwen runs were identical: the 20 base runs contained only 2 distinct trajectories, the switch runs 15 and the placebo runs 19, so the comparison of switch against base is unreliable. The switch against placebo comparison holds when each distinct trajectory is counted once (0.089 and 0.238 bits, AUC 0.95, permutation $p < 0.001$).
+\paragraph{Robustness.} The Qwen result replicated in three independent experiments with different sampling. It does not depend on averaging over turns: in the call-level regression with action type and length as covariates, the condition $\times$ post interaction for Qwen was positive in all six condition and temperature cells (+0.05 to +0.14 bits; mixed model $p \leq 0.014$). With run-clustered errors, five of the six stayed below $p = 0.01$, and switch at $T = 1$ gave $p = 0.075$. The regression also agreed on the null for gpt-4o-mini (all $p \geq 0.31$). The $T = 0$ result needs care, because greedy decoding made many Qwen runs identical: the 20 base runs contained 2 distinct trajectories, placebo 19 and switch 15. The placebo against base comparison, which does not rely on the switch runs, still gave +0.056 bits of adjusted entropy (Holm $p = 0.001$, AUC 0.84).
 
-\subsection{Coupling and online detection}
+\paragraph{Interpretation.} Foreign text in the context makes Qwen less certain about its next action and its wording, and this is visible from API log-probabilities alone. The signal depends on the model, not only on temperature, so a deployed monitor would have to be calibrated for each model it watches.
 
-The coupling term added little. Counting only turns in which both agents were still acting, the mutual information between the agents' actions exceeded its re-pairing null by at most 0.025 bits after the switch in any model, condition and temperature. Including the \texttt{DONE} state inflates it for reasons unrelated to the log: with all states, Qwen's placebo runs at temperature 1 averaged 0.37 bits after the switch because both agents often submitted in the same runs. A CUSUM monitor calibrated to 5\% false alarms on base runs flagged placebo runs about as often as switch runs at every temperature (Qwen: 25\% against 15\% at $T = 1$, 50\% against 40\% at $T = 0.5$, and 95\% against 100\% at $T = 0$).
+\subsection{Under sampling, entropy does not tell information from noise}
+
+\paragraph{Observation.} At $T = 1$ and $T = 0.5$, the placebo raised entropy as much as real communication did (\cref{fig:switch-placebo}). For Qwen at $T = 0.5$, adjusted entropy rose 0.120 bits under switch and 0.115 bits under placebo, a difference of 0.005 bits ($p = 0.85$). At $T = 1$ no measure separated switch from placebo in any model (smallest $p = 0.06$). The only switch-specific effects under sampling were small and in Llama at $T = 0.5$: 0.026 bits of adjusted entropy (uncorrected $p = 0.007$, Holm $p = 0.052$) and 0.057 bits in the entropy of its log entries (Holm $p = 0.046$). Entropy in the call right after a read shows the same thing (\cref{fig:post-read}, \cref{app:extended}): at $T = 1$, Qwen's adjusted entropy was 0.244 bits after reading only its own entries, 0.333 after reading its partner's and 0.366 after reading placebo entries.
+
+With greedy decoding, Qwen separated the two. The run-level change in adjusted entropy was 0.085 bits higher under switch than under placebo (95\% CI 0.059 to 0.111, Holm $p = 0.001$, AUC 0.955), and decision entropy 0.225 bits higher (95\% CI 0.177 to 0.274). The result held when each distinct trajectory was counted once (15 switch and 19 placebo trajectories: 0.089 and 0.238 bits, AUC 0.95, permutation $p < 0.001$). For gpt-4o-mini and Llama, no difference between switch and placebo survived correction at $T = 0$.
 
 \begin{figure*}[t]
   \centering
   \includegraphics[width=\textwidth]{figures/temperature_switch_minus_placebo.pdf}
-  \caption{Difference between the switch and placebo conditions in how much entropy rose after the switch turn, measured per run as the mean over turns 8 to 20 minus the mean over turns 1 to 7, for each model at temperatures 1, 0.5 and 0. Lines show 95\% bootstrap confidence intervals. Filled markers are significant after Holm correction ($p < 0.05$). Values to the right of zero mean that real communication raised entropy more than the placebo did.}
-  \label{fig:temperature-switch-placebo}
+  \caption{Information effect: the mean run-level change $\Delta$ under switch (real communication) minus that under placebo (useless foreign entries), 20 runs each, for each model and temperature. Lines are 95\% bootstrap intervals; filled markers are significant after Holm correction and labelled with the difference. Values right of zero mean that real information raised entropy more than foreign text alone.}
+  \label{fig:switch-placebo}
 \end{figure*}
 
-\begin{figure*}[t]
+\paragraph{Interpretation.} Under sampling, most of the entropy response comes from the presence of unfamiliar text, not from what it says. A monitor built on entropy therefore detects disruption, not communication. The greedy Qwen result suggests that the information effect exists but is small compared with sampling variation, and it rests on one model with partly duplicated runs.
+
+\subsection{Coupling adds little and online alarms fire on both disruptions}
+
+\paragraph{Observation.} Counting only turns in which both agents were still acting, the mutual information between the two agents' actions exceeded its re-pairing null by at most 0.025 bits after the switch, in any model, condition and temperature. Including the \texttt{DONE} state inflated it for reasons unrelated to the log: with all states, Qwen's placebo runs at $T = 1$ averaged 0.37 bits after the switch because both agents often submitted in the same runs.
+
+A CUSUM monitor calibrated to 5\% false alarms on base runs flagged Qwen's disrupted runs more often as temperature fell (\cref{tab:cusum}): 25\% of placebo and 15\% of switch runs at $T = 1$, 50\% and 40\% at $T = 0.5$, and 95\% and 100\% at $T = 0$. The median delay after the first foreign read in switch runs was 7, 4 and 1 turns. For gpt-4o-mini and Llama the alarm rates stayed between 0 and 26\%.
+
+\begin{table}[t]
   \centering
-  \includegraphics[width=\textwidth]{figures/temperature_post_read_entropy.pdf}
-  \caption{Adjusted token entropy of the call that follows a \texttt{READ\_LOG} from turn 8 onwards, grouped by what the read returned: only the agent's own entries, the other agent's entries (switch condition) or donor entries (placebo condition), at temperatures 1, 0.5 and 0.}
-  \label{fig:temperature-post-read}
-\end{figure*}
+  \small
+  \caption{CUSUM alarm rate (\%) on adjusted entropy between turns 8 and 20, placebo / switch, with the threshold set for 5\% alarms on base runs of the same model and temperature. At $T = 0$ Qwen's base runs are nearly deterministic, which lowers its threshold.}
+  \label{tab:cusum}
+  \begin{tabular}{lccc}
+    \toprule
+    Model & $T = 1$ & $T = 0.5$ & $T = 0$ \\
+    \midrule
+    gpt-4o-mini   & 15 / 20 & 0 / 5   & 15 / 5 \\
+    llama-3.3-70b & 26 / 5  & 5 / 0   & 5 / 0 \\
+    qwen3-235b    & 25 / 15 & 50 / 40 & 95 / 100 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{Interpretation.} The two-agent decomposition did not help: the agents' marginal entropies moved, but their actions did not become measurably more coupled than chance pairing, so $I(X_1; X_2)$ is not a useful detector in this setting. The per-agent signal is where the information is. As an online monitor it works best when the model's normal behaviour is stable, which greedy decoding provides and sampling at $T = 1$ does not.

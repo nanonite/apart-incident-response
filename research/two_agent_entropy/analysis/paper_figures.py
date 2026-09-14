@@ -6,6 +6,8 @@ vector PDFs (plus 300 dpi PNGs) on a white background, sized for the report's tw
 
     report/figures/temperature_switch_minus_placebo.pdf
     report/figures/temperature_post_read_entropy.pdf
+    report/figures/qwen_trajectories.pdf
+    report/figures/disruption_vs_base.pdf  (reads research/two_agent_entropy/results/disruption_vs_base.csv)
 
 Usage: python3 paper_figures.py [artifacts_root] [output_dir]
 """
@@ -122,6 +124,75 @@ def post_read_entropy() -> None:
     save(fig, "temperature_post_read_entropy")
 
 
+CONDITION_STYLE = [("base", "base (no disruption)", "#56666f", "-"), ("placebo", "placebo (uninformative)", "#eb6834", "--"),
+                   ("switch", "switch (real communication)", "#2a78d6", "-")]
+
+
+def qwen_trajectories(metric: str = "H_decision") -> None:
+    traj = load("B_trajectories.csv")
+    traj = traj[(traj.model == "qwen3-235b") & (traj.metric == metric) & (traj.turn <= 20)]
+    fig, axes = plt.subplots(1, 3, figsize=(TEXT_WIDTH_IN, 2.15), sharey=True)
+    for ax, (_, temp, _, _) in zip(axes, TEMPS):
+        for cond, label, colour, ls in CONDITION_STYLE:
+            sub = traj[(traj.temp == temp) & (traj.condition == cond)].sort_values("turn")
+            ax.fill_between(sub.turn, sub.ci_low, sub.ci_high, color=colour, alpha=0.13, lw=0)
+            ax.plot(sub.turn, sub["mean"], color=colour, lw=1.5, ls=ls, label=label)
+        ax.axvline(7.5, color=MUTED, lw=0.9, ls=":")
+        ax.text(7.7, 0.98, "switch turn", transform=ax.get_xaxis_transform(), fontsize=6.5, color=MUTED, va="top")
+        ax.set_title(f"Qwen3 235B, {temp}", loc="left", fontsize=8, fontweight="bold", pad=6)
+        ax.set_xlim(1, 20)
+        ax.set_xticks([1, 4, 8, 12, 16, 20])
+        ax.set_xlabel("turn")
+        ax.grid(axis="y", color=GRID, lw=0.6)
+        ax.set_axisbelow(True)
+    axes[0].set_ylabel("decision entropy (bits)")
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="upper right", ncol=3, fontsize=7.5, bbox_to_anchor=(0.995, 1.0),
+               handlelength=2.2, columnspacing=1.2)
+    fig.tight_layout(rect=(0, 0, 1, 0.9), w_pad=1.2)
+    save(fig, "qwen_trajectories")
+
+
+def disruption_vs_base() -> None:
+    df = pd.read_csv(REPO / "research" / "two_agent_entropy" / "results" / "disruption_vs_base.csv")
+    exp_temp = {"exp1": "T = 1", "exp3": "T = 0.5", "exp2": "T = 0"}
+    df["temp"] = df.experiment.map(exp_temp)
+    measures = [("H_adj", "Adjusted token entropy (bits/token)"), ("H_decision", "Decision entropy (bits)")]
+    fig, axes = plt.subplots(1, 2, figsize=(TEXT_WIDTH_IN, 2.55), sharey=True)
+    offsets = {"T = 1": -0.24, "T = 0.5": 0.0, "T = 0": 0.24}
+    for ax, (metric, title) in zip(axes, measures):
+        sub = df[df.metric == metric]
+        for mi, model in enumerate(MODELS):
+            base_y = len(MODELS) - 1 - mi
+            if mi:
+                ax.axhline(base_y + 0.5, color=GRID, lw=0.8, zorder=0)
+            for _, label, colour, marker in TEMPS:
+                row = sub[(sub.model == model) & (sub.temp == label)].iloc[0]
+                y = base_y - offsets[label]
+                sig = row.p_holm < 0.05
+                ax.plot([row.ci_low, row.ci_high], [y, y], color=colour, lw=1.4, solid_capstyle="round", zorder=2)
+                ax.plot(row.diff_bits, y, marker=marker, markersize=4.6, color=colour, markeredgecolor=colour,
+                        markerfacecolor=colour if sig else "white", markeredgewidth=1.1, zorder=3)
+                if sig:
+                    ax.text(row.ci_high, y, f"  AUC {row.auc:.2f}", va="center", ha="left", fontsize=6.8, color=INK)
+        ax.axvline(0, color=MUTED, lw=0.9, zorder=1)
+        ax.grid(axis="x", color=GRID, lw=0.6, zorder=0)
+        ax.set_axisbelow(True)
+        ax.set_title(title, loc="left", fontsize=8, fontweight="bold", pad=6)
+        ax.set_xlabel("disrupted (switch + placebo) − base", fontsize=7, color=MUTED)
+        ax.tick_params(axis="y", length=0)
+        lo, hi = sub.ci_low.min(), sub.ci_high.max()
+        pad = (hi - lo) * 0.12
+        ax.set_xlim(min(lo - pad, -0.02), hi + pad * 3.2)
+    axes[0].set_yticks(range(len(MODELS)))
+    axes[0].set_yticklabels(list(reversed(MODELS)))
+    axes[0].set_ylim(-0.6, len(MODELS) - 0.4)
+    fig.legend(handles=legend_handles(), loc="upper right", ncol=3, fontsize=7.5, bbox_to_anchor=(0.995, 1.0),
+               handletextpad=0.3, columnspacing=1.2)
+    fig.tight_layout(rect=(0, 0, 1, 0.95), w_pad=2.2)
+    save(fig, "disruption_vs_base")
+
+
 def save(fig, name: str) -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     fig.savefig(OUT / f"{name}.pdf", bbox_inches="tight", pad_inches=0.02)
@@ -133,3 +204,5 @@ def save(fig, name: str) -> None:
 if __name__ == "__main__":
     switch_minus_placebo()
     post_read_entropy()
+    qwen_trajectories()
+    disruption_vs_base()

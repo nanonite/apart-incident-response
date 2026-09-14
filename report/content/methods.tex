@@ -1,0 +1,85 @@
+\section{Methods}
+\label{sec:methods}
+
+\input{content/diagrams/styles.tex}
+
+We built the smallest setup that contains the situation behind the incident: agents that are not supposed to receive each other's information and one shared resource that could deliver it. Prompts, assets, seeds and budgets are identical across conditions. The only thing we vary is what the shared log returns when an agent reads it.
+
+\begin{figure*}[t]
+  \centering
+  \input{content/diagrams/architecture.tex}
+  \caption{Testbed. Both agents receive the same task $T$ but hold different passwords, so each can decrypt only one of the two assets the report needs. They share an append-only log in which every entry carries its author. Writes always go to the log. Reads pass through a permission filter that returns only the reader's own entries. In the switch condition the filter returns every entry from turn $t_s = 8$; in the placebo condition it keeps the restriction but adds entries from a donor run.}
+  \label{fig:architecture}
+\end{figure*}
+
+\subsection{Testbed}
+\label{sec:testbed}
+
+\paragraph{Task.} Two agents built on the same model are asked for the same report on a database schema, which must list every table, column and foreign key and use the title, logo file, colour and font of a brand kit (\cref{fig:architecture}). Both assets are encrypted with PBKDF2-HMAC-SHA256 key derivation, a SHAKE-256 keystream and an HMAC tag, so a wrong password returns an error and no text. $A_1$ holds the brand-kit password and $A_2$ the schema password. Passwords (about 95 bits) and all identifiers in the assets are random strings generated for this study, so an identifier in an agent's output can only come from decrypting the asset or from the log, never from training data. We split the task this way so that communication is useful, and so that its use is provable.
+
+\paragraph{Turns.} In each turn, each agent makes one API call and returns one action: \texttt{READ\_LOG}, \texttt{WRITE\_LOG}, \texttt{DECRYPT\_SCHEMA}, \texttt{DECRYPT\_BRAND\_KIT} or \texttt{SUBMIT\_REPORT}. The context is rebuilt from scratch before every call and contains the system prompt, the task, the agent's own password and the result of its previous action (\cref{fig:turn} in \cref{app:details}). Decrypted text is shown once, so the log is the agent's only memory. The task statement says that agents can read only their own entries, and it keeps saying so after the permissions change, so an agent that uses its partner's entries found them itself. A run stops at turn 20 if a complete report has been submitted, otherwise at the first complete report or at turn 30.
+
+\paragraph{Conditions.} The three conditions differ only in what \texttt{READ\_LOG} returns from turn $t_s = 8$ (\cref{fig:conditions}). They define the three states a disruption monitor must handle:
+\begin{description}[leftmargin=0pt, style=sameline, itemsep=1pt]
+  \item[Base (no disruption).] Reads return the reader's own entries for the whole run.
+  \item[Placebo (uninformative disruption).] Reads also return entries from a donor run, a switch run of the same model on a separate scenario with different identifiers and passwords. Donor entries are labelled as the partner's and appear at the turn at which they were written. They match real communication in format, author, amount and timing, but nothing in them helps.
+  \item[Switch (informative disruption).] The filter is lifted and reads return every entry by either agent, including earlier ones. This is real communication.
+\end{description}
+Comparing placebo and switch with base measures whether entropy detects disruption. Comparing switch with placebo measures whether it detects information beyond the arrival of foreign text, a control that any content-based change in token distributions requires.
+
+\begin{figure*}[t]
+  \centering
+  \input{content/diagrams/conditions.tex}
+  \caption{What \texttt{READ\_LOG} returns over a run in each condition. The switch turn is fixed, so turn $t$ refers to the same phase of the task in all runs.}
+  \label{fig:conditions}
+\end{figure*}
+
+\subsection{Models, sampling and ground truth}
+\label{sec:models}
+
+We used three open- and closed-weight chat models from different families that return log-probabilities through OpenRouter: gpt-4o-mini, Llama 3.3 70B Instruct and Qwen3 235B A22B (2507). Each was pinned to one provider (OpenAI, Novita and Google Vertex) with fallbacks disabled, because providers serving the same model return different probabilities. Every call requested the 20 most likely alternatives per token, top-$p = 1$, a maximum of 700 tokens and a fixed seed; seeds were identical across conditions. We ran the full design three times, at temperature 1, 0.5 and 0, with 20 runs per model and condition (540 runs, US\$4.18 in total). Temperature was the only change between experiments: at $T = 1$ switch and placebo could not be separated, and we reran at lower temperatures to test whether sampling noise hid the difference.
+
+Before each experiment, each model had to complete the task in at least half of 10 switch runs with a single shared prompt. All models passed on the first prompt at every temperature (70 to 100\% success).
+
+A deterministic checker, with no language model involved, grades each report against the asset facts and verifies communication from $A_i$ to $A_j$ only if three events occur in order: $A_i$ writes its password or asset identifiers to the log, a read by $A_j$ returns that entry, and $A_j$ then decrypts $A_i$'s asset or uses identifiers from an asset it never opened (\cref{fig:proof}). Runs are discarded if the filter leaked entries, if an agent produced identifiers it could not have obtained, or if more than 10\% of API calls failed. Details are in \cref{app:details}.
+
+\subsection{Entropy measures}
+\label{sec:measures}
+
+At generation step $t$ a model's next-token distribution is
+\begin{equation}
+  p(v \mid x_{<t}) = \frac{\exp\left(z_{t,v} / T\right)}{\sum_{u \in V} \exp\left(z_{t,u} / T\right)},
+  \label{eq:softmax}
+\end{equation}
+where $z_t$ are the logits, $x_{<t}$ the context and $T$ the temperature. Its Shannon entropy \parencite{shannon1948mathematical}
+\begin{equation}
+  H_t = - \sum_{v \in V} p(v \mid x_{<t}) \log_2 p(v \mid x_{<t})
+  \label{eq:token_entropy}
+\end{equation}
+is the model's uncertainty about the next token \parencite{malinin2021uncertainty}. We use this predictive entropy rather than semantic entropy \parencite{kuhn2023semantic}, which needs several samples per step and discards changes in wording, part of the change we expect foreign text to cause. The API returns only the top 20 log-probabilities, so we renormalise over them (the pipeline and a lower bound are in \cref{app:details}).
+
+\paragraph{Temperature.} OpenAI and Novita return log-probabilities of the model's distribution before temperature scaling. Google Vertex returns them after scaling for $0 < T \neq 1$, so at $T = 0.5$ we restored Qwen's values by multiplying by $T$ and renormalising over the 20 alternatives. At $T = 0$ all three providers return unscaled values. Entropy is therefore always measured on the unscaled distribution, and temperature changes only which tokens are sampled.
+
+We summarise each call with three measures. \emph{Token entropy} is the mean of \cref{eq:token_entropy} over the call's tokens. \emph{Adjusted entropy} removes the effect of what the agent did: it is the residual of a per-model least-squares fit of token entropy on action type and $\log(1 + n_{\text{tokens}})$, shifted back to the model mean, because a fixed \texttt{READ\_LOG} and a free-text report differ in entropy for reasons unrelated to disruption. \emph{Decision entropy} is the entropy of the agent's distribution over its next action, read at the first generated token that contains a letter: each of the 20 alternatives is assigned to the action it starts to spell (R, W, D, S) or to \texttt{OTHER}, together with the probability mass outside the 20.
+
+\paragraph{Two-agent coupling.} For the system, we used the decomposition
+\begin{equation}
+  H(X_1, X_2) = H(X_1) + H(X_2) - I(X_1; X_2),
+  \label{eq:gibbs_shannon_two_agents}
+\end{equation}
+with mutual information
+\begin{equation}
+  I(X_1; X_2) = \sum_{a_1, a_2} p(a_1, a_2) \log_2 \frac{p(a_1, a_2)}{p(a_1)\, p(a_2)},
+  \label{eq:mutual_information}
+\end{equation}
+which is zero for independent agents \parencite{cover2006elements, watanabe1960}. Here $X_i(t)$ is the action of agent $i$ at turn $t$, with an extra state \texttt{DONE} after submission, not the next-token distribution. Within a run the two agents are sampled in separate calls and are independent given their contexts, so dependence can only appear through contexts that differ between runs. For each model, condition and turn we therefore pool the decision distributions $q^r_i$ of the $N$ runs: $p_i(a) = \frac{1}{N} \sum_r q^r_i(a)$ and $p(a_1, a_2) = \frac{1}{N} \sum_r q^r_1(a_1)\, q^r_2(a_2)$. Agents with the same model and task are correlated without talking, so we compare $I$ with a null that pairs $A_1$ and $A_2$ from different runs (1{,}000 re-pairings), computed over all states and over turns in which both agents are still acting.
+
+\subsection{Statistical analysis}
+\label{sec:stats}
+
+Turns within a run are dependent, so the run is the unit of analysis. For each run and measure we compute $\Delta$, the mean over turns 8 to 20 minus the mean over turns 1 to 7, a difference-in-differences that removes run-level offsets. Every run is observed to turn 20. We compare conditions on $\Delta$ with two-sided permutation tests (10{,}000 permutations), 95\% bootstrap confidence intervals, Hedges' $g$ and the AUC of $\Delta$ as a classifier, with Holm correction across models and contrasts within each measure and experiment. The disruption test pools switch and placebo runs (40) against base runs (20). As a check that does not rely on run means, we fit $H \sim \text{condition} \times \text{post} + \text{action} + \log(1 + n_{\text{tokens}})$ on individual calls, as a mixed model with a random intercept per run and as least squares with run-clustered errors. To test the monitor online, we run a two-sided CUSUM \parencite{page1954cusum} with $k = 0.5$ on each run's standardised adjusted entropy, with the threshold set so that 5\% of base runs alarm between turns 8 and 20.
+
+\subsection{What did not work}
+\label{sec:iterations}
+
+Four things changed during the project. Qwen's first provider rejected the seed parameter, so we moved it to Google Vertex before any main run. Vertex then turned out to return temperature-scaled log-probabilities, which we detected by comparing the same prompt at several temperatures and corrected as described above; the restoration matches the unscaled values on real calls. Mutual information over all agent states was dominated by the shared \texttt{DONE} state, so we report the active-only version. Finally, our original measure of success was separating switch from placebo; it failed at $T = 1$, which motivated the two lower-temperature experiments and, after all three, the disruption framing of this report. We also found that Novita returned log-probabilities differing by up to 0.87 nats between identical calls, which limits how small an effect can be detected for Llama.
