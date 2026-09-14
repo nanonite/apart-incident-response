@@ -1,0 +1,75 @@
+        model condition segment target    n  loso_mse  best_null_loso          bic  best_null_bic range_ok  retain_zhu loso_winner
+  gpt-4o-mini      base    full  y_raw 1200  0.148609        0.150415 -2260.293661   -2261.775604     True        True         zhu
+  gpt-4o-mini      base    full  y_adj 1200  0.148335        0.150151 -2262.090216   -2263.651710      NaN        True         zhu
+  gpt-4o-mini      base    post  y_raw  920  0.153412        0.150646 -1709.802866   -1733.277204     True       False      linear
+  gpt-4o-mini      base    post  y_adj  920  0.152873        0.150399 -1711.446967   -1734.221694      NaN       False      linear
+  gpt-4o-mini   placebo    full  y_raw  878  0.140931        0.141209 -1689.757601   -1697.020166     True        True         zhu
+  gpt-4o-mini   placebo    full  y_adj  878  0.139869        0.140238 -1694.825783   -1703.025775      NaN        True         zhu
+  gpt-4o-mini   placebo    post  y_raw  598  0.159611        0.156578 -1076.959986   -1103.086839     True       False      linear
+  gpt-4o-mini   placebo    post  y_adj  598  0.158950        0.155541 -1081.385297   -1106.657496      NaN       False      linear
+  gpt-4o-mini    switch    full  y_raw  869  0.185141        0.185554 -1445.922475   -1453.935737     True        True         zhu
+  gpt-4o-mini    switch    full  y_adj  869  0.184173        0.184581 -1449.998034   -1457.941973      NaN        True         zhu
+  gpt-4o-mini    switch    post  y_raw  589  0.180791        0.177686  -989.276673   -1015.008110     True       False    constant
+  gpt-4o-mini    switch    post  y_adj  589  0.179223        0.176669  -993.455627   -1018.410902      NaN       False    constant
+llama-3.3-70b      base    full  y_raw 1174  0.030017        0.040967 -4100.546468   -3727.153667    False       False         zhu
+llama-3.3-70b      base    full  y_adj 1174  0.011633        0.012015 -5196.985986   -5173.920724      NaN        True         zhu
+llama-3.3-70b      base    post  y_raw  896  0.034800        0.041026 -2991.657871   -2849.661435     True        True         zhu
+llama-3.3-70b      base    post  y_adj  896  0.011941        0.011882 -3940.436035   -3965.926757      NaN       False      spline
+llama-3.3-70b   placebo    full  y_raw  969  0.036142        0.047827 -3207.655978   -2920.317259     True        True         zhu
+llama-3.3-70b   placebo    full  y_adj  969  0.011047        0.011400 -4331.934700   -4313.909935      NaN        True         zhu
+llama-3.3-70b   placebo    post  y_raw  710  0.041810        0.049729 -2244.474256   -2119.497084     True        True         zhu
+llama-3.3-70b   placebo    post  y_adj  710  0.011252        0.011563 -3162.750155   -3158.511782      NaN        True         zhu
+llama-3.3-70b    switch    full  y_raw  834  0.031088        0.043151 -2883.087761   -2599.141913    False       False         zhu
+llama-3.3-70b    switch    full  y_adj  834  0.012004        0.012352 -3661.114604   -3648.457194      NaN        True         zhu
+llama-3.3-70b    switch    post  y_raw  560  0.039082        0.046693 -1802.096200   -1705.309230     True        True         zhu
+llama-3.3-70b    switch    post  y_adj  560  0.013354        0.013172 -2403.746724   -2419.599435      NaN       False         log
+   qwen3-235b      base    full  y_raw 1135  0.027608        0.027605 -4061.855629   -4068.707944     True       False      spline
+   qwen3-235b      base    full  y_adj 1135  0.027559        0.027226 -4078.970570   -4085.218945      NaN       False      spline
+   qwen3-235b      base    post  y_raw  858  0.025043        0.024962 -3149.716757   -3163.147258     True       False      spline
+   qwen3-235b      base    post  y_adj  858  0.024964        0.024895 -3152.037506   -3166.565339      NaN       False      spline
+   qwen3-235b   placebo    full  y_raw  544  0.045257        0.045376 -1657.476438   -1666.614514     True        True         zhu
+   qwen3-235b   placebo    full  y_adj  544  0.038416        0.040710 -1746.628523   -1733.296648      NaN        True         zhu
+   qwen3-235b   placebo    post  y_raw  266  0.055678        0.055783  -744.800743    -764.764803     True       False         zhu
+   qwen3-235b   placebo    post  y_adj  266  0.043495        0.041943  -818.470437    -840.976105      NaN       False    constant
+   qwen3-235b    switch    full  y_raw  549  0.050780        0.051098 -1614.339949   -1614.201362     True        True         zhu
+   qwen3-235b    switch    full  y_adj  549  0.040751        0.041639 -1731.268902   -1729.600773      NaN        True         zhu
+   qwen3-235b    switch    post  y_raw  275  0.049534        0.048314  -808.436268    -830.436023     True       False    constant
+   qwen3-235b    switch    post  y_adj  275  0.038510        0.037768  -878.050449    -897.860071      NaN       False      linear
+        model target       contrast param      diff  boot_sd_a  boot_sd_b    ratio  flagged
+  gpt-4o-mini  y_raw switch-placebo     A -0.332145   1.525772   1.474443 0.156541    False
+  gpt-4o-mini  y_raw switch-placebo   lam -0.175031   0.111740   0.102647 1.153560    False
+  gpt-4o-mini  y_raw switch-placebo omega  0.536135   0.655641   0.783616 0.524736    False
+  gpt-4o-mini  y_raw switch-placebo   phi -0.440111   1.973407   1.883681 0.161324    False
+  gpt-4o-mini  y_raw switch-placebo  beta  0.086839   0.058691   0.054241 1.086625    False
+  gpt-4o-mini  y_raw switch-placebo    H0 -0.248115   0.173499   0.169375 1.023298    False
+  gpt-4o-mini  y_adj switch-placebo     A -0.340926   1.747603   1.535450 0.146552    False
+  gpt-4o-mini  y_adj switch-placebo   lam -0.170518   0.119732   0.104919 1.071109    False
+  gpt-4o-mini  y_adj switch-placebo omega  1.189576   0.656610   0.764049 1.180807    False
+  gpt-4o-mini  y_adj switch-placebo   phi -1.420959   1.908000   1.892172 0.528797    False
+  gpt-4o-mini  y_adj switch-placebo  beta  0.093622   0.067950   0.058802 1.041866    False
+  gpt-4o-mini  y_adj switch-placebo    H0 -0.269939   0.205421   0.183275 0.980544    False
+llama-3.3-70b  y_raw switch-placebo     A -0.000025   3.516175   3.229236 0.000005    False
+llama-3.3-70b  y_raw switch-placebo   lam  0.162240   0.071509   0.057659 1.766179    False
+llama-3.3-70b  y_raw switch-placebo omega -0.217616   0.108670   0.058917 1.760451    False
+llama-3.3-70b  y_raw switch-placebo   phi  1.488066   1.579384   1.302351 0.726918    False
+llama-3.3-70b  y_raw switch-placebo  beta -0.002137   0.021689   0.014158 0.082515    False
+llama-3.3-70b  y_raw switch-placebo    H0 -0.015260   0.054314   0.041340 0.223565    False
+llama-3.3-70b  y_adj switch-placebo     A  0.054101   1.648260   0.814622 0.029425    False
+llama-3.3-70b  y_adj switch-placebo   lam -0.059908   0.142398   0.074359 0.372925    False
+llama-3.3-70b  y_adj switch-placebo omega -1.497100   0.712248   0.751068 1.446354    False
+llama-3.3-70b  y_adj switch-placebo   phi -0.467779   1.927981   1.648701 0.184398    False
+llama-3.3-70b  y_adj switch-placebo  beta -0.000892   0.015869   0.011764 0.045151    False
+llama-3.3-70b  y_adj switch-placebo    H0 -0.014161   0.040430   0.034652 0.265950    False
+   qwen3-235b  y_raw switch-placebo     A -0.292433   1.541620   1.336002 0.143351    False
+   qwen3-235b  y_raw switch-placebo   lam  0.162567   0.106886   0.104856 1.085727    False
+   qwen3-235b  y_raw switch-placebo omega  0.520134   0.833171   0.720063 0.472330    False
+   qwen3-235b  y_raw switch-placebo   phi -1.764997   2.021099   1.833737 0.646756    False
+   qwen3-235b  y_raw switch-placebo  beta -0.001581   0.060863   0.161506 0.009159    False
+   qwen3-235b  y_raw switch-placebo    H0 -0.003841   0.165576   0.457239 0.007899    False
+   qwen3-235b  y_adj switch-placebo     A -1.757014   1.746504   1.481609 0.767157    False
+   qwen3-235b  y_adj switch-placebo   lam  0.325827   0.131240   0.121416 1.822401    False
+   qwen3-235b  y_adj switch-placebo omega  0.431805   0.784490   0.926582 0.355666    False
+   qwen3-235b  y_adj switch-placebo   phi  0.060007   1.928761   2.038458 0.021383    False
+   qwen3-235b  y_adj switch-placebo  beta -0.062142   0.065418   0.198166 0.297778    False
+   qwen3-235b  y_adj switch-placebo    H0  0.139424   0.168302   0.581631 0.230265    False
+figures written

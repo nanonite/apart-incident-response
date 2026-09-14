@@ -1,0 +1,67 @@
+model          align           
+gpt-4o-mini    tau_placebo_read    36
+               tau_read            33
+               tau_use             25
+llama-3.3-70b  tau_placebo_read    40
+               tau_read            40
+               tau_use             38
+qwen3-235b     tau_placebo_read    40
+               tau_read            37
+               tau_use             30
+        model            align            role              metric  n_events  post_minus_pre    ci_low   ci_high  n_pos
+  gpt-4o-mini tau_placebo_read          author               y_adj        25        0.030744 -0.043476  0.109036     14
+  gpt-4o-mini tau_placebo_read          author mean_surprisal_bits        25        0.013801 -0.093530  0.116093     12
+  gpt-4o-mini tau_placebo_read        receiver               y_adj        36       -0.014839 -0.112449  0.074743     21
+  gpt-4o-mini tau_placebo_read        receiver mean_surprisal_bits        36       -0.128297 -0.272325  0.001322     12
+  gpt-4o-mini         tau_read          author               y_adj        28       -0.057864 -0.163065  0.047234     14
+  gpt-4o-mini         tau_read          author mean_surprisal_bits        28       -0.165485 -0.359405  0.006983     13
+  gpt-4o-mini         tau_read        receiver               y_adj        31       -0.044460 -0.167908  0.091236     13
+  gpt-4o-mini         tau_read        receiver mean_surprisal_bits        31       -0.115633 -0.281390  0.058035     11
+  gpt-4o-mini          tau_use          author               y_adj        18       -0.108076 -0.245074  0.010436      7
+  gpt-4o-mini          tau_use          author mean_surprisal_bits        18       -0.102189 -0.304995  0.081481      7
+  gpt-4o-mini          tau_use        receiver               y_adj        11       -0.029455 -0.106488  0.050870      4
+  gpt-4o-mini          tau_use        receiver mean_surprisal_bits        11       -0.042742 -0.217608  0.135638      4
+llama-3.3-70b tau_placebo_read          author               y_adj        38       -0.017954 -0.052009  0.016267     17
+llama-3.3-70b tau_placebo_read          author mean_surprisal_bits        38       -0.015604 -0.068913  0.036729     20
+llama-3.3-70b tau_placebo_read        receiver               y_adj        38       -0.009519 -0.049292  0.029888     17
+llama-3.3-70b tau_placebo_read        receiver mean_surprisal_bits        38       -0.007028 -0.067513  0.052557     19
+llama-3.3-70b         tau_read          author               y_adj        40        0.001757 -0.025191  0.027679     20
+llama-3.3-70b         tau_read          author mean_surprisal_bits        40        0.005088 -0.038785  0.049313     19
+llama-3.3-70b         tau_read        receiver               y_adj        40       -0.003671 -0.033226  0.025906     18
+llama-3.3-70b         tau_read        receiver mean_surprisal_bits        40       -0.000878 -0.047496  0.045440     19
+llama-3.3-70b          tau_use          author               y_adj        36       -0.009569 -0.037145  0.015586     17
+llama-3.3-70b          tau_use          author mean_surprisal_bits        36       -0.032421 -0.075599  0.009233     16
+llama-3.3-70b          tau_use        receiver               y_adj        37       -0.035449 -0.056723 -0.014445      8
+llama-3.3-70b          tau_use        receiver mean_surprisal_bits        37       -0.012164 -0.051801  0.026826     16
+   qwen3-235b tau_placebo_read          author               y_adj        38        0.072827  0.006900  0.142094     24
+   qwen3-235b tau_placebo_read          author mean_surprisal_bits        38        0.024990 -0.053575  0.106277     16
+   qwen3-235b tau_placebo_read        receiver               y_adj        40        0.082123  0.024431  0.141983     27
+   qwen3-235b tau_placebo_read        receiver mean_surprisal_bits        40        0.015271 -0.056123  0.087270     19
+   qwen3-235b         tau_read          author               y_adj        34        0.019470 -0.053989  0.094836     20
+   qwen3-235b         tau_read          author mean_surprisal_bits        34        0.014302 -0.043035  0.074288     17
+   qwen3-235b         tau_read        receiver               y_adj        37        0.066919  0.004817  0.130506     24
+   qwen3-235b         tau_read        receiver mean_surprisal_bits        37        0.015370 -0.047332  0.080823     19
+   qwen3-235b          tau_use          author               y_adj        20       -0.031807 -0.099950  0.038415      6
+   qwen3-235b          tau_use          author mean_surprisal_bits        20       -0.140966 -0.208661 -0.072120      4
+   qwen3-235b          tau_use        receiver               y_adj        15       -0.067573 -0.161246  0.024920      5
+   qwen3-235b          tau_use        receiver mean_surprisal_bits        15       -0.110702 -0.197009 -0.026974      5
+  gpt-4o-mini tau_placebo_read receiver-author               y_adj        25       -0.075756 -0.248069  0.082624     12
+  gpt-4o-mini tau_placebo_read receiver-author mean_surprisal_bits        25       -0.187695 -0.421009  0.038932     10
+  gpt-4o-mini         tau_read receiver-author               y_adj        28        0.023078 -0.119301  0.160588     14
+  gpt-4o-mini         tau_read receiver-author mean_surprisal_bits        28        0.060683 -0.176247  0.296787     14
+  gpt-4o-mini          tau_use receiver-author               y_adj        11        0.168929 -0.046269  0.423436      5
+  gpt-4o-mini          tau_use receiver-author mean_surprisal_bits        11        0.232213 -0.118693  0.638794      5
+llama-3.3-70b tau_placebo_read receiver-author               y_adj        38        0.008435 -0.040110  0.057937     19
+llama-3.3-70b tau_placebo_read receiver-author mean_surprisal_bits        38        0.008576 -0.069013  0.085165     19
+llama-3.3-70b         tau_read receiver-author               y_adj        40       -0.005428 -0.049407  0.037818     20
+llama-3.3-70b         tau_read receiver-author mean_surprisal_bits        40       -0.005966 -0.073359  0.060435     20
+llama-3.3-70b          tau_use receiver-author               y_adj        36       -0.026130 -0.057821  0.007732     12
+llama-3.3-70b          tau_use receiver-author mean_surprisal_bits        36        0.020199 -0.036241  0.076038     19
+   qwen3-235b tau_placebo_read receiver-author               y_adj        38        0.023143 -0.059083  0.109065     18
+   qwen3-235b tau_placebo_read receiver-author mean_surprisal_bits        38        0.000999 -0.098765  0.100531     20
+   qwen3-235b         tau_read receiver-author               y_adj        34        0.057650 -0.035931  0.150687     19
+   qwen3-235b         tau_read receiver-author mean_surprisal_bits        34        0.018933 -0.058854  0.099536     18
+   qwen3-235b          tau_use receiver-author               y_adj        11        0.030557 -0.106883  0.170929      6
+   qwen3-235b          tau_use receiver-author mean_surprisal_bits        11        0.029855 -0.082873  0.151850      6
+aligned_tau_read.csv reproduction: {'tau_first_foreign_read': {'rows_ref': 193, 'rows_match': 193, 'max_abs_diff_mean': 1.1102230246251565e-16, 'n_mismatch': 0}, 'receiver_tau_read': {'rows_ref': 193, 'rows_match': 187, 'max_abs_diff_mean': 1.723719989431555, 'n_mismatch': 120}}
+figures written

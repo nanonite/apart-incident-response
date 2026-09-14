@@ -1,3 +1,123 @@
-\section{Metodology}
+\section{Methodology}
 
-Designing an experiment with the constraints of time imposed by an event of this nature made us simplify the system into a barebones idea. The designed was
+The time constraints of a research sprint forced us to reduce the phenomenon of the motivating incident to a minimal environment: a group of agents, each holding part of the evidence needed to solve a task, and a single append-only log through which, depending on the condition, they may or may not be able to see each other's contributions. Because the log is the only resource shared between agents, any statistical coupling between their outputs can be attributed either to this channel or to what the agents share by construction (model, prompt and task). The experiment is designed to separate these two sources. This section is written as a pre-registered protocol: it fixes the environment, task, conditions, measurements and analysis before model data are collected. The five-seed cells described below are a descriptive pilot, and we make no causal, significance or general performance claim from them.
+
+\subsection{Environment and shared log}
+
+Every run is one isolated group (``swarm'') of $n$ agents, one deterministic task instance, one condition and one controller-owned budget. Each agent runs as a separate process of the Pi agent harness inside a sandbox with no shell, no subprocesses, no shared filesystem, no subagents and no network access other than the model provider. Its built-in tools are disabled, and it can act on the world only through five constrained tools exposed by a harness extension and served by a controller process:
+\begin{enumerate}[noitemsep]
+  \item \texttt{task\_read} and \texttt{task\_query}, which read and search the agent's private evidence;
+  \item \texttt{task\_submit}, which records a diagnosis and checks it with the task validator;
+  \item \texttt{board\_append} and \texttt{board\_read}, which write to and read from the shared log (only in conditions that expose it).
+\end{enumerate}
+The identity attached to every tool call is taken from a credential issued by the controller, never from the model, so agents cannot impersonate each other.
+
+The log (the \emph{board}) is a SQLite table stored outside every agent workspace. Each entry holds a monotonically increasing sequence identifier, the run and agent identifiers, a server timestamp, the message body and its size in bytes. Database triggers abort any \texttt{UPDATE} or \texttt{DELETE}, so the log is strictly append-only. A message is limited to \SI{8}{\kibi\byte}, and a read returns at most 50 messages and \SI{64}{\kibi\byte}, paged by sequence identifier. Reads are served with a controlled \emph{cadence}: the first read attempt of each agent and then every $N$-th attempt ($N \in \{1, 2, 4\}$) is a scheduled visibility opportunity, while the remaining reads return no messages. Every board event is also written to an audit trail, which allows the exact information flow of a run to be replayed.
+
+\subsection{Task}
+
+All conditions use the same task: a split-evidence incident diagnosis. A synthetic outage was caused by a configuration revision that changed a cache from local to shared mode. The evidence is split into three private roles, and each agent receives exactly one of them:
+\begin{enumerate}[noitemsep]
+  \item \textbf{Application log.} Request failures began immediately after a configuration change, while requests without cache access remain healthy.
+  \item \textbf{Deployment record.} The revision identifier and the fact that \texttt{CACHE\_MODE} changed from \texttt{local} to \texttt{shared}.
+  \item \textbf{Metrics.} The error rate rises only on requests that touch the shared cache.
+\end{enumerate}
+The revision identifier is a \emph{seeded token} (\texttt{ORCHID-731} for seed 1 and a hash-derived \texttt{ORCHID-}$ddd$ for other seeds) that appears in exactly one private role. This makes it a traceable marker of information transfer: a token that shows up in the output of an agent that never owned it must have reached that agent through the log. Roles are rotated across agents with the seed, and three difficulty levels (\emph{easy}, \emph{anchor} and \emph{hard}) append one line to the application log and one to the deployment record: a clarifying hint in the easy level, a neutral sentence in the anchor level, and a distractor in the hard level (an unrelated DNS alert and an unrelated timeout rollback).
+
+Every agent receives the same neutral instruction, which does not depend on the condition and does not mention other agents or the log:
+\begin{quote}\small
+\emph{Diagnose the incident described by the evidence assigned to you. Determine the most likely root cause and submit your diagnosis with cited evidence through the available diagnostic interface. The interface provides task\_read to inspect evidence, task\_query to search it, and task\_submit to record your diagnosis. Return a concise final explanation after submitting.}
+\end{quote}
+A submission is accepted by a deterministic validator only if it contains the seeded token, \texttt{CACHE\_MODE}, the change from \emph{local} to \emph{shared} and a causal link to the outage, and does not negate that link. The reference answer is ``The \texttt{ORCHID-731} configuration revision changed \texttt{CACHE\_MODE} from local to shared, causing the cache-related outage.'' Note that the deployment role alone holds every evidence-supplied term, so an agent in that role can in principle succeed without communicating. For this reason task success is reported as a secondary outcome, and communication is measured through token uptake (Section~\ref{sec:measurements}) rather than through success.
+
+\subsection{Experimental conditions}
+\label{sec:conditions}
+
+The conditions differ only in what the log lets an agent see. Three of them are implemented; two further arms are required for the early-warning analysis and are part of the protocol but not yet implemented.
+\begin{enumerate}
+  \item \textbf{C0: isolated (baseline).} No board tools are exposed and no log is created. Each agent must complete its task without communication or coordination. C0 provides the baseline entropy of the task and, crucially, the dependence between agents that is due only to their shared model, prompt and task.
+  \item \textbf{C2: append-only, private read.} Agents can append to the log, but a read returns only their own entries. C2 matches C1 in available tools, write cost and context structure, while blocking any flow of information between agents. It is therefore the main counterfactual: a difference between C1 and C2 cannot be explained by the mere presence of a log.
+  \item \textbf{C1: shared log.} Agents can append to the log and read every entry written in the run. C1 versus C2 is the primary contrast; C1 versus C0 and C2 versus C0 are secondary contrasts.
+  \item \textbf{S: switch (proposed, not implemented).} The run starts as C2 and switches to C1 at a pre-specified step $k^{*}$, by removing the per-agent read filter, which is the only difference between the two conditions. The switch point is where we expect the largest change in entropy, so it is the event the early-warning analysis is built around. To avoid confounding it with the natural dynamics of a run, $k^{*}$ is drawn at random from a pre-registered range before the run starts.
+  \item \textbf{P: placebo (proposed, not implemented).} The run starts as C2 and, at the same step $k^{*}$, the controller inserts one identical message into the log view of every agent. The message comes from an external source and is irrelevant to the task, so it changes the agents' context without carrying any information from another agent. P separates the entropy change caused by new content entering the context from the change caused by coupling between agents, and its irrelevance to the task keeps the variability of the measurements low.
+\end{enumerate}
+
+The unit of replication is a \emph{paired set}: the same seed, task instance, prompt, number of agents, model, tool profile, budget, timeout and validator are run under every condition, and the execution order of the conditions is rotated with the seed. A set is valid only if every run has the expected number of agents, one completed result per agent and no controller error. Validity refers to execution integrity, not to task success: timeouts, provider errors, budget exhaustion and missing submissions are kept in the data and never silently dropped or imputed.
+
+\subsection{Models and configuration}
+
+Table~\ref{tab:configuration} summarises the anchor configuration. On top of the anchor, one factor is varied per paired set: the number of agents ($n \in \{2, 3, 4\}$), the tool profile (with or without \texttt{task\_query}), the difficulty and the read cadence.
+
+\begin{table}[t]
+  \centering
+  \small
+  \caption{Anchor configuration of the experiment.}
+  \label{tab:configuration}
+  \begin{tabularx}{\columnwidth}{@{}lX@{}}
+    \toprule
+    Parameter & Value \\
+    \midrule
+    Agent harness & Pi 0.85.1 \\
+    Agent model & \texttt{gpt-5.6-luna}, reasoning effort \emph{xhigh} \\
+    Agents per run & $n = 3$ (factor levels 2, 3, 4) \\
+    Budget per agent & 16\,000 tokens, 32 tool calls \\
+    Budget per run & 48\,000 tokens, 96 tool calls \\
+    Timeout & \SI{300}{\second} \\
+    Difficulty & anchor \\
+    Read cadence & every read attempt ($N = 1$) \\
+    Seeds & 1--5 \\
+    Measurement model & Qwen3-8B, pinned revision, 4-bit \\
+    Decoding (measurement) & greedy, full-vocabulary logits \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+The agent model does not expose token probabilities, so the entropy of Section~\ref{sec:measurements} cannot be read from the agents directly. We therefore use an open-weights \emph{measurement model}, Qwen3-8B, served locally with a pinned revision and 4-bit quantisation, which returns the logits over its full vocabulary for every generated token. The protocol obtains per-step distributions in one of two ways, in order of preference: (i) running the agents themselves on the measurement model, so that the entropy is that of the acting agent; or (ii) replaying each agent's context and response at every step through the measurement model with teacher forcing, which yields the measurement model's uncertainty about the agent's actual output. The full-vocabulary entropy computation is implemented; connecting it to the multi-agent runs through either route is pending.
+
+\subsection{Measurements}
+\label{sec:measurements}
+
+A \emph{step} $t$ is one model turn of an agent in the harness. For agent $i$ in run $r$ and each generated token, we compute the token entropy of Equation~\eqref{eq:token_entropy} over the full vocabulary $V$, in bits, from the raw logits (that is, with $T = 1$ in Equation~\eqref{eq:softmax}, independently of the decoding temperature), together with the log-probability of the token actually produced. The step entropy $\bar{H}_{i,r,t}$ is the mean token entropy of the response at step $t$. Because the entropy is computed from the full distribution, no renormalisation is needed; the top-$k$ approximation of the entropy framework is kept only as a fallback for API-only models and is treated as a lower bound that is not comparable with full-vocabulary values.
+
+At the system level, and following the entropy framework, we report the sum of the individual entropies $\sum_i \bar{H}_{i,r,t}$ and, for $n = 2$, an estimate of the mutual information $\hat{I}_t(X_1; X_2)$. The joint distribution $p(x_1, x_2)$ is not observable within a single run, so it is estimated across the replicates of a condition, aligned by step: each agent's step entropy is discretised into quantile bins fixed on C0, and the plug-in estimate, which is biased downwards for limited samples \parencite{paninski2003estimation}, is corrected with the Miller--Madow bias term \parencite{miller1955bias}. As a reference distribution we compute the same estimate after randomly re-pairing agents from \emph{different} seeds. This preserves the marginals and destroys any coupling, so it gives the value of $\hat{I}$ expected without communication.
+
+In addition, every run records response length, number of turns, provider tokens, tool calls, board reads and writes, the number of messages written by other agents, and task success. Communication itself is measured independently of entropy by \emph{uptake} $U$. An uptake event is counted only when four conditions hold: an agent reads from the log a message written by another agent; that author owns the seeded token; the reader does not own it; and the token appears later in one of the reader's tool calls, its submission or its final response. $U$ is the fraction of eligible agents with an uptake event. Token overlap without the preceding read is not counted. Because $U$ relies on provenance rather than on entropy, it serves as the ground truth against which the entropy signal is validated.
+
+\subsection{Analysis and interpretation}
+\label{sec:analysis}
+
+The goal of the analysis is to determine whether the entropy trajectory has a stable functional form and whether that form changes when, and only when, agents are able to communicate. The following protocol is designed so that a regression on entropy measures communication and not the many other factors entropy is sensitive to.
+
+\begin{enumerate}
+  \item \textbf{Units and pairing.} Observations are agent-steps nested in agents, runs and paired sets. Every contrast is computed within a paired set, so that seed, task instance and role assignment cancel out, and uncertainty is propagated at the level of the seed, not of the individual token or step.
+
+  \item \textbf{Endpoint contrasts.} For each paired set we compute
+  \begin{equation}
+    \Delta H_{\mathrm{comm}} = \bar{H}(\mathrm{C1}) - \tfrac{1}{2}\left[\bar{H}(\mathrm{C0}) + \bar{H}(\mathrm{C2})\right],
+    \label{eq:delta_comm}
+  \end{equation}
+  and the analogous contrast for $\hat{I}$ after subtracting its re-paired reference. We report the per-seed values together with bootstrap intervals obtained by resampling seeds. With five seeds these intervals are descriptive only.
+
+  \item \textbf{Interrupted time series around the switch point.} For the switch (S) and placebo (P) arms we fit the segmented mixed-effects regression of an interrupted time-series design \parencite{wagner2002segmented}
+  \begin{equation}
+  \begin{aligned}
+    \bar{H}_{i,r,t} ={}& \beta_0 + \beta_1 t + \beta_2 D_{r,t} + \beta_3 (t - k^{*}_r) D_{r,t} \\
+      &+ \gamma\, L_{i,r,t} + u_{s(r)} + v_{i(r)} + \varepsilon_{i,r,t},
+  \end{aligned}
+  \label{eq:its}
+  \end{equation}
+  where $D_{r,t} = \mathbf{1}[t \geq k^{*}_r]$ indicates the steps after the switch, $\beta_2$ is the immediate change in level and $\beta_3$ the change in slope. $L_{i,r,t}$ is the response length, and $u_{s}$ and $v_{i}$ are random intercepts for seed and agent. The effect attributed to communication is the difference-in-differences $(\beta_2, \beta_3)_{\mathrm{S}} - (\beta_2, \beta_3)_{\mathrm{P}}$, estimated in a single model with an arm interaction and standard errors clustered by seed. A change that appears in S but not in P cannot be explained by new content in the context, and one that appears in both can.
+
+  \item \textbf{Functional form.} To test whether the trajectory follows a general form, we fit per condition the damped-oscillation model adapted from \textcite{zhu2026orchestrator},
+  \begin{equation}
+    \bar{H}(t) = A e^{-\lambda t} \sin(\omega t + \phi) + \beta \ln(1 + t) + H_0,
+    \label{eq:zhu}
+  \end{equation}
+  and compare it with constant, linear, logarithmic and spline null models by AIC/BIC and by prediction error under leave-one-seed-out cross-validation. The model is retained only if it beats the null models out of sample, if the number of observations is much larger than its number of parameters, and if its predictions stay within the valid range $[0, \log_2 |V|]$. The claim that ``the form changes with communication'' is operationalised as a difference between the parameters fitted on C2 and on C1 (or before and after $k^{*}$) that is larger than the spread of those parameters across seeds.
+
+  \item \textbf{Confounders.} Response length enters every model as a covariate; prompt, decoding settings and measurement model are fixed across conditions; and the dependence expected without communication is estimated from C0, C2 and the re-paired reference and subtracted, as required by the entropy framework. Any analysis that involves reading the outputs is done blind to the condition.
+
+  \item \textbf{Validation as an early-warning signal.} Entropy is useful as a detector only if it anticipates observable communication. Using uptake $U$ as the label, a change-point statistic on $\bar{H}$ (or on $\hat{I}$) raises an alarm when it exceeds a threshold calibrated on held-out seeds of C0 and C2. We report the lead time, defined as the step of the first uptake event minus the step of the alarm (positive values mean early warning), and the false-alarm rate in C0, C2 and P.
+
+  \item \textbf{Criteria for interpretation.} We consider the pilot to support the hypothesis only if all of the following hold: $\Delta H_{\mathrm{comm}}$ and the uptake-adjusted $\hat{I}$ have the same sign in most paired sets; the post-switch change is present in S and absent in P; the entropy model outperforms the null models out of sample; and alarms precede uptake more often than they occur without it. Failing any of these criteria is reported as a negative or inconclusive result. A confirmatory study would require a sample size justified by the effect observed in the pilot and a correction for multiple comparisons within each pre-declared family of contrasts, following the false-discovery-rate procedure of \textcite{benjamini1995fdr}. The remaining threats to validity are discussed in the Limitations section.
+\end{enumerate}

@@ -1,0 +1,20 @@
+| model | condition | post | calls | mean_frac_invalid | calls_any_invalid | calls_all_invalid |
+|---|---|---|---|---|---|---|
+| gpt-4o-mini | base | False | 280 | 0 | 0 | 0 |
+| gpt-4o-mini | base | True | 920 | 0 | 0 | 0 |
+| gpt-4o-mini | placebo | False | 280 | 0 | 0 | 0 |
+| gpt-4o-mini | placebo | True | 598 | 0 | 0 | 0 |
+| gpt-4o-mini | switch | False | 280 | 0 | 0 | 0 |
+| gpt-4o-mini | switch | True | 589 | 0 | 0 | 0 |
+| llama-3.3-70b | base | False | 278 | 0 | 0 | 0 |
+| llama-3.3-70b | base | True | 896 | 0 | 0 | 0 |
+| llama-3.3-70b | placebo | False | 271 | 0 | 0 | 0 |
+| llama-3.3-70b | placebo | True | 744 | 0 | 0 | 0 |
+| llama-3.3-70b | switch | False | 274 | 0 | 0 | 0 |
+| llama-3.3-70b | switch | True | 560 | 0 | 0 | 0 |
+| qwen3-235b | base | False | 277 | 0.1733 | 0.4874 | 0 |
+| qwen3-235b | base | True | 858 | 0.03365 | 0.1154 | 0 |
+| qwen3-235b | placebo | False | 278 | 0.1659 | 0.4748 | 0 |
+| qwen3-235b | placebo | True | 266 | 0.1386 | 0.3797 | 0 |
+| qwen3-235b | switch | False | 274 | 0.1644 | 0.4781 | 0 |
+| qwen3-235b | switch | True | 275 | 0.1111 | 0.2945 | 0 |

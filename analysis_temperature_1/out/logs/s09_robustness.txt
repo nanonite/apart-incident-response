@@ -1,0 +1,189 @@
+        model condition  post  calls  mean_frac_invalid  calls_any_invalid  calls_all_invalid
+  gpt-4o-mini      base False    280           0.000000           0.000000                0.0
+  gpt-4o-mini      base  True    920           0.000000           0.000000                0.0
+  gpt-4o-mini   placebo False    280           0.000000           0.000000                0.0
+  gpt-4o-mini   placebo  True    598           0.000000           0.000000                0.0
+  gpt-4o-mini    switch False    280           0.000000           0.000000                0.0
+  gpt-4o-mini    switch  True    589           0.000000           0.000000                0.0
+llama-3.3-70b      base False    278           0.000000           0.000000                0.0
+llama-3.3-70b      base  True    896           0.000000           0.000000                0.0
+llama-3.3-70b   placebo False    271           0.000000           0.000000                0.0
+llama-3.3-70b   placebo  True    744           0.000000           0.000000                0.0
+llama-3.3-70b    switch False    274           0.000000           0.000000                0.0
+llama-3.3-70b    switch  True    560           0.000000           0.000000                0.0
+   qwen3-235b      base False    277           0.173281           0.487365                0.0
+   qwen3-235b      base  True    858           0.033654           0.115385                0.0
+   qwen3-235b   placebo False    278           0.165945           0.474820                0.0
+   qwen3-235b   placebo  True    266           0.138614           0.379699                0.0
+   qwen3-235b    switch False    274           0.164377           0.478102                0.0
+   qwen3-235b    switch  True    275           0.111142           0.294545                0.0
+done: H_lower
+done: clean H_renorm (chosen_in_topk only)
+done: no WRITE/SUBMIT
+done: clean H_renorm, no WRITE/SUBMIT
+                         sensitivity                  spec         model adjust  n_seeds      mean    ci_low  ci_high  n_pos  p_wilcoxon  p_bh_family_endpoints
+                       primary (s03)                  main   gpt-4o-mini    raw       20 -0.012251 -0.057943 0.033246      9    0.647655               0.933966
+                       primary (s03)                  main llama-3.3-70b    raw       19  0.000397 -0.017610 0.019041      9    0.798252               0.980272
+                       primary (s03)                  main    qwen3-235b    raw       20 -0.000587 -0.044471 0.044499     10    0.756166               0.980272
+                       primary (s03)                  main   gpt-4o-mini    adj       20 -0.009702 -0.053767 0.034565      9    0.647655               0.933966
+                       primary (s03)                  main llama-3.3-70b    adj       19 -0.005090 -0.019071 0.009690      5    0.418041               0.862698
+                       primary (s03)                  main    qwen3-235b    adj       20  0.019753 -0.019667 0.059770     12    0.388376               0.862698
+                       primary (s03) adj+log_prompt_tokens   gpt-4o-mini    adj       20 -0.009326 -0.053286 0.035106      8    0.647655               0.933966
+                       primary (s03) adj+log_prompt_tokens llama-3.3-70b    adj       19 -0.004878 -0.018754 0.009763      5    0.418041               0.862698
+                       primary (s03) adj+log_prompt_tokens    qwen3-235b    adj       20  0.009999 -0.031727 0.049606     12    0.621513               0.930612
+                             H_lower                  main   gpt-4o-mini    raw       20 -0.011885 -0.052107 0.028051      9    0.570597               0.923213
+                             H_lower                  main llama-3.3-70b    raw       19  0.000319 -0.017576 0.018868      9    0.798252               0.980272
+                             H_lower                  main    qwen3-235b    raw       20 -0.000555 -0.044437 0.044515     10    0.756166               0.980272
+                             H_lower                  main   gpt-4o-mini    adj       20 -0.009367 -0.047792 0.029389      8    0.595819               0.930612
+                             H_lower                  main llama-3.3-70b    adj       19 -0.005165 -0.019080 0.009608      5    0.395462               0.862698
+                             H_lower                  main    qwen3-235b    adj       20  0.019806 -0.019628 0.059828     12    0.368277               0.862698
+clean H_renorm (chosen_in_topk only)                  main   gpt-4o-mini    raw       20 -0.012251 -0.057943 0.033246      9    0.647655               0.933966
+clean H_renorm (chosen_in_topk only)                  main llama-3.3-70b    raw       19  0.000397 -0.017610 0.019041      9    0.798252               0.980272
+clean H_renorm (chosen_in_topk only)                  main    qwen3-235b    raw       20 -0.001391 -0.045637 0.043719     10    0.756166               0.980272
+clean H_renorm (chosen_in_topk only)                  main   gpt-4o-mini    adj       20 -0.009702 -0.053767 0.034565      9    0.647655               0.933966
+clean H_renorm (chosen_in_topk only)                  main llama-3.3-70b    adj       19 -0.005090 -0.019071 0.009690      5    0.418041               0.862698
+clean H_renorm (chosen_in_topk only)                  main    qwen3-235b    adj       20  0.016713 -0.023452 0.057560     12    0.498009               0.866148
+                     no WRITE/SUBMIT                  main   gpt-4o-mini    raw       20  0.004550 -0.064243 0.073847     10    0.956329               0.995504
+                     no WRITE/SUBMIT                  main llama-3.3-70b    raw       19 -0.000979 -0.002918 0.000021      5    0.113377               0.651567
+                     no WRITE/SUBMIT                  main    qwen3-235b    raw       20  0.026120 -0.030778 0.086514     10    0.621513               0.930612
+                     no WRITE/SUBMIT                  main   gpt-4o-mini    adj       20  0.004354 -0.064551 0.074237     10    0.985435               0.999315
+                     no WRITE/SUBMIT                  main llama-3.3-70b    adj       19 -0.001376 -0.003241 0.000013      7    0.210117               0.756422
+                     no WRITE/SUBMIT                  main    qwen3-235b    adj       20  0.025868 -0.031623 0.086370     10    0.570597               0.923213
+     clean H_renorm, no WRITE/SUBMIT                  main   gpt-4o-mini    raw       20  0.004550 -0.064243 0.073847     10    0.956329               0.995504
+     clean H_renorm, no WRITE/SUBMIT                  main llama-3.3-70b    raw       19 -0.000979 -0.002918 0.000021      5    0.113377               0.651567
+     clean H_renorm, no WRITE/SUBMIT                  main    qwen3-235b    raw       20  0.025415 -0.032524 0.086411     10    0.647655               0.933966
+     clean H_renorm, no WRITE/SUBMIT                  main   gpt-4o-mini    adj       20  0.004354 -0.064551 0.074237     10    0.985435               0.999315
+     clean H_renorm, no WRITE/SUBMIT                  main llama-3.3-70b    adj       19 -0.001376 -0.003241 0.000013      7    0.210117               0.756422
+     clean H_renorm, no WRITE/SUBMIT                  main    qwen3-235b    adj       20  0.025014 -0.033037 0.086729     10    0.621513               0.930612
+                         sensitivity                   model     spec          term       est    ci_low  ci_high        p  p_bh_family_its_DiD_SP
+                       primary (s04)             gpt-4o-mini     main level DiD S-P -0.102030 -0.278057 0.073997 0.239932                0.794358
+                       primary (s04)             gpt-4o-mini     main slope DiD S-P -0.012661 -0.041356 0.016034 0.367314                0.794358
+                       primary (s04)           llama-3.3-70b     main level DiD S-P  0.009684 -0.026411 0.045779 0.581000                0.796801
+                       primary (s04)           llama-3.3-70b     main slope DiD S-P  0.004065 -0.000619 0.008749 0.085129                0.794358
+                       primary (s04)              qwen3-235b     main level DiD S-P -0.039967 -0.143738 0.063804 0.430146                0.794358
+                       primary (s04)              qwen3-235b     main slope DiD S-P -0.004641 -0.017494 0.008212 0.459058                0.794358
+                       primary (s04) pooled (mean of models)     main level DiD S-P -0.043741 -0.119093 0.031611 0.239255                0.794358
+                       primary (s04) pooled (mean of models)     main slope DiD S-P -0.004419 -0.016166 0.007327 0.440722                0.794358
+                       primary (s04)             gpt-4o-mini exposure level DiD S-P -0.066871 -0.166289 0.032548 0.175339                0.794358
+                       primary (s04)             gpt-4o-mini exposure slope DiD S-P -0.006486 -0.020822 0.007851 0.355611                0.794358
+                       primary (s04)           llama-3.3-70b exposure level DiD S-P -0.013827 -0.053893 0.026240 0.478911                0.794358
+                       primary (s04)           llama-3.3-70b exposure slope DiD S-P  0.000341 -0.005982 0.006664 0.911292                0.947901
+                       primary (s04)              qwen3-235b exposure level DiD S-P -0.005878 -0.122489 0.110733 0.917086                0.947901
+                       primary (s04)              qwen3-235b exposure slope DiD S-P -0.001499 -0.016915 0.013918 0.840923                0.938705
+                       primary (s04) pooled (mean of models) exposure level DiD S-P -0.028681 -0.077002 0.019640 0.229229                0.794358
+                       primary (s04) pooled (mean of models) exposure slope DiD S-P -0.002581 -0.010424 0.005262 0.499247                0.796801
+                       primary (s04)             gpt-4o-mini     rp10 level DiD S-P -0.140256 -0.323363 0.042852 0.125384                0.794358
+                       primary (s04)             gpt-4o-mini     rp10 slope DiD S-P -0.004631 -0.033336 0.024074 0.739304                0.935843
+                       primary (s04)           llama-3.3-70b     rp10 level DiD S-P  0.014214 -0.022871 0.051299 0.432352                0.794358
+                       primary (s04)           llama-3.3-70b     rp10 slope DiD S-P  0.003319 -0.001420 0.008058 0.159027                0.794358
+                       primary (s04)              qwen3-235b     rp10 level DiD S-P -0.050192 -0.149137 0.048752 0.301662                0.794358
+                       primary (s04)              qwen3-235b     rp10 slope DiD S-P  0.000011 -0.019015 0.019038 0.999027                0.999027
+                       primary (s04) pooled (mean of models)     rp10 level DiD S-P -0.058880 -0.132324 0.014563 0.109720                0.794358
+                       primary (s04) pooled (mean of models)     rp10 slope DiD S-P -0.000266 -0.013878 0.013346 0.967819                0.978007
+                       primary (s04)             gpt-4o-mini  readdec level DiD S-P -0.141453 -0.383084 0.100177 0.235443                0.794358
+                       primary (s04)             gpt-4o-mini  readdec slope DiD S-P -0.017837 -0.060989 0.025315 0.397746                0.794358
+                       primary (s04)           llama-3.3-70b  readdec level DiD S-P  0.000159 -0.000745 0.001063 0.717065                0.930361
+                       primary (s04)           llama-3.3-70b  readdec slope DiD S-P  0.000038 -0.000233 0.000310 0.770881                0.935843
+                       primary (s04)              qwen3-235b  readdec level DiD S-P -0.049110 -0.166756 0.068537 0.393189                0.794358
+                       primary (s04)              qwen3-235b  readdec slope DiD S-P -0.005583 -0.023147 0.011982 0.513872                0.796801
+                       primary (s04) pooled (mean of models)  readdec level DiD S-P -0.062745 -0.158930 0.033439 0.188084                0.794358
+                       primary (s04) pooled (mean of models)  readdec slope DiD S-P -0.007859 -0.024244 0.008525 0.327999                0.794358
+                             H_lower             gpt-4o-mini     main level DiD S-P -0.089888 -0.244742 0.064966 0.239274                0.794358
+                             H_lower             gpt-4o-mini     main slope DiD S-P -0.010887 -0.035352 0.013579 0.363355                0.794358
+                             H_lower           llama-3.3-70b     main level DiD S-P  0.009745 -0.026238 0.045728 0.577475                0.796801
+                             H_lower           llama-3.3-70b     main slope DiD S-P  0.004074 -0.000574 0.008721 0.082267                0.794358
+                             H_lower              qwen3-235b     main level DiD S-P -0.040117 -0.143635 0.063401 0.427343                0.794358
+                             H_lower              qwen3-235b     main slope DiD S-P -0.004743 -0.017522 0.008036 0.446814                0.794358
+                             H_lower pooled (mean of models)     main level DiD S-P -0.039750 -0.108795 0.029295 0.243009                0.794358
+                             H_lower pooled (mean of models)     main slope DiD S-P -0.003857 -0.014378 0.006664 0.452344                0.794358
+                             H_lower             gpt-4o-mini exposure level DiD S-P -0.059507 -0.145726 0.026712 0.164870                0.794358
+                             H_lower             gpt-4o-mini exposure slope DiD S-P -0.006367 -0.019501 0.006767 0.323027                0.794358
+                             H_lower           llama-3.3-70b exposure level DiD S-P -0.013733 -0.053595 0.026129 0.479639                0.794358
+                             H_lower           llama-3.3-70b exposure slope DiD S-P  0.000350 -0.005954 0.006655 0.908605                0.947901
+                             H_lower              qwen3-235b exposure level DiD S-P -0.005941 -0.122467 0.110584 0.916130                0.947901
+                             H_lower              qwen3-235b exposure slope DiD S-P -0.001587 -0.016985 0.013810 0.831474                0.938705
+                             H_lower pooled (mean of models) exposure level DiD S-P -0.026174 -0.072517 0.020170 0.251752                0.794358
+                             H_lower pooled (mean of models) exposure slope DiD S-P -0.002562 -0.010195 0.005072 0.490955                0.796801
+clean H_renorm (chosen_in_topk only)             gpt-4o-mini     main level DiD S-P -0.102030 -0.278057 0.073997 0.239932                0.794358
+clean H_renorm (chosen_in_topk only)             gpt-4o-mini     main slope DiD S-P -0.012661 -0.041356 0.016034 0.367314                0.794358
+clean H_renorm (chosen_in_topk only)           llama-3.3-70b     main level DiD S-P  0.009684 -0.026411 0.045779 0.581000                0.796801
+clean H_renorm (chosen_in_topk only)           llama-3.3-70b     main slope DiD S-P  0.004065 -0.000619 0.008749 0.085129                0.794358
+clean H_renorm (chosen_in_topk only)              qwen3-235b     main level DiD S-P -0.042128 -0.148977 0.064721 0.419484                0.794358
+clean H_renorm (chosen_in_topk only)              qwen3-235b     main slope DiD S-P -0.003874 -0.018081 0.010334 0.574902                0.796801
+clean H_renorm (chosen_in_topk only) pooled (mean of models)     main level DiD S-P -0.044371 -0.121004 0.032262 0.240419                0.794358
+clean H_renorm (chosen_in_topk only) pooled (mean of models)     main slope DiD S-P -0.004164 -0.016239 0.007911 0.479239                0.794358
+clean H_renorm (chosen_in_topk only)             gpt-4o-mini exposure level DiD S-P -0.066871 -0.166289 0.032548 0.175339                0.794358
+clean H_renorm (chosen_in_topk only)             gpt-4o-mini exposure slope DiD S-P -0.006486 -0.020822 0.007851 0.355611                0.794358
+clean H_renorm (chosen_in_topk only)           llama-3.3-70b exposure level DiD S-P -0.013827 -0.053893 0.026240 0.478911                0.794358
+clean H_renorm (chosen_in_topk only)           llama-3.3-70b exposure slope DiD S-P  0.000341 -0.005982 0.006664 0.911292                0.947901
+clean H_renorm (chosen_in_topk only)              qwen3-235b exposure level DiD S-P -0.012996 -0.131124 0.105132 0.820342                0.937534
+clean H_renorm (chosen_in_topk only)              qwen3-235b exposure slope DiD S-P -0.000625 -0.016573 0.015322 0.935452                0.955355
+clean H_renorm (chosen_in_topk only) pooled (mean of models) exposure level DiD S-P -0.030986 -0.079677 0.017704 0.198621                0.794358
+clean H_renorm (chosen_in_topk only) pooled (mean of models) exposure slope DiD S-P -0.002297 -0.010407 0.005813 0.560332                0.796801
+                     no WRITE/SUBMIT             gpt-4o-mini     main level DiD S-P -0.141453 -0.383084 0.100177 0.235443                0.794358
+                     no WRITE/SUBMIT             gpt-4o-mini     main slope DiD S-P -0.017837 -0.060989 0.025315 0.397746                0.794358
+                     no WRITE/SUBMIT           llama-3.3-70b     main level DiD S-P  0.000159 -0.000745 0.001063 0.717154                0.930361
+                     no WRITE/SUBMIT           llama-3.3-70b     main slope DiD S-P  0.000038 -0.000233 0.000310 0.770955                0.935843
+                     no WRITE/SUBMIT              qwen3-235b     main level DiD S-P -0.050541 -0.168139 0.067057 0.379626                0.794358
+                     no WRITE/SUBMIT              qwen3-235b     main slope DiD S-P -0.003237 -0.020271 0.013798 0.695300                0.930361
+                     no WRITE/SUBMIT pooled (mean of models)     main level DiD S-P -0.063254 -0.159638 0.033129 0.185557                0.794358
+                     no WRITE/SUBMIT pooled (mean of models)     main slope DiD S-P -0.007077 -0.023382 0.009228 0.375037                0.794358
+                     no WRITE/SUBMIT             gpt-4o-mini exposure level DiD S-P -0.072357 -0.282520 0.137806 0.479924                0.794358
+                     no WRITE/SUBMIT             gpt-4o-mini exposure slope DiD S-P -0.007370 -0.018435 0.003696 0.179426                0.794358
+                     no WRITE/SUBMIT           llama-3.3-70b exposure level DiD S-P  0.000422 -0.000959 0.001803 0.529855                0.796801
+                     no WRITE/SUBMIT           llama-3.3-70b exposure slope DiD S-P  0.000024 -0.000175 0.000223 0.802929                0.937534
+                     no WRITE/SUBMIT              qwen3-235b exposure level DiD S-P -0.017052 -0.165630 0.131526 0.812739                0.937534
+                     no WRITE/SUBMIT              qwen3-235b exposure slope DiD S-P  0.001087 -0.020793 0.022967 0.918279                0.947901
+                     no WRITE/SUBMIT pooled (mean of models) exposure level DiD S-P -0.029061 -0.105455 0.047334 0.435760                0.794358
+                     no WRITE/SUBMIT pooled (mean of models) exposure slope DiD S-P -0.002231 -0.009700 0.005239 0.539375                0.796801
+     clean H_renorm, no WRITE/SUBMIT             gpt-4o-mini     main level DiD S-P -0.141453 -0.383084 0.100177 0.235443                0.794358
+     clean H_renorm, no WRITE/SUBMIT             gpt-4o-mini     main slope DiD S-P -0.017837 -0.060989 0.025315 0.397746                0.794358
+     clean H_renorm, no WRITE/SUBMIT           llama-3.3-70b     main level DiD S-P  0.000159 -0.000745 0.001063 0.717154                0.930361
+     clean H_renorm, no WRITE/SUBMIT           llama-3.3-70b     main slope DiD S-P  0.000038 -0.000233 0.000310 0.770955                0.935843
+     clean H_renorm, no WRITE/SUBMIT              qwen3-235b     main level DiD S-P -0.049555 -0.173542 0.074431 0.413245                0.794358
+     clean H_renorm, no WRITE/SUBMIT              qwen3-235b     main slope DiD S-P -0.002430 -0.020187 0.015327 0.777628                0.935843
+     clean H_renorm, no WRITE/SUBMIT pooled (mean of models)     main level DiD S-P -0.062881 -0.160933 0.035170 0.195327                0.794358
+     clean H_renorm, no WRITE/SUBMIT pooled (mean of models)     main slope DiD S-P -0.006812 -0.023318 0.009694 0.398497                0.794358
+     clean H_renorm, no WRITE/SUBMIT             gpt-4o-mini exposure level DiD S-P -0.072357 -0.282520 0.137806 0.479924                0.794358
+     clean H_renorm, no WRITE/SUBMIT             gpt-4o-mini exposure slope DiD S-P -0.007370 -0.018435 0.003696 0.179426                0.794358
+     clean H_renorm, no WRITE/SUBMIT           llama-3.3-70b exposure level DiD S-P  0.000422 -0.000959 0.001803 0.529855                0.796801
+     clean H_renorm, no WRITE/SUBMIT           llama-3.3-70b exposure slope DiD S-P  0.000024 -0.000175 0.000223 0.802929                0.937534
+     clean H_renorm, no WRITE/SUBMIT              qwen3-235b exposure level DiD S-P -0.020414 -0.171135 0.130306 0.779869                0.935843
+     clean H_renorm, no WRITE/SUBMIT              qwen3-235b exposure slope DiD S-P  0.001712 -0.020026 0.023451 0.870792                0.947901
+     clean H_renorm, no WRITE/SUBMIT pooled (mean of models) exposure level DiD S-P -0.030118 -0.107369 0.047132 0.424600                0.794358
+     clean H_renorm, no WRITE/SUBMIT pooled (mean of models) exposure slope DiD S-P -0.002032 -0.009539 0.005474 0.577582                0.796801
+                                         family  n_tests  n_raw_p_lt_05  n_bh_q_lt_05  n_bh_q_lt_10
+endpoints (all contrasts, specs, sensitivities)      432             48             0            21
+                ITS DiD switch-placebo (OLS-CR)       96              0             0             0
+endpoint rows with BH q < 0.10:
+                         sensitivity                  spec         model  window    adjust    kind contrast     mean   ci_low  ci_high  p_wilcoxon  p_bh_family_endpoints
+                       primary (s03)                  main    qwen3-235b       5       adj   level      P-B 0.080486 0.034316 0.129401    0.003153               0.068743
+                       primary (s03)                  main llama-3.3-70b      10       raw   level      P-B 0.040539 0.021811 0.059715    0.002838               0.068743
+                       primary (s03)                  main llama-3.3-70b      10       raw prepost      P-B 0.034574 0.014980 0.056331    0.003342               0.068743
+                       primary (s03)                  main llama-3.3-70b      10       adj   level      P-B 0.033988 0.016919 0.051861    0.002838               0.068743
+                       primary (s03)                  main    qwen3-235b      10       adj   level      P-B 0.084817 0.044217 0.124734    0.001209               0.068743
+                       primary (s03)             read_only    qwen3-235b      10 read_only   level      P-B 0.105941 0.044790 0.165082    0.003153               0.068743
+                       primary (s03) adj+log_prompt_tokens llama-3.3-70b      10       adj   level      P-B 0.035028 0.017920 0.052923    0.002399               0.068743
+                             H_lower                  main    qwen3-235b       5       adj   level      P-B 0.080424 0.034291 0.129333    0.003153               0.068743
+                             H_lower                  main llama-3.3-70b      10       raw   level      P-B 0.040343 0.021605 0.059458    0.003342               0.068743
+                             H_lower                  main llama-3.3-70b      10       raw prepost      P-B 0.034411 0.014823 0.056172    0.003342               0.068743
+                             H_lower                  main llama-3.3-70b      10       adj   level      P-B 0.033798 0.016739 0.051653    0.002838               0.068743
+                             H_lower                  main    qwen3-235b      10       adj   level      P-B 0.084769 0.044186 0.124683    0.001209               0.068743
+clean H_renorm (chosen_in_topk only)                  main    qwen3-235b       5       adj   level      P-B 0.082044 0.035378 0.131457    0.002712               0.068743
+clean H_renorm (chosen_in_topk only)                  main llama-3.3-70b      10       raw   level      P-B 0.040539 0.021811 0.059715    0.002838               0.068743
+clean H_renorm (chosen_in_topk only)                  main llama-3.3-70b      10       raw prepost      P-B 0.034574 0.014980 0.056331    0.003342               0.068743
+clean H_renorm (chosen_in_topk only)                  main llama-3.3-70b      10       adj   level      P-B 0.033988 0.016919 0.051861    0.002838               0.068743
+clean H_renorm (chosen_in_topk only)                  main    qwen3-235b      10       adj   level      P-B 0.085566 0.044406 0.126344    0.001209               0.068743
+                     no WRITE/SUBMIT                  main    qwen3-235b      10       raw   level      P-B 0.104788 0.046543 0.163888    0.002325               0.068743
+                     no WRITE/SUBMIT                  main    qwen3-235b      10       adj   level      P-B 0.108610 0.052013 0.166456    0.001690               0.068743
+     clean H_renorm, no WRITE/SUBMIT                  main    qwen3-235b      10       raw   level      P-B 0.104697 0.045214 0.164991    0.002712               0.068743
+     clean H_renorm, no WRITE/SUBMIT                  main    qwen3-235b      10       adj   level      P-B 0.109006 0.051173 0.168302    0.002325               0.068743
+        model  contaminated  n_runs  prepost_H_adj_mean   ci_low  ci_high
+  gpt-4o-mini         False       3            0.105650 0.005541 0.216396
+  gpt-4o-mini          True      17            0.061479 0.007087 0.121032
+llama-3.3-70b          True      19            0.033150 0.015593 0.051552
+   qwen3-235b          True      20            0.079184 0.039279 0.117328
+        model  runs                               seeds  task_success  comm_verified  turns_mean  tau_first_foreign_read_median  H_pre_mean  H_post10_mean  H_post_minus_pre_mean
+  gpt-4o-mini     9 101,103,104,105,106,107,108,109,110      0.777778            1.0   22.333333                            9.0    0.292395       0.325108               0.032713
+llama-3.3-70b     6             101,102,105,106,108,109      1.000000            1.0   21.333333                            9.0    0.141088       0.192614               0.051526
+   qwen3-235b     3                         101,102,103      1.000000            1.0   16.000000                            8.0    0.212687       0.346595               0.133908

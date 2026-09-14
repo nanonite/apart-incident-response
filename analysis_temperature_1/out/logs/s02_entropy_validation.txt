@@ -1,0 +1,83 @@
+== (a) recompute token entropies from top-20 logprobs
+        model  tokens  placeholders  tokens_without_topk  k_not_20  maxabs_H_lower_bits  maxabs_H_renorm_bits  maxabs_coverage
+  gpt-4o-mini  116650           294                    0         0         2.220446e-15          2.492473e-07     1.830487e-07
+llama-3.3-70b   60524             0                    0         0         1.332268e-15          3.410418e-07     2.368262e-07
+   qwen3-235b   55556             0                    0      1237         5.307368e-01          1.048871e+00     5.393298e-01
+  worst H_renorm rows:
+     model condition  seed  turn agent  pos  H_renorm_bits  H_renorm_re  coverage  coverage_re  k
+qwen3-235b   placebo    16    10    A1  273       1.851005     2.899877       1.0     0.460670 20
+qwen3-235b   placebo    16    10    A1  274       1.851005     2.899877       1.0     0.460670 20
+qwen3-235b      base    16    16    A2    5       0.827628     0.295684       1.0     0.998759 20
+qwen3-235b      base    11     9    A2    7       1.091360     0.559474       1.0     0.998562 20
+qwen3-235b   placebo    16     1    A2    9       0.729730     0.198265       1.0     0.998889 20
+qwen3-235b      base    19    19    A2    5       1.844119     1.312910       1.0     0.993305 20
+qwen3-235b      base    11     4    A1   12       1.641341     1.110552       1.0     0.999842 20
+qwen3-235b    switch    20     4    A2    7       1.514500     0.983746       1.0     0.999951 20
+  rows with renorm error > 1e-6: 8893 (by model: {'qwen3-235b': 8893}; k counts: {20: 8681, 19: 143, 18: 44, 17: 10, 14: 6, 16: 5, 15: 4})
+  max abs error of the 'block' H_lower variant: 0.5307 (does not match)
+  all max abs errors < 1e-6: False
+
+== (c) H_lower vs H_renorm, coverage
+                                     0              1           2
+model                      gpt-4o-mini  llama-3.3-70b  qwen3-235b
+tokens                          116356          60524       55556
+pearson_token                 0.995925       0.999954     0.99981
+spearman_token                0.999998       0.999999    0.999998
+mean_H_lower                  0.265564       0.348962    0.152714
+mean_H_renorm                 0.269488       0.349313    0.152888
+mean_abs_diff                 0.004036       0.000419    0.000219
+coverage_mean                 0.998199       0.999603    0.999734
+coverage_p01                  0.976461        0.99046    0.998135
+coverage_p05                   0.99897       0.999108    0.999918
+coverage_median                    1.0            1.0         1.0
+frac_cov_lt_0_99              0.015753       0.009599    0.003816
+frac_cov_lt_0_9               0.005208       0.000116    0.000918
+frac_sampled_outside_topk          NaN            NaN         NaN
+pearson_call_mean             0.996206       0.999993    0.999949
+spearman_call_mean            0.999931       0.999996    0.999994
+        model condition  coverage_mean  frac_cov_lt_0_99
+  gpt-4o-mini      base       0.998159          0.016400
+  gpt-4o-mini   placebo       0.998579          0.013883
+  gpt-4o-mini    switch       0.997865          0.016896
+llama-3.3-70b      base       0.999658          0.007633
+llama-3.3-70b   placebo       0.999582          0.010877
+llama-3.3-70b    switch       0.999565          0.010273
+   qwen3-235b      base       0.999767          0.004231
+   qwen3-235b   placebo       0.999689          0.003706
+   qwen3-235b    switch       0.999755          0.003587
+
+== (b) reproduce system_entropy.csv
+  rows ref=264 recomputed=264; merge: {'both': 264, 'left_only': 0, 'right_only': 0}
+                  column  max_abs_diff  n_nan_mismatch
+            runs_present  0.000000e+00               0
+             runs_paired  0.000000e+00               0
+                 H1_bits  1.221245e-15               0
+                 H2_bits  1.554312e-15               0
+              sum_H_bits  2.220446e-15               0
+                  I_bits  1.360023e-15               0
+           H_system_bits  2.664535e-15               0
+         I_shuffled_bits  1.320111e-15               0
+   I_minus_shuffled_bits  1.498801e-15               0
+            hard_H1_bits  4.440892e-16               0
+            hard_H2_bits  4.440892e-16               0
+             hard_I_bits  1.054712e-15               0
+hard_I_miller_madow_bits  1.110223e-15               0
+      hard_H_system_bits  1.332268e-15               0
+                 p1_READ  3.330669e-16               0
+                p1_WRITE  3.330669e-16               0
+              p1_DECRYPT  2.220446e-16               0
+               p1_SUBMIT  9.714451e-17               0
+                p1_OTHER  3.330669e-16               0
+                 p1_DONE  6.938894e-17               0
+                 p2_READ  2.220446e-16               0
+                p2_WRITE  2.220446e-16               0
+              p2_DECRYPT  2.220446e-16               0
+               p2_SUBMIT  8.326673e-17               0
+                p2_OTHER  3.330669e-16               0
+                 p2_DONE  8.326673e-17               0
+            tokH_A1_mean  1.110223e-16               0
+            tokS_A1_mean  2.220446e-16               0
+               tokH_A1_n  0.000000e+00               0
+            tokH_A2_mean  1.110223e-16               0
+            tokS_A2_mean  1.110223e-16               0
+               tokH_A2_n  0.000000e+00               0

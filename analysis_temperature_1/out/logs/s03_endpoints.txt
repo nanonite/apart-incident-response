@@ -1,0 +1,148 @@
+                 spec         model  window    adjust    kind  n_seeds      mean    ci_low   ci_high  n_pos   p_sign  p_wilcoxon  p_wilcoxon_bh_family
+                 main   gpt-4o-mini       5       raw   level       20 -0.016946 -0.072468  0.038399      9 0.823803    0.474905              0.833708
+                 main   gpt-4o-mini       5       raw prepost       20 -0.053683 -0.117184  0.012967      6 0.115318    0.132727              0.579171
+                 main llama-3.3-70b       5       raw   level       19  0.004685 -0.020715  0.031841     10 1.000000    0.708557              0.902940
+                 main llama-3.3-70b       5       raw prepost       19  0.016701 -0.009963  0.043126     12 0.359283    0.195633              0.640253
+                 main    qwen3-235b       5       raw   level       20 -0.009979 -0.059451  0.040833      9 0.823803    0.674223              0.886577
+                 main    qwen3-235b       5       raw prepost       20 -0.029722 -0.076162  0.016613      8 0.503445    0.245487              0.736462
+                 main   gpt-4o-mini       5       adj   level       20 -0.015664 -0.070125  0.039901      8 0.503445    0.498009              0.833708
+                 main   gpt-4o-mini       5       adj prepost       20 -0.052188 -0.115090  0.014623      6 0.115318    0.142906              0.587957
+                 main llama-3.3-70b       5       adj   level       19  0.009151 -0.008994  0.030018     10 1.000000    0.768005              0.918002
+                 main llama-3.3-70b       5       adj prepost       19  0.021908  0.002837  0.041577     13 0.167068    0.028931              0.277734
+                 main    qwen3-235b       5       adj   level       20  0.006731 -0.036695  0.050491     11 0.823803    0.701181              0.902940
+                 main    qwen3-235b       5       adj prepost       20 -0.011992 -0.056502  0.030430      9 0.823803    0.840822              0.934375
+                 main   gpt-4o-mini      10       raw   level       20 -0.012251 -0.057943  0.033246      9 0.823803    0.647655              0.886577
+                 main   gpt-4o-mini      10       raw prepost       20 -0.048987 -0.105792  0.010934      6 0.115318    0.132727              0.579171
+                 main llama-3.3-70b      10       raw   level       19  0.000397 -0.017610  0.019041      9 1.000000    0.798252              0.927002
+                 main llama-3.3-70b      10       raw prepost       19  0.012413 -0.004954  0.030892     12 0.359283    0.257927              0.757989
+                 main    qwen3-235b      10       raw   level       20 -0.000587 -0.044471  0.044499     10 1.000000    0.756166              0.915025
+                 main    qwen3-235b      10       raw prepost       20 -0.020331 -0.066839  0.026868      7 0.263176    0.430433              0.833708
+                 main   gpt-4o-mini      10       adj   level       20 -0.009702 -0.053767  0.034565      9 0.823803    0.647655              0.886577
+                 main   gpt-4o-mini      10       adj prepost       20 -0.046226 -0.102624  0.012911      6 0.115318    0.164957              0.609072
+                 main llama-3.3-70b      10       adj   level       19 -0.005090 -0.019071  0.009690      5 0.063568    0.418041              0.833708
+                 main llama-3.3-70b      10       adj prepost       19  0.007667 -0.004958  0.020973     11 0.647606    0.332066              0.833708
+                 main    qwen3-235b      10       adj   level       20  0.019753 -0.019667  0.059770     12 0.503445    0.388376              0.833708
+                 main    qwen3-235b      10       adj prepost       20  0.001029 -0.041551  0.043847      9 0.823803    0.869488              0.934375
+            read_only   gpt-4o-mini       5 read_only   level        4 -0.306036 -0.413516 -0.151313      0 0.125000    0.125000              0.579171
+            read_only   gpt-4o-mini       5 read_only prepost        1 -0.213603 -0.213603 -0.213603      0 1.000000    1.000000              1.000000
+            read_only llama-3.3-70b       5 read_only   level       19 -0.000043 -0.000159  0.000035     11 0.647606    0.921715              0.967595
+            read_only llama-3.3-70b       5 read_only prepost       19  0.000040 -0.000115  0.000200     12 0.359283    0.293499              0.812766
+            read_only    qwen3-235b       5 read_only   level       20  0.014490 -0.052571  0.081726     11 0.823803    0.674223              0.886577
+            read_only    qwen3-235b       5 read_only prepost       20 -0.004947 -0.076202  0.060755     13 0.263176    0.784126              0.918002
+            read_only   gpt-4o-mini      10 read_only   level       11  0.004369 -0.075867  0.085972      5 1.000000    1.000000              1.000000
+            read_only   gpt-4o-mini      10 read_only prepost        6  0.086214 -0.127611  0.281004      4 0.687500    0.562500              0.870968
+            read_only llama-3.3-70b      10 read_only   level       19 -0.000984 -0.002922  0.000013      7 0.359283    0.195633              0.640253
+            read_only llama-3.3-70b      10 read_only prepost       19 -0.000901 -0.002869  0.000153      9 1.000000    0.738091              0.915025
+            read_only    qwen3-235b      10 read_only   level       20  0.027246 -0.035654  0.092928     10 1.000000    0.674223              0.886577
+            read_only    qwen3-235b      10 read_only prepost       20  0.007809 -0.061201  0.075496     10 1.000000    0.869488              0.934375
+adj+log_prompt_tokens   gpt-4o-mini       5       adj   level       20 -0.015819 -0.070695  0.040323      8 0.503445    0.521673              0.834677
+adj+log_prompt_tokens   gpt-4o-mini       5       adj prepost       20 -0.052166 -0.115156  0.015181      6 0.115318    0.142906              0.587957
+adj+log_prompt_tokens llama-3.3-70b       5       adj   level       19  0.009529 -0.008689  0.030342     10 1.000000    0.622562              0.886577
+adj+log_prompt_tokens llama-3.3-70b       5       adj prepost       19  0.022261  0.003207  0.042004     13 0.167068    0.036068              0.324612
+adj+log_prompt_tokens    qwen3-235b       5       adj   level       20  0.000516 -0.042978  0.043234     10 1.000000    0.898317              0.958205
+adj+log_prompt_tokens    qwen3-235b       5       adj prepost       20 -0.016968 -0.062041  0.025286      9 0.823803    0.728506              0.915025
+adj+log_prompt_tokens   gpt-4o-mini      10       adj   level       20 -0.009326 -0.053286  0.035106      8 0.503445    0.647655              0.886577
+adj+log_prompt_tokens   gpt-4o-mini      10       adj prepost       20 -0.045673 -0.102271  0.013560      7 0.263176    0.164957              0.609072
+adj+log_prompt_tokens llama-3.3-70b      10       adj   level       19 -0.004878 -0.018754  0.009763      5 0.063568    0.418041              0.833708
+adj+log_prompt_tokens llama-3.3-70b      10       adj prepost       19  0.007853 -0.004721  0.021030     11 0.647606    0.293499              0.812766
+adj+log_prompt_tokens    qwen3-235b      10       adj   level       20  0.009999 -0.031727  0.049606     12 0.503445    0.621513              0.886577
+adj+log_prompt_tokens    qwen3-235b      10       adj prepost       20 -0.007485 -0.050918  0.034737      8 0.503445    0.621513              0.886577
+
+                 spec         model  window    adjust    kind  n_seeds      mean        ci_low   ci_high  n_pos   p_sign  p_wilcoxon  p_wilcoxon_bh_family contrast
+                 main   gpt-4o-mini       5       raw   level       20 -0.013694 -8.339220e-02  0.059241      7 0.263176    0.474905              0.833708      S-P
+                 main   gpt-4o-mini       5       raw   level       20 -0.006504 -9.213579e-02  0.087665      8 0.503445    0.674223              0.886577      P-B
+                 main   gpt-4o-mini       5       raw prepost       20 -0.049649 -1.332279e-01  0.041204      7 0.263176    0.153646              0.597975      S-P
+                 main   gpt-4o-mini       5       raw prepost       20 -0.008068 -1.006367e-01  0.089048     10 1.000000    0.784126              0.918002      P-B
+                 main llama-3.3-70b       5       raw   level       19 -0.013612 -4.620748e-02  0.019168      7 0.359283    0.418041              0.833708      S-P
+                 main llama-3.3-70b       5       raw   level       19  0.036593 -2.978814e-03  0.076438     12 0.359283    0.095512              0.579171      P-B
+                 main llama-3.3-70b       5       raw prepost       19  0.001387 -3.494263e-02  0.036821     10 1.000000    0.952984              0.987264      S-P
+                 main llama-3.3-70b       5       raw prepost       19  0.030628 -1.131349e-02  0.072020     12 0.359283    0.195633              0.640253      P-B
+                 main    qwen3-235b       5       raw   level       20 -0.022150 -8.632659e-02  0.042446     10 1.000000    0.621513              0.886577      S-P
+                 main    qwen3-235b       5       raw   level       20  0.024342 -2.563525e-02  0.077047     10 1.000000    0.621513              0.886577      P-B
+                 main    qwen3-235b       5       raw prepost       20 -0.031117 -1.012463e-01  0.038416      9 0.823803    0.409098              0.833708      S-P
+                 main    qwen3-235b       5       raw prepost       20  0.002788 -6.572958e-02  0.071921     10 1.000000    0.812355              0.934375      P-B
+                 main   gpt-4o-mini       5       adj   level       20 -0.017329 -8.493953e-02  0.055084      6 0.115318    0.388376              0.833708      S-P
+                 main   gpt-4o-mini       5       adj   level       20  0.003329 -8.150422e-02  0.097398      9 0.823803    0.784126              0.918002      P-B
+                 main   gpt-4o-mini       5       adj prepost       20 -0.053510 -1.345913e-01  0.037758      6 0.115318    0.123093              0.579171      S-P
+                 main   gpt-4o-mini       5       adj prepost       20  0.002643 -8.955971e-02  0.098976     11 0.823803    0.985435              1.000000      P-B
+                 main llama-3.3-70b       5       adj   level       19 -0.010411 -3.623610e-02  0.015231      6 0.167068    0.441334              0.833708      S-P
+                 main llama-3.3-70b       5       adj   level       19  0.039124  7.762208e-03  0.071480     12 0.359283    0.054573              0.392926      P-B
+                 main llama-3.3-70b       5       adj prepost       19  0.006180 -2.299038e-02  0.032983     11 0.647606    0.515278              0.833708      S-P
+                 main llama-3.3-70b       5       adj prepost       19  0.031456  5.109461e-04  0.063670     12 0.359283    0.123188              0.579171      P-B
+                 main    qwen3-235b       5       adj   level       20 -0.033511 -9.076539e-02  0.021884     10 1.000000    0.452375              0.833708      S-P
+                 main    qwen3-235b       5       adj   level       20  0.080486  3.431633e-02  0.129401     16 0.011818    0.003153              0.068743      P-B
+                 main    qwen3-235b       5       adj prepost       20 -0.042653 -1.066897e-01  0.019883      9 0.823803    0.311794              0.816334      S-P
+                 main    qwen3-235b       5       adj prepost       20  0.061322 -5.184558e-03  0.125718     11 0.823803    0.132727              0.579171      P-B
+                 main   gpt-4o-mini      10       raw   level       20 -0.009757 -6.524805e-02  0.045670     10 1.000000    0.756166              0.915025      S-P
+                 main   gpt-4o-mini      10       raw   level       20 -0.004987 -5.903877e-02  0.053927      9 0.823803    0.545876              0.854414      P-B
+                 main   gpt-4o-mini      10       raw prepost       20 -0.045712 -1.110183e-01  0.021577      8 0.503445    0.230513              0.721605      S-P
+                 main   gpt-4o-mini      10       raw prepost       20 -0.006551 -7.158351e-02  0.059268     11 0.823803    0.927279              0.967595      P-B
+                 main llama-3.3-70b      10       raw   level       19 -0.019872 -3.570686e-02 -0.003383      6 0.167068    0.040131              0.339930      S-P
+                 main llama-3.3-70b      10       raw   level       19  0.040539  2.181105e-02  0.059715     14 0.063568    0.002838              0.068743      P-B
+                 main llama-3.3-70b      10       raw prepost       19 -0.004874 -2.374688e-02  0.015284      8 0.647606    0.515278              0.833708      S-P
+                 main llama-3.3-70b      10       raw prepost       19  0.034574  1.498007e-02  0.056331     16 0.004425    0.003342              0.068743      P-B
+                 main    qwen3-235b      10       raw   level       20 -0.013776 -7.267327e-02  0.045125     10 1.000000    0.498009              0.833708      S-P
+                 main    qwen3-235b      10       raw   level       20  0.026378 -1.775442e-02  0.068692     13 0.263176    0.153646              0.597975      P-B
+                 main    qwen3-235b      10       raw prepost       20 -0.022743 -8.841316e-02  0.044639      8 0.503445    0.430433              0.833708      S-P
+                 main    qwen3-235b      10       raw prepost       20  0.004824 -5.649206e-02  0.065348     11 0.823803    0.756166              0.915025      P-B
+                 main   gpt-4o-mini      10       adj   level       20 -0.012020 -6.628959e-02  0.041595     10 1.000000    0.647655              0.886577      S-P
+                 main   gpt-4o-mini      10       adj   level       20  0.004635 -4.900469e-02  0.063087     10 1.000000    0.840822              0.934375      P-B
+                 main   gpt-4o-mini      10       adj prepost       20 -0.048201 -1.140339e-01  0.018374      8 0.503445    0.189348              0.640253      S-P
+                 main   gpt-4o-mini      10       adj prepost       20  0.003950 -6.093024e-02  0.069107     12 0.503445    0.869488              0.934375      P-B
+                 main llama-3.3-70b      10       adj   level       19 -0.022084 -3.625978e-02 -0.007612      4 0.019211    0.014069              0.168823      S-P
+                 main llama-3.3-70b      10       adj   level       19  0.033988  1.691865e-02  0.051861     14 0.063568    0.002838              0.068743      P-B
+                 main llama-3.3-70b      10       adj prepost       19 -0.005493 -2.187386e-02  0.010779      9 1.000000    0.441334              0.833708      S-P
+                 main llama-3.3-70b      10       adj prepost       19  0.026320  9.501749e-03  0.045670     14 0.063568    0.014069              0.168823      P-B
+                 main    qwen3-235b      10       adj   level       20 -0.022656 -7.569822e-02  0.029467      8 0.503445    0.388376              0.833708      S-P
+                 main    qwen3-235b      10       adj   level       20  0.084817  4.421652e-02  0.124734     16 0.011818    0.001209              0.068743      P-B
+                 main    qwen3-235b      10       adj prepost       20 -0.031798 -9.132391e-02  0.028597      8 0.503445    0.348810              0.833708      S-P
+                 main    qwen3-235b      10       adj prepost       20  0.065654  7.196454e-03  0.122202     13 0.263176    0.058258              0.399484      P-B
+            read_only   gpt-4o-mini       5 read_only   level        5 -0.206183 -3.132935e-01 -0.099072      0 0.062500    0.062500              0.409091      S-P
+            read_only   gpt-4o-mini       5 read_only   level        6 -0.022727 -2.194836e-01  0.147692      4 0.687500    1.000000              1.000000      P-B
+            read_only   gpt-4o-mini       5 read_only prepost        2 -0.259172 -2.853984e-01 -0.232946      0 0.500000    0.500000              0.833708      S-P
+            read_only   gpt-4o-mini       5 read_only prepost        2  0.027369  1.605160e-02  0.038686      2 0.500000    0.500000              0.833708      P-B
+            read_only llama-3.3-70b       5 read_only   level       19 -0.000098 -3.063843e-04  0.000030     10 1.000000    0.708557              0.902940      S-P
+            read_only llama-3.3-70b       5 read_only   level       19  0.000110 -1.310171e-07  0.000299     13 0.167068    0.123188              0.579171      P-B
+            read_only llama-3.3-70b       5 read_only prepost       19  0.000021 -2.754613e-04  0.000342     10 1.000000    0.738091              0.915025      S-P
+            read_only llama-3.3-70b       5 read_only prepost       19  0.000038 -2.853968e-04  0.000320     14 0.063568    0.049366              0.374142      P-B
+            read_only    qwen3-235b       5 read_only   level       20 -0.034893 -1.259803e-01  0.056261      8 0.503445    0.474905              0.833708      S-P
+            read_only    qwen3-235b       5 read_only   level       20  0.098765  3.080524e-02  0.168443     14 0.115318    0.017181              0.176723      P-B
+            read_only    qwen3-235b       5 read_only prepost       20 -0.037516 -1.312763e-01  0.058495      8 0.503445    0.570597              0.874106      S-P
+            read_only    qwen3-235b       5 read_only prepost       20  0.065138 -4.124571e-02  0.165844     13 0.263176    0.311794              0.816334      P-B
+            read_only   gpt-4o-mini      10 read_only   level       14  0.012923 -6.781547e-02  0.091093      8 0.790527    0.855225              0.934375      S-P
+            read_only   gpt-4o-mini      10 read_only   level       12  0.026114 -6.317533e-02  0.124162      7 0.774414    0.677246              0.886577      P-B
+            read_only   gpt-4o-mini      10 read_only prepost        9  0.098948 -1.007494e-01  0.291411      6 0.507812    0.425781              0.833708      S-P
+            read_only   gpt-4o-mini      10 read_only prepost        6 -0.072782 -2.001226e-01  0.055351      2 0.687500    0.437500              0.833708      P-B
+            read_only llama-3.3-70b      10 read_only   level       19 -0.000044 -1.543834e-04  0.000032     10 1.000000    0.622562              0.886577      S-P
+            read_only llama-3.3-70b      10 read_only   level       19 -0.001879 -5.732370e-03  0.000103      9 1.000000    0.293499              0.812766      P-B
+            read_only llama-3.3-70b      10 read_only prepost       19  0.000074 -1.219411e-04  0.000346     11 0.647606    0.465317              0.833708      S-P
+            read_only llama-3.3-70b      10 read_only prepost       19 -0.001951 -5.849379e-03  0.000118     10 1.000000    0.859573              0.934375      P-B
+            read_only    qwen3-235b      10 read_only   level       20 -0.025725 -1.124620e-01  0.065096      8 0.503445    0.545876              0.854414      S-P
+            read_only    qwen3-235b      10 read_only   level       20  0.105941  4.479001e-02  0.165082     16 0.011818    0.003153              0.068743      P-B
+            read_only    qwen3-235b      10 read_only prepost       20 -0.028348 -1.231293e-01  0.069072      7 0.263176    0.474905              0.833708      S-P
+            read_only    qwen3-235b      10 read_only prepost       20  0.072315 -2.666294e-02  0.167908     14 0.115318    0.245487              0.736462      P-B
+adj+log_prompt_tokens   gpt-4o-mini       5       adj   level       20 -0.019068 -8.687237e-02  0.053873      6 0.115318    0.311794              0.816334      S-P
+adj+log_prompt_tokens   gpt-4o-mini       5       adj   level       20  0.006496 -7.831729e-02  0.099799      8 0.503445    0.869488              0.934375      P-B
+adj+log_prompt_tokens   gpt-4o-mini       5       adj prepost       20 -0.055176 -1.367350e-01  0.036576      6 0.115318    0.123093              0.579171      S-P
+adj+log_prompt_tokens   gpt-4o-mini       5       adj prepost       20  0.006019 -8.597692e-02  0.102492     11 0.823803    0.985435              1.000000      P-B
+adj+log_prompt_tokens llama-3.3-70b       5       adj   level       19 -0.010559 -3.637195e-02  0.014970      6 0.167068    0.441334              0.833708      S-P
+adj+log_prompt_tokens llama-3.3-70b       5       adj   level       19  0.040176  8.780530e-03  0.072568     12 0.359283    0.044559              0.356476      P-B
+adj+log_prompt_tokens llama-3.3-70b       5       adj prepost       19  0.006018 -2.322550e-02  0.032792     11 0.647606    0.515278              0.833708      S-P
+adj+log_prompt_tokens llama-3.3-70b       5       adj prepost       19  0.032486  1.543955e-03  0.064758     12 0.359283    0.104156              0.579171      P-B
+adj+log_prompt_tokens    qwen3-235b       5       adj   level       20 -0.029942 -8.337905e-02  0.023531      9 0.823803    0.474905              0.833708      S-P
+adj+log_prompt_tokens    qwen3-235b       5       adj   level       20  0.060915  1.735727e-02  0.105874     15 0.041389    0.015312              0.169612      P-B
+adj+log_prompt_tokens    qwen3-235b       5       adj prepost       20 -0.038248 -1.012379e-01  0.023754      8 0.503445    0.348810              0.833708      S-P
+adj+log_prompt_tokens    qwen3-235b       5       adj prepost       20  0.042560 -2.228764e-02  0.104665     13 0.263176    0.216167              0.691736      P-B
+adj+log_prompt_tokens   gpt-4o-mini      10       adj   level       20 -0.013151 -6.758020e-02  0.041468     10 1.000000    0.621513              0.886577      S-P
+adj+log_prompt_tokens   gpt-4o-mini      10       adj   level       20  0.007649 -4.659988e-02  0.066750     10 1.000000    0.927279              0.967595      P-B
+adj+log_prompt_tokens   gpt-4o-mini      10       adj prepost       20 -0.049259 -1.154266e-01  0.017984      7 0.263176    0.189348              0.640253      S-P
+adj+log_prompt_tokens   gpt-4o-mini      10       adj prepost       20  0.007172 -5.805440e-02  0.072983     12 0.503445    0.840822              0.934375      P-B
+adj+log_prompt_tokens llama-3.3-70b      10       adj   level       19 -0.022392 -3.643201e-02 -0.007994      4 0.019211    0.014069              0.168823      S-P
+adj+log_prompt_tokens llama-3.3-70b      10       adj   level       19  0.035028  1.791958e-02  0.052923     14 0.063568    0.002399              0.068743      P-B
+adj+log_prompt_tokens llama-3.3-70b      10       adj prepost       19 -0.005815 -2.222147e-02  0.010483      9 1.000000    0.441334              0.833708      S-P
+adj+log_prompt_tokens llama-3.3-70b      10       adj prepost       19  0.027337  1.053191e-02  0.046734     14 0.063568    0.009453              0.151245      P-B
+adj+log_prompt_tokens    qwen3-235b      10       adj   level       20 -0.022640 -7.519876e-02  0.028092      8 0.503445    0.430433              0.833708      S-P
+adj+log_prompt_tokens    qwen3-235b      10       adj   level       20  0.065279  2.486096e-02  0.105633     16 0.011818    0.005581              0.100456      P-B
+adj+log_prompt_tokens    qwen3-235b      10       adj prepost       20 -0.030947 -9.192720e-02  0.031017     10 1.000000    0.329983              0.833708      S-P
+adj+log_prompt_tokens    qwen3-235b      10       adj prepost       20  0.046924 -1.221198e-02  0.104091     14 0.115318    0.132727              0.579171      P-B
+figures written

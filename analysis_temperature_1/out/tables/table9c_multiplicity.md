@@ -1,0 +1,4 @@
+| family | n_tests | n_raw_p_lt_05 | n_bh_q_lt_05 | n_bh_q_lt_10 |
+|---|---|---|---|---|
+| endpoints (all contrasts, specs, sensitivities) | 432 | 48 | 0 | 21 |
+| ITS DiD switch-placebo (OLS-CR) | 96 | 0 | 0 | 0 |

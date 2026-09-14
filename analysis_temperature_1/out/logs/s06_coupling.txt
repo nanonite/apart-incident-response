@@ -1,0 +1,93 @@
+turns (runs_paired>=10) whose observed statistic exceeds the permutation 95th percentile:
+                              exc_soft      exc_hard     
+                                   sum size      sum size
+model         condition post                             
+gpt-4o-mini   base      False        0    7        1    7
+                        True         2   23        0   23
+              placebo   False        0    7        0    7
+                        True         1   23        0   23
+              switch    False        1    7        1    7
+                        True         1   15        2   15
+llama-3.3-70b base      False        0    7        0    7
+                        True         0   23        0   23
+              placebo   False        0    7        0    7
+                        True         1   23        1   23
+              switch    False        0    7        0    7
+                        True         1   15        0   15
+qwen3-235b    base      False        0    7        0    7
+                        True         0   23        0   23
+              placebo   False        1    7        1    7
+                        True         7   11        4   11
+              switch    False        0    7        0    7
+                        True         2    9        1    9
+        model condition            quantity       est    jk_se    ci_low  ci_high  n_turns  n_seeds
+  gpt-4o-mini      base      soft I-Ish pre  0.013657 0.011274 -0.008440 0.035754      7.0       20
+  gpt-4o-mini      base     soft I-Ish post  0.077503 0.011431  0.055097 0.099909     23.0       20
+  gpt-4o-mini      base       hard I_MM pre  0.041683 0.037602 -0.032016 0.115382      7.0       20
+  gpt-4o-mini      base      hard I_MM post  0.078148 0.043950 -0.007994 0.164290     23.0       20
+  gpt-4o-mini      base soft I-Ish post-pre  0.063846 0.011044  0.042200 0.085492      NaN       20
+  gpt-4o-mini      base  hard I_MM post-pre  0.036465 0.052025 -0.065505 0.138435      NaN       20
+  gpt-4o-mini   placebo      soft I-Ish pre  0.027998 0.017736 -0.006764 0.062760      7.0       20
+  gpt-4o-mini   placebo     soft I-Ish post  0.363177 0.078336  0.209639 0.516715     23.0       20
+  gpt-4o-mini   placebo       hard I_MM pre  0.032057 0.063479 -0.092362 0.156476      7.0       20
+  gpt-4o-mini   placebo      hard I_MM post  0.428631 0.083856  0.264274 0.592989     23.0       20
+  gpt-4o-mini   placebo soft I-Ish post-pre  0.335179 0.079062  0.180218 0.490141      NaN       20
+  gpt-4o-mini   placebo  hard I_MM post-pre  0.396574 0.105945  0.188922 0.604226      NaN       20
+  gpt-4o-mini    switch      soft I-Ish pre  0.059329 0.026723  0.006953 0.111705      7.0       20
+  gpt-4o-mini    switch     soft I-Ish post  0.228094 0.053076  0.124065 0.332123     15.0       20
+  gpt-4o-mini    switch       hard I_MM pre  0.109145 0.038425  0.033831 0.184458      7.0       20
+  gpt-4o-mini    switch      hard I_MM post  0.317838 0.082567  0.156007 0.479669     15.0       20
+  gpt-4o-mini    switch soft I-Ish post-pre  0.168765 0.059069  0.052989 0.284541      NaN       20
+  gpt-4o-mini    switch  hard I_MM post-pre  0.208693 0.087004  0.038166 0.379220      NaN       20
+llama-3.3-70b      base      soft I-Ish pre  0.000276 0.000327 -0.000365 0.000917      7.0       20
+llama-3.3-70b      base     soft I-Ish post  0.000758 0.000600 -0.000419 0.001935     23.0       20
+llama-3.3-70b      base       hard I_MM pre  0.000000 0.000000  0.000000 0.000000      7.0       20
+llama-3.3-70b      base      hard I_MM post  0.053549 0.033751 -0.012603 0.119702     23.0       20
+llama-3.3-70b      base soft I-Ish post-pre  0.000482 0.000672 -0.000835 0.001798      NaN       20
+llama-3.3-70b      base  hard I_MM post-pre  0.053549 0.033751 -0.012603 0.119702      NaN       20
+llama-3.3-70b   placebo      soft I-Ish pre  0.000583 0.000627 -0.000647 0.001812      7.0       20
+llama-3.3-70b   placebo     soft I-Ish post  0.042361 0.023856 -0.004396 0.089119     23.0       20
+llama-3.3-70b   placebo       hard I_MM pre  0.005792 0.006837 -0.007608 0.019192      7.0       20
+llama-3.3-70b   placebo      hard I_MM post  0.203692 0.051352  0.103042 0.304343     23.0       20
+llama-3.3-70b   placebo soft I-Ish post-pre  0.041779 0.023810 -0.004888 0.088446      NaN       20
+llama-3.3-70b   placebo  hard I_MM post-pre  0.197900 0.047926  0.103965 0.291836      NaN       20
+llama-3.3-70b    switch      soft I-Ish pre  0.000041 0.000948 -0.001818 0.001900      7.0       20
+llama-3.3-70b    switch     soft I-Ish post  0.045615 0.021027  0.004403 0.086827     15.0       20
+llama-3.3-70b    switch       hard I_MM pre  0.001920 0.002254 -0.002499 0.006338      7.0       20
+llama-3.3-70b    switch      hard I_MM post  0.199154 0.091227  0.020348 0.377960     15.0       20
+llama-3.3-70b    switch soft I-Ish post-pre  0.045574 0.020767  0.004871 0.086277      NaN       20
+llama-3.3-70b    switch  hard I_MM post-pre  0.197234 0.091963  0.016988 0.377481      NaN       20
+   qwen3-235b      base      soft I-Ish pre  0.027148 0.017512 -0.007175 0.061471      7.0       20
+   qwen3-235b      base     soft I-Ish post  0.019893 0.011446 -0.002541 0.042328     23.0       20
+   qwen3-235b      base       hard I_MM pre  0.097629 0.046338  0.006808 0.188451      7.0       20
+   qwen3-235b      base      hard I_MM post  0.082398 0.042359 -0.000625 0.165422     23.0       20
+   qwen3-235b      base soft I-Ish post-pre -0.007255 0.016710 -0.040007 0.025497      NaN       20
+   qwen3-235b      base  hard I_MM post-pre -0.015231 0.052084 -0.117316 0.086854      NaN       20
+   qwen3-235b   placebo      soft I-Ish pre  0.010337 0.004791  0.000946 0.019728      7.0       20
+   qwen3-235b   placebo     soft I-Ish post  0.438029 0.102725  0.236687 0.639370     11.0       20
+   qwen3-235b   placebo       hard I_MM pre  0.092408 0.049703 -0.005009 0.189826      7.0       20
+   qwen3-235b   placebo      hard I_MM post  0.537102 0.140468  0.261785 0.812420     11.0       20
+   qwen3-235b   placebo soft I-Ish post-pre  0.427692 0.102614  0.226569 0.628814      NaN       20
+   qwen3-235b   placebo  hard I_MM post-pre  0.444694 0.140852  0.168623 0.720765      NaN       20
+   qwen3-235b    switch      soft I-Ish pre  0.006634 0.003962 -0.001132 0.014400      7.0       20
+   qwen3-235b    switch     soft I-Ish post  0.258961 0.111643  0.040141 0.477781      9.0       20
+   qwen3-235b    switch       hard I_MM pre  0.120339 0.058487  0.005703 0.234974      7.0       20
+   qwen3-235b    switch      hard I_MM post  0.396052 0.157933  0.086504 0.705600      9.0       20
+   qwen3-235b    switch soft I-Ish post-pre  0.252327 0.110581  0.035588 0.469066      NaN       20
+   qwen3-235b    switch  hard I_MM post-pre  0.275713 0.174942 -0.067172 0.618599      NaN       20
+        model  n  same_sign  dI_pos  dH_pos  frac_same_sign  dI_comm_mean    ci_low  ci_high
+  gpt-4o-mini 20          6       9       9        0.300000      0.023832 -0.092289 0.143092
+llama-3.3-70b 19          9      11       5        0.473684      0.008381 -0.005318 0.024457
+   qwen3-235b 20          9       7      12        0.450000     -0.000172 -0.245531 0.253268
+          all 59         24      27      26        0.406780           NaN       NaN      NaN
+        model condition  JS_post_minus_pre    ci_low  ci_high  n_seeds   JS_pre  JS_post
+  gpt-4o-mini      base           0.148670  0.087540 0.206982       20 0.319895 0.468564
+  gpt-4o-mini   placebo           0.495750  0.377717 0.606417       20 0.245930 0.741680
+  gpt-4o-mini    switch           0.258402  0.194390 0.325032       20 0.332361 0.590763
+llama-3.3-70b      base          -0.009830 -0.034151 0.011794       20 0.037632 0.027801
+llama-3.3-70b   placebo           0.228737  0.129223 0.338693       20 0.040491 0.269227
+llama-3.3-70b    switch           0.207172  0.119964 0.306425       20 0.037354 0.244526
+   qwen3-235b      base           0.010562 -0.081684 0.108609       20 0.173535 0.184097
+   qwen3-235b   placebo           0.490033  0.404268 0.569163       20 0.133375 0.623408
+   qwen3-235b    switch           0.456658  0.337457 0.572830       20 0.171244 0.627902
+figures written

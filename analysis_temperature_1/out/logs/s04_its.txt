@@ -1,0 +1,188 @@
+  MixedLM warnings gpt-4o-mini/main: ['Gradient optimization failed, |grad| = 50.466630', 'Maximum Likelihood optimization failed to converge. Check mle_retvals', 'MixedLM optimization failed, trying a different optimizer may help.', 'The Hessian matrix at the estimated parameter values is not positive definite.', 'The MLE may be on the boundary of the parameter space.']
+  MixedLM warnings llama-3.3-70b/main: ['Gradient optimization failed, |grad| = 54.851928', 'Maximum Likelihood optimization failed to converge. Check mle_retvals', 'MixedLM optimization failed, trying a different optimizer may help.', 'The Hessian matrix at the estimated parameter values is not positive definite.', 'The MLE may be on the boundary of the parameter space.']
+  MixedLM warnings qwen3-235b/main: ['The Hessian matrix at the estimated parameter values is not positive definite.', 'The MLE may be on the boundary of the parameter space.']
+                  model     spec             metric    estimator  n_obs          term       est       se    ci_low   ci_high        p converged  p_bh_DiD_SP_OLS
+            gpt-4o-mini     main mean_H_renorm_bits OLS-CR(seed)   2947 level DiD S-P -0.102030 0.084102 -0.278057  0.073997 0.239932       NaN         0.714952
+            gpt-4o-mini     main mean_H_renorm_bits OLS-CR(seed)   2947 level DiD S-B -0.205082 0.063714 -0.338438 -0.071726 0.004520       NaN              NaN
+            gpt-4o-mini     main mean_H_renorm_bits OLS-CR(seed)   2947 level DiD P-B -0.103052 0.057569 -0.223545  0.017441 0.089394       NaN              NaN
+            gpt-4o-mini     main mean_H_renorm_bits OLS-CR(seed)   2947 slope DiD S-P -0.012661 0.013710 -0.041356  0.016034 0.367314       NaN         0.714952
+            gpt-4o-mini     main mean_H_renorm_bits OLS-CR(seed)   2947 slope DiD S-B -0.036268 0.011081 -0.059461 -0.013075 0.004001       NaN              NaN
+            gpt-4o-mini     main mean_H_renorm_bits OLS-CR(seed)   2947 slope DiD P-B -0.023607 0.008507 -0.041412 -0.005802 0.012061       NaN              NaN
+            gpt-4o-mini     main mean_H_renorm_bits      MixedLM   2947 level DiD S-P -0.099060 0.083298 -0.262321  0.064200 0.234347     False              NaN
+            gpt-4o-mini     main mean_H_renorm_bits      MixedLM   2947 level DiD S-B -0.202308 0.082517 -0.364038 -0.040577 0.014218     False              NaN
+            gpt-4o-mini     main mean_H_renorm_bits      MixedLM   2947 level DiD P-B -0.103247 0.082448 -0.264842  0.058347 0.210468     False              NaN
+            gpt-4o-mini     main mean_H_renorm_bits      MixedLM   2947 slope DiD S-P -0.014040 0.016887 -0.047138  0.019058 0.405750     False              NaN
+            gpt-4o-mini     main mean_H_renorm_bits      MixedLM   2947 slope DiD S-B -0.037036 0.016813 -0.069990 -0.004082 0.027612     False              NaN
+            gpt-4o-mini     main mean_H_renorm_bits      MixedLM   2947 slope DiD P-B -0.022996 0.016765 -0.055855  0.009863 0.170168     False              NaN
+          llama-3.3-70b     main mean_H_renorm_bits OLS-CR(seed)   2977 level DiD S-P  0.009684 0.017245 -0.026411  0.045779 0.581000       NaN         0.774667
+          llama-3.3-70b     main mean_H_renorm_bits OLS-CR(seed)   2977 level DiD S-B  0.044910 0.016647  0.010068  0.079752 0.014255       NaN              NaN
+          llama-3.3-70b     main mean_H_renorm_bits OLS-CR(seed)   2977 level DiD P-B  0.035227 0.017189 -0.000750  0.071203 0.054488       NaN              NaN
+          llama-3.3-70b     main mean_H_renorm_bits OLS-CR(seed)   2977 slope DiD S-P  0.004065 0.002238 -0.000619  0.008749 0.085129       NaN         0.714952
+          llama-3.3-70b     main mean_H_renorm_bits OLS-CR(seed)   2977 slope DiD S-B -0.001030 0.003396 -0.008139  0.006079 0.764959       NaN              NaN
+          llama-3.3-70b     main mean_H_renorm_bits OLS-CR(seed)   2977 slope DiD P-B -0.005095 0.003019 -0.011414  0.001224 0.107852       NaN              NaN
+          llama-3.3-70b     main mean_H_renorm_bits      MixedLM   2977 level DiD S-P  0.009106 0.023159 -0.036286  0.054497 0.694184     False              NaN
+          llama-3.3-70b     main mean_H_renorm_bits      MixedLM   2977 level DiD S-B  0.045174 0.022740  0.000605  0.089743 0.046970     False              NaN
+          llama-3.3-70b     main mean_H_renorm_bits      MixedLM   2977 level DiD P-B  0.036068 0.022894 -0.008803  0.080939 0.115151     False              NaN
+          llama-3.3-70b     main mean_H_renorm_bits      MixedLM   2977 slope DiD S-P  0.004177 0.004723 -0.005080  0.013435 0.376481     False              NaN
+          llama-3.3-70b     main mean_H_renorm_bits      MixedLM   2977 slope DiD S-B -0.001223 0.004625 -0.010287  0.007842 0.791451     False              NaN
+          llama-3.3-70b     main mean_H_renorm_bits      MixedLM   2977 slope DiD P-B -0.005400 0.004675 -0.014562  0.003762 0.248012     False              NaN
+             qwen3-235b     main mean_H_renorm_bits OLS-CR(seed)   2228 level DiD S-P -0.039967 0.049579 -0.143738  0.063804 0.430146       NaN         0.714952
+             qwen3-235b     main mean_H_renorm_bits OLS-CR(seed)   2228 level DiD S-B  0.006869 0.043048 -0.083231  0.096969 0.874904       NaN              NaN
+             qwen3-235b     main mean_H_renorm_bits OLS-CR(seed)   2228 level DiD P-B  0.046836 0.054434 -0.067095  0.160768 0.400281       NaN              NaN
+             qwen3-235b     main mean_H_renorm_bits OLS-CR(seed)   2228 slope DiD S-P -0.004641 0.006141 -0.017494  0.008212 0.459058       NaN         0.714952
+             qwen3-235b     main mean_H_renorm_bits OLS-CR(seed)   2228 slope DiD S-B -0.011750 0.007774 -0.028021  0.004521 0.147135       NaN              NaN
+             qwen3-235b     main mean_H_renorm_bits OLS-CR(seed)   2228 slope DiD P-B -0.007109 0.008551 -0.025007  0.010789 0.416121       NaN              NaN
+             qwen3-235b     main mean_H_renorm_bits      MixedLM   2228 level DiD S-P -0.043280 0.038113 -0.117979  0.031420 0.256138      True              NaN
+             qwen3-235b     main mean_H_renorm_bits      MixedLM   2228 level DiD S-B -0.005010 0.036731 -0.077001  0.066980 0.891499      True              NaN
+             qwen3-235b     main mean_H_renorm_bits      MixedLM   2228 level DiD P-B  0.038269 0.036769 -0.033796  0.110335 0.297965      True              NaN
+             qwen3-235b     main mean_H_renorm_bits      MixedLM   2228 slope DiD S-P -0.003196 0.008044 -0.018962  0.012570 0.691150      True              NaN
+             qwen3-235b     main mean_H_renorm_bits      MixedLM   2228 slope DiD S-B -0.010517 0.007541 -0.025298  0.004263 0.163132      True              NaN
+             qwen3-235b     main mean_H_renorm_bits      MixedLM   2228 slope DiD P-B -0.007321 0.007703 -0.022419  0.007776 0.341891      True              NaN
+pooled (mean of models)     main mean_H_renorm_bits OLS-CR(seed)   8152 level DiD S-P -0.043741 0.036001 -0.119093  0.031611 0.239255       NaN         0.714952
+pooled (mean of models)     main mean_H_renorm_bits OLS-CR(seed)   8152 level DiD S-B -0.050855 0.024302 -0.101719  0.000009 0.050036       NaN              NaN
+pooled (mean of models)     main mean_H_renorm_bits OLS-CR(seed)   8152 level DiD P-B -0.007114 0.029947 -0.069794  0.055567 0.814775       NaN              NaN
+pooled (mean of models)     main mean_H_renorm_bits OLS-CR(seed)   8152 slope DiD S-P -0.004419 0.005612 -0.016166  0.007327 0.440722       NaN         0.714952
+pooled (mean of models)     main mean_H_renorm_bits OLS-CR(seed)   8152 slope DiD S-B -0.016428 0.004528 -0.025905 -0.006950 0.001791       NaN              NaN
+pooled (mean of models)     main mean_H_renorm_bits OLS-CR(seed)   8152 slope DiD P-B -0.012008 0.003444 -0.019217 -0.004799 0.002470       NaN              NaN
+            gpt-4o-mini exposure mean_H_renorm_bits OLS-CR(seed)   2947 level DiD S-P -0.066871 0.047500 -0.166289  0.032548 0.175339       NaN         0.714952
+            gpt-4o-mini exposure mean_H_renorm_bits OLS-CR(seed)   2947 slope DiD S-P -0.006486 0.006850 -0.020822  0.007851 0.355611       NaN         0.714952
+          llama-3.3-70b exposure mean_H_renorm_bits OLS-CR(seed)   2977 level DiD S-P -0.013827 0.019143 -0.053893  0.026240 0.478911       NaN         0.714952
+          llama-3.3-70b exposure mean_H_renorm_bits OLS-CR(seed)   2977 slope DiD S-P  0.000341 0.003021 -0.005982  0.006664 0.911292       NaN         0.978225
+             qwen3-235b exposure mean_H_renorm_bits OLS-CR(seed)   2228 level DiD S-P -0.005878 0.055714 -0.122489  0.110733 0.917086       NaN         0.978225
+             qwen3-235b exposure mean_H_renorm_bits OLS-CR(seed)   2228 slope DiD S-P -0.001499 0.007366 -0.016915  0.013918 0.840923       NaN         0.961055
+pooled (mean of models) exposure mean_H_renorm_bits OLS-CR(seed)   8152 level DiD S-P -0.028681 0.023087 -0.077002  0.019640 0.229229       NaN         0.714952
+pooled (mean of models) exposure mean_H_renorm_bits OLS-CR(seed)   8152 slope DiD S-P -0.002581 0.003747 -0.010424  0.005262 0.499247       NaN         0.714952
+            gpt-4o-mini     rp10 mean_H_renorm_bits OLS-CR(seed)   2845 level DiD S-P -0.140256 0.087485 -0.323363  0.042852 0.125384       NaN         0.714952
+            gpt-4o-mini     rp10 mean_H_renorm_bits OLS-CR(seed)   2845 level DiD S-B -0.243006 0.066308 -0.381791 -0.104221 0.001647       NaN              NaN
+            gpt-4o-mini     rp10 mean_H_renorm_bits OLS-CR(seed)   2845 level DiD P-B -0.102750 0.057571 -0.223248  0.017747 0.090277       NaN              NaN
+            gpt-4o-mini     rp10 mean_H_renorm_bits OLS-CR(seed)   2845 slope DiD S-P -0.004631 0.013715 -0.033336  0.024074 0.739304       NaN         0.909913
+            gpt-4o-mini     rp10 mean_H_renorm_bits OLS-CR(seed)   2845 slope DiD S-B -0.028215 0.012213 -0.053778 -0.002652 0.032273       NaN              NaN
+            gpt-4o-mini     rp10 mean_H_renorm_bits OLS-CR(seed)   2845 slope DiD P-B -0.023584 0.008507 -0.041388 -0.005779 0.012130       NaN              NaN
+          llama-3.3-70b     rp10 mean_H_renorm_bits OLS-CR(seed)   2914 level DiD S-P  0.014214 0.017719 -0.022871  0.051299 0.432352       NaN         0.714952
+          llama-3.3-70b     rp10 mean_H_renorm_bits OLS-CR(seed)   2914 level DiD S-B  0.049514 0.018648  0.010484  0.088544 0.015624       NaN              NaN
+          llama-3.3-70b     rp10 mean_H_renorm_bits OLS-CR(seed)   2914 level DiD P-B  0.035300 0.017091 -0.000472  0.071072 0.052803       NaN              NaN
+          llama-3.3-70b     rp10 mean_H_renorm_bits OLS-CR(seed)   2914 slope DiD S-P  0.003319 0.002264 -0.001420  0.008058 0.159027       NaN         0.714952
+          llama-3.3-70b     rp10 mean_H_renorm_bits OLS-CR(seed)   2914 slope DiD S-B -0.001835 0.003460 -0.009076  0.005406 0.602046       NaN              NaN
+          llama-3.3-70b     rp10 mean_H_renorm_bits OLS-CR(seed)   2914 slope DiD P-B -0.005154 0.003016 -0.011467  0.001159 0.103772       NaN              NaN
+             qwen3-235b     rp10 mean_H_renorm_bits OLS-CR(seed)   2150 level DiD S-P -0.050192 0.047273 -0.149137  0.048752 0.301662       NaN         0.714952
+             qwen3-235b     rp10 mean_H_renorm_bits OLS-CR(seed)   2150 level DiD S-B  0.005319 0.049497 -0.098280  0.108918 0.915548       NaN              NaN
+             qwen3-235b     rp10 mean_H_renorm_bits OLS-CR(seed)   2150 level DiD P-B  0.055511 0.053344 -0.056138  0.167161 0.311106       NaN              NaN
+             qwen3-235b     rp10 mean_H_renorm_bits OLS-CR(seed)   2150 slope DiD S-P  0.000011 0.009091 -0.019015  0.019038 0.999027       NaN         0.999027
+             qwen3-235b     rp10 mean_H_renorm_bits OLS-CR(seed)   2150 slope DiD S-B -0.010346 0.009658 -0.030560  0.009867 0.297449       NaN              NaN
+             qwen3-235b     rp10 mean_H_renorm_bits OLS-CR(seed)   2150 slope DiD P-B -0.010357 0.009385 -0.030001  0.009286 0.283558       NaN              NaN
+pooled (mean of models)     rp10 mean_H_renorm_bits OLS-CR(seed)   7909 level DiD S-P -0.058880 0.035090 -0.132324  0.014563 0.109720       NaN         0.714952
+pooled (mean of models)     rp10 mean_H_renorm_bits OLS-CR(seed)   7909 level DiD S-B -0.062787 0.028112 -0.121626 -0.003948 0.037738       NaN              NaN
+pooled (mean of models)     rp10 mean_H_renorm_bits OLS-CR(seed)   7909 level DiD P-B -0.003907 0.029302 -0.065236  0.057423 0.895338       NaN              NaN
+pooled (mean of models)     rp10 mean_H_renorm_bits OLS-CR(seed)   7909 slope DiD S-P -0.000266 0.006503 -0.013878  0.013346 0.967819       NaN         0.999027
+pooled (mean of models)     rp10 mean_H_renorm_bits OLS-CR(seed)   7909 slope DiD S-B -0.013439 0.005190 -0.024301 -0.002577 0.017979       NaN              NaN
+pooled (mean of models)     rp10 mean_H_renorm_bits OLS-CR(seed)   7909 slope DiD P-B -0.013173 0.003619 -0.020747 -0.005599 0.001741       NaN              NaN
+            gpt-4o-mini  readdec mean_H_renorm_bits OLS-CR(seed)   1894 level DiD S-P -0.141453 0.115446 -0.383084  0.100177 0.235443       NaN         0.714952
+            gpt-4o-mini  readdec mean_H_renorm_bits OLS-CR(seed)   1894 level DiD S-B -0.251835 0.093608 -0.447760 -0.055910 0.014489       NaN              NaN
+            gpt-4o-mini  readdec mean_H_renorm_bits OLS-CR(seed)   1894 level DiD P-B -0.110382 0.083201 -0.284524  0.063761 0.200340       NaN              NaN
+            gpt-4o-mini  readdec mean_H_renorm_bits OLS-CR(seed)   1894 slope DiD S-P -0.017837 0.020617 -0.060989  0.025315 0.397746       NaN         0.714952
+            gpt-4o-mini  readdec mean_H_renorm_bits OLS-CR(seed)   1894 slope DiD S-B -0.043824 0.014480 -0.074131 -0.013516 0.006942       NaN              NaN
+            gpt-4o-mini  readdec mean_H_renorm_bits OLS-CR(seed)   1894 slope DiD P-B -0.025987 0.013028 -0.053255  0.001281 0.060627       NaN              NaN
+          llama-3.3-70b  readdec mean_H_renorm_bits OLS-CR(seed)   1519 level DiD S-P  0.000159 0.000432 -0.000745  0.001063 0.717065       NaN         0.909913
+          llama-3.3-70b  readdec mean_H_renorm_bits OLS-CR(seed)   1519 level DiD S-B -0.001836 0.001789 -0.005581  0.001909 0.317625       NaN              NaN
+          llama-3.3-70b  readdec mean_H_renorm_bits OLS-CR(seed)   1519 level DiD P-B -0.001995 0.002068 -0.006323  0.002333 0.346766       NaN              NaN
+          llama-3.3-70b  readdec mean_H_renorm_bits OLS-CR(seed)   1519 slope DiD S-P  0.000038 0.000130 -0.000233  0.000310 0.770881       NaN         0.913637
+          llama-3.3-70b  readdec mean_H_renorm_bits OLS-CR(seed)   1519 slope DiD S-B  0.000144 0.000193 -0.000259  0.000548 0.463978       NaN              NaN
+          llama-3.3-70b  readdec mean_H_renorm_bits OLS-CR(seed)   1519 slope DiD P-B  0.000106 0.000164 -0.000237  0.000449 0.526627       NaN              NaN
+             qwen3-235b  readdec mean_H_renorm_bits OLS-CR(seed)   1750 level DiD S-P -0.049110 0.056209 -0.166756  0.068537 0.393189       NaN         0.714952
+             qwen3-235b  readdec mean_H_renorm_bits OLS-CR(seed)   1750 level DiD S-B  0.035315 0.055404 -0.080646  0.151277 0.531458       NaN              NaN
+             qwen3-235b  readdec mean_H_renorm_bits OLS-CR(seed)   1750 level DiD P-B  0.084425 0.065086 -0.051800  0.220651 0.210112       NaN              NaN
+             qwen3-235b  readdec mean_H_renorm_bits OLS-CR(seed)   1750 slope DiD S-P -0.005583 0.008392 -0.023147  0.011982 0.513872       NaN         0.714952
+             qwen3-235b  readdec mean_H_renorm_bits OLS-CR(seed)   1750 slope DiD S-B -0.011942 0.009360 -0.031533  0.007649 0.217386       NaN              NaN
+             qwen3-235b  readdec mean_H_renorm_bits OLS-CR(seed)   1750 slope DiD P-B -0.006359 0.011552 -0.030538  0.017820 0.588415       NaN              NaN
+pooled (mean of models)  readdec mean_H_renorm_bits OLS-CR(seed)   5163 level DiD S-P -0.062745 0.045955 -0.158930  0.033439 0.188084       NaN         0.714952
+pooled (mean of models)  readdec mean_H_renorm_bits OLS-CR(seed)   5163 level DiD S-B -0.072427 0.035807 -0.147372  0.002519 0.057411       NaN              NaN
+pooled (mean of models)  readdec mean_H_renorm_bits OLS-CR(seed)   5163 level DiD P-B -0.009681 0.041762 -0.097090  0.077727 0.819158       NaN              NaN
+pooled (mean of models)  readdec mean_H_renorm_bits OLS-CR(seed)   5163 slope DiD S-P -0.007859 0.007828 -0.024244  0.008525 0.327999       NaN         0.714952
+pooled (mean of models)  readdec mean_H_renorm_bits OLS-CR(seed)   5163 slope DiD S-B -0.018673 0.005805 -0.030824 -0.006522 0.004543       NaN              NaN
+pooled (mean of models)  readdec mean_H_renorm_bits OLS-CR(seed)   5163 slope DiD P-B -0.010814 0.005275 -0.021854  0.000226 0.054399       NaN              NaN
+
+        model     spec             metric    estimator  n_obs    term       est       se    ci_low   ci_high            p converged  p_bh_DiD_SP_OLS
+  gpt-4o-mini     main mean_H_renorm_bits OLS-CR(seed)   2947 level S -0.194439 0.075007 -0.351430 -0.037449 1.787655e-02       NaN              NaN
+  gpt-4o-mini     main mean_H_renorm_bits OLS-CR(seed)   2947 level P -0.092409 0.041704 -0.179697 -0.005122 3.911098e-02       NaN              NaN
+  gpt-4o-mini     main mean_H_renorm_bits OLS-CR(seed)   2947 level B  0.010643 0.052258 -0.098735  0.120021 8.407874e-01       NaN              NaN
+  gpt-4o-mini     main mean_H_renorm_bits OLS-CR(seed)   2947 slope S -0.060424 0.011499 -0.084491 -0.036356 4.515205e-05       NaN              NaN
+  gpt-4o-mini     main mean_H_renorm_bits OLS-CR(seed)   2947 slope P -0.047762 0.007749 -0.063981 -0.031543 6.354385e-06       NaN              NaN
+  gpt-4o-mini     main mean_H_renorm_bits OLS-CR(seed)   2947 slope B -0.024155 0.006239 -0.037214 -0.011096 1.027590e-03       NaN              NaN
+  gpt-4o-mini     main mean_H_renorm_bits      MixedLM   2947 level S -0.191415 0.059051 -0.307153 -0.075678 1.188905e-03     False              NaN
+  gpt-4o-mini     main mean_H_renorm_bits      MixedLM   2947 level P -0.092355 0.058931 -0.207857  0.023148 1.170758e-01     False              NaN
+  gpt-4o-mini     main mean_H_renorm_bits      MixedLM   2947 level B  0.010893 0.057739 -0.102273  0.124058 8.503615e-01     False              NaN
+  gpt-4o-mini     main mean_H_renorm_bits      MixedLM   2947 slope S -0.061151 0.011978 -0.084628 -0.037674 3.306129e-07     False              NaN
+  gpt-4o-mini     main mean_H_renorm_bits      MixedLM   2947 slope P -0.047111 0.011911 -0.070455 -0.023767 7.639296e-05     False              NaN
+  gpt-4o-mini     main mean_H_renorm_bits      MixedLM   2947 slope B -0.024115 0.011807 -0.047257 -0.000973 4.111265e-02     False              NaN
+llama-3.3-70b     main mean_H_renorm_bits OLS-CR(seed)   2977 level S -0.021391 0.013883 -0.050449  0.007666 1.398486e-01       NaN              NaN
+llama-3.3-70b     main mean_H_renorm_bits OLS-CR(seed)   2977 level P -0.031075 0.017715 -0.068153  0.006003 9.551472e-02       NaN              NaN
+llama-3.3-70b     main mean_H_renorm_bits OLS-CR(seed)   2977 level B -0.066302 0.015497 -0.098737 -0.033867 4.058138e-04       NaN              NaN
+llama-3.3-70b     main mean_H_renorm_bits OLS-CR(seed)   2977 slope S -0.020966 0.002643 -0.026498 -0.015433 1.905228e-07       NaN              NaN
+llama-3.3-70b     main mean_H_renorm_bits OLS-CR(seed)   2977 slope P -0.025031 0.002705 -0.030693 -0.019369 1.811359e-08       NaN              NaN
+llama-3.3-70b     main mean_H_renorm_bits OLS-CR(seed)   2977 slope B -0.019936 0.003057 -0.026333 -0.013538 3.016878e-06       NaN              NaN
+llama-3.3-70b     main mean_H_renorm_bits      MixedLM   2977 level S -0.021177 0.016514 -0.053544  0.011189 1.997063e-01     False              NaN
+llama-3.3-70b     main mean_H_renorm_bits      MixedLM   2977 level P -0.030283 0.016776 -0.063163  0.002597 7.105023e-02     False              NaN
+llama-3.3-70b     main mean_H_renorm_bits      MixedLM   2977 level B -0.066351 0.016142 -0.097989 -0.034714 3.947907e-05     False              NaN
+llama-3.3-70b     main mean_H_renorm_bits      MixedLM   2977 slope S -0.021149 0.003449 -0.027909 -0.014389 8.684654e-10     False              NaN
+llama-3.3-70b     main mean_H_renorm_bits      MixedLM   2977 slope P -0.025327 0.003514 -0.032213 -0.018440 5.669551e-13     False              NaN
+llama-3.3-70b     main mean_H_renorm_bits      MixedLM   2977 slope B -0.019926 0.003386 -0.026563 -0.013290 3.977101e-09     False              NaN
+   qwen3-235b     main mean_H_renorm_bits OLS-CR(seed)   2228 level S -0.059415 0.035287 -0.133271  0.014442 1.085869e-01       NaN              NaN
+   qwen3-235b     main mean_H_renorm_bits OLS-CR(seed)   2228 level P -0.019447 0.033422 -0.089400  0.050505 5.674903e-01       NaN              NaN
+   qwen3-235b     main mean_H_renorm_bits OLS-CR(seed)   2228 level B -0.066284 0.038107 -0.146043  0.013475 9.813952e-02       NaN              NaN
+   qwen3-235b     main mean_H_renorm_bits OLS-CR(seed)   2228 slope S -0.027926 0.005725 -0.039908 -0.015943 1.044796e-04       NaN              NaN
+   qwen3-235b     main mean_H_renorm_bits OLS-CR(seed)   2228 slope P -0.023285 0.006546 -0.036986 -0.009584 2.104328e-03       NaN              NaN
+   qwen3-235b     main mean_H_renorm_bits OLS-CR(seed)   2228 slope B -0.016176 0.007392 -0.031647 -0.000705 4.133766e-02       NaN              NaN
+   qwen3-235b     main mean_H_renorm_bits      MixedLM   2228 level S -0.072065 0.027561 -0.126084 -0.018045 8.930902e-03      True              NaN
+   qwen3-235b     main mean_H_renorm_bits      MixedLM   2228 level P -0.028785 0.027684 -0.083045  0.025475 2.984500e-01      True              NaN
+   qwen3-235b     main mean_H_renorm_bits      MixedLM   2228 level B -0.067054 0.025180 -0.116407 -0.017702 7.745585e-03      True              NaN
+   qwen3-235b     main mean_H_renorm_bits      MixedLM   2228 slope S -0.025212 0.005895 -0.036766 -0.013659 1.892837e-05      True              NaN
+   qwen3-235b     main mean_H_renorm_bits      MixedLM   2228 slope P -0.022016 0.006141 -0.034052 -0.009981 3.367682e-04      True              NaN
+   qwen3-235b     main mean_H_renorm_bits      MixedLM   2228 slope B -0.014695 0.005389 -0.025257 -0.004133 6.392418e-03      True              NaN
+  gpt-4o-mini exposure mean_H_renorm_bits OLS-CR(seed)   2947 level S -0.059632 0.027062 -0.116273 -0.002992 4.009131e-02       NaN              NaN
+  gpt-4o-mini exposure mean_H_renorm_bits OLS-CR(seed)   2947 level P  0.007239 0.041424 -0.079463  0.093940 8.631271e-01       NaN              NaN
+  gpt-4o-mini exposure mean_H_renorm_bits OLS-CR(seed)   2947 slope S -0.009062 0.004886 -0.019289  0.001164 7.921336e-02       NaN              NaN
+  gpt-4o-mini exposure mean_H_renorm_bits OLS-CR(seed)   2947 slope P -0.002577 0.005039 -0.013124  0.007970 6.149955e-01       NaN              NaN
+llama-3.3-70b exposure mean_H_renorm_bits OLS-CR(seed)   2977 level S -0.028251 0.011746 -0.052836 -0.003666 2.652062e-02       NaN              NaN
+llama-3.3-70b exposure mean_H_renorm_bits OLS-CR(seed)   2977 level P -0.014424 0.017315 -0.050665  0.021818 4.151848e-01       NaN              NaN
+llama-3.3-70b exposure mean_H_renorm_bits OLS-CR(seed)   2977 slope S -0.014457 0.001943 -0.018523 -0.010391 4.826273e-07       NaN              NaN
+llama-3.3-70b exposure mean_H_renorm_bits OLS-CR(seed)   2977 slope P -0.014798 0.002318 -0.019650 -0.009945 4.023146e-06       NaN              NaN
+   qwen3-235b exposure mean_H_renorm_bits OLS-CR(seed)   2228 level S  0.010013 0.035031 -0.063307  0.083333 7.780984e-01       NaN              NaN
+   qwen3-235b exposure mean_H_renorm_bits OLS-CR(seed)   2228 level P  0.015891 0.035286 -0.057964  0.089745 6.575621e-01       NaN              NaN
+   qwen3-235b exposure mean_H_renorm_bits OLS-CR(seed)   2228 slope S -0.016311 0.005413 -0.027640 -0.004981 7.148802e-03       NaN              NaN
+   qwen3-235b exposure mean_H_renorm_bits OLS-CR(seed)   2228 slope P -0.014812 0.006603 -0.028632 -0.000992 3.699646e-02       NaN              NaN
+  gpt-4o-mini     rp10 mean_H_renorm_bits OLS-CR(seed)   2845 level S -0.231990 0.078151 -0.395562 -0.068418 7.893298e-03       NaN              NaN
+  gpt-4o-mini     rp10 mean_H_renorm_bits OLS-CR(seed)   2845 level P -0.091734 0.041647 -0.178902 -0.004566 4.016424e-02       NaN              NaN
+  gpt-4o-mini     rp10 mean_H_renorm_bits OLS-CR(seed)   2845 level B  0.011016 0.052224 -0.098290  0.120322 8.351850e-01       NaN              NaN
+  gpt-4o-mini     rp10 mean_H_renorm_bits OLS-CR(seed)   2845 slope S -0.052322 0.012855 -0.079227 -0.025417 6.526081e-04       NaN              NaN
+  gpt-4o-mini     rp10 mean_H_renorm_bits OLS-CR(seed)   2845 slope P -0.047691 0.007770 -0.063953 -0.031429 6.705046e-06       NaN              NaN
+  gpt-4o-mini     rp10 mean_H_renorm_bits OLS-CR(seed)   2845 slope B -0.024107 0.006264 -0.037217 -0.010997 1.082213e-03       NaN              NaN
+llama-3.3-70b     rp10 mean_H_renorm_bits OLS-CR(seed)   2914 level S -0.017088 0.015247 -0.048999  0.014824 2.763586e-01       NaN              NaN
+llama-3.3-70b     rp10 mean_H_renorm_bits OLS-CR(seed)   2914 level P -0.031302 0.017609 -0.068158  0.005554 9.148204e-02       NaN              NaN
+llama-3.3-70b     rp10 mean_H_renorm_bits OLS-CR(seed)   2914 level B -0.066602 0.015406 -0.098847 -0.034356 3.666444e-04       NaN              NaN
+llama-3.3-70b     rp10 mean_H_renorm_bits OLS-CR(seed)   2914 slope S -0.021766 0.002563 -0.027130 -0.016403 6.804863e-08       NaN              NaN
+llama-3.3-70b     rp10 mean_H_renorm_bits OLS-CR(seed)   2914 slope P -0.025086 0.002708 -0.030753 -0.019418 1.776352e-08       NaN              NaN
+llama-3.3-70b     rp10 mean_H_renorm_bits OLS-CR(seed)   2914 slope B -0.019932 0.003076 -0.026370 -0.013493 3.295029e-06       NaN              NaN
+   qwen3-235b     rp10 mean_H_renorm_bits OLS-CR(seed)   2150 level S -0.060812 0.041273 -0.147198  0.025574 1.570166e-01       NaN              NaN
+   qwen3-235b     rp10 mean_H_renorm_bits OLS-CR(seed)   2150 level P -0.010620 0.030828 -0.075144  0.053905 7.342674e-01       NaN              NaN
+   qwen3-235b     rp10 mean_H_renorm_bits OLS-CR(seed)   2150 level B -0.066131 0.038034 -0.145738  0.013475 9.826137e-02       NaN              NaN
+   qwen3-235b     rp10 mean_H_renorm_bits OLS-CR(seed)   2150 slope S -0.026438 0.008095 -0.043381 -0.009495 4.064616e-03       NaN              NaN
+   qwen3-235b     rp10 mean_H_renorm_bits OLS-CR(seed)   2150 slope P -0.026449 0.008191 -0.043594 -0.009305 4.418231e-03       NaN              NaN
+   qwen3-235b     rp10 mean_H_renorm_bits OLS-CR(seed)   2150 slope B -0.016092 0.007357 -0.031490 -0.000694 4.142022e-02       NaN              NaN
+  gpt-4o-mini  readdec mean_H_renorm_bits OLS-CR(seed)   1894 level S -0.238658 0.109353 -0.467538 -0.009779 4.183344e-02       NaN              NaN
+  gpt-4o-mini  readdec mean_H_renorm_bits OLS-CR(seed)   1894 level P -0.097205 0.065927 -0.235193  0.040783 1.567452e-01       NaN              NaN
+  gpt-4o-mini  readdec mean_H_renorm_bits OLS-CR(seed)   1894 level B  0.013177 0.070357 -0.134083  0.160436 8.534241e-01       NaN              NaN
+  gpt-4o-mini  readdec mean_H_renorm_bits OLS-CR(seed)   1894 slope S -0.077284 0.014757 -0.108170 -0.046398 4.692857e-05       NaN              NaN
+  gpt-4o-mini  readdec mean_H_renorm_bits OLS-CR(seed)   1894 slope P -0.059447 0.012518 -0.085648 -0.033246 1.396518e-04       NaN              NaN
+  gpt-4o-mini  readdec mean_H_renorm_bits OLS-CR(seed)   1894 slope B -0.033460 0.008412 -0.051067 -0.015854 8.063650e-04       NaN              NaN
+llama-3.3-70b  readdec mean_H_renorm_bits OLS-CR(seed)   1519 level S  0.000167 0.000365 -0.000597  0.000931 6.524546e-01       NaN              NaN
+llama-3.3-70b  readdec mean_H_renorm_bits OLS-CR(seed)   1519 level P  0.000008 0.000305 -0.000630  0.000646 9.786799e-01       NaN              NaN
+llama-3.3-70b  readdec mean_H_renorm_bits OLS-CR(seed)   1519 level B  0.002003 0.001851 -0.001871  0.005878 2.926885e-01       NaN              NaN
+llama-3.3-70b  readdec mean_H_renorm_bits OLS-CR(seed)   1519 slope S  0.000057 0.000116 -0.000186  0.000300 6.294958e-01       NaN              NaN
+llama-3.3-70b  readdec mean_H_renorm_bits OLS-CR(seed)   1519 slope P  0.000019 0.000086 -0.000161  0.000198 8.309695e-01       NaN              NaN
+llama-3.3-70b  readdec mean_H_renorm_bits OLS-CR(seed)   1519 slope B -0.000087 0.000150 -0.000401  0.000227 5.675737e-01       NaN              NaN
+   qwen3-235b  readdec mean_H_renorm_bits OLS-CR(seed)   1750 level S -0.049638 0.040263 -0.133908  0.034633 2.326696e-01       NaN              NaN
+   qwen3-235b  readdec mean_H_renorm_bits OLS-CR(seed)   1750 level P -0.000528 0.041951 -0.088331  0.087276 9.900949e-01       NaN              NaN
+   qwen3-235b  readdec mean_H_renorm_bits OLS-CR(seed)   1750 level B -0.084953 0.040170 -0.169029 -0.000877 4.788292e-02       NaN              NaN
+   qwen3-235b  readdec mean_H_renorm_bits OLS-CR(seed)   1750 slope S -0.029869 0.007392 -0.045342 -0.014397 6.983416e-04       NaN              NaN
+   qwen3-235b  readdec mean_H_renorm_bits OLS-CR(seed)   1750 slope P -0.024286 0.011055 -0.047426 -0.001147 4.064158e-02       NaN              NaN
+   qwen3-235b  readdec mean_H_renorm_bits OLS-CR(seed)   1750 slope B -0.017927 0.007196 -0.032990 -0.002865 2.214986e-02       NaN              NaN
