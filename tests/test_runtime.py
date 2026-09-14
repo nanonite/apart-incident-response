@@ -238,11 +238,12 @@ class RuntimeContractTests(unittest.TestCase):
 
     def test_openrouter_model_limits_use_the_configured_agent_envelope(self):
         with tempfile.TemporaryDirectory() as temp:
-            workspace = create_isolated_workspace(Path(temp), self.identity())
+            identity = self.identity()
+            workspace = create_isolated_workspace(Path(temp), identity)
             config = self.config(per_agent_token_budget=17).for_model(
                 "openrouter/openai/gpt-4o-mini"
             )
-            path = _prepare_model_limits(workspace, config)
+            path = _prepare_model_limits(workspace, config, identity)
             payload = json.loads(path.read_text(encoding="utf-8"))
             provider = payload["providers"]["openrouter"]
             self.assertEqual(
