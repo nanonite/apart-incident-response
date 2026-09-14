@@ -50,14 +50,30 @@ def cmd_init(args) -> None:
         say(f"scenario already exists in {exp} (use --force to regenerate)")
         return
     exp.mkdir(parents=True, exist_ok=True)
-    S.generate("schema-brand-v1").save(exp / "scenario.json")
-    S.generate("schema-brand-donor-v1").save(exp / "donor_scenario.json")
+    if args.scenario_from:
+        # reuse an earlier experiment's scenario (same assets, identifiers and passwords) for comparability
+        for name in ("scenario.json", "donor_scenario.json"):
+            shutil.copy2(args.scenario_from / name, exp / name)
+    else:
+        S.generate("schema-brand-v1").save(exp / "scenario.json")
+        S.generate("schema-brand-donor-v1").save(exp / "donor_scenario.json")
     (exp / "experiment.json").write_text(json.dumps({
-        "config": asdict(H.RunConfig()), "models": {k: m.to_dict() for k, m in H.MODELS.items()},
+        "config": asdict(H.RunConfig(temperature=args.temperature)),
+        "scenario_from": str(args.scenario_from) if args.scenario_from else None,
+        "models": {k: m.to_dict() for k, m in H.MODELS.items()},
         "conditions": list(H.CONDITIONS), "prompt_version": H.PROMPT_VERSION,
         "system_prompt": H.SYSTEM_PROMPT, "statement": S.STATEMENT,
     }, indent=1))
     say(f"initialised {exp}")
+
+
+def run_config(exp: Path) -> H.RunConfig:
+    """The RunConfig frozen at init (older experiments without a file fall back to defaults)."""
+    path = exp / "experiment.json"
+    if not path.exists():
+        return H.RunConfig()
+    stored = json.loads(path.read_text()).get("config", {})
+    return H.RunConfig(**{k: v for k, v in stored.items() if k in H.RunConfig.__dataclass_fields__})
 
 
 def _models(args) -> list[H.ModelSpec]:
@@ -67,6 +83,8 @@ def _models(args) -> list[H.ModelSpec]:
 
 def _execute(jobs: list[dict], args, budget: H.Budget) -> list[dict]:
     api_key = H.load_api_key()
+    cfg = run_config(args.exp)
+    say(f"  run config: temperature={cfg.temperature} max_turns={cfg.max_turns} switch_turn={cfg.switch_turn}")
     results: list[dict] = []
     stop = threading.Event()
 
@@ -80,7 +98,7 @@ def _execute(jobs: list[dict], args, budget: H.Budget) -> list[dict]:
         if out.exists():
             shutil.rmtree(out)
         try:
-            result = H.run_one(api_key=api_key, budget=budget, cfg=H.RunConfig(), **{k: v for k, v in job.items() if k != "label"})
+            result = H.run_one(api_key=api_key, budget=budget, cfg=cfg, **{k: v for k, v in job.items() if k != "label"})
         except H.BudgetExceeded as exc:
             stop.set()
             say(f"  BUDGET STOP: {exc}")
@@ -213,6 +231,8 @@ def main() -> None:
         p.add_argument("--budget", type=float, default=10.0)
         p.add_argument("--force", action="store_true")
         p.add_argument("--phase", default="full")
+        p.add_argument("--temperature", type=float, default=1.0, help="init only: sampling temperature for every call")
+        p.add_argument("--scenario-from", type=Path, default=None, help="init only: copy scenario files from this experiment")
     args = parser.parse_args()
     args.exp = args.exp.resolve()
     {"init": cmd_init, "gate": cmd_gate, "donor": cmd_donor, "full": cmd_full, "analyze": cmd_analyze}[args.command](args)

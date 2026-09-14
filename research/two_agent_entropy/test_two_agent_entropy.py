@@ -156,6 +156,21 @@ class EntropyTests(unittest.TestCase):
         self.assertAlmostEqual(out["H_system_bits"], out["H_joint_direct_bits"])
         self.assertLess(E.shuffled_mi(q1, q2)["I_bits"], 0.1)
 
+    def test_restore_temperature_recovers_model_distribution(self):
+        logits = [2.0, 1.0, 0.1, -1.0]
+        def logsoftmax(z):
+            m = max(z); lz = m + math.log(sum(math.exp(v - m) for v in z)); return [v - lz for v in z]
+        raw = logsoftmax(logits)
+        scaled = logsoftmax([v / 0.5 for v in logits])  # what a post-temperature provider returns at T=0.5
+        entry = lambda lps: {"token": "a", "logprob": lps[0],
+                             "top_logprobs": [{"token": t, "logprob": lp} for t, lp in zip("abcd", lps)]}
+        restored = E.restore_temperature([entry(scaled)], 0.5)[0]
+        for got, want in zip(restored["top_logprobs"], raw):
+            self.assertAlmostEqual(got["logprob"], want, places=9)
+        self.assertAlmostEqual(E.token_metrics(restored)["H_renorm_bits"], E.token_metrics(entry(raw))["H_renorm_bits"], places=9)
+        with self.assertRaises(ValueError):
+            E.restore_temperature([entry(raw)], 0.0)
+
     def test_hard_mi(self):
         out = E.hard_mi(["R", "W"] * 10, ["R", "W"] * 10)
         self.assertAlmostEqual(out["I_bits"], 1.0)
@@ -210,6 +225,22 @@ class HarnessFlowTests(unittest.TestCase):
         verdict = checker.check_run(turns, [], SC, condition="base")
         self.assertIn("LEAK", [f["flag"] for f in verdict["flags"]])
         self.assertFalse(verdict["valid"])
+
+    def test_logprob_transform_only_for_post_temperature_models(self):
+        cfg = H.RunConfig(max_turns=2, early_stop_turn=2, switch_turn=8, temperature=0.5)
+        for label, expected in (("qwen3-235b", "post_temperature_restored(T=0.5)"), ("gpt-4o-mini", "none")):
+            with tempfile.TemporaryDirectory() as d:
+                H.run_one(sc=SC, model=H.MODELS[label], condition="base", seed=1, cfg=cfg, out_dir=Path(d),
+                          phase="test", api_key=None, budget=None, call_fn=scripted(lambda a, t, u: "READ_LOG"))
+                rows = [json.loads(l) for l in (Path(d) / "turns.jsonl").read_text().split("\n") if l.strip()]
+                self.assertEqual({r["logprob_transform"] for r in rows}, {expected})
+                self.assertEqual({r["temperature"] for r in rows}, {0.5})
+        cfg0 = H.RunConfig(max_turns=1, early_stop_turn=1, switch_turn=8, temperature=0.0)
+        with tempfile.TemporaryDirectory() as d:
+            H.run_one(sc=SC, model=H.MODELS["qwen3-235b"], condition="base", seed=1, cfg=cfg0, out_dir=Path(d),
+                      phase="test", api_key=None, budget=None, call_fn=scripted(lambda a, t, u: "READ_LOG"))
+            rows = [json.loads(l) for l in (Path(d) / "turns.jsonl").read_text().split("\n") if l.strip()]
+            self.assertEqual({r["logprob_transform"] for r in rows}, {"none"})
 
     def test_parse_action_variants(self):
         self.assertEqual(H.parse_action("**READ_LOG**")["name"], "READ_LOG")

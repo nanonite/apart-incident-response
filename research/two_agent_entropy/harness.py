@@ -57,6 +57,9 @@ class ModelSpec:
     label: str
     slug: str
     provider: str
+    # True when the provider returns logprobs AFTER temperature scaling (verified empirically:
+    # Google Vertex divides by T for 0 < T != 1; OpenAI and Novita return model logprobs).
+    logprobs_post_temperature: bool = False
 
     def to_dict(self) -> dict[str, str]:
         return asdict(self)
@@ -65,7 +68,7 @@ class ModelSpec:
 MODELS = {
     "gpt-4o-mini": ModelSpec("gpt-4o-mini", "openai/gpt-4o-mini", "openai"),
     "llama-3.3-70b": ModelSpec("llama-3.3-70b", "meta-llama/llama-3.3-70b-instruct", "novita"),
-    "qwen3-235b": ModelSpec("qwen3-235b", "qwen/qwen3-235b-a22b-2507", "google-vertex"),
+    "qwen3-235b": ModelSpec("qwen3-235b", "qwen/qwen3-235b-a22b-2507", "google-vertex", logprobs_post_temperature=True),
 }
 
 
@@ -426,8 +429,11 @@ def run_one(*, sc: Scenario, model: ModelSpec, condition: str, seed: int, cfg: R
                 rec |= {"action": "unparsed"}
                 reply = "Your message did not contain a valid action. Reply with exactly one action line."
 
-            metrics = entropy.call_metrics(comp.raw_logprobs)
-            q = entropy.action_distribution(comp.raw_logprobs)
+            restore = model.logprobs_post_temperature and cfg.temperature > 0 and cfg.temperature != 1.0
+            metric_tokens = entropy.restore_temperature(comp.raw_logprobs, cfg.temperature) if restore else comp.raw_logprobs
+            logprob_transform = f"post_temperature_restored(T={cfg.temperature})" if restore else "none"
+            metrics = entropy.call_metrics(metric_tokens)
+            q = entropy.action_distribution(metric_tokens)
             tag = f"t{turn:02d}_{aid}"
             writer.write("turns", {
                 **base_row, **rec,
@@ -439,12 +445,14 @@ def run_one(*, sc: Scenario, model: ModelSpec, condition: str, seed: int, cfg: R
                 "messages_sent": messages, "completion_text": comp.text, "harness_reply": reply,
                 "log_size_before": len(log.entries) - (1 if rec.get("action") == "write_log" else 0),
                 "decrypted_after": list(st.decrypted), "submitted_after": st.submitted,
+                "temperature": cfg.temperature, "logprob_transform": logprob_transform,
                 "entropy": metrics, "q_action": q["q"], "action_token": {k: v for k, v in q.items() if k != "q"},
                 "raw_response_file": f"api_raw/{tag}.json",
             })
             key = {"run_id": run_id, "turn": turn, "agent": aid, "position_in_turn": position}
             writer.write("logprobs_raw", {**key, "tokens": comp.raw_logprobs})
-            writer.write("entropy_tokens", {**key, "tokens": [entropy.token_metrics(t) for t in comp.raw_logprobs]})
+            writer.write("entropy_tokens", {**key, "logprob_transform": logprob_transform,
+                                            "tokens": [entropy.token_metrics(t) for t in metric_tokens]})
             writer.raw(tag, {"request": comp.request_payload, "response": comp.raw_response})
             st.last_action_line = rec["action_line"]
             st.last_result = reply
