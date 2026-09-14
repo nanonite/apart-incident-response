@@ -17,7 +17,7 @@
     "per_agent_tool_call_budget": 32,
     "aggregate_token_budget": 102000,
     "aggregate_tool_call_budget": 96,
-    "timeout_seconds": 300
+    "timeout_seconds": 600
   },
   "isolation": {
     "sandbox": "bubblewrap",
