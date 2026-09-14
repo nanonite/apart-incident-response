@@ -1,0 +1,37 @@
+{
+  "ended_at": "2026-09-14T01:50:55.898844Z",
+  "event_counts": {
+    "agent_end": 4,
+    "agent_settled": 1,
+    "agent_start": 4,
+    "auto_retry_end": 1,
+    "auto_retry_start": 3,
+    "message_end": 13,
+    "message_start": 13,
+    "message_update": 981,
+    "session": 1,
+    "tool_execution_end": 4,
+    "tool_execution_start": 4,
+    "turn_end": 8,
+    "turn_start": 8
+  },
+  "failure_reason": "Pi provider error: Connection error.",
+  "identity": {
+    "agent_id": "agent-1",
+    "capability_profile": "task-diagnostic-v1",
+    "condition": "C0",
+    "credential_id": "e48b85037887ac9bf11eb09848486766abf96b2190aee7aabb9f69fc82693cd5",
+    "run_id": "s0001-C0",
+    "seed": 1,
+    "task_id": "task-1"
+  },
+  "logits": null,
+  "provider_started_at": "2026-09-14T01:48:10.586537Z",
+  "provider_tokens": 9003,
+  "schema_version": 1,
+  "started_at": "2026-09-14T01:48:10.543525Z",
+  "status": "failed",
+  "tool_call_count": 4,
+  "turn_count": 8,
+  "wall_clock_seconds": 165.367753
+}

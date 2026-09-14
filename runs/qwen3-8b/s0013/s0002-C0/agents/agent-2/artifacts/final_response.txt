@@ -1,0 +1,5 @@
+The system returned no matches for any queries, indicating no evidence files are available in the task fixture. Since I cannot access or analyze evidence to diagnose the incident, I must conclude:
+
+**Diagnosis:** Insufficient evidence provided to determine the root cause. No files were found matching search criteria, and no task_read permissions were granted for any files.
+
+Please provide the necessary evidence files or clarify the incident details so I can assist further.

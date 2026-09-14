@@ -1,0 +1,245 @@
+{
+  "artifacts": {
+    "conditions": {
+      "C0": {
+        "agents": {
+          "agent-1": "s0001-C0/agents/agent-1/artifacts/timeline.json",
+          "agent-2": "s0001-C0/agents/agent-2/artifacts/timeline.json"
+        },
+        "index": "s0001-C0/index.json",
+        "run_id": "s0001-C0"
+      },
+      "C1": {
+        "agents": {
+          "agent-1": "s0001-C1/agents/agent-1/artifacts/timeline.json",
+          "agent-2": "s0001-C1/agents/agent-2/artifacts/timeline.json"
+        },
+        "index": "s0001-C1/index.json",
+        "run_id": "s0001-C1"
+      },
+      "C2": {
+        "agents": {
+          "agent-1": "s0001-C2/agents/agent-1/artifacts/timeline.json",
+          "agent-2": "s0001-C2/agents/agent-2/artifacts/timeline.json"
+        },
+        "index": "s0001-C2/index.json",
+        "run_id": "s0001-C2"
+      }
+    }
+  },
+  "conditions": [
+    "C0",
+    "C1",
+    "C2"
+  ],
+  "matched_seed": 1,
+  "metrics": {
+    "C0": {
+      "U": 0.0,
+      "agent_count": 2,
+      "aggregate_token_budget": 52000,
+      "board_bytes_read": 0,
+      "board_bytes_written": 0,
+      "board_reads_R": 0,
+      "board_writes_W": 0,
+      "cadence_read_attempts": 0,
+      "completed_agents": 0,
+      "cross_agent_messages_X": 0,
+      "evidence_to_message_opportunities": 0,
+      "failures": [
+        {
+          "agent_id": "agent-1",
+          "reason": "Pi provider error: Connection error.",
+          "status": "failed"
+        },
+        {
+          "agent_id": "agent-2",
+          "reason": "agent exceeded runtime timeout",
+          "status": "timed_out"
+        }
+      ],
+      "mean_uptake_latency_seconds": null,
+      "message_read_ratio_M": 0.0,
+      "message_to_answer_opportunities": 0,
+      "pilot_claim_scope": "descriptive; no causal or inferential claim from this metric alone",
+      "private_token_owners": {
+        "ORCHID-731": [
+          "agent-2"
+        ]
+      },
+      "scheduled_board_read_opportunities": 0,
+      "schema_version": 1,
+      "submitted_agents": 0,
+      "success_per_1000_tokens": 0.0,
+      "task_success": false,
+      "task_success_rate": 0.0,
+      "total_tokens": 16544,
+      "total_tool_calls": 8,
+      "total_turns": 12,
+      "transformation_events": [],
+      "transformation_opportunities": 0,
+      "transformation_rate": 0.0,
+      "uptake": [],
+      "uptake_defined": false,
+      "uptake_definition": "recipient use after a prior board read of a seeded-token message from a declared private owner; every recipient with private exposure is excluded",
+      "uptake_events": 0,
+      "uptake_latency_seconds": [],
+      "uptake_opportunities": 0,
+      "uptake_outcomes": [],
+      "uptake_provenance_error": null,
+      "uptake_provenance_valid": true,
+      "uptake_recipients": 0,
+      "validator_outcomes": [],
+      "wall_clock_seconds": 300.211251
+    },
+    "C1": {
+      "U": 0.0,
+      "agent_count": 2,
+      "aggregate_token_budget": 52000,
+      "board_bytes_read": 0,
+      "board_bytes_written": 379,
+      "board_reads_R": 1,
+      "board_writes_W": 1,
+      "cadence_read_attempts": 1,
+      "completed_agents": 0,
+      "coordination_overhead": {
+        "extra_board_reads_vs_baseline": 1,
+        "extra_board_writes_vs_baseline": 1,
+        "extra_tokens_vs_baseline": 40180,
+        "extra_tool_calls_vs_baseline": 7
+      },
+      "cross_agent_messages_X": 0,
+      "evidence_to_message_opportunities": 1,
+      "failures": [
+        {
+          "agent_id": "agent-1",
+          "reason": "agent exceeded per-agent token budget; provider usage exceeded its claimed envelope (token overage=3071, tool-call overage=0)",
+          "status": "budget_exhausted"
+        },
+        {
+          "agent_id": "agent-2",
+          "reason": "agent exceeded per-agent token budget; provider usage exceeded its claimed envelope (token overage=1653, tool-call overage=0)",
+          "status": "budget_exhausted"
+        }
+      ],
+      "mean_uptake_latency_seconds": null,
+      "message_read_ratio_M": 0.0,
+      "message_to_answer_opportunities": 0,
+      "pilot_claim_scope": "descriptive; no causal or inferential claim from this metric alone",
+      "private_token_owners": {
+        "ORCHID-731": [
+          "agent-2"
+        ]
+      },
+      "scheduled_board_read_opportunities": 1,
+      "schema_version": 1,
+      "submitted_agents": 0,
+      "success_per_1000_tokens": 0.0,
+      "task_success": false,
+      "task_success_rate": 0.0,
+      "total_tokens": 56724,
+      "total_tool_calls": 15,
+      "total_turns": 15,
+      "transformation_events": [
+        {
+          "message_id": 1,
+          "source_agent": "agent-1",
+          "stage": "private_evidence_to_board_message",
+          "timestamp": "2026-09-14T01:53:53.588361Z",
+          "transformation_type": "message_without_seeded_token"
+        }
+      ],
+      "transformation_opportunities": 1,
+      "transformation_rate": 1.0,
+      "uptake": [],
+      "uptake_defined": false,
+      "uptake_definition": "recipient use after a prior board read of a seeded-token message from a declared private owner; every recipient with private exposure is excluded",
+      "uptake_events": 0,
+      "uptake_latency_seconds": [],
+      "uptake_opportunities": 0,
+      "uptake_outcomes": [],
+      "uptake_provenance_error": null,
+      "uptake_provenance_valid": true,
+      "uptake_recipients": 0,
+      "validator_outcomes": [],
+      "wall_clock_seconds": 81.131359
+    },
+    "C2": {
+      "U": 0.0,
+      "agent_count": 2,
+      "aggregate_token_budget": 52000,
+      "board_bytes_read": 0,
+      "board_bytes_written": 298,
+      "board_reads_R": 1,
+      "board_writes_W": 1,
+      "cadence_read_attempts": 1,
+      "completed_agents": 1,
+      "coordination_overhead": {
+        "extra_board_reads_vs_baseline": 1,
+        "extra_board_writes_vs_baseline": 1,
+        "extra_tokens_vs_baseline": 24706,
+        "extra_tool_calls_vs_baseline": 4
+      },
+      "cross_agent_messages_X": 0,
+      "evidence_to_message_opportunities": 1,
+      "failures": [
+        {
+          "agent_id": "agent-1",
+          "reason": "agent exceeded per-agent token budget; provider usage exceeded its claimed envelope (token overage=2866, tool-call overage=0)",
+          "status": "budget_exhausted"
+        }
+      ],
+      "mean_uptake_latency_seconds": null,
+      "message_read_ratio_M": 0.0,
+      "message_to_answer_opportunities": 0,
+      "pilot_claim_scope": "descriptive; no causal or inferential claim from this metric alone",
+      "private_token_owners": {
+        "ORCHID-731": [
+          "agent-2"
+        ]
+      },
+      "scheduled_board_read_opportunities": 1,
+      "schema_version": 1,
+      "submitted_agents": 0,
+      "success_per_1000_tokens": 0.0,
+      "task_success": false,
+      "task_success_rate": 0.0,
+      "total_tokens": 41250,
+      "total_tool_calls": 12,
+      "total_turns": 13,
+      "transformation_events": [
+        {
+          "message_id": 1,
+          "source_agent": "agent-1",
+          "stage": "private_evidence_to_board_message",
+          "timestamp": "2026-09-14T01:55:14.205402Z",
+          "transformation_type": "message_without_seeded_token"
+        }
+      ],
+      "transformation_opportunities": 1,
+      "transformation_rate": 1.0,
+      "uptake": [],
+      "uptake_defined": false,
+      "uptake_definition": "recipient use after a prior board read of a seeded-token message from a declared private owner; every recipient with private exposure is excluded",
+      "uptake_events": 0,
+      "uptake_latency_seconds": [],
+      "uptake_opportunities": 0,
+      "uptake_outcomes": [],
+      "uptake_provenance_error": null,
+      "uptake_provenance_valid": true,
+      "uptake_recipients": 0,
+      "validator_outcomes": [],
+      "wall_clock_seconds": 47.203363
+    }
+  },
+  "pilot_claim_scope": "descriptive only",
+  "primary_contrast": "C1 versus C2",
+  "run_class": "experimental",
+  "run_ids": [
+    "s0001-C0",
+    "s0001-C1",
+    "s0001-C2"
+  ],
+  "schema_version": 1,
+  "triplet_id": "s0001"
+}
