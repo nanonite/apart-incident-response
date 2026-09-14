@@ -104,6 +104,46 @@
       \verb https://arxiv.org/abs/2503.11926
       \endverb
     \endentry
+    \entry{cover2006elements}{book}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=fe5b7bbda12c7502f55ddb9eeded8622}{%
+           family={Cover},
+           familyi={C\bibinitperiod},
+           given={Thomas\bibnamedelima M.},
+           giveni={T\bibinitperiod\bibinitdelim M\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=e6518a9e085a3ee5221c27f5d8f826dc}{%
+           family={Thomas},
+           familyi={T\bibinitperiod},
+           given={Joy\bibnamedelima A.},
+           giveni={J\bibinitperiod\bibinitdelim A\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{location}{1}{%
+        {Hoboken, NJ}%
+      }
+      \list{publisher}{1}{%
+        {Wiley-Interscience}%
+      }
+      \strng{namehash}{e427ba6c0eda5292558c30c786236c01}
+      \strng{fullhash}{e427ba6c0eda5292558c30c786236c01}
+      \strng{fullhashraw}{e427ba6c0eda5292558c30c786236c01}
+      \strng{bibnamehash}{e427ba6c0eda5292558c30c786236c01}
+      \strng{authorbibnamehash}{e427ba6c0eda5292558c30c786236c01}
+      \strng{authornamehash}{e427ba6c0eda5292558c30c786236c01}
+      \strng{authorfullhash}{e427ba6c0eda5292558c30c786236c01}
+      \strng{authorfullhashraw}{e427ba6c0eda5292558c30c786236c01}
+      \field{sortinit}{C}
+      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{edition}{2}
+      \field{title}{Elements of Information Theory}
+      \field{year}{2006}
+    \endentry
     \entry{shannon_hallucination}{article}{}{}
       \name{author}{4}{}{%
         {{un=0,uniquepart=base,hash=bdbdbe1bd8dfd8cfa7ea2ddf5a869771}{%
@@ -354,6 +394,52 @@
       \verb 10.1038/s42256-026-01268-y
       \endverb
     \endentry
+    \entry{kuhn2023semantic}{article}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=2b8f58bcce49cd11f2c9840ebe871823}{%
+           family={Kuhn},
+           familyi={K\bibinitperiod},
+           given={Lorenz},
+           giveni={L\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=d4f394bd4030e20e7b1399e0abe7dc6a}{%
+           family={Gal},
+           familyi={G\bibinitperiod},
+           given={Yarin},
+           giveni={Y\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=bdbdbe1bd8dfd8cfa7ea2ddf5a869771}{%
+           family={Farquhar},
+           familyi={F\bibinitperiod},
+           given={Sebastian},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{f8e0dc26366da694adac4a0281be240a}
+      \strng{fullhash}{6fde0f66d2cfb4ebe310b61d4140e53a}
+      \strng{fullhashraw}{6fde0f66d2cfb4ebe310b61d4140e53a}
+      \strng{bibnamehash}{6fde0f66d2cfb4ebe310b61d4140e53a}
+      \strng{authorbibnamehash}{6fde0f66d2cfb4ebe310b61d4140e53a}
+      \strng{authornamehash}{f8e0dc26366da694adac4a0281be240a}
+      \strng{authorfullhash}{6fde0f66d2cfb4ebe310b61d4140e53a}
+      \strng{authorfullhashraw}{6fde0f66d2cfb4ebe310b61d4140e53a}
+      \field{sortinit}{K}
+      \field{sortinithash}{c02bf6bff1c488450c352b40f5d853ab}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{International Conference on Learning Representations (ICLR)}
+      \field{title}{Semantic Uncertainty: Linguistic Invariances for Uncertainty Estimation in Natural Language Generation}
+      \field{year}{2023}
+      \verb{urlraw}
+      \verb https://arxiv.org/abs/2302.09664
+      \endverb
+      \verb{url}
+      \verb https://arxiv.org/abs/2302.09664
+      \endverb
+    \endentry
     \entry{shannon_ddos}{article}{}{}
       \name{author}{3}{}{%
         {{un=0,uniquepart=base,hash=cfc99131799c0cd42d962feb813f0f63}{%
@@ -471,6 +557,46 @@
       \verb https://huggingface.co/blog/agent-intrusion-technical-timeline
       \endverb
     \endentry
+    \entry{malinin2021uncertainty}{article}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=a8e6c813c8be0e09322b472745af17da}{%
+           family={Malinin},
+           familyi={M\bibinitperiod},
+           given={Andrey},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=54986a9bb01d4bd90e3a54428665980f}{%
+           family={Gales},
+           familyi={G\bibinitperiod},
+           given={Mark},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{102d927848e23d6acaeda64e903b7d95}
+      \strng{fullhash}{102d927848e23d6acaeda64e903b7d95}
+      \strng{fullhashraw}{102d927848e23d6acaeda64e903b7d95}
+      \strng{bibnamehash}{102d927848e23d6acaeda64e903b7d95}
+      \strng{authorbibnamehash}{102d927848e23d6acaeda64e903b7d95}
+      \strng{authornamehash}{102d927848e23d6acaeda64e903b7d95}
+      \strng{authorfullhash}{102d927848e23d6acaeda64e903b7d95}
+      \strng{authorfullhashraw}{102d927848e23d6acaeda64e903b7d95}
+      \field{sortinit}{M}
+      \field{sortinithash}{4625c616857f13d17ce56f7d4f97d451}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{International Conference on Learning Representations (ICLR)}
+      \field{title}{Uncertainty Estimation in Autoregressive Structured Prediction}
+      \field{year}{2021}
+      \verb{urlraw}
+      \verb https://arxiv.org/abs/2002.07650
+      \endverb
+      \verb{url}
+      \verb https://arxiv.org/abs/2002.07650
+      \endverb
+    \endentry
     \entry{openai2026incident}{report}{}{}
       \name{author}{1}{}{%
         {{un=0,uniquepart=base,hash=0523b13262b12c215d8009938f5c14f1}{%
@@ -503,6 +629,113 @@
       \endverb
       \verb{url}
       \verb https://cdn.openai.com/pdf/67869394-cb91-4c12-888c-5cbd85c7814c/OpenAI-Hugging-Face%20Incident-Technical-Report.pdf
+      \endverb
+    \endentry
+    \entry{page1954cusum}{article}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=6f90fdbd412528ade503535e62e1be8f}{%
+           family={Page},
+           familyi={P\bibinitperiod},
+           given={E.\bibnamedelimi S.},
+           giveni={E\bibinitperiod\bibinitdelim S\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{6f90fdbd412528ade503535e62e1be8f}
+      \strng{fullhash}{6f90fdbd412528ade503535e62e1be8f}
+      \strng{fullhashraw}{6f90fdbd412528ade503535e62e1be8f}
+      \strng{bibnamehash}{6f90fdbd412528ade503535e62e1be8f}
+      \strng{authorbibnamehash}{6f90fdbd412528ade503535e62e1be8f}
+      \strng{authornamehash}{6f90fdbd412528ade503535e62e1be8f}
+      \strng{authorfullhash}{6f90fdbd412528ade503535e62e1be8f}
+      \strng{authorfullhashraw}{6f90fdbd412528ade503535e62e1be8f}
+      \field{sortinit}{P}
+      \field{sortinithash}{ff3bcf24f47321b42cb156c2cc8a8422}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Biometrika}
+      \field{number}{1-2}
+      \field{title}{Continuous Inspection Schemes}
+      \field{volume}{41}
+      \field{year}{1954}
+      \field{pages}{100\bibrangedash 115}
+      \range{pages}{16}
+      \verb{doi}
+      \verb 10.1093/biomet/41.1-2.100
+      \endverb
+    \endentry
+    \entry{shannon1948mathematical}{article}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=536c91678d1dde76c9acd47047556291}{%
+           family={Shannon},
+           familyi={S\bibinitperiod},
+           given={Claude\bibnamedelima E.},
+           giveni={C\bibinitperiod\bibinitdelim E\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{536c91678d1dde76c9acd47047556291}
+      \strng{fullhash}{536c91678d1dde76c9acd47047556291}
+      \strng{fullhashraw}{536c91678d1dde76c9acd47047556291}
+      \strng{bibnamehash}{536c91678d1dde76c9acd47047556291}
+      \strng{authorbibnamehash}{536c91678d1dde76c9acd47047556291}
+      \strng{authornamehash}{536c91678d1dde76c9acd47047556291}
+      \strng{authorfullhash}{536c91678d1dde76c9acd47047556291}
+      \strng{authorfullhashraw}{536c91678d1dde76c9acd47047556291}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Bell System Technical Journal}
+      \field{month}{7}
+      \field{note}{Part II: vol. 27, no. 4, pp. 623--656, October 1948}
+      \field{number}{3}
+      \field{title}{A Mathematical Theory of Communication}
+      \field{volume}{27}
+      \field{year}{1948}
+      \field{pages}{379\bibrangedash 423}
+      \range{pages}{45}
+      \verb{doi}
+      \verb 10.1002/j.1538-7305.1948.tb01338.x
+      \endverb
+    \endentry
+    \entry{watanabe1960}{article}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=103f74ddd2eba2241659085f9b71aa81}{%
+           family={Watanabe},
+           familyi={W\bibinitperiod},
+           given={Satosi},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{103f74ddd2eba2241659085f9b71aa81}
+      \strng{fullhash}{103f74ddd2eba2241659085f9b71aa81}
+      \strng{fullhashraw}{103f74ddd2eba2241659085f9b71aa81}
+      \strng{bibnamehash}{103f74ddd2eba2241659085f9b71aa81}
+      \strng{authorbibnamehash}{103f74ddd2eba2241659085f9b71aa81}
+      \strng{authornamehash}{103f74ddd2eba2241659085f9b71aa81}
+      \strng{authorfullhash}{103f74ddd2eba2241659085f9b71aa81}
+      \strng{authorfullhashraw}{103f74ddd2eba2241659085f9b71aa81}
+      \field{sortinit}{W}
+      \field{sortinithash}{4315d78024d0cea9b57a0c6f0e35ed0d}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IBM Journal of Research and Development}
+      \field{number}{1}
+      \field{title}{Information Theoretical Analysis of Multivariate Correlation}
+      \field{volume}{4}
+      \field{year}{1960}
+      \field{pages}{66\bibrangedash 82}
+      \range{pages}{17}
+      \verb{doi}
+      \verb 10.1147/rd.41.0066
       \endverb
     \endentry
     \entry{zhao2026doesmultiagentcollaborationhelp}{misc}{}{}
@@ -703,6 +936,46 @@
       \verb https://arxiv.org/abs/2503.11926
       \endverb
     \endentry
+    \entry{cover2006elements}{book}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=fe5b7bbda12c7502f55ddb9eeded8622}{%
+           family={Cover},
+           familyi={C\bibinitperiod},
+           given={Thomas\bibnamedelima M.},
+           giveni={T\bibinitperiod\bibinitdelim M\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=e6518a9e085a3ee5221c27f5d8f826dc}{%
+           family={Thomas},
+           familyi={T\bibinitperiod},
+           given={Joy\bibnamedelima A.},
+           giveni={J\bibinitperiod\bibinitdelim A\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{location}{1}{%
+        {Hoboken, NJ}%
+      }
+      \list{publisher}{1}{%
+        {Wiley-Interscience}%
+      }
+      \strng{namehash}{e427ba6c0eda5292558c30c786236c01}
+      \strng{fullhash}{e427ba6c0eda5292558c30c786236c01}
+      \strng{fullhashraw}{e427ba6c0eda5292558c30c786236c01}
+      \strng{bibnamehash}{e427ba6c0eda5292558c30c786236c01}
+      \strng{authorbibnamehash}{e427ba6c0eda5292558c30c786236c01}
+      \strng{authornamehash}{e427ba6c0eda5292558c30c786236c01}
+      \strng{authorfullhash}{e427ba6c0eda5292558c30c786236c01}
+      \strng{authorfullhashraw}{e427ba6c0eda5292558c30c786236c01}
+      \field{sortinit}{C}
+      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{edition}{2}
+      \field{title}{Elements of Information Theory}
+      \field{year}{2006}
+    \endentry
     \entry{shannon_hallucination}{article}{}{}
       \name{author}{4}{}{%
         {{un=0,uniquepart=base,hash=bdbdbe1bd8dfd8cfa7ea2ddf5a869771}{%
@@ -953,6 +1226,52 @@
       \verb 10.1038/s42256-026-01268-y
       \endverb
     \endentry
+    \entry{kuhn2023semantic}{article}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=2b8f58bcce49cd11f2c9840ebe871823}{%
+           family={Kuhn},
+           familyi={K\bibinitperiod},
+           given={Lorenz},
+           giveni={L\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=d4f394bd4030e20e7b1399e0abe7dc6a}{%
+           family={Gal},
+           familyi={G\bibinitperiod},
+           given={Yarin},
+           giveni={Y\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=bdbdbe1bd8dfd8cfa7ea2ddf5a869771}{%
+           family={Farquhar},
+           familyi={F\bibinitperiod},
+           given={Sebastian},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{f8e0dc26366da694adac4a0281be240a}
+      \strng{fullhash}{6fde0f66d2cfb4ebe310b61d4140e53a}
+      \strng{fullhashraw}{6fde0f66d2cfb4ebe310b61d4140e53a}
+      \strng{bibnamehash}{6fde0f66d2cfb4ebe310b61d4140e53a}
+      \strng{authorbibnamehash}{6fde0f66d2cfb4ebe310b61d4140e53a}
+      \strng{authornamehash}{f8e0dc26366da694adac4a0281be240a}
+      \strng{authorfullhash}{6fde0f66d2cfb4ebe310b61d4140e53a}
+      \strng{authorfullhashraw}{6fde0f66d2cfb4ebe310b61d4140e53a}
+      \field{sortinit}{K}
+      \field{sortinithash}{c02bf6bff1c488450c352b40f5d853ab}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{International Conference on Learning Representations (ICLR)}
+      \field{title}{Semantic Uncertainty: Linguistic Invariances for Uncertainty Estimation in Natural Language Generation}
+      \field{year}{2023}
+      \verb{urlraw}
+      \verb https://arxiv.org/abs/2302.09664
+      \endverb
+      \verb{url}
+      \verb https://arxiv.org/abs/2302.09664
+      \endverb
+    \endentry
     \entry{shannon_ddos}{article}{}{}
       \name{author}{3}{}{%
         {{un=0,uniquepart=base,hash=cfc99131799c0cd42d962feb813f0f63}{%
@@ -1070,6 +1389,46 @@
       \verb https://huggingface.co/blog/agent-intrusion-technical-timeline
       \endverb
     \endentry
+    \entry{malinin2021uncertainty}{article}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=a8e6c813c8be0e09322b472745af17da}{%
+           family={Malinin},
+           familyi={M\bibinitperiod},
+           given={Andrey},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=54986a9bb01d4bd90e3a54428665980f}{%
+           family={Gales},
+           familyi={G\bibinitperiod},
+           given={Mark},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{102d927848e23d6acaeda64e903b7d95}
+      \strng{fullhash}{102d927848e23d6acaeda64e903b7d95}
+      \strng{fullhashraw}{102d927848e23d6acaeda64e903b7d95}
+      \strng{bibnamehash}{102d927848e23d6acaeda64e903b7d95}
+      \strng{authorbibnamehash}{102d927848e23d6acaeda64e903b7d95}
+      \strng{authornamehash}{102d927848e23d6acaeda64e903b7d95}
+      \strng{authorfullhash}{102d927848e23d6acaeda64e903b7d95}
+      \strng{authorfullhashraw}{102d927848e23d6acaeda64e903b7d95}
+      \field{sortinit}{M}
+      \field{sortinithash}{4625c616857f13d17ce56f7d4f97d451}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{International Conference on Learning Representations (ICLR)}
+      \field{title}{Uncertainty Estimation in Autoregressive Structured Prediction}
+      \field{year}{2021}
+      \verb{urlraw}
+      \verb https://arxiv.org/abs/2002.07650
+      \endverb
+      \verb{url}
+      \verb https://arxiv.org/abs/2002.07650
+      \endverb
+    \endentry
     \entry{openai2026incident}{report}{}{}
       \name{author}{1}{}{%
         {{un=0,uniquepart=base,hash=0523b13262b12c215d8009938f5c14f1}{%
@@ -1102,6 +1461,113 @@
       \endverb
       \verb{url}
       \verb https://cdn.openai.com/pdf/67869394-cb91-4c12-888c-5cbd85c7814c/OpenAI-Hugging-Face%20Incident-Technical-Report.pdf
+      \endverb
+    \endentry
+    \entry{page1954cusum}{article}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=6f90fdbd412528ade503535e62e1be8f}{%
+           family={Page},
+           familyi={P\bibinitperiod},
+           given={E.\bibnamedelimi S.},
+           giveni={E\bibinitperiod\bibinitdelim S\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{6f90fdbd412528ade503535e62e1be8f}
+      \strng{fullhash}{6f90fdbd412528ade503535e62e1be8f}
+      \strng{fullhashraw}{6f90fdbd412528ade503535e62e1be8f}
+      \strng{bibnamehash}{6f90fdbd412528ade503535e62e1be8f}
+      \strng{authorbibnamehash}{6f90fdbd412528ade503535e62e1be8f}
+      \strng{authornamehash}{6f90fdbd412528ade503535e62e1be8f}
+      \strng{authorfullhash}{6f90fdbd412528ade503535e62e1be8f}
+      \strng{authorfullhashraw}{6f90fdbd412528ade503535e62e1be8f}
+      \field{sortinit}{P}
+      \field{sortinithash}{ff3bcf24f47321b42cb156c2cc8a8422}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Biometrika}
+      \field{number}{1-2}
+      \field{title}{Continuous Inspection Schemes}
+      \field{volume}{41}
+      \field{year}{1954}
+      \field{pages}{100\bibrangedash 115}
+      \range{pages}{16}
+      \verb{doi}
+      \verb 10.1093/biomet/41.1-2.100
+      \endverb
+    \endentry
+    \entry{shannon1948mathematical}{article}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=536c91678d1dde76c9acd47047556291}{%
+           family={Shannon},
+           familyi={S\bibinitperiod},
+           given={Claude\bibnamedelima E.},
+           giveni={C\bibinitperiod\bibinitdelim E\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{536c91678d1dde76c9acd47047556291}
+      \strng{fullhash}{536c91678d1dde76c9acd47047556291}
+      \strng{fullhashraw}{536c91678d1dde76c9acd47047556291}
+      \strng{bibnamehash}{536c91678d1dde76c9acd47047556291}
+      \strng{authorbibnamehash}{536c91678d1dde76c9acd47047556291}
+      \strng{authornamehash}{536c91678d1dde76c9acd47047556291}
+      \strng{authorfullhash}{536c91678d1dde76c9acd47047556291}
+      \strng{authorfullhashraw}{536c91678d1dde76c9acd47047556291}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Bell System Technical Journal}
+      \field{month}{7}
+      \field{note}{Part II: vol. 27, no. 4, pp. 623--656, October 1948}
+      \field{number}{3}
+      \field{title}{A Mathematical Theory of Communication}
+      \field{volume}{27}
+      \field{year}{1948}
+      \field{pages}{379\bibrangedash 423}
+      \range{pages}{45}
+      \verb{doi}
+      \verb 10.1002/j.1538-7305.1948.tb01338.x
+      \endverb
+    \endentry
+    \entry{watanabe1960}{article}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=103f74ddd2eba2241659085f9b71aa81}{%
+           family={Watanabe},
+           familyi={W\bibinitperiod},
+           given={Satosi},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{103f74ddd2eba2241659085f9b71aa81}
+      \strng{fullhash}{103f74ddd2eba2241659085f9b71aa81}
+      \strng{fullhashraw}{103f74ddd2eba2241659085f9b71aa81}
+      \strng{bibnamehash}{103f74ddd2eba2241659085f9b71aa81}
+      \strng{authorbibnamehash}{103f74ddd2eba2241659085f9b71aa81}
+      \strng{authornamehash}{103f74ddd2eba2241659085f9b71aa81}
+      \strng{authorfullhash}{103f74ddd2eba2241659085f9b71aa81}
+      \strng{authorfullhashraw}{103f74ddd2eba2241659085f9b71aa81}
+      \field{sortinit}{W}
+      \field{sortinithash}{4315d78024d0cea9b57a0c6f0e35ed0d}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IBM Journal of Research and Development}
+      \field{number}{1}
+      \field{title}{Information Theoretical Analysis of Multivariate Correlation}
+      \field{volume}{4}
+      \field{year}{1960}
+      \field{pages}{66\bibrangedash 82}
+      \range{pages}{17}
+      \verb{doi}
+      \verb 10.1147/rd.41.0066
       \endverb
     \endentry
     \entry{zhao2026doesmultiagentcollaborationhelp}{misc}{}{}

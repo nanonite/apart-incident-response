@@ -3315,6 +3315,14 @@
     <bcf:citekey order="15" intorder="1">zhao2026doesmultiagentcollaborationhelp</bcf:citekey>
     <bcf:citekey order="16" intorder="1">greenblatt2024control</bcf:citekey>
     <bcf:citekey order="17" intorder="1">openai2026incident</bcf:citekey>
+    <bcf:citekey order="18" intorder="1">shannon1948mathematical</bcf:citekey>
+    <bcf:citekey order="19" intorder="1">cover2006elements</bcf:citekey>
+    <bcf:citekey order="20" intorder="1">malinin2021uncertainty</bcf:citekey>
+    <bcf:citekey order="21" intorder="1">kuhn2023semantic</bcf:citekey>
+    <bcf:citekey order="21" intorder="2">shannon_hallucination</bcf:citekey>
+    <bcf:citekey order="22" intorder="1">watanabe1960</bcf:citekey>
+    <bcf:citekey order="23" intorder="1">openai2026incident</bcf:citekey>
+    <bcf:citekey order="24" intorder="1">page1954cusum</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="nyt">
