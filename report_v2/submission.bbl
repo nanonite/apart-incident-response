@@ -1,0 +1,18 @@
+\begin{thebibliography}{1}
+
+\bibitem{shannon_hallucination}
+Sebastian Farquhar, Jannik Kossen, Lorenz Kuhn, and Yarin Gal.
+\newblock Detecting hallucinations in large language models using semantic
+  entropy.
+\newblock {\em Nature}, 630(8017):625--630, 2024.
+
+\bibitem{openai2026incident}
+{OpenAI}.
+\newblock {OpenAI--Hugging Face} incident technical report, 2026.
+
+\bibitem{zhao2026doesmultiagentcollaborationhelp}
+Yuxuan Zhao, Sijia Chen, and Ningxin Su.
+\newblock When does multi-agent collaboration help? an entropy perspective,
+  2026.
+
+\end{thebibliography}
