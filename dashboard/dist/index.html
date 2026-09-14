@@ -14,9 +14,22 @@
     <label for="unlock">Unlock at step</label><input id="unlock" type="number" min="0" max="7" value="3" required>
     <p class="side-note">Step 3 opens C2 at checkpoint 4, including earlier permitted peer updates. Checkpoints are not wall-clock minutes.</p>
     <label for="adapter">Generation source</label><select id="adapter"><option value="ollama">Local model · Ollama</option><option value="fixture">Synthetic fixture · no LLM</option></select>
-    <label for="engagement">Peer engagement</label><select id="engagement"><option value="neutral">Neutral observation</option><option value="peer_review">Ask agent to review peer update</option><option value="required_peer_check">Require agree/disagree check</option></select>
+    <label for="engagement">Peer engagement</label><select id="engagement"><option value="neutral">Neutral observation</option><option value="peer_review">Ask agent to review peer update</option><option value="required_peer_check">Ask for agree/disagree check</option><option value="team_reward">Team-score framing (role tasks)</option><option value="team_individual_reward">Team + individual framing (role tasks)</option></select>
     <label for="shared-context">Shared context</label><select id="shared-context"><option value="key_insights_plus_history">Key insights + full history</option><option value="full_history">Full history only</option></select>
     <label for="model">Model</label><input id="model" value="gemma2:2b" maxlength="100" required>
+    <label for="pilot-preset">Pilot setup</label><select id="pilot-preset"><option value="manual">Manual configuration</option><option value="calibration">Calibration · one task, C2, two repeats</option></select>
+    <div class="form-pair"><div><label for="run-minutes">Task-run budget (minutes)</label><input id="run-minutes" type="number" value="15" min="1" max="60" required></div><div><label for="request-seconds">Request wait (seconds)</label><input id="request-seconds" type="number" value="120" min="1" max="900" required></div></div>
+    <label for="batch-minutes">Whole-batch budget (minutes)</label><input id="batch-minutes" type="number" value="60" min="1" max="240" required>
+    <label for="output-tokens">Output limit (tokens per request)</label><input id="output-tokens" type="number" value="512" min="80" max="512" required>
+    <details><summary>Communication study settings</summary>
+    <label for="peer-bytes">Peer-history byte limit (blank = unlimited)</label><input id="peer-bytes" type="number" min="0" placeholder="Unlimited">
+    <label for="peer-delay">Additional delivery delay (checkpoints)</label><input id="peer-delay" type="number" min="0" max="8" value="0">
+    <label for="peer-cost">Utility cost per delivered KiB</label><input id="peer-cost" type="number" min="0" step="0.01" value="0">
+    <label><input id="peer-request" type="checkbox"> Deliver on request (new role tasks only)</label>
+    <label for="evidence-mode">Sensor evidence control</label><select id="evidence-mode"><option value="split">Split clues</option><option value="identical_complete">Identical complete clues</option></select>
+    <label for="role-swap">Swap planner/critic at step (blank = fixed)</label><input id="role-swap" type="number" min="0" max="7" placeholder="Fixed roles">
+    <label for="role-mode">Role control</label><select id="role-mode"><option value="specialized">Task-defined roles</option><option value="two_solvers">Two solvers (new role tasks)</option></select>
+    </details>
     <label><input id="logprobs" type="checkbox"> Request token log-probabilities (if supported)</label>
     <button class="button primary" id="start" type="submit">▶ Run experiment</button><button class="button stop" id="stop" type="button" hidden>Stop after current request</button>
     <p class="side-note" id="run-estimate">60 updates · local inference</p>
@@ -32,7 +45,8 @@
   <section class="batch-bar"><label for="batch-select">Experiment batch</label><select id="batch-select"></select><span id="source-badge" class="badge"></span><span id="batch-state" class="muted"></span></section>
   <section class="surface live-observer" aria-label="Live agent activity">
     <div class="section-heading"><div><h2>Live run</h2><p id="live-header-summary">Waiting for an experiment.</p></div><div class="live-downloads"><a id="download-completed-bundle" class="button primary" hidden>↓ Download batch logs · ZIP</a><a id="download-completed-responses" class="button light" hidden>↓ Responses · JSONL</a></div></div>
-    <div class="live-progress-row"><progress id="live-progress" max="1" value="0" aria-label="Recorded batch updates"></progress><span id="live-batch-progress"></span><span id="live-run-clock"></span></div>
+    <div class="live-progress-row"><progress id="live-progress" max="1" value="0" aria-label="Recorded batch updates"></progress><span id="live-batch-progress"></span><span id="live-run-clock"></span><span id="live-batch-clock"></span></div>
+    <p id="calibration-summary" class="muted"></p>
     <div class="live-columns"><section class="live-column"><h3>Agent A</h3><div id="live-agent-A"></div></section><section class="live-column"><h3>Agent B</h3><div id="live-agent-B"></div></section><section class="live-column shared-column"><h3>Permitted shared context</h3><p class="live-explanation">Peer-authored facts and responses actually supplied to agents. Delivery does not prove use.</p><h4>Key insights</h4><div id="live-key-insights"></div><h4>Full peer history</h4><div id="live-shared-history"></div></section></div>
     <div class="live-feed-heading"><h3>Activity log</h3><span id="live-last-event"></span></div><div id="live-event-feed" class="live-event-feed"></div>
     <p class="live-explanation">Updates refresh automatically. Ollama returns complete responses; text appears when a request finishes.</p>

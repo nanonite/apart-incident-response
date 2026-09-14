@@ -17,7 +17,7 @@ class OllamaAdapter:
         self.endpoint = (endpoint or os.environ.get('APART_OLLAMA_URL', 'http://127.0.0.1:11434')).rstrip('/')
         self.logprobs = bool(logprobs)
         parsed = urlparse(self.endpoint)
-        if parsed.scheme not in ('http', 'https') or parsed.username or parsed.password or parsed.query or parsed.fragment:
+        if parsed.scheme not in ('http', 'https') or not parsed.hostname or parsed.path not in ('', '/') or parsed.username or parsed.password or parsed.query or parsed.fragment:
             raise ValueError('Model endpoint must be an HTTP(S) origin without credentials or query')
         self.source = 'local_model' if parsed.hostname in ('localhost', '127.0.0.1', '::1') else 'remote_model'
 
@@ -39,6 +39,9 @@ class OllamaAdapter:
                 'runtime': self.request('/api/version', timeout=4), 'transport': self.source}
 
     def generate(self, messages, seed, max_output_tokens, choices):
+        return self.generate_bounded(messages, seed, max_output_tokens, choices, 180)
+
+    def generate_bounded(self, messages, seed, max_output_tokens, choices, timeout_seconds):
         started = time.monotonic()
         schema = update_schema(json.loads(messages[-1]['content']), choices)
         payload = {'model': self.model, 'messages': messages, 'format': schema, 'stream': False,
@@ -46,17 +49,12 @@ class OllamaAdapter:
         if self.logprobs:
             payload.update(logprobs=True, top_logprobs=5)
         try:
-            result = self.request('/api/chat', payload)
-        except urllib.error.HTTPError as exc:
-            if self.logprobs and exc.code == 400:
-                payload.pop('logprobs', None)
-                payload.pop('top_logprobs', None)
-                result = self.request('/api/chat', payload)
-                logprobs_available = False
-            else:
-                raise
-        else:
-            logprobs_available = self.logprobs
+            result = self.request('/api/chat', payload, timeout=timeout_seconds)
+        except urllib.error.URLError as exc:
+            if isinstance(exc.reason, TimeoutError):
+                raise TimeoutError('provider transport timeout') from exc
+            raise
+        logprobs_available = self.logprobs
         entries = result.get('logprobs')
         if self.logprobs and not entries:
             logprobs_available = False
@@ -83,8 +81,24 @@ class FixtureAdapter:
         answer = list(choices)[seed % len(choices)]
         update = {'response_text': f'Synthetic plumbing fixture: candidate {answer}. This is not a model generation.', 'answer_class': answer}
         contract = context.get('update_contract')
-        if contract in ('key-insights-v1', 'locked-database-v1'):
+        if contract in ('key-insights-v1', 'locked-database-v1', 'collaboration-v1'):
             update['key_insights'] = []
+        if contract == 'collaboration-v1':
+            import re
+            facts = ' '.join(context['private_evidence'])+' '+json.dumps(context['permitted_history'])
+            role = context['agent_role']
+            if 'healthy' in choices:
+                one = re.search(r'sensor_one=([01])',facts)
+                two = re.search(r'sensor_two=([01])',facts)
+                answer = ('healthy','pump','valve','controller')[int(one[1])*2+int(two[1])] if one and two else list(choices)[seed%4]
+            else:
+                answer = 'blue' if 'blue' in choices else 'routing'
+            update.update(answer_class=answer, evidence_ids=context['allowed_evidence_ids'],
+                referenced_message_ids=context['visible_message_ids'],
+                message_type='counterexample' if role=='critic' else 'proposal',
+                rejected_option=('amber' if 'amber' in choices else 'logging') if role=='critic' else '',
+                request_peer_context=True,
+                response_text='Synthetic fixture. '+ ' '.join(context['private_evidence']))
         if contract == 'locked-database-v1':
             key = ''
             if context['agent_role'] == 'feedback_only':

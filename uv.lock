@@ -2,6 +2,10 @@ version = 1
 revision = 3
 requires-python = ">=3.12"
 
+[options]
+exclude-newer = "2026-09-06T21:13:19.088401839Z"
+exclude-newer-span = "P7D"
+
 [[package]]
 name = "apart-incident-response"
 version = "0.1.0"

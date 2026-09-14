@@ -18,9 +18,10 @@ from .events import EventStore
 from .experiment import BatchRunner, validate_config
 from .importing import import_jsonl
 from .tasks import public_tasks
+from .diagnostics import calibration_summary, team_metrics
 
 ROOT = Path(__file__).resolve().parents[2]
-PANEL_API_VERSION = 'response-panel-v6'
+PANEL_API_VERSION = 'response-panel-v7'
 
 
 def live_activity(events, batch, runs):
@@ -46,12 +47,14 @@ def live_activity(events, batch, runs):
             key = (insight['source_event_id'], insight['text'])
             entry = insights_by_source.setdefault(key, dict(insight, visible_to=[]))
             entry['visible_to'].append(agent)
-        transitions = [e for e in own if e['kind'] in ('agent_observation', 'generation_started', 'generation_result', 'task_update', 'minute_violation')]
+        transitions = [e for e in own if e['kind'] in ('agent_observation', 'generation_started', 'generation_result', 'generation_finished', 'task_update', 'minute_violation')]
         last = transitions[-1] if transitions else None
         state_name = 'waiting'
         if last:
             state_name = {'agent_observation': 'queued', 'generation_started': 'generating',
-                          'generation_result': 'validating', 'minute_violation': 'stalled', 'task_update': 'submitted'}[last['kind']]
+                          'generation_result': 'validating', 'generation_finished':'validating', 'minute_violation': 'stalled', 'task_update': 'submitted'}[last['kind']]
+            if last['kind']=='generation_finished' and last['payload']['status']!='valid':
+                state_name='stalled'
             if last['kind'] == 'task_update' and last['payload'].get('termination_state') == 'stalled_no_generation':
                 state_name = 'stalled'
         if terminal and state_name not in ('submitted', 'stalled'):
@@ -59,6 +62,9 @@ def live_activity(events, batch, runs):
         transcript = [dict(e['payload'], event_id=e['event_id'], timestamp=e['timestamp'],
                            evaluator=evaluations.get(e['event_id'])) for e in own if e['kind'] == 'task_update']
         agents[agent] = {'state': state_name, 'step': (last or {}).get('payload', {}).get('step'),
+                         'request_deadline_seconds':next((e['payload'].get('request_deadline_seconds') for e in reversed(own) if e['kind']=='generation_started'),None),
+                         'heartbeat_at':next((e['timestamp'] for e in reversed(own) if e['kind']=='worker_heartbeat'),None),
+                         'provider_cancellation_status':next((e['payload'].get('provider_cancellation_status') for e in reversed(own) if e['kind']=='generation_finished'),None),
                          'last_event_id': last['event_id'] if last else None,
                          'state_since': last['timestamp'] if last else None,
                          'observation': observation['payload'] if observation else None,
@@ -73,6 +79,8 @@ def live_activity(events, batch, runs):
     shared.sort(key=lambda e: (e['step'], e['agent_id']))
     query = urlencode({'batch': batch['id']}) if batch else ''
     return {'batch_status': batch['status'] if batch else 'idle', 'run': run, 'step': step,
+            'batch_started_at':next((e['timestamp'] for e in events if e['kind']=='batch_started'),None),
+            'batch_finished_at':next((e['timestamp'] for e in events if e['kind']=='batch_finished'),None),
             'run_started_at': next((e['timestamp'] for e in scoped if e['kind'] == 'run_started'), None),
             'run_finished_at': next((e['timestamp'] for e in scoped if e['kind'] == 'run_finished'),
                                     next((e['timestamp'] for e in events if e['kind'] == 'batch_finished'), None)),
@@ -117,6 +125,7 @@ def state(store, selected=None):
             'server': {'api_version': PANEL_API_VERSION, 'pid': os.getpid(), 'source_root': str(ROOT)},
             'tasks':public_tasks(), 'batches':list(reversed(batches)),
             'batch':batch, 'runs':runs, 'events':events, 'metrics':metrics,
+            'calibration':calibration_summary(events), 'team_metrics':team_metrics(events),
             'difficulty_metrics': sorted(by_difficulty.values(), key=lambda x: (x['difficulty'] is None, x['difficulty'])),
             'audit':research_actions(all_events), 'live_activity': live_activity(events, batch, runs)}
 
@@ -253,6 +262,8 @@ def bundle(data):
         jl('metrics.jsonl', data['metrics'])
         jl('checkpoint-grid.jsonl', checkpoint_grid(data['events']))
         jl('intervention-proxy.jsonl', intervention_changes(data['metrics'], (data.get('batch') or {}).get('config', {}).get('unlock_step')))
+        jl('team-metrics.jsonl',team_metrics(data['events']))
+        z.writestr('calibration.json',json.dumps(calibration_summary(data['events']),allow_nan=False,indent=2))
         z.writestr('report.md', report_markdown(data))
         z.writestr('manifest.json', json.dumps({k:v for k,v in data.items() if k not in ('events','metrics','session_key')},ensure_ascii=False,indent=2))
         z.writestr('README.md', '''# Research handoff
@@ -264,6 +275,8 @@ Start with report.md for a human-readable summary. manifest.json export_metadata
 checkpoint-grid.jsonl is a derived planned task × condition × repeat × checkpoint × agent table. submission_status distinguishes missing, stalled, and valid records, including runs not started. Missing rows are researcher annotations, not fabricated agent outputs. Join generation_event_id to events.jsonl for raw model responses and any exposed token log-probabilities; join observation_id for the exact prompt. context_hash identifies identical supplied message contexts, not identical provider hidden state.
 
 intervention-proxy.jsonl records signed C2 entropy contrasts immediately around unlock and the corresponding C0 change, where available. It preserves source IDs and null for insufficient samples. These are descriptive answer-class proxies, not semantic entropy, statistical evidence, or causal influence.
+
+calibration.json reports attempts, valid-output rate, coverage, latency and limitations of the serial-duration estimate. team-metrics.jsonl separates task correctness, role participation, delivery byte costs and net utility. worker_heartbeat denotes controller waiting, not provider token generation. generation_finished terminates a controller attempt; unknown cancellation does not establish provider termination. Semantic analysis and paired replay run separately on completed exports through apart_incident_response.offline and apart_incident_response.semantic.
 
 C0 is isolation; C1 shares previous-step responses; C2 unlocks earlier permitted responses at the configured step. Neither agent sees the other's current-step output. Private evidence and evaluator truth never enter shared history.
 
@@ -300,6 +313,8 @@ class App:
                              'explanation': 'No batch_finished event. This server has no verified worker for this batch; '
                              'a CLI or another server may own it. Request age is not model compute time.'
                              if batch and not terminal and not owns_selected else None}
+        data['execution']['worker'] = self.runner.owner if owns_selected and self.runner else None
+        data['execution']['observed_at'] = datetime.now(timezone.utc).isoformat()
         return data
 
     def launch(self, config):
@@ -440,6 +455,10 @@ def serve(store, port):
         if app.runner:
             app.runner.stop.set()
     finally:
+        if app.runner and app.thread and app.thread.is_alive():
+            app.runner.stop.set()
+            # Allow the bounded current request to finish and append terminal events.
+            app.thread.join()
         server.server_close()
 
 

@@ -15,7 +15,7 @@ class Element {
 }
 const ids=['live-header-summary','live-progress','live-batch-progress','live-run-clock',
  'live-agent-A','live-agent-B','live-shared-history','live-key-insights','live-event-feed',
- 'live-last-event','download-completed-bundle','download-completed-responses'];
+ 'live-last-event','live-batch-clock','calibration-summary','download-completed-bundle','download-completed-responses'];
 for(const id of ids){const n=new Element('div');n.id=id;}
 const data={events:[],batch:{config:{shared_context_mode:'key_insights_plus_history'}},live_activity:{
  batch_status:'running',run:{id:'run-1',task_id:'locked-database',condition_id:'C1'},step:1,
@@ -42,4 +42,14 @@ data.live_activity.agents.B.state_since=new Date(Date.now()-61*60*1000).toISOStr
 render();
 assert.match(elements.get('live-state-B').textContent,/Request overdue/);
 assert.doesNotMatch(elements.get('live-state-B').textContent,/Generating response/);
+data.live_activity.run_started_at=new Date(Date.now()-60000).toISOString();
+data.live_activity.batch_started_at=new Date(Date.now()-180000).toISOString();
+data.live_activity.agents.B.request_deadline_seconds=900;
+data.live_activity.agents.B.state_since=new Date(Date.now()-120000).toISOString();
+render();
+assert.match(elements.get('live-state-B').textContent,/Generating/);
+assert.match(elements.get('live-batch-clock').textContent,/Whole batch/);
+assert.match(elements.get('live-run-clock').textContent,/Task run/);
+for(const state of ['stalled','interrupted','waiting','queued']){data.live_activity.agents.B.state=state;render();assert.ok(elements.get('live-state-B').textContent.length>0);}
+for(const status of ['completed','completed_with_errors','failed','over_deadline','stopped']){data.live_activity.batch_status=status;data.live_activity.run.status=status;render();assert.ok(elements.get('live-header-summary').textContent.includes(status.replaceAll('_',' ')));}
 console.log('Disclosure polling and delivered-insight renderer regression passed.');

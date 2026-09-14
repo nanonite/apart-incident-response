@@ -75,6 +75,17 @@ async function main(){
  assert.equal(cfg.config.unlock_step,3);
  assert.equal(cfg.config.logprobs,true);
  assert.equal(cfg.config.repeats,2);
+ assert.equal(cfg.config.deadline_seconds,900);
+ assert.equal(cfg.config.request_timeout_seconds,120);
+ assert.equal(cfg.config.max_output_tokens,512);
+ elements.get('pilot-preset').value='calibration';
+ elements.get('pilot-preset').onchange();
+ const pilot=JSON.parse(vm.runInContext('JSON.stringify(requestedConfig())',context));
+ assert.deepEqual(pilot.conditions,['C2']);
+ assert.deepEqual(pilot.task_ids,['sensor-fusion']);
+ assert.equal(pilot.steps,5);
+ assert.equal(pilot.repeats,2);
+ assert.equal(pilot.batch_timeout_seconds,1860);
  console.log('Navigation focus, direct live ZIP/JSONL/Markdown downloads, errors and offline fallback passed.');
 }
 main().catch(error=>{console.error(error);process.exitCode=1;});

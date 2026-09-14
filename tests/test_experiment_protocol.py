@@ -33,7 +33,7 @@ class ExperimentProtocolTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             store = EventStore(Path(d) / 'events.sqlite')
             clock = [0.0]
-            def expired_generation(*args):
+            def expired_generation(*args, **kwargs):
                 self.assertEqual(args[-1], 0.02)
                 clock[0] = 0.02
                 return None, 20.0, TimeoutError('generation deadline exceeded')

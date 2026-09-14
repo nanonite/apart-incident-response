@@ -6,8 +6,16 @@ def update_schema(content, choices):
     properties = {'response_text': {'type': 'string'},
                   'answer_class': {'type': 'string', 'enum': list(choices)}}
     contract = content.get('update_contract', 'answer-v1')
-    if contract in ('key-insights-v1', 'locked-database-v1'):
+    if contract in ('key-insights-v1', 'locked-database-v1', 'collaboration-v1'):
         properties['key_insights'] = {'type': 'array', 'items': {'type': 'string', 'maxLength': 200}, 'maxItems': 3}
+    if contract == 'collaboration-v1':
+        role = content['agent_role']
+        properties.update(
+            evidence_ids={'type':'array','items':{'type':'string','enum':content['allowed_evidence_ids']}, 'maxItems':8},
+            referenced_message_ids={'type':'array','items':{'type':'string'}, 'maxItems':16},
+            message_type={'type':'string','enum':['counterexample' if role=='critic' else 'proposal']},
+            rejected_option={'type':'string','enum':list(choices) if role=='critic' else ['']},
+            request_peer_context={'type':'boolean'})
     if contract == 'locked-database-v1':
         properties['candidate_key'] = {'type': 'string', 'maxLength': 96}
         if content.get('agent_role') == 'feedback_only':
@@ -33,4 +41,23 @@ def parse_update(raw, content, choices):
             raise ValueError('Invalid candidate_key')
         if content.get('agent_role') == 'feedback_only' and answer['candidate_key']:
             raise ValueError('Agent A may share feedback but cannot submit a goal candidate')
+    if content.get('update_contract') == 'collaboration-v1':
+        if type(answer['request_peer_context']) is not bool:
+            raise ValueError('request_peer_context must be boolean')
+        for field, allowed, limit in [('evidence_ids',content['allowed_evidence_ids'],8),
+                                      ('referenced_message_ids',content['visible_message_ids'],16)]:
+            items = answer[field]
+            if not isinstance(items,list) or len(items)>limit or any(not isinstance(x,str) or x not in allowed for x in items) or len(items)!=len(set(items)):
+                raise ValueError('Invalid or invisible '+field)
+        if not answer['evidence_ids']:
+            raise ValueError('At least one supplied evidence ID must be cited')
+        expected = 'counterexample' if content['agent_role']=='critic' else 'proposal'
+        if answer['message_type'] != expected:
+            raise ValueError('Role-forbidden message_type')
+        rejected = answer['rejected_option']
+        if content['agent_role']=='critic':
+            if not isinstance(rejected,str) or rejected not in choices or rejected==answer['answer_class']:
+                raise ValueError('Critic must reject a different candidate')
+        elif rejected != '':
+            raise ValueError('Only critics may submit rejected_option')
     return answer

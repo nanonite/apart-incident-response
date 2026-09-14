@@ -1,7 +1,6 @@
 """Artifact-only analysis. No runtime imports or LLM calls."""
 import math
-import hashlib
-import json
+from .semantic import fingerprint
 from collections import Counter, defaultdict
 
 
@@ -19,18 +18,20 @@ def analyze(events):
             continue
         p = e['payload']
         # Never combine model, task, fixture/import, config or agent-role strata.
-        key = (p['task_id'], p.get('difficulty'), p['condition_id'], p['step'], p['agent_id'], p.get('source', 'imported'), p.get('model', 'unknown'), p.get('agent_config_version', 'unknown'))
+        key = (p['task_id'], p.get('difficulty'), p['condition_id'], p['step'], p['agent_id'], p.get('source', 'imported'), p.get('model', 'unknown'), p.get('agent_config_version', 'unknown'),
+               p.get('agent_role','solver'),p.get('protocol_id','unknown'),(p.get('model_metadata') or {}).get('digest','unknown'))
         groups[key].append(e)
     rows = []
     for key, samples in sorted(groups.items()):
-        task, difficulty, condition, step, agent, source, model, config = key
+        task, difficulty, condition, step, agent, source, model, config, role, protocol, model_digest = key
         classified = [e for e in samples if e['payload'].get('answer_class') is not None]
         counts = Counter(e['payload']['answer_class'] for e in classified)
         n = len(classified)
         score_samples = [evaluation[e['event_id']]['score'] for e in samples if e['event_id'] in evaluation
                          and evaluation[e['event_id']].get('score') is not None]
         rows.append(dict(task_id=task, difficulty=difficulty, condition_id=condition, step=step, agent_id=agent, source=source, model=model,
-            config_version=config, agent_role=samples[0]['payload'].get('agent_role', 'solver'),
+            config_version=config, agent_role=role, protocol_id=protocol, model_digest=model_digest,
+            task_versions=sorted({e['payload'].get('task_version','legacy_unspecified') for e in samples}),
             goal_owner=samples[0]['payload'].get('goal_owner'),
             shared_context_mode=samples[0]['payload'].get('shared_context_mode', 'full_history'),
             metric='answer_class_entropy_proxy', metric_version='frequency-bits-v1', unit='bits',
@@ -110,7 +111,7 @@ def checkpoint_grid(events):
                             phase=p.get('phase'), source=p.get('source', batch.get('source')), model=p.get('model', cfg.get('model')),
                             config_version=p.get('agent_config_version', batch.get('config_hash')),
                             prompt_version=p.get('prompt_version', cfg.get('prompt_version')),
-                            context_hash=hashlib.sha256(json.dumps(context, sort_keys=True).encode()).hexdigest() if context is not None else None,
+                            context_hash=fingerprint(context) if context is not None else None,
                             generation_event_id=p.get('attempt_event_id'), logprobs_available=p.get('logprobs_available', False),
                             logprob_token_count=p.get('logprob_token_count', 0), timestamp=update.get('timestamp'),
                             latency_ms=p.get('latency_ms'), run_elapsed_seconds=p.get('run_elapsed_seconds'),
@@ -123,7 +124,7 @@ def intervention_changes(metrics, unlock_step):
     if type(unlock_step) is not int or unlock_step < 1:
         return []
     rows = []
-    strata = ('task_id', 'difficulty', 'agent_id', 'source', 'model', 'config_version', 'agent_role')
+    strata = ('task_id', 'difficulty', 'agent_id', 'source', 'model', 'config_version', 'agent_role', 'protocol_id', 'model_digest')
     indexed = {(tuple(m.get(k) for k in strata), m['condition_id'], m['step']): m for m in metrics}
     for (key, condition, step), after in indexed.items():
         if condition != 'C2' or step != unlock_step:

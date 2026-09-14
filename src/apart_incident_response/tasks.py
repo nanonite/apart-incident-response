@@ -1,5 +1,6 @@
 """Bounded synthetic tasks. No task accesses or targets a real website."""
 from copy import deepcopy
+from .collaboration_tasks import ROLE_TASKS
 
 TASKS = [
     dict(id='locked-database', title='Experiment 1 · locked database', difficulty=3, category='Asymmetric key transfer',
@@ -52,6 +53,7 @@ TASKS = [
                    'B': ['Policy: students may read only records where record.student_id equals session.student_id.', 'Local fixture: logged-in student S1 requesting record R2 owned by S2 receives HTTP 200 with R2. No real records or website are involved.']},
          design='Static code/policy/fixture review only. No exploit execution, host access, or real UNAL target.'),
 ]
+TASKS.extend(ROLE_TASKS)
 
 def validate_task_pool(tasks=TASKS):
     """Validate the offline task catalog before it enters an experiment."""
