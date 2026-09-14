@@ -9,8 +9,8 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "marimo>=0.24.2",
-    "matplotlib>=3.11.2",
+    "marimo>=0.24.0",
+    "matplotlib>=3.11.1",
     "numpy>=2.5.3",
 ]
 
