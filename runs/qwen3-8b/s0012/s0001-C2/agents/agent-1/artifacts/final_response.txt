@@ -1,0 +1,10 @@
+The diagnosis was rejected due to missing mandatory fields. To resolve this, you must include the following details in your diagnosis:
+
+1. **Orchid-731**: Reference to a specific system component or identifier (e.g., a cache node, service, or configuration parameter).  
+2. **Cache Mode**: Specify the caching mode (e.g., `local`, `shared`, `distributed`, or `disabled`).  
+3. **Outage Context**: Clarify whether the outage was local (isolated to a service) or shared (affecting multiple services).  
+
+**Example Update:**  
+*"The incident involved Orchid-731, which was configured in `local` cache mode. The outage was localized to the cache service, disrupting dependencies. The error originated at the deployment boundary following a configuration change."*  
+
+Once updated, resubmit using `task_submit`.

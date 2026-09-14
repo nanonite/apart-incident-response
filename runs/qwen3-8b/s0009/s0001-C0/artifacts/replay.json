@@ -1,0 +1,230 @@
+{
+  "events": [
+    {
+      "agent_id": "agent-1",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T23:09:40.887685Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "incident"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T23:09:44.014166Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "error"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [
+            {
+              "line": 1,
+              "path": "application.log",
+              "text": "2026-09-12T10:14:02Z ERROR request failures began immediately after the configuration change."
+            },
+            {
+              "line": 3,
+              "path": "application.log",
+              "text": "The error began at the deployment boundary."
+            }
+          ],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T23:09:45.099989Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "error"
+      }
+    },
+    {
+      "agent_id": "agent-2",
+      "final_response": null,
+      "source": "agent_result",
+      "status": "completed",
+      "timestamp": "2026-09-13T23:09:47.340060Z"
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C0",
+      "operation": "task_submit",
+      "response": {
+        "error": {
+          "code": "invalid_arguments",
+          "message": "diagnosis rejected by the task validator (missing or incorrect: orchid-731; cache_mode; local; shared; outage)"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T23:09:49.762997Z",
+      "validated_input": {
+        "diagnosis": "The incident was caused by a recent configuration change during deployment, leading to request failures.",
+        "evidence": [
+          {
+            "excerpt": "request failures began immediately after the configuration change.",
+            "line_end": 1,
+            "line_start": 1,
+            "path": "application.log"
+          },
+          {
+            "excerpt": "The error began at the deployment boundary.",
+            "line_end": 3,
+            "line_start": 3,
+            "path": "application.log"
+          }
+        ]
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T23:09:52.564131Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "orchid-731 cache_mode outage"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "error": {
+          "code": "invalid_arguments",
+          "message": "unsupported argument(s): max,results"
+        },
+        "ok": false
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T23:09:54.115222Z",
+      "validated_input": {
+        "max,results": 5,
+        "query": "orchid-731"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T23:09:56.499247Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "orchid-731"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T23:09:58.097992Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "cache_mode"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "condition": "C0",
+      "operation": "task_query",
+      "response": {
+        "ok": true,
+        "result": {
+          "matches": [],
+          "task_id": "task-1",
+          "truncated": false
+        }
+      },
+      "run_id": "s0001-C0",
+      "source": "agent_tool",
+      "task_id": "task-1",
+      "timestamp": "2026-09-13T23:10:00.154663Z",
+      "validated_input": {
+        "max_results": 5,
+        "query": "local shared"
+      }
+    },
+    {
+      "agent_id": "agent-1",
+      "final_response": "The required evidence terms (\"orchid-731\", \"cache_mode\", etc.) could not be found in any files. This suggests the initial diagnosis may need revision without these terms. However, the original evidence from `application.log` still indicates the root cause was a configuration change during deployment triggering request failures. Would you like me to resubmit the diagnosis without the missing terms?",
+      "source": "agent_result",
+      "status": "completed",
+      "timestamp": "2026-09-13T23:10:03.857473Z"
+    }
+  ],
+  "schema_version": 1
+}

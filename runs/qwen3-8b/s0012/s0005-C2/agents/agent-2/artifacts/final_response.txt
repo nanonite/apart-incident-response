@@ -1,0 +1,1 @@
+The error rate spike is caused by a race condition in the shared cache's concurrency control, leading to inconsistent state when multiple requests access it simultaneously. This is evidenced by metrics.txt (lines 1-2), which shows errors exclusively occur on cache-touching requests. The diagnosis was appended to the board with sequence ID 1.

@@ -1,0 +1,1 @@
+I cannot find any evidence files related to the incident in the task directory. The searches for "error", "log", and "incident" yielded no matches, and no files were found through the task query. Without additional evidence, a diagnosis cannot be performed. Please verify that files are properly assigned to this task or provide more details about the incident.
