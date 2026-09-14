@@ -11,7 +11,7 @@ We wonder if there is a way to build a monitor that works differently, one that 
 
 Our main contributions are:
 \begin{enumerate}[leftmargin=*, itemsep=1pt, topsep=2pt]
-  \item \textbf{A testbed modelled on the incident, with verifiable ground truth.} Cryptographically split credentials make every use of the channel provable, and a placebo condition separates the arrival of foreign text from the arrival of useful information. The code and all 539 runs, with token log-probabilities, are public.
-  \item \textbf{Patterns in how entropy reacts when isolation breaks, across three models and three temperatures.} Every model used the channel, but only some models' entropy responded, and under sampling it responded as much to useless text as to real messages. The two agents barely became coupled: communication appeared as a disturbance inside each receiver, not as synchrony between agents.
-  \item \textbf{An honest assessment of entropy as a monitor.} It detects that a sandboxed agent's context was disrupted for some models and works best at low temperature, but it does not tell whether the disruption was communication. We identify what a usable monitor would still need.
+  \item \textbf{A testbed based on the incident.} Two agents each hold one password and share a log. Because the passwords and asset contents are random, we can prove when an agent used information from the other one. A placebo condition feeds the agents useless text from another run. Code and data for all 539 runs are public.
+  \item \textbf{Measurements across three models and three temperatures.} All three models used the channel, but only Qwen's entropy changed clearly when foreign text arrived. With sampling, useless text changed it as much as real messages did. The two agents' actions stayed almost uncorrelated, so the change showed up inside each agent rather than between them.
+  \item \textbf{A realistic view of entropy as a monitor.} It can show that an agent's context was disrupted, for some models, but not whether that disruption was communication. We describe what is still missing to make it usable.
 \end{enumerate}
