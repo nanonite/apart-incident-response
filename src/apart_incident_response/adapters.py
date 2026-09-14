@@ -58,8 +58,8 @@ class OllamaAdapter:
         entries = result.get('logprobs')
         if self.logprobs and not entries:
             logprobs_available = False
-        compact = [{'token': e.get('token'), 'logprob': e.get('logprob'),
-                    'top': [{'token': t.get('token'), 'logprob': t.get('logprob')} for t in (e.get('top_logprobs') or [])]}
+        compact = [{'token': e.get('token'), 'bytes': e.get('bytes'), 'logprob': e.get('logprob'),
+                    'top': [{'token': t.get('token'), 'bytes': t.get('bytes'), 'logprob': t.get('logprob')} for t in (e.get('top_logprobs') or [])]}
                    for e in entries] if entries else None
         return {'raw_response': result.get('message', {}).get('content', ''), 'model': result.get('model', self.model),
                 'input_tokens': result.get('prompt_eval_count'), 'output_tokens': result.get('eval_count'),

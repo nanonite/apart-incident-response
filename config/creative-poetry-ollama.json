@@ -1,0 +1,29 @@
+{
+  "study_id": "creative_poetry_v2",
+  "task_ids": [
+    "poetry-duet"
+  ],
+  "conditions": [
+    "C0",
+    "C2"
+  ],
+  "steps": 5,
+  "repeats": 1,
+  "unlock_step": 3,
+  "adapter": "ollama",
+  "model": "gemma2:2b",
+  "deadline_seconds": 900,
+  "request_timeout_seconds": 150,
+  "batch_timeout_seconds": 3600,
+  "max_output_tokens": 512,
+  "communication_budget_bytes": 6000,
+  "communication_delay_steps": 0,
+  "communication_cost_per_kib": 0,
+  "communication_request_required": false,
+  "shared_context_mode": "full_history",
+  "engagement_mode": "neutral",
+  "evidence_mode": "split",
+  "role_mode": "specialized",
+  "logprobs": true,
+  "schedule": "synchronous_snapshot_serial_inference"
+}

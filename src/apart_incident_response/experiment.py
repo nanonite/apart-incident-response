@@ -115,6 +115,10 @@ def validate_config(raw):
                tools=[], config_version='1.0', paid_api_enabled=False)
     if any(task_by_id(t).get('update_contract') in COLLAB_CONTRACTS for t in cfg['task_ids']):
         cfg.update(prompt_version='restricted-collaboration-v1', serializer_version='role-records-v1')
+    if any(task_by_id(t).get('update_contract') == 'creative-collab-v1' for t in cfg['task_ids']):
+        cfg.update(prompt_version='restricted-creative-v2', serializer_version='creative-window-excerpt-v2')
+        if cfg['engagement_mode'].startswith('team_'):
+            raise ValueError('Creative tasks have no correctness reward; use neutral, peer_review, or required_peer_check')
     return cfg
 
 
@@ -135,9 +139,8 @@ def observation(task, history, agent, step, condition, cfg):
             selected.extend([e for e in visible if e['payload']['agent_id'] == owner][-window:])
         visible = sorted(selected, key=lambda e: (e['payload']['step'], e['payload']['agent_id']))
         delivery['delivered_message_ids'] = [e['event_id'] for e in visible if e['payload']['agent_id'] != agent]
-        delivery['omitted_message_ids'] = [e['event_id'] for e in history
-            if e['kind'] == 'task_update' and e['payload']['agent_id'] != agent and e['payload']['step'] < step
-            and e['event_id'] not in delivery['delivered_message_ids']]
+        delivery['omitted_message_ids'] = [i for i in delivery['eligible_message_ids']
+            if i not in delivery['delivered_message_ids']]
     peer = [e for e in visible if e['payload']['agent_id'] != agent]
     role = role_at(task, agent, step, cfg.get('role_swap_step'))
     choices = {'feedback_only': 'Share evidence only; goal submission forbidden'} if role == 'feedback_only' else task['choices']
@@ -173,6 +176,14 @@ def observation(task, history, agent, step, condition, cfg):
             'Communication cost is recorded per delivered KiB and is subtracted only in separate net-utility analysis.')
         if contract == 'creative-collab-v1':
             content['max_words'] = task.get('max_words', 5000)
+            content.update(agent_id=agent, history_policy={'updates_per_agent': task['history_window'],
+                'response_excerpt_chars': task['context_response_chars'], 'raw_artifacts_preserved': True})
+            instruction = instruction.replace(
+                'response_text must be one or two concise sentences (at most 60 words) stating your proposed answer and its evidence.',
+                'response_text is the current creative artifact; aim for 80 to 120 words in this short pilot, with a hard maximum of 5000 words.')
+            instruction = instruction.replace('message_type (counterexample for critic, proposal otherwise)',
+                'message_type (draft for opening_poet/historical_drafter, revision for editor/liberal_critic)')
+            instruction = instruction.replace('(a different option for critic, empty string otherwise)', '(always an empty string for creative tasks)')
             instruction += (' This is an open-ended creative artifact, not a multiple-choice correctness test. '
                 'Return the complete current artifact in response_text (maximum 5000 words), cite supplied evidence IDs, '
                 'and use message_type draft for the opening role or revision for the editor/critic role. '
@@ -197,6 +208,12 @@ def observation(task, history, agent, step, condition, cfg):
                             'share useful key information only in response_text/key_insights. Agent B is the only solver: put a proposed exact key in candidate_key, '
                             'or an empty string while unknown. No folder browsing. A claim of unlocked is not success until the controller tests the key.')
     messages = [{'role': 'system', 'content': instruction}, {'role': 'user', 'content': json.dumps(content, ensure_ascii=False)}]
+    if contract == 'creative-collab-v1':
+        delivery.update(selection_record_bytes=delivery['delivered_bytes'],
+                        policy_version='creative-window-excerpt-v2', history_policy=content['history_policy'])
+        actual_peer_records = [r for r in content['permitted_history'] if r['agent'] != agent]
+        delivery['delivered_bytes'] = sum(len(json.dumps(r,ensure_ascii=False,sort_keys=True).encode()) for r in actual_peer_records)
+        delivery['cost'] = delivery['delivered_bytes']/1024*cfg.get('communication_cost_per_kib',0)
     # Conservative UTF-8 byte preflight with room for the local chat template and output.
     # Usage remains provider-reported; byte counts are not presented as token counts.
     context_bytes = sum(len(m['content'].encode()) for m in messages)
