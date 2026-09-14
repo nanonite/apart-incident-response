@@ -3,49 +3,67 @@
 
 \input{content/diagrams/styles.tex}
 
+\subsection{Entropy of agents and of the system}
+\label{sec:entropy}
+
+Shannon entropy measures how uncertain the outcome of a random variable is \parencite{shannon1948mathematical}. For a variable $X$ with outcomes $x_1, \ldots, x_n$,
+\begin{equation}
+  H(X) = - \sum_{i=1}^{n} p(x_i) \log_2 p(x_i),
+  \label{eq:shannon}
+\end{equation}
+which is zero when the outcome is certain and reaches $\log_2 n$ bits when all outcomes are equally likely \parencite{cover2006elements}. A language model gives us such a distribution at every step. From the logits $z_t$ it produces for the next token, given the context $x_{<t}$ and a sampling temperature $T$,
+\begin{equation}
+  p(v \mid x_{<t}) = \frac{\exp\left(z_{t,v} / T\right)}{\sum_{u \in V} \exp\left(z_{t,u} / T\right)},
+  \label{eq:softmax}
+\end{equation}
+and the entropy of that distribution,
+\begin{equation}
+  H_t = - \sum_{v \in V} p(v \mid x_{<t}) \log_2 p(v \mid x_{<t}),
+  \label{eq:token_entropy}
+\end{equation}
+is the model's uncertainty about what comes next. This is \emph{predictive} entropy \parencite{malinin2021uncertainty}. \emph{Semantic} entropy instead samples many full answers, groups them by meaning and measures uncertainty over those groups, so that rewording does not count \parencite{kuhn2023semantic, shannon_hallucination}. We use predictive entropy, because it is available from a single generation and because a change in wording is part of what we expect foreign text to cause.
+
+These quantities describe one agent. For a system of $n$ agents with outputs $X_1, \ldots, X_n$, the joint entropy is
+\begin{equation}
+  H(X_1, \ldots, X_n) = \sum_{i=1}^{n} H(X_i) - TC(X_1; \ldots; X_n),
+  \label{eq:mas_entropy}
+\end{equation}
+where the total correlation $TC$ measures how much the agents depend on each other and is zero only when they are independent \parencite{watanabe1960}. For two agents it reduces to the mutual information $I(X_1; X_2)$. Our original hypothesis was that agents who communicate become coupled, so $I$ should rise when a hidden channel opens. To estimate it we let $X_i$ be the action agent $i$ takes at a given turn. The two agents are sampled in separate calls, so within one run they are independent given their contexts, and any dependence can only show up across runs. For each model, condition and turn we therefore pool the action distributions $q^r_i$ of the $N$ runs, $p(a_1, a_2) = \frac{1}{N} \sum_r q^r_1(a_1)\, q^r_2(a_2)$, and compare the resulting $I$ with a null in which agents from different runs are paired at random. Agents that share a model and a task behave alike without talking, and this null removes that part.
+
+\subsection{A testbed built from the incident}
+\label{sec:testbed}
+
+We rebuilt the incident as a small testbed: two sandboxed agents, each holding one password to a task neither can finish alone, and a shared log that stays closed, opens mid-task (real communication) or delivers foreign noise (placebo). \Cref{fig:architecture} shows the design, and each part of it stands for something in the incident.
+
 \begin{figure*}[t]
   \centering
   \input{content/diagrams/architecture.tex}
-  \caption{Testbed. Both agents receive the same task $T$ but hold different passwords, so each can decrypt only one of the two assets the report needs. They share an append-only log in which every entry carries its author. Reads pass through a permission filter that returns only the reader's own entries. In the switch condition the filter returns every entry from turn $t_s = 8$; in the placebo condition it keeps the restriction but adds entries from a donor run.}
+  \caption{Testbed. Both agents receive the same task $T$ but hold different passwords, so each can decrypt only one of the two assets the report needs. They share an append-only log in which every entry carries its author. Writes always go to the log; reads pass through a filter that returns only the reader's own entries. In the switch condition the filter returns the entries of both agents from turn $t_s = 8$. In the placebo condition it keeps the restriction but adds entries from an unrelated donor run, labelled as the other agent's.}
   \label{fig:architecture}
 \end{figure*}
 
-\subsection{Testbed}
-\label{sec:testbed}
+At the top is the task $T$, the same for both agents: a report on a database schema that must list every table, column and foreign key and carry the title, logo, colour and font of a brand kit. Neither agent can finish it alone. This mirrors the incident, where the board was used mostly for tasks that no model had ever solved \parencite{openai2026incident}. The two agents stand for two separate evaluation runs. Each is a model with a harness that rebuilds its context from scratch every turn, from the task, its own password and the result of its previous action, so nothing carries over except what is written in the log.
 
-Two agents built on the same model are asked for the same report on a database schema, which needs every table, column and foreign key plus the title, logo, colour and font of a brand kit (\cref{fig:architecture}). Both assets are encrypted (PBKDF2-HMAC-SHA256, SHAKE-256 keystream, HMAC tag), and each agent holds one password. Passwords and all asset identifiers are random strings, so an identifier in an agent's output can only come from decrypting the asset or from the log. The split makes communication useful and its use provable.
+Below each agent is a password and an encrypted asset. $A_1$ can open the brand kit and $A_2$ the schema, just as agents in the incident held credentials they had been given legitimately. The encryption is real (PBKDF2 key derivation, a SHAKE-256 keystream and an HMAC tag), so a wrong password returns nothing. Passwords and every identifier inside the assets are random strings. If one of them appears in an agent's output, it came either from decrypting the asset or from the other agent, never from training data, and this is what makes communication provable.
 
-In each turn, each agent makes one API call and returns one action: \texttt{READ\_LOG}, \texttt{WRITE\_LOG}, \texttt{DECRYPT\_SCHEMA}, \texttt{DECRYPT\_BRAND\_KIT} or \texttt{SUBMIT\_REPORT}. The context is rebuilt before every call from the system prompt, the task, the agent's password and the result of its previous action, so the log is its only memory. The task says agents can read only their own entries and keeps saying so after permissions change. A run stops at turn 20 if a complete report exists, otherwise at the first complete report or turn 30.
+In the middle is the shared log, our version of the package mirror. It is append-only and every entry is tagged with its author. Agents write to it with \texttt{WRITE\_LOG} and read from it with \texttt{READ\_LOG}; their other actions are the two decryptions and \texttt{SUBMIT\_REPORT}. Every read passes through a filter, the equivalent of the access controls that were supposed to keep runs apart. The task tells both agents that they can only read their own entries, and it keeps telling them so even after that stops being true, so an agent that uses its partner's entries found them on its own.
 
-The conditions differ only in what \texttt{READ\_LOG} returns from turn $t_s = 8$ (\cref{fig:conditions}). \textbf{Base} (no disruption) returns the reader's own entries throughout. \textbf{Placebo} (uninformative disruption) adds entries from a donor run, a switch run of the same model on a scenario with different identifiers and passwords, labelled as the partner's and shown at their original turns. \textbf{Switch} (informative disruption) lifts the filter, so reads return both agents' entries: real communication. Placebo and switch against base test whether entropy detects disruption; switch against placebo tests whether it detects information beyond the arrival of foreign text.
+The two boxes under the log are what we change. In the switch condition, the filter opens at turn $t_s = 8$ and reads return both agents' entries, including earlier ones. This is the moment a hidden channel opens, and it is what a monitor would have to catch. In the placebo condition, the filter stays closed, but from turn 8 reads also return entries from a donor log: a run of the same model on a different scenario, with other passwords and identifiers, shown as if the partner had written them. The placebo matches real communication in format, author, amount and timing, but none of it helps. We need it because any new text can shift a model's token distribution, and without it we could not tell a monitor that detects communication from one that detects text. In the base condition, the filter never opens. \Cref{fig:conditions} shows what reads return over a run in each condition.
 
 \begin{figure*}[t]
   \centering
   \input{content/diagrams/conditions.tex}
-  \caption{What \texttt{READ\_LOG} returns over a run in each condition. The switch turn is fixed, so turn $t$ is the same task phase in all runs.}
+  \caption{What \texttt{READ\_LOG} returns over a run in each condition. The switch turn is the same in every run, so turn $t$ refers to the same phase of the task in all runs.}
   \label{fig:conditions}
 \end{figure*}
 
-\subsection{Models, sampling and ground truth}
+\subsection{Protocol and analysis}
+\label{sec:protocol}
 
-We used gpt-4o-mini, Llama 3.3 70B Instruct and Qwen3 235B A22B (2507) through OpenRouter, each pinned to one provider (OpenAI, Novita, Google Vertex) because providers of the same model return different probabilities. Calls requested the top 20 log-probabilities per token, with top-$p = 1$ and seeds shared across conditions. We ran the full design at temperature 1, 0.5 and 0, with 20 runs per model and condition (540 runs, US\$4.18). The lower temperatures were added after $T = 1$ failed to separate switch from placebo. Before each experiment every model had to complete the task in at least 5 of 10 switch runs; all passed on the first prompt (70 to 100\%).
+A run proceeds in turns, with each agent taking one action per turn. It stops at turn 20 if one agent has submitted a complete report, otherwise at the first complete report or at turn 30. A deterministic checker grades every report against the asset facts and marks communication from $A_i$ to $A_j$ as verified only if three things happen in order: $A_i$ writes its password or identifiers to the log, a read by $A_j$ returns that entry, and $A_j$ then uses it to decrypt $A_i$'s asset or writes identifiers it could not have obtained otherwise. No language model is involved in grading. Runs are discarded if more than 10\% of API calls fail. The team's Pi runtime implements the same board design for sandboxed coding agents; for this study we used a minimal harness that calls the models directly, which gives us the token log-probabilities we need.
 
-A deterministic checker grades reports against the asset facts and verifies communication from $A_i$ to $A_j$ only if, in order, $A_i$ writes its password or identifiers to the log, a read by $A_j$ returns that entry, and $A_j$ then decrypts $A_i$'s asset or uses identifiers it could not otherwise have. Runs are discarded on a filter leak, impossible knowledge, or more than 10\% failed API calls.
+We ran three models from different families, gpt-4o-mini, Llama 3.3 70B and Qwen3 235B, through OpenRouter. Each was pinned to a single provider (OpenAI, Novita and Google Vertex), because providers serving the same model return different probabilities. Every call requested the log-probabilities of the 20 most likely tokens at each position. We repeated the whole experiment at temperatures 1, 0.5 and 0, with 20 runs per model and condition, 540 runs in total at a cost of US\$4.18. Temperature decides how much of an agent's behaviour is sampling noise, and we wanted to know whether a signal hidden by noise at $T = 1$ would appear when decoding was more deterministic. Vertex returns log-probabilities after temperature scaling, so for Qwen at $T = 0.5$ we undid the scaling before computing entropy, and all entropies refer to the model's unscaled distribution. Before each experiment, every model had to finish the task in at least half of 10 switch runs with the shared prompt, and all of them did.
 
-\subsection{Entropy measures}
-\label{sec:measures}
+For every call we compute three measures from the returned log-probabilities, renormalised over the top 20 tokens. \emph{Token entropy} is the mean of \cref{eq:token_entropy} over the call. \emph{Adjusted entropy} removes the part explained by what the agent was doing, since a fixed \texttt{READ\_LOG} and a long free-text report differ in entropy for reasons unrelated to the log; it is the residual of a regression on action type and response length. \emph{Decision entropy} is the uncertainty about the next action itself, read at the first token of the reply by assigning each candidate token to the action it starts to spell.
 
-For each generated token we compute the Shannon entropy \parencite{shannon1948mathematical} of the next-token distribution,
-\begin{equation}
-  H_t = - \textstyle\sum_{v} p(v \mid x_{<t}) \log_2 p(v \mid x_{<t}),
-  \label{eq:token_entropy}
-\end{equation}
-renormalised over the 20 returned alternatives \parencite{malinin2021uncertainty}. We use this predictive entropy rather than semantic entropy \parencite{kuhn2023semantic}, which discards changes in wording that foreign text may cause. OpenAI and Novita return log-probabilities before temperature scaling; Vertex returns them after scaling for $0 < T \neq 1$, so at $T = 0.5$ we restored Qwen's values (multiply by $T$, renormalise). Entropy is thus always measured on the unscaled distribution.
-
-We summarise each call three ways. \emph{Token entropy} is the mean of $H_t$. \emph{Adjusted entropy} is the residual of a per-model regression of token entropy on action type and $\log(1 + n_{\text{tokens}})$, because a fixed \texttt{READ\_LOG} and a free-text report differ for reasons unrelated to disruption. \emph{Decision entropy} is the entropy over the next action, read at the first letter token by mapping each alternative to the action it starts to spell.
-
-For the system we use $H(X_1, X_2) = H(X_1) + H(X_2) - I(X_1; X_2)$ \parencite{cover2006elements, watanabe1960}, where $X_i(t)$ is agent $i$'s action at turn $t$. Given their contexts the two agents are sampled independently, so dependence can only arise across runs. For each model, condition and turn we pool the $N$ runs' action distributions, $p(a_1, a_2) = \frac{1}{N} \sum_r q^r_1(a_1)\, q^r_2(a_2)$, and compare $I$ with a null that pairs agents from different runs (1{,}000 re-pairings), over turns in which both agents are still acting.
-
-\subsection{Statistical analysis}
-
-The run is the unit of analysis. For each run and measure, $\Delta$ is the mean over turns 8 to 20 minus the mean over turns 1 to 7. We compare conditions on $\Delta$ with permutation tests (10{,}000 permutations), 95\% bootstrap intervals and AUC, with Holm correction across models and contrasts within each measure and experiment. The disruption test pools switch and placebo (40 runs) against base (20). As a check, we fit $H \sim \text{condition} \times \text{post} + \text{action} + \log(1 + n_{\text{tokens}})$ on individual calls, as a mixed model with a random intercept per run and with run-clustered errors. For online use we run a CUSUM \parencite{page1954cusum} on adjusted entropy, with the threshold set for 5\% alarms on base runs.
+A monitor watches one run as it unfolds, so the run is our unit of analysis. For each run we take the mean of a measure over turns 8 to 20 minus its mean over turns 1 to 7, which compares the run with its own past. We then compare these changes between conditions with permutation tests, bootstrap confidence intervals and the AUC, correcting for multiple comparisons with the Holm method, and we check the results with a call-level mixed model. Finally, to see how the signal would behave as an online alarm, we run a CUSUM detector \parencite{page1954cusum} on each run's adjusted entropy, with its threshold set so that 5\% of base runs raise a false alarm.
