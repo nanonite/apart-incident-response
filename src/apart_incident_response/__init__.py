@@ -46,6 +46,14 @@ _EXPERIMENT_EXPORTS = {
     "OpenRouterFreeProvider",
     "ReasoningCase",
     "default_cases",
+    "BehavioralArtifactStore",
+    "BehavioralProviderConfig",
+    "OpenRouterBehavioralProvider",
+    "audit_retained_pilot",
+    "pressure_catalog",
+    "CapabilityProbeConfig",
+    "OpenRouterCapabilityProbe",
+    "evaluate_probability_capture",
     "CAPABILITY_PROFILES",
     "CapabilityProfile",
     "ExperimentController",
@@ -122,6 +130,14 @@ def __getattr__(name: str) -> Any:
             from . import reasoning_baseline
 
             value = getattr(reasoning_baseline, name)
+        elif name in {"BehavioralArtifactStore", "BehavioralProviderConfig", "OpenRouterBehavioralProvider", "audit_retained_pilot", "pressure_catalog"}:
+            from . import behavioral_discovery
+
+            value = getattr(behavioral_discovery, name)
+        elif name in {"CapabilityProbeConfig", "OpenRouterCapabilityProbe", "evaluate_probability_capture"}:
+            from . import entropy_capability
+
+            value = getattr(entropy_capability, name)
         elif name in {"classify_uptake_outcomes", "compute_metrics", "detect_uptake", "replay_trace", "write_derived_artifacts"}:
             from . import telemetry
 
@@ -208,6 +224,14 @@ __all__ = [
     "OpenRouterFreeProvider",
     "ReasoningCase",
     "default_cases",
+    "BehavioralArtifactStore",
+    "BehavioralProviderConfig",
+    "OpenRouterBehavioralProvider",
+    "audit_retained_pilot",
+    "pressure_catalog",
+    "CapabilityProbeConfig",
+    "OpenRouterCapabilityProbe",
+    "evaluate_probability_capture",
     "CAPABILITY_PROFILES",
     "CapabilityProfile",
     "ExperimentController",

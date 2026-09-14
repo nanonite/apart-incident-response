@@ -1,0 +1,282 @@
+{
+  "audit_version": "retained-pilot-behavioral-v1",
+  "behavioral_valid_count": 0,
+  "entropy_valid_count": 0,
+  "raw_evidence_rewritten": false,
+  "root": "/home/framework/Workspace/apart-incident-response/runs/openrouter/ling-3.0-flash-vl-free-2agent/openrouter/openrouter%2Finclusionai%2Fling-3.0-flash-vl%3Afree/5f10bd6d-8ad2-4d17-8644-e8cd41c0ec48",
+  "rows": [
+    {
+      "agent_statuses": [
+        "budget_exhausted"
+      ],
+      "behavioral_valid": false,
+      "board_event_count": 0,
+      "checker_valid": false,
+      "condition": "C0",
+      "entropy_valid": false,
+      "execution_valid": false,
+      "run_status": "failed",
+      "seed": "s0001",
+      "submitted_agents": 0,
+      "validator_count": 0
+    },
+    {
+      "agent_statuses": [
+        "budget_exhausted"
+      ],
+      "behavioral_valid": false,
+      "board_event_count": 2,
+      "checker_valid": false,
+      "condition": "C1",
+      "entropy_valid": false,
+      "execution_valid": false,
+      "run_status": "failed",
+      "seed": "s0001",
+      "submitted_agents": 0,
+      "validator_count": 0
+    },
+    {
+      "agent_statuses": [
+        "budget_exhausted"
+      ],
+      "behavioral_valid": false,
+      "board_event_count": 0,
+      "checker_valid": false,
+      "condition": "C2",
+      "entropy_valid": false,
+      "execution_valid": false,
+      "run_status": "failed",
+      "seed": "s0001",
+      "submitted_agents": 0,
+      "validator_count": 0
+    },
+    {
+      "agent_statuses": [
+        "budget_exhausted"
+      ],
+      "behavioral_valid": false,
+      "board_event_count": 0,
+      "checker_valid": false,
+      "condition": "C0",
+      "entropy_valid": false,
+      "execution_valid": false,
+      "run_status": "failed",
+      "seed": "s0002",
+      "submitted_agents": 0,
+      "validator_count": 0
+    },
+    {
+      "agent_statuses": [
+        "budget_exhausted"
+      ],
+      "behavioral_valid": false,
+      "board_event_count": 0,
+      "checker_valid": false,
+      "condition": "C1",
+      "entropy_valid": false,
+      "execution_valid": false,
+      "run_status": "failed",
+      "seed": "s0002",
+      "submitted_agents": 0,
+      "validator_count": 0
+    },
+    {
+      "agent_statuses": [
+        "budget_exhausted"
+      ],
+      "behavioral_valid": false,
+      "board_event_count": 1,
+      "checker_valid": false,
+      "condition": "C2",
+      "entropy_valid": false,
+      "execution_valid": false,
+      "run_status": "failed",
+      "seed": "s0002",
+      "submitted_agents": 0,
+      "validator_count": 0
+    },
+    {
+      "agent_statuses": [
+        "budget_exhausted"
+      ],
+      "behavioral_valid": false,
+      "board_event_count": 0,
+      "checker_valid": false,
+      "condition": "C0",
+      "entropy_valid": false,
+      "execution_valid": false,
+      "run_status": "failed",
+      "seed": "s0003",
+      "submitted_agents": 0,
+      "validator_count": 0
+    },
+    {
+      "agent_statuses": [
+        "failed"
+      ],
+      "behavioral_valid": false,
+      "board_event_count": 2,
+      "checker_valid": false,
+      "condition": "C1",
+      "entropy_valid": false,
+      "execution_valid": false,
+      "run_status": "failed",
+      "seed": "s0003",
+      "submitted_agents": 0,
+      "validator_count": 0
+    },
+    {
+      "agent_statuses": [
+        "budget_exhausted"
+      ],
+      "behavioral_valid": false,
+      "board_event_count": 1,
+      "checker_valid": false,
+      "condition": "C2",
+      "entropy_valid": false,
+      "execution_valid": false,
+      "run_status": "failed",
+      "seed": "s0003",
+      "submitted_agents": 0,
+      "validator_count": 0
+    },
+    {
+      "agent_statuses": [
+        "budget_exhausted",
+        "failed"
+      ],
+      "behavioral_valid": false,
+      "board_event_count": 0,
+      "checker_valid": false,
+      "condition": "C0",
+      "entropy_valid": false,
+      "execution_valid": false,
+      "run_status": "failed",
+      "seed": "s0004",
+      "submitted_agents": 0,
+      "validator_count": 0
+    },
+    {
+      "agent_statuses": [
+        "budget_exhausted"
+      ],
+      "behavioral_valid": false,
+      "board_event_count": 1,
+      "checker_valid": false,
+      "condition": "C1",
+      "entropy_valid": false,
+      "execution_valid": false,
+      "run_status": "failed",
+      "seed": "s0004",
+      "submitted_agents": 0,
+      "validator_count": 0
+    },
+    {
+      "agent_statuses": [
+        "budget_exhausted"
+      ],
+      "behavioral_valid": false,
+      "board_event_count": 1,
+      "checker_valid": false,
+      "condition": "C2",
+      "entropy_valid": false,
+      "execution_valid": false,
+      "run_status": "failed",
+      "seed": "s0004",
+      "submitted_agents": 0,
+      "validator_count": 0
+    },
+    {
+      "agent_statuses": [
+        "budget_exhausted"
+      ],
+      "behavioral_valid": false,
+      "board_event_count": 0,
+      "checker_valid": false,
+      "condition": "C0",
+      "entropy_valid": false,
+      "execution_valid": false,
+      "run_status": "failed",
+      "seed": "s0005",
+      "submitted_agents": 0,
+      "validator_count": 0
+    },
+    {
+      "agent_statuses": [
+        "budget_exhausted"
+      ],
+      "behavioral_valid": false,
+      "board_event_count": 1,
+      "checker_valid": false,
+      "condition": "C1",
+      "entropy_valid": false,
+      "execution_valid": false,
+      "run_status": "failed",
+      "seed": "s0005",
+      "submitted_agents": 0,
+      "validator_count": 0
+    },
+    {
+      "agent_statuses": [
+        "budget_exhausted"
+      ],
+      "behavioral_valid": false,
+      "board_event_count": 0,
+      "checker_valid": false,
+      "condition": "C2",
+      "entropy_valid": false,
+      "execution_valid": false,
+      "run_status": "failed",
+      "seed": "s0005",
+      "submitted_agents": 0,
+      "validator_count": 0
+    },
+    {
+      "agent_statuses": [
+        "budget_exhausted"
+      ],
+      "behavioral_valid": false,
+      "board_event_count": 0,
+      "checker_valid": false,
+      "condition": "C0",
+      "entropy_valid": false,
+      "execution_valid": false,
+      "run_status": "failed",
+      "seed": "s0006",
+      "submitted_agents": 0,
+      "validator_count": 0
+    },
+    {
+      "agent_statuses": [
+        "budget_exhausted"
+      ],
+      "behavioral_valid": false,
+      "board_event_count": 1,
+      "checker_valid": false,
+      "condition": "C1",
+      "entropy_valid": false,
+      "execution_valid": false,
+      "run_status": "failed",
+      "seed": "s0006",
+      "submitted_agents": 0,
+      "validator_count": 0
+    },
+    {
+      "agent_statuses": [
+        "budget_exhausted"
+      ],
+      "behavioral_valid": false,
+      "board_event_count": 0,
+      "checker_valid": false,
+      "condition": "C2",
+      "entropy_valid": false,
+      "execution_valid": false,
+      "run_status": "failed",
+      "seed": "s0006",
+      "submitted_agents": 0,
+      "validator_count": 0
+    }
+  ],
+  "run_count": 18,
+  "salvage_decision": "no_salvage_behavioral_execution_invalid"
+}
