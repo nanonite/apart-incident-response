@@ -25,7 +25,7 @@ The joint-entropy identity in \cref{sec:entropy} extends beyond two agents throu
 \section{Conclusion}
 \label{sec:conclusion}
 
-We developed a framework for studying disruption in the behavior of a MAS by measuring per-agent entropy variation and cross-run action coupling. It tested whether foreign text entering an agent's context changes these quantities. In a controlled two-agent environment, Qwen showed a disruption signal, but under sampled decoding the measured entropy changes did not reliably distinguish useful peer messages from task-irrelevant donor text. The strongest signal was within individual receivers; action coupling added little. This work is a starting point for a more general study of entropy dynamics across tasks and roles in a multi-agent system.
+We developed a framework for measuring how a restricted MAS responds when task information changes. In a two-agent benchmark requiring complementary protected assets, we compared isolation, scheduled visibility, and task-irrelevant text while recording task state, permitted observations, checker-verified asset use, predictive and action entropy, and cross-agent coupling. Entropy changes were model-dependent and often reflected the presence of new text more than its task relevance; coupling added little. The framework therefore provides a reproducible starting point for comparing tasks and roles, while leaving semantic uncertainty, causal collaboration, and general task performance for future experiments.
 
 \section*{Code and Data}
 
