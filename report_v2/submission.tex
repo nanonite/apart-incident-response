@@ -1,0 +1,305 @@
+% =====================================================================
+%  Apart Research - Submission Template (LaTeX port of Submission_Template.docx)
+%  AI Incident Response Sprint, September 2026
+%
+%  Compila con: pdflatex submission.tex  (dos veces, por hyperref)
+%  Formato original del .docx: US Letter, margenes de 1", Arial 11 pt
+% =====================================================================
+\documentclass[11pt,letterpaper]{article}
+
+% ---------- Codificacion e idioma ----------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}   % cambia a [spanish] si escriben el informe en espanol
+
+% ---------- Pagina y tipografia (Arial -> Helvetica) ----------
+\usepackage[margin=1in]{geometry}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{microtype}
+\linespread{1.08}
+\setlength{\parskip}{0.55em}
+\setlength{\parindent}{0pt}
+
+% ---------- Utilidades ----------
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{titlesec}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{colorlinks=true,linkcolor=black,citecolor=black,urlcolor=black}
+
+\captionsetup{font=small,labelfont=bf}
+\setlist[itemize]{topsep=0.2em,itemsep=0.15em,leftmargin=1.4em}
+\setlist[enumerate]{topsep=0.2em,itemsep=0.15em,leftmargin=1.6em}
+
+% Secciones en negrita con numero y punto: "1. Introduction"
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{0.5em}{}
+\titlespacing*{\section}{0pt}{1.1em}{0.4em}
+\titlespacing*{\subsection}{0pt}{0.8em}{0.3em}
+
+% Enlaces subrayados, como en el .docx
+\newcommand{\ulink}[2]{\href{#1}{\underline{#2}}}
+
+% Entrada de autor: nombre + superindice + afiliacion
+\newcommand{\authorentry}[3]{%
+  \begin{tabular}[t]{c}#1$^{#2}$\\[0.15em]\textit{#3}\end{tabular}}
+
+% Texto de guia de la plantilla (borrar antes de enviar)
+\newcommand{\guide}[1]{\textit{#1}}
+
+\begin{document}
+\pagestyle{plain}
+
+% =====================================================================
+%  TITULO Y AUTORES
+% =====================================================================
+\begin{center}
+  {\LARGE\bfseries PROJECT TITLE\footnote{Research conducted at the
+  \ulink{https://apartresearch.com/sprints/ai-incident-response-sprint-2026-09-11-to-2026-09-13}{AI Incident Response Sprint},
+  September 2026.}}
+
+  \vspace{1.2em}
+
+  \begin{tabular}{ccc}
+    \authorentry{Juan Camilo Melgarejo Gómez}{1}{Affiliation} &
+    \authorentry{Alejandro Sánchez Poveda}{2}{Affiliation} &
+    \authorentry{Sergio Montoya Ramírez}{3}{Affiliation} \\[1.6em]
+    \multicolumn{3}{c}{%
+      \authorentry{Daniel Díaz González}{4}{Affiliation}\hspace{4em}
+      \authorentry{Roger Palomeque}{5}{Affiliation}} \\
+  \end{tabular}
+
+  \vspace{1.2em}
+
+  \textbf{With}\\
+  \textbf{Apart Research}
+\end{center}
+
+% =====================================================================
+%  ABSTRACT
+% =====================================================================
+\begin{center}\textbf{\large Abstract}\end{center}
+
+\begin{tcolorbox}[colback=white,colframe=black!70,boxrule=0.5pt,
+                  left=8pt,right=8pt,top=6pt,bottom=6pt]
+\guide{Summarize your project in 150--250 words. A strong abstract lets a
+reviewer understand what you did and why it matters without reading anything
+else. \underline{Make sure to cover: the problem, your approach, key results,
+and the main takeaway}. Polish it last: the abstract should reflect your final
+results, not your initial plan.}
+\end{tcolorbox}
+
+% =====================================================================
+%  >>> BORRAR ESTE BLOQUE COMPLETO ANTES DE ENVIAR <<<
+% =====================================================================
+\begin{tcolorbox}[colback=black!3,colframe=black!70,boxrule=0.5pt,
+                  left=8pt,right=8pt,top=6pt,bottom=6pt]
+\textbf{How to use this template}: Replace the \textit{italicized guidance text}
+under each section with your content. The section structure is strong guidance
+but not rigid. If your project requires a different organization, feel free to
+adapt. \underline{Delete all guidance text including this info box before
+submitting}. Make sure the project title and author information above are up to
+date.
+
+\textbf{How your submission will be evaluated}: Your project will be judged on
+the quality of this written report. To understand what we look for, see our
+\ulink{https://apartresearch.notion.site/sprint-evaluation-rubric}{Evaluation Rubric}.
+
+\textbf{Recommended length}: 4 pages excluding references and appendix. Rough
+guide: Intro \& Related Work 1p, Methods and Results 2.5p, Discussion 0.5p.
+\end{tcolorbox}
+% =====================================================================
+%  >>> FIN DEL BLOQUE A BORRAR <<<
+% =====================================================================
+
+% =====================================================================
+\section{Introduction}
+
+\guide{What problem are you addressing and why does it matter?}
+
+\guide{Connect it to your work: we want to know why your work is practically
+valuable.}
+
+\guide{Provide enough background for readers to understand your work.}
+
+\guide{If relevant, briefly describe the threat model or failure mode you're
+addressing; reference prior work that motivates why it is worth addressing, or
+explain it yourself.}
+
+\guide{Aspire to clearly list your most important contributions that go beyond
+what exists today.}
+
+\textbf{\textit{Our main contributions are:}}
+\begin{enumerate}
+  \item \guide{[First contribution --- what new thing did you create, discover,
+        or demonstrate?]}
+  \item \guide{[Second contribution]}
+  \item \guide{[Third contribution, if applicable]}
+\end{enumerate}
+
+Early warning of unwanted behaviour are a crutial component of the stack for controlling, tracking and contention of agents. However, in a space of oper
+
+% =====================================================================
+\section{Related Work}
+
+\guide{What prior work is most similar, and how does your work differ?}
+
+\guide{Cite the most relevant papers, tools, or projects. Explain what gap your
+work addresses.}
+
+\guide{Some questions which may help:}
+\begin{enumerate}[label=(\alph*)]
+  \item \guide{When and why would someone use your method over the existing
+        state-of-the-art?}
+  \item \guide{What information/insight does your method provide which we did
+        not have before?}
+\end{enumerate}
+
+% =====================================================================
+\section{Methods}
+
+\guide{Describe your approach clearly enough that someone could replicate it.
+Include key design choices and justify them where relevant (hint: the more you
+can back up your design choices by referencing prior work, the better).}
+
+\guide{What models/datasets/tools did you use and why? What were key parameters
+or design decisions? What did you try that didn't work? Could someone reproduce
+your work from this description?}
+
+% =====================================================================
+\section{Results}
+
+\guide{Present your main findings with appropriate evidence. Use figures and
+tables where appropriate (we strongly encourage at least one figure, see tips
+below). Distinguish between observations and interpretations.}
+
+\guide{Argue why your claims are robust. E.g., if your approach ``performs
+better'' than alternatives:}
+\begin{enumerate}[label=(\alph*)]
+  \item \guide{Do you have enough data? Is the difference statistically
+        significant?}
+  \item \guide{Is it robust? Or do small changes to your setup cause substantial
+        changes to your results?}
+\end{enumerate}
+
+% ---- Ejemplo de figura: descomenta y reemplaza el archivo ----
+% \begin{figure}[htbp]
+%   \centering
+%   \includegraphics[width=0.85\linewidth]{figures/figure1.pdf}
+%   \caption{Descriptive caption that can be understood without the main text.}
+%   \label{fig:main}
+% \end{figure}
+
+% ---- Ejemplo de tabla ----
+% \begin{table}[htbp]
+%   \centering
+%   \caption{Descriptive caption.}
+%   \label{tab:main}
+%   \begin{tabular}{lrr}
+%     \toprule
+%     Condition & Metric A & Metric B \\
+%     \midrule
+%     Baseline  & 0.00 & 0.00 \\
+%     Ours      & 0.00 & 0.00 \\
+%     \bottomrule
+%   \end{tabular}
+% \end{table}
+
+\textbf{\textit{Tips for figures and tables:}}
+\begin{itemize}
+  \item \guide{Number all figures (Figure 1, Figure 2\ldots) and tables
+        (Table 1, Table 2\ldots)}
+  \item \guide{Include descriptive captions that can be understood without the
+        main text}
+  \item \guide{Place figures/tables near where they're first referenced}
+  \item \textbf{\textit{Ensure text in figures is legible!}}
+\end{itemize}
+
+% =====================================================================
+\section{Discussion and Limitations}
+
+\guide{Discuss the broader implications for AI safety.}
+
+\guide{What do your results mean? What trends do you notice and what might they
+indicate?}
+
+\subsection*{Limitations}
+
+\guide{What are the limitations of your work? What threat models or failure
+modes did you not address? Be honest about constraints --- methodological
+limitations, scope limitations, or aspects you couldn't fully address in the
+hackathon timeframe. Explicitly note the assumptions you made, whether
+implicitly or explicitly, and how the interpretation of your results would
+change if a given assumption did not hold.}
+
+\subsection*{Future Work}
+
+\guide{What are the natural next steps? How could this work be extended?}
+
+% =====================================================================
+\section{Conclusion}
+
+\guide{Briefly summarize your main findings and their implications
+(1--2 paragraphs).}
+
+% =====================================================================
+\section*{Code and Data}
+
+\guide{Include links if applicable. If your project doesn't involve code
+(e.g., policy analysis) or if there are info-hazard considerations, note that
+here.}
+
+\begin{itemize}
+  \item \textbf{\textit{Code repository}}: \guide{[Link to GitHub/GitLab if applicable]}
+  \item \textbf{\textit{Data/Datasets}}: \guide{[Link if applicable]}
+  \item \textbf{\textit{Other artifacts}} \guide{(optional): [Demo link, video
+        walkthrough, Hugging Face Space, etc.]}
+\end{itemize}
+
+% =====================================================================
+\section*{Author Contributions (optional)}
+
+\guide{[e.g., ``J.C.M. led the project and designed experiments. A.S.P.
+implemented the code. All authors contributed to writing and reviewed the final
+manuscript.'']}
+
+% =====================================================================
+\section*{References}
+
+\guide{Use a consistent citation format. Include: Author(s), Year, Title,
+Venue/Publisher, and URL or DOI where available.}
+
+\begin{enumerate}
+  \item \guide{[Reference 1]}
+  \item \guide{[Reference 2]}
+  \item \guide{\ldots}
+\end{enumerate}
+
+% ---- Alternativa con BibTeX: borra el enumerate de arriba y usa ----
+% \bibliographystyle{plain}
+% \bibliography{references}
+
+% =====================================================================
+\section*{Appendix \textit{(optional)}}
+
+\guide{Supplementary material such as additional figures, detailed methodology,
+prompts used, extended results, etc.}
+
+% =====================================================================
+\section*{LLM Usage Statement}
+
+\guide{If you used LLM assistance in developing your project or writing this
+report, briefly note how. Ensure all claims and results have been verified.}
+
+\guide{NOTE: We strongly encourage that the final version of the submission is
+primarily written by your team.}
+
+\guide{[e.g., ``We used Claude to brainstorm approaches and help draft sections.
+All results and claims were independently verified.'']}
+
+\end{document}

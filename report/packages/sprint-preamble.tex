@@ -76,4 +76,20 @@
 \parindent 10pt
 \parskip 0pt
 
+%--Interface shared with submission-preamble.tex--::::::::::::::::::::::::::::::
+% Template guidance text (delete before submitting)
+\newcommand{\guide}[1]{\textit{#1}}
+% \underline cannot break lines in narrow columns
+\newcommand{\guideul}[1]{#1}
+\newcommand{\ulink}[2]{\href{#1}{\underline{#2}}}
+\newcommand{\authorentry}[3]{#1}
+% The submission author block is not used by this template
+\newcommand{\authorBlock}[1]{}
+\newcommand{\makereporttitle}{%
+  \abstrac{\input{content/abstract.tex}}%
+  \maketitle
+}
+% Balance columns on last page
+\IfFileExists{balance.sty}{\AtEndDocument{\balance}}{}
+
 %::::::::::::::::::::::::::--End of preamble.tex--:::::::::::::::::::::::::::::%

@@ -1,4 +1,4 @@
-\section{Entropy Framework}
+\subsection{Entropy Framework}
 
 Introduced by Claude Shannon in 1948 \parencite{shannon1948mathematical}, entropy has become one of the cornerstones of information theory. It sets the fundamental limit of lossless data compression, which is attained in practice by source codes such as Huffman coding \parencite{shannon_encoding}; it serves as a summary statistic for detecting anomalies in network traffic, including distributed denial-of-service (DDoS) attacks \parencite{shannon_ddos}; and, more recently, it has become a key tool for estimating uncertainty and detecting hallucinations in LLMs \parencite{kuhn2023semantic, shannon_hallucination}. For a discrete random variable $X$ taking values $x_1, \ldots, x_n$, the entropy is defined as
 \begin{equation}
@@ -7,7 +7,7 @@ Introduced by Claude Shannon in 1948 \parencite{shannon1948mathematical}, entrop
 \end{equation}
 where $p(x_i)$ is the probability of the event $X = x_i$, and the convention $0 \log_2 0 = 0$ is adopted. With the logarithm in base $2$, entropy is measured in bits. $H(X)$ quantifies the expected uncertainty (or surprise) associated with the outcome of $X$: it is zero when the outcome is certain, and it reaches its maximum value, $\log_2 n$, when all outcomes are equally likely \parencite{cover2006elements}.
 
-\subsection{Entropy of a single agent}
+\subsubsection{Entropy of a single agent}
 
 For an LLM-based agent, the natural probability distribution is the model's distribution over the next token. At each generation step $t$, the model produces a vector of logits $z_t \in \mathbb{R}^{|V|}$ over the vocabulary $V$. Logits are unnormalised scores, not probabilities; the next-token distribution is obtained through the softmax function,
 \begin{equation}
@@ -28,7 +28,7 @@ where $x_{<t}$ denotes the context (prompt and previously generated tokens) and 
 
 In this work we adopt predictive entropy. Our working hypothesis is that, when two agents start to interact, the incorporation of content produced by another agent into an agent's context (with a different style, vocabulary and information) changes its next-token distributions, and that part of this signal lies precisely in the lexical and syntactic variation that semantic entropy is designed to discard. This choice has two caveats that must be controlled for in the experiments. First, predictive entropy is also sensitive to factors unrelated to communication, such as response length, prompt formatting and temperature, which can act as confounders. Second, many commercial APIs expose only the log-probabilities of the top-$k$ tokens rather than the full distribution, so Equation~\eqref{eq:token_entropy} can only be approximated, for instance by renormalising over the returned tokens or by bounding the contribution of the remaining probability mass.
 
-\subsection{Entropy of the multi-agent system}
+\subsubsection{Entropy of the multi-agent system}
 
 The quantities above are defined per agent and are therefore insufficient to describe the MAS as a whole. Let $X_1, \ldots, X_n$ be random variables describing the outputs of the $n$ agents in the system (for instance, their next-token or response distributions at a given time step $t$). The joint entropy of the system decomposes as
 \begin{equation}

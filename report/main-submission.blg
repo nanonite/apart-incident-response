@@ -1,0 +1,25 @@
+[0] Config.pm:329> INFO - This is Biber 2.22
+[0] Config.pm:332> INFO - Logfile is 'main-submission.blg'
+[43] biber:342> INFO - === Mon Sep 14, 2026, 01:02:53
+[56] Biber.pm:421> INFO - Reading 'main-submission.bcf'
+[107] Biber.pm:999> INFO - Using all citekeys in bib section 0
+[121] Biber.pm:4487> INFO - Processing section 0
+[127] Biber.pm:4680> INFO - Looking for bibtex file 'references.bib' for section 0
+[128] bibtex.pm:1668> INFO - Reading ascii input as UTF-8
+[128] bibtex.pm:1713> INFO - LaTeX decoding ...
+[138] bibtex.pm:1519> INFO - Found BibTeX data source 'references.bib'
+[297] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
+[297] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[297] Biber.pm:4307> INFO - Sorting list 'nyt/apasortcite//global/global/global' of type 'entry' with template 'nyt' and locale 'en-US'
+[297] Biber.pm:4313> INFO - No sort tailoring available for locale 'en-US'
+[332] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
+[332] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[332] Biber.pm:4307> INFO - Sorting list 'nyt/global//global/global/global' of type 'entry' with template 'nyt' and locale 'en-US'
+[332] Biber.pm:4313> INFO - No sort tailoring available for locale 'en-US'
+[351] bbl.pm:676> INFO - Writing 'main-submission.bbl' with encoding 'ascii'
+[374] bbl.pm:779> INFO - Output to main-submission.bbl
+[374] Biber.pm:132> WARN - The entry 'hammond2025multiagent' has characters which cannot be encoded in 'ascii'. Recoding problematic characters into macros.
+[374] Biber.pm:132> WARN - The entry 'kramar2026probes' has characters which cannot be encoded in 'ascii'. Recoding problematic characters into macros.
+[374] Biber.pm:132> WARN - The entry 'hammond2025multiagent' has characters which cannot be encoded in 'ascii'. Recoding problematic characters into macros.
+[374] Biber.pm:132> WARN - The entry 'kramar2026probes' has characters which cannot be encoded in 'ascii'. Recoding problematic characters into macros.
+[374] Biber.pm:134> INFO - WARNINGS: 4

@@ -1,16 +1,20 @@
 doc_name := "main"
+# Report format: "submission" (Apart template) or "sprint" (previous format)
+template := "submission"
+job := doc_name + "-" + template
+pretex := "\\def\\template{" + template + "}"
 
 build:
-  latexmk -pdf {{doc_name}}.tex
+  latexmk -pdf -jobname="{{job}}" -usepretex='{{pretex}}' {{doc_name}}.tex
 
 show:
-    evince "{{doc_name}}.pdf"
+    evince "{{job}}.pdf"
 
 watch:
-  just list | entr just build
+  just list | entr just template={{template}} build
 
 list:
   find . -type f | sed 's|^\./||'
 
 clean:
-  latexmk -C "{{doc_name}}.tex"
+  latexmk -C -jobname="{{job}}" {{doc_name}}.tex

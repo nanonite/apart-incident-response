@@ -1,0 +1,120 @@
+%::::::::::::::::::::::--submission-preamble.tex--::::::::::::::::::::::::::::::%
+%  Apart Research submission template (LaTeX port of Submission_Template.docx)
+%  AI Incident Response Sprint, September 2026.
+%  Original .docx format: US Letter, 1" margins, Arial 11 pt.
+
+\documentclass[11pt,letterpaper]{article}
+
+%--Encoding and language--::::::::::::::::::::::::::::::::::::::::::::::::::::::
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{csquotes}
+
+%--Page and typography (Arial -> Helvetica)--:::::::::::::::::::::::::::::::::::
+\usepackage[margin=1in]{geometry}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{microtype}
+\linespread{1.08}
+\setlength{\parskip}{0.55em}
+\setlength{\parindent}{0pt}
+
+%--Maths--::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{siunitx}
+
+%--Figures, tables and utilities--::::::::::::::::::::::::::::::::::::::::::::::
+\usepackage{graphicx,float}
+\usepackage{subcaption}
+\usepackage{tabularx,booktabs}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{titlesec}
+
+\captionsetup{font=small,labelfont=bf}
+\setlist[itemize]{topsep=0.2em,itemsep=0.15em,leftmargin=1.4em}
+\setlist[enumerate]{topsep=0.2em,itemsep=0.15em,leftmargin=1.6em}
+
+% Bold numbered section headings: "1. Introduction"
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{0.5em}{}
+\titlespacing*{\section}{0pt}{1.1em}{0.4em}
+\titlespacing*{\subsection}{0pt}{0.8em}{0.3em}
+
+%--Bibliography (biblatex-apa, biber backend)--:::::::::::::::::::::::::::::::::
+\usepackage[isbn=false,url=false,doi=false,eprint=false,maxcitenames=1,uniquelist=false,sorting=nyt,backend=biber,style=apa,texencoding=ascii]{biblatex}
+\AtEveryBibitem{% suppress month and day
+  \clearfield{month}
+  \clearfield{day}
+}
+\setlength\bibhang{2em}
+% Remove 'n.d.' from misc entries without a year field
+\DeclareLabeldate[misc]{%
+	\field{year}
+}
+
+%--Hyperlinks and cross-references (load last)--:::::::::::::::::::::::::::::::
+\usepackage[hidelinks]{hyperref}
+\hypersetup{colorlinks=true,linkcolor=black,citecolor=black,urlcolor=black}
+\usepackage[nameinlink,noabbrev]{cleveref}
+
+%--Template helpers--:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+% Underlined links, as in the .docx
+\newcommand{\ulink}[2]{\href{#1}{\underline{#2}}}
+
+% Author entry: name + superscript + affiliation
+\newcommand{\authorentry}[3]{%
+  \begin{tabular}[t]{c}#1$^{#2}$\\[0.15em]\textit{#3}\end{tabular}}
+
+% Template guidance text (delete before submitting)
+\newcommand{\guide}[1]{\textit{#1}}
+\newcommand{\guideul}[1]{\underline{#1}}
+
+%--Metadata interface shared with sprint-preamble.tex--:::::::::::::::::::::::::
+% Only \title and \authorBlock are printed by this template; the rest are
+% stored so content/metadata.tex works with both templates.
+\makeatletter
+\def\keywords#1{\gdef\@keywords{#1}}
+\def\shortTitle#1{\gdef\@shortTitle{#1}}
+\def\track#1{\gdef\@track{#1}}
+\def\articleType#1{\gdef\@articleType{#1}}
+\def\authorAnnotation#1{\gdef\@authorAnnotation{#1}}
+\def\correspondenceName#1{\gdef\@correspondenceName{#1}}
+\def\correspondenceMail#1{\gdef\@correspondenceMail{#1}}
+\def\selfCitation#1{\gdef\@selfCitation{#1}}
+\def\authorBlock#1{\gdef\@authorBlock{#1}}
+\authorBlock{\@author}
+
+%--Title, authors and abstract--::::::::::::::::::::::::::::::::::::::::::::::::
+\newcommand{\makereporttitle}{%
+  \hypersetup{pdftitle={\@title}}%
+  \begin{center}
+    {\LARGE\bfseries \@title\footnote{Research conducted at the
+    \ulink{https://apartresearch.com/sprints/ai-incident-response-sprint-2026-09-11-to-2026-09-13}{AI Incident Response Sprint},
+    September 2026.}}
+
+    \vspace{1.2em}
+
+    \@authorBlock
+
+    \vspace{1.2em}
+
+    \textbf{With}\\
+    \textbf{Apart Research}
+  \end{center}
+
+  \begin{center}\textbf{\large Abstract}\end{center}
+
+  \begin{tcolorbox}[colback=white,colframe=black!70,boxrule=0.5pt,
+                    left=8pt,right=8pt,top=6pt,bottom=6pt]
+  \input{content/abstract.tex}
+  \end{tcolorbox}
+}
+\makeatother
+
+\pagestyle{plain}
+
+%::::::::::::::::::::--End of submission-preamble.tex--::::::::::::::::::::::::%

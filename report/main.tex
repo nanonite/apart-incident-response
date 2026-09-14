@@ -1,25 +1,11 @@
-\input{packages/preamble.tex}
+% Template selected by the justfile (just template=<name> build):
+%   submission -> packages/submission-preamble.tex (Apart submission format)
+%   sprint     -> packages/sprint-preamble.tex     (previous two-column format)
+\providecommand{\template}{submission}
+\input{packages/\template-preamble.tex}
 
-% Front matter
-\title{Listening to the Collective: Entropy-Based Early Warning for Emergent Agent Communication}
-\shortTitle{Listening to the Collective}
-\track{Track: Containment Standards}
-\articleType{Research Report}
-% TODO: replace the placeholder authors, affiliations and contact
-\author{
-Daniel Diaz Gonzalez,
-Juan Camilo Melgarejo Gomez,
-Alejandro Sanchez Poveda,
-Roger Palomeque and
-Sergio Montoya Ramirez
-}
-%\authorAnnotation{$^{1}$Affiliation One, City, Country\\
-%$^{2}$Affiliation Two, City, Country}
-\correspondenceName{Author One}
-\correspondenceMail{author.one@example.org}
-\keywords{AI safety, multi-agent systems, incident response, entropy, anomaly detection}
-
-\selfCitation{\newblock {\em AI Incident Response Sprint}, Apart Research, 1--\pageref{LastPage}.}
+% Front matter (title, authors, keywords)
+\input{content/metadata.tex}
 
 % Bibliography file
 \addbibresource{references.bib}
@@ -27,20 +13,34 @@ Sergio Montoya Ramirez
 
 \begin{document}
 
-	\abstrac{Hola}
+  \makereporttitle
 
-	\maketitle
+  % Template info box: delete before submitting
+  \input{content/template_notes.tex}
 
   \input{content/introduction.tex}
+  \input{content/related_work.tex}
+
+  \input{content/methods.tex}
   \input{content/entropy.tex}
   %\input{content/metodology.tex}
   %\input{content/board_storage.tex}
+
+  \input{content/results.tex}
+
+  \input{content/discussion.tex}
   \input{content/limitations.tex}
+  \input{content/future_work.tex}
 
-    % List all citations
-	\nocite{*}
-	\printbibliography
+  \input{content/conclusion.tex}
+  \input{content/code_data.tex}
+  \input{content/author_contributions.tex}
 
-	% Balance columns on last page
-\IfFileExists{balance.sty}{\balance}{}
+  % List all citations
+  \nocite{*}
+  \printbibliography[title={References}]
+
+  \input{content/appendix.tex}
+  \input{content/llm_usage.tex}
+
 \end{document}

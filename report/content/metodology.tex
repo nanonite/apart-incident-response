@@ -1,8 +1,8 @@
-\section{Methodology}
+\subsection{Methodology}
 
 The time constraints of a research sprint forced us to reduce the phenomenon of the motivating incident to a minimal environment: a group of agents, each holding part of the evidence needed to solve a task, and a single append-only log through which, depending on the condition, they may or may not be able to see each other's contributions. Because the log is the only resource shared between agents, any statistical coupling between their outputs can be attributed either to this channel or to what the agents share by construction (model, prompt and task). The experiment is designed to separate these two sources. This section is written as a pre-registered protocol: it fixes the environment, task, conditions, measurements and analysis before model data are collected. The five-seed cells described below are a descriptive pilot, and we make no causal, significance or general performance claim from them.
 
-\subsection{Environment and shared log}
+\subsubsection{Environment and shared log}
 
 Every run is one isolated group (``swarm'') of $n$ agents, one deterministic task instance, one condition and one controller-owned budget. Each agent runs as a separate process of the Pi agent harness inside a sandbox with no shell, no subprocesses, no shared filesystem, no subagents and no network access other than the model provider. Its built-in tools are disabled, and it can act on the world only through five constrained tools exposed by a harness extension and served by a controller process:
 \begin{enumerate}[noitemsep]
@@ -14,7 +14,7 @@ The identity attached to every tool call is taken from a credential issued by th
 
 The log (the \emph{board}) is a SQLite table stored outside every agent workspace. Each entry holds a monotonically increasing sequence identifier, the run and agent identifiers, a server timestamp, the message body and its size in bytes. Database triggers abort any \texttt{UPDATE} or \texttt{DELETE}, so the log is strictly append-only. A message is limited to \SI{8}{\kibi\byte}, and a read returns at most 50 messages and \SI{64}{\kibi\byte}, paged by sequence identifier. Reads are served with a controlled \emph{cadence}: the first read attempt of each agent and then every $N$-th attempt ($N \in \{1, 2, 4\}$) is a scheduled visibility opportunity, while the remaining reads return no messages. Every board event is also written to an audit trail, which allows the exact information flow of a run to be replayed.
 
-\subsection{Task}
+\subsubsection{Task}
 
 All conditions use the same task: a split-evidence incident diagnosis. A synthetic outage was caused by a configuration revision that changed a cache from local to shared mode. The evidence is split into three private roles, and each agent receives exactly one of them:
 \begin{enumerate}[noitemsep]
@@ -30,7 +30,7 @@ Every agent receives the same neutral instruction, which does not depend on the 
 \end{quote}
 A submission is accepted by a deterministic validator only if it contains the seeded token, \texttt{CACHE\_MODE}, the change from \emph{local} to \emph{shared} and a causal link to the outage, and does not negate that link. The reference answer is ``The \texttt{ORCHID-731} configuration revision changed \texttt{CACHE\_MODE} from local to shared, causing the cache-related outage.'' Note that the deployment role alone holds every evidence-supplied term, so an agent in that role can in principle succeed without communicating. For this reason task success is reported as a secondary outcome, and communication is measured through token uptake (Section~\ref{sec:measurements}) rather than through success.
 
-\subsection{Experimental conditions}
+\subsubsection{Experimental conditions}
 \label{sec:conditions}
 
 The conditions differ only in what the log lets an agent see. Three of them are implemented; two further arms are required for the early-warning analysis and are part of the protocol but not yet implemented.
@@ -44,7 +44,7 @@ The conditions differ only in what the log lets an agent see. Three of them are 
 
 The unit of replication is a \emph{paired set}: the same seed, task instance, prompt, number of agents, model, tool profile, budget, timeout and validator are run under every condition, and the execution order of the conditions is rotated with the seed. A set is valid only if every run has the expected number of agents, one completed result per agent and no controller error. Validity refers to execution integrity, not to task success: timeouts, provider errors, budget exhaustion and missing submissions are kept in the data and never silently dropped or imputed.
 
-\subsection{Models and configuration}
+\subsubsection{Models and configuration}
 
 Table~\ref{tab:configuration} summarises the anchor configuration. On top of the anchor, one factor is varied per paired set: the number of agents ($n \in \{2, 3, 4\}$), the tool profile (with or without \texttt{task\_query}), the difficulty and the read cadence.
 
@@ -74,7 +74,7 @@ Table~\ref{tab:configuration} summarises the anchor configuration. On top of the
 
 The agent model does not expose token probabilities, so the entropy of Section~\ref{sec:measurements} cannot be read from the agents directly. We therefore use an open-weights \emph{measurement model}, Qwen3-8B, served locally with a pinned revision and 4-bit quantisation, which returns the logits over its full vocabulary for every generated token. The protocol obtains per-step distributions in one of two ways, in order of preference: (i) running the agents themselves on the measurement model, so that the entropy is that of the acting agent; or (ii) replaying each agent's context and response at every step through the measurement model with teacher forcing, which yields the measurement model's uncertainty about the agent's actual output. The full-vocabulary entropy computation is implemented; connecting it to the multi-agent runs through either route is pending.
 
-\subsection{Measurements}
+\subsubsection{Measurements}
 \label{sec:measurements}
 
 A \emph{step} $t$ is one model turn of an agent in the harness. For agent $i$ in run $r$ and each generated token, we compute the token entropy of Equation~\eqref{eq:token_entropy} over the full vocabulary $V$, in bits, from the raw logits (that is, with $T = 1$ in Equation~\eqref{eq:softmax}, independently of the decoding temperature), together with the log-probability of the token actually produced. The step entropy $\bar{H}_{i,r,t}$ is the mean token entropy of the response at step $t$. Because the entropy is computed from the full distribution, no renormalisation is needed; the top-$k$ approximation of the entropy framework is kept only as a fallback for API-only models and is treated as a lower bound that is not comparable with full-vocabulary values.
@@ -83,7 +83,7 @@ At the system level, and following the entropy framework, we report the sum of t
 
 In addition, every run records response length, number of turns, provider tokens, tool calls, board reads and writes, the number of messages written by other agents, and task success. Communication itself is measured independently of entropy by \emph{uptake} $U$. An uptake event is counted only when four conditions hold: an agent reads from the log a message written by another agent; that author owns the seeded token; the reader does not own it; and the token appears later in one of the reader's tool calls, its submission or its final response. $U$ is the fraction of eligible agents with an uptake event. Token overlap without the preceding read is not counted. Because $U$ relies on provenance rather than on entropy, it serves as the ground truth against which the entropy signal is validated.
 
-\subsection{Analysis and interpretation}
+\subsubsection{Analysis and interpretation}
 \label{sec:analysis}
 
 The goal of the analysis is to determine whether the entropy trajectory has a stable functional form and whether that form changes when, and only when, agents are able to communicate. The following protocol is designed so that a regression on entropy measures communication and not the many other factors entropy is sensitive to.
