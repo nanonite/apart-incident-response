@@ -60,6 +60,10 @@ class BaselineResponse:
         if not self.logprobs:
             return None
         output_tokens = (self.usage or {}).get("completion_tokens")
+        details = (self.usage or {}).get("completion_tokens_details")
+        reasoning_tokens = details.get("reasoning_tokens", 0) if isinstance(details, Mapping) else 0
+        if isinstance(output_tokens, int) and isinstance(reasoning_tokens, int):
+            output_tokens = output_tokens - reasoning_tokens
         if isinstance(output_tokens, int) and output_tokens > 0:
             return min(1.0, len(self.logprobs) / output_tokens)
         return None
@@ -230,6 +234,7 @@ class BaselineRunner:
                 "logprob_status": logprob_status,
                 "logprob_token_count": len(response.logprobs),
                 "logprob_coverage": coverage,
+                "reasoning_tokens": ((response.usage or {}).get("completion_tokens_details") or {}).get("reasoning_tokens"),
                 "error_type": response.error.split(":", 1)[0] if response.error else None,
             })
         valid_rows = [row for row in rows if row["status"] == "valid"]
