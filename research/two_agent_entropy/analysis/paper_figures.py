@@ -7,6 +7,7 @@ vector PDFs (plus 300 dpi PNGs) on a white background, sized for the report's tw
     report/figures/temperature_switch_minus_placebo.pdf
     report/figures/temperature_post_read_entropy.pdf
     report/figures/qwen_trajectories.pdf
+    report/figures/entropy_trajectories.pdf
     report/figures/disruption_vs_base.pdf  (reads research/two_agent_entropy/results/disruption_vs_base.csv)
 
 Usage: python3 paper_figures.py [artifacts_root] [output_dir]
@@ -193,6 +194,46 @@ def disruption_vs_base() -> None:
     save(fig, "disruption_vs_base")
 
 
+def trajectory_grid(metric: str = "H_decision") -> None:
+    """Decision entropy per turn: rows are models, columns are temperatures, one line per condition."""
+    traj = load("B_trajectories.csv")
+    traj = traj[(traj.metric == metric) & (traj.turn <= 20)]
+    auc = pd.read_csv(REPO / "research" / "two_agent_entropy" / "results" / "disruption_vs_base.csv")
+    auc = auc[auc.metric == metric]
+    exp_temp = {"exp1": "T = 1", "exp3": "T = 0.5", "exp2": "T = 0"}
+    auc["temp"] = auc.experiment.map(exp_temp)
+    ymax = float(traj.ci_high.max()) * 1.08
+    fig, axes = plt.subplots(len(MODELS), len(TEMPS), figsize=(TEXT_WIDTH_IN, 4.3), sharex=True, sharey=True)
+    for r, model in enumerate(MODELS):
+        for c, (_, temp, _, _) in enumerate(TEMPS):
+            ax = axes[r, c]
+            for cond, label, colour, ls in CONDITION_STYLE:
+                sub = traj[(traj.model == model) & (traj.temp == temp) & (traj.condition == cond)].sort_values("turn")
+                ax.fill_between(sub.turn, sub.ci_low, sub.ci_high, color=colour, alpha=0.13, lw=0)
+                ax.plot(sub.turn, sub["mean"], color=colour, lw=1.3, ls=ls, label=label)
+            ax.axvline(7.5, color=MUTED, lw=0.8, ls=":")
+            row = auc[(auc.model == model) & (auc.temp == temp)].iloc[0]
+            star = "*" if row.p_holm < 0.05 else ""
+            ax.text(0.98, 0.95, f"AUC {row.auc:.2f}{star}", transform=ax.transAxes, ha="right", va="top",
+                    fontsize=6.8, color=INK, bbox=dict(facecolor="white", edgecolor="none", pad=1.0, alpha=0.85))
+            ax.set_xlim(1, 20)
+            ax.set_ylim(0, ymax)
+            ax.set_xticks([1, 8, 14, 20])
+            ax.grid(axis="y", color=GRID, lw=0.5)
+            ax.set_axisbelow(True)
+            if r == 0:
+                ax.set_title(temp, fontsize=8, fontweight="bold", pad=4)
+            if c == 0:
+                ax.set_ylabel(f"{model}\nbits", fontsize=7)
+            if r == len(MODELS) - 1:
+                ax.set_xlabel("turn", fontsize=7)
+    handles, labels = axes[0, 0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="upper center", ncol=3, fontsize=7.5, bbox_to_anchor=(0.5, 1.0),
+               handlelength=2.2, columnspacing=1.4)
+    fig.tight_layout(rect=(0, 0, 1, 0.95), h_pad=0.6, w_pad=0.8)
+    save(fig, "entropy_trajectories")
+
+
 def save(fig, name: str) -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     fig.savefig(OUT / f"{name}.pdf", bbox_inches="tight", pad_inches=0.02)
@@ -206,3 +247,4 @@ if __name__ == "__main__":
     post_read_entropy()
     qwen_trajectories()
     disruption_vs_base()
+    trajectory_grid()
