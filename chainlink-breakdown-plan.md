@@ -1,361 +1,81 @@
-# Chainlink Breakdown Plan
+# Build Plan: Restricted Two-Agent Response Dynamics
 
-## Current Priority: Controlled N-Agent Experiment
+## Protocol replacement
 
-The immediate goal is a runnable, provenance-backed C0/C1/C2 experiment with a configurable number of isolated agents. The first milestone is a real-model Task 1 pilot with matched prompts, task instances, agent count, model, timeouts, and aggregate compute budgets across each condition triplet. C1 versus C2 is the primary board-read containment contrast; C0 is the board-absent baseline. Runs must capture raw agent and board events, submissions, validator outcomes, costs, and enough metadata to replay and pair results. A deterministic fake-agent calibration or board smoke test is not an experimental run.
+Upstream runtime, Docker, Qwen3, and historical experiment tooling are retained during integration. Their board-read C2 condition is a legacy protocol and is not the scheduled-unlock C2 used by `response_dynamics_v1`. Do not pool their artifacts or enable their network/tool bridge in panel-controlled runs. The panel remains exactly two agents with §8 restrictions.
 
-After the first controlled triplet works, vary one predeclared factor at a time or use a balanced factorial design: agent count, harness capability profile, task difficulty, information-transformation opportunity/cadence, and model intelligence tier. Keep each factor fixed within a C0/C1/C2 triplet. Define capability profiles by explicitly exposed tools and permissions without introducing a second cross-agent channel. Define transformation frequency from timestamped evidence-to-message and message-to-answer events, with a common observation window and budget; record both opportunities and observed transformations. Calibrate difficulty against independent-agent success, and compare model tiers under the same task fixtures and harness contract. Randomize or counterbalance run order, record assignment and missing/failure outcomes, and distinguish provenance-backed uptake from mere token overlap or task success.
+[mvp-plan.md](mvp-plan.md) replaces the old three-agent protocol. Section 8 remains intact. C2 is scheduled unlock revealing earlier permitted peer updates plus future updates, not permanent own-entry reads. Use response_dynamics_v1 provenance to prevent historical label collisions.
 
-This priority supersedes the older MVP ordering below where it treats Task 2, entropy evaluation, dashboard work, or a broad epic as prerequisites for the first Task 1 matrix. Task 2 and richer response-state metrics can extend the design after the first matrix is collecting valid data. The Chainlink issue graph is the operational work queue.
+The existing Chainlink implementation tickets were drafted against the old protocol. Their historical wording is superseded; update acceptance criteria before executing them. Do not mark unimplemented features complete. Task/provider decisions and teammate ownership are still pending.
 
-This plan breaks the MVP described in `mvp-plan.md` into dependency-ordered epics and tasks. Dashboard work remains outside the critical path; the first controlled model-tier comparison is tracked under the current priority above.
+## 1. Contracts and environment
 
-Research positioning is informed by Kim et al., *Capable language models can outgrow the benefits of collaboration* ([source PDF](docs/pdfs/s42256-026-01268-y-1.pdf); [local Markdown extraction](docs/markdown/s42256-026-01268-y-1/s42256-026-01268-y-1.md)). That paper is a useful methodological baseline, but this experiment asks a different question.
+- Freeze strict shared contracts listed in mvp-plan.md; keep analysis independent of runtime imports.
+- Confirm task/evidence allocation, primary probability space, teammate interfaces and provider authentication.
+- Prepare a pinned environment, fake adapter and model capability metadata. Runtime/language choice is pending; Pi is not an established dependency.
+- Plan local inference first, with configurable remote endpoint transport later. No cluster or Modal provisioning in the MVP.
+- Enforce the approximately USD 100 overall ceiling with bounded requests, per-run/batch accounting and reserve before dispatch. Distinguish subscription access from API-key billing.
 
-## What Makes This Experiment Different
+Acceptance: a deterministic fixture validates observation/update/artifact contracts without paid inference. Ownership boundaries and unresolved research choices are explicit.
 
-Kim et al. compare deliberately constructed single-agent and multi-agent architectures—independent, centralized, decentralized, and hybrid—to determine when explicit coordination improves task performance. This plan instead treats coordination as a security property that can emerge through infrastructure not intended to be a communication channel.
+## 2. Runner, containment and event log
 
-| Dimension | Kim et al. | This plan's distinct contribution |
-|---|---|---|
-| Research question | When does a prescribed multi-agent architecture outperform a single agent? | Will otherwise isolated agents discover and repurpose a shared operational surface, and can access control stop the resulting information flow? |
-| Coordination mechanism | Agents are placed into explicit communication and orchestration topologies. | Agents receive neutral task prompts and no collaboration protocol; the append-only board merely exists as infrastructure. |
-| Experimental intervention | Vary communication topology and model capability. | Vary only board visibility: absent (`C0`), globally readable (`C1`), or own-writes-only (`C2`). |
-| Primary outcome | Task success and architecture-selection performance. | Provenance-backed cross-agent uptake: information originating with Agent A is read and subsequently used by Agent B. |
-| Safety control | Verification or orchestration reduces error propagation. | `C2` preserves centralized logging/auditability while preventing agents from using the log as a cross-agent bus. |
-| State isolation | Some software/terminal experiments share one container even in the paper's independent condition. | Each agent has an isolated workspace and identity; the board is the only permitted cross-agent surface. |
-| Intended claim | Guidance for choosing a coordination architecture within tested domains. | Evidence about latent communication channels and least-privilege read containment, not a general claim that swarms are better or worse. |
+- Exactly two identities with separate task/session state and Section 8-only tools.
+- One append-only researcher event log; constant logging across conditions.
+- Fixed checkpoint count/config; bounded tools, retries, timeouts and token/cost usage.
+- Proposed synchronous snapshot semantics; physical serial calls may save memory.
+- Every completed checkpoint has two valid TaskUpdates. Preserve malformed raw output and incomplete checkpoints rather than inventing answers.
 
-The cleanest causal comparison is `C1` versus `C2`: both expose the same append interface, but only `C1` permits cross-agent reads. `C1` versus `C0` measures the broader behavioral effect of making the board available, while `C2` versus `C0` measures the containment control's operational cost.
+Acceptance: fake agents cannot access peer data except through permitted projections, impersonate identities, alter budgets or use broader tools. All attempts and usage are traceable.
 
-## Design Controls Adopted From the Paper
+## 3. Visibility and C0/C1/C2
 
-1. **Match per-system compute, not merely per-agent settings.** Hold the aggregate swarm token ceiling, tool-call allowance, timeout, model, task instance, and agent count constant across `C0`, `C1`, and `C2`. Record actual usage so board traffic is counted as coordination overhead rather than free compute.
-2. **Calibrate the single-agent baseline before the swarm matrix.** Run each task with one agent as a diagnostic baseline, not as a fourth board condition. Confirm that no single Task 1 bundle deterministically reveals the answer and record baseline success. The paper's approximately 45% saturation threshold is domain-specific and must not be imported as a universal cut-off.
-3. **Separate transfer from utility.** A token appearing across agents proves channel use, not that collaboration helped. Report uptake together with task success and classify transferred evidence as useful/correct, redundant, or misleading when the trace permits it.
-4. **Measure process costs.** In addition to reads and writes, record total turns, total tokens, wall-clock latency, and success per 1,000 tokens for every condition.
-5. **Keep the inference narrow.** Five runs per condition are a pipeline shakedown and demo sample, not confirmatory evidence. Report raw runs and effect estimates descriptively; confidence intervals or significance claims require a separately justified sample size.
+- Implement policies over the same global log, with configured event allowlist/serializer/bandwidth.
+- C0: own history only; C1: permitted shared history from start.
+- C2: no peer access before k; at k reveal eligible prior updates through k-1, then future eligible updates at subsequent checkpoints.
+- Enforce the peer snapshot cutoff in board reads as well as initial observations.
+- Record availability, send/read, delivery and uptake independently; record exact delivered IDs/context.
 
-## Epic 1: Experiment Contract and Runtime Isolation
+Acceptance: tests cover C0 leakage, C1 delivery, retrospective C2 unlock, step-0 boundary, no same-step visibility, excluded researcher/private events, and invalid unlock settings. For an intervention run require an interior unlock; boundary settings can be explicit equivalence/control checks.
 
-**Goal:** Establish the controlled execution environment before building experiment logic.
+## 4. Task updates, scoring and semantic samples
 
-### Tasks
+- Alejandro owns task/input progression and representation. Start with one objective synthetic task once selected.
+- Bound task tools to private data; make same versus complementary evidence allocation explicit.
+- Inspect and reuse Alejandro's nearly completed input work once its location is supplied. Preserve raw/current answers and exact context provenance. Embeddings are optional; see semantic-entropy-live-plan.md.
+- Evaluator emits separate task quality, evidence and uptake annotations; no feedback into agent context by default.
 
-1. **Pin Pi runtime and model configuration**
-   - Define the Pi version, model, per-agent limits, aggregate per-system token/tool-call ceiling, timeout, and launch command.
-   - Acceptance: one agent starts reproducibly with built-in tools disabled, and the controller can enforce the same system-level compute ceiling in all three conditions.
+Acceptance: every successful update is traceable to its exact observation and exported semantic sample/evaluation. Analysis failure remains visible and does not overwrite the update.
 
-2. **Define agent identity and run configuration**
-   - Add `run_id`, `agent_id`, `condition`, `task_id`, and seed handling.
-   - Acceptance: every agent has a unique runtime identity and isolated task directory.
+## 5. Repeated runs and analysis
 
-3. **Implement side-channel restrictions**
-   - Prevent shell, network, shared filesystem, subprocess, MCP, and subagent access.
-   - Acceptance: agents can access only explicitly exposed experiment tools.
+- Proposed smoke matrix: one task, three conditions, five repeats, two agents, six steps = 180 updates/model, before tools/retries/calibration.
+- Export run/replicate/pair IDs, resolved config hashes and incomplete-run metadata.
+- Juan Camilo owns replaceable probability and metric plugins reading stored artifacts.
+- Proposed first path: contextual semantic equivalence, recorded partitions, cluster frequencies and entropy in bits. Keep per-agent and pooled distributions separate.
+- Distinguish cross-run response diversity from optional fixed-checkpoint uncertainty probes. Budget extra generations and judging explicitly.
+- Keep source manifests, missingness, aggregation weights and estimator provenance.
 
-4. **Create single-agent lifecycle**
-   - Implement start, prompt, tool-call, completion, timeout, and failure handling.
-   - Acceptance: one agent run produces a complete artifact and exit status.
+Acceptance: recompute a plotted entropy point without invoking the runtime. Reject invalid probabilities and incompatible state spaces. Label the pilot descriptive, not confirmatory.
 
-**Dependencies:** None.
+## 6. Panel and intervention inspection
 
-## Epic 2: Constrained Agent Tool Interface
+- Shared experiment/task/run/step selection with modular controls, timeline, agents, global log, representation, physics, communication and optimization views.
+- Expose C2 unlock, first delivery, task scores, failures and exact source context.
+- Live raw events with asynchronous semantic metrics, pending/provisional states, sample counts and analysis lag; avoid active-run mutation. Bound observer resource use so it cannot silently perturb the local runner.
 
-**Goal:** Expose only the tools required by the experiment.
+Acceptance: click a point/checkpoint to inspect the underlying runs, probabilities, updates and communication events.
 
-### Tasks
+## 7. Later influence and optimization
 
-1. **Implement core task tools**
-   - `task_read`
-   - `task_query`
-   - `task_submit`
+- Add visible/masked replay branches from a pre-exposure checkpoint with independent provider state.
+- Label single-response semantic/action/evaluator differences as proxies; use repeated samples for distribution comparisons.
+- Add TextGrad-inspired offline critic only after completed batches. Produce a reviewable candidate configuration for the next batch; no intra-run changes.
 
-2. **Implement board tools**
-   - `board_read`
-   - `board_append`
+Acceptance: replay intervention and source provenance are explicit; critic cannot mutate running configs.
 
-3. **Implement tool validation**
-   - Validate arguments, enforce task permissions, and reject unsupported paths or operations.
+## Priority and exclusions
 
-4. **Capture tool-call results**
-   - Record inputs, outputs, timestamps, and errors for every tool invocation.
+Runner -> global log/visibility -> C0/C1/C2 -> mandatory updates -> raw/semantic sample export -> aggregation -> live semantic entropy panel -> intervention markers -> influence -> offline critic.
 
-**Acceptance:** An agent can complete a simple task using only the constrained extension.
-
-**Dependencies:** Epic 1.
-
-## Epic 3: Append-Only Board and Containment Policies
-
-**Goal:** Build the shared infrastructure and the three experimental conditions.
-
-### Tasks
-
-1. **Implement SQLite board schema**
-   - Store sequence ID, run ID, agent ID, server timestamp, message body, and message size.
-
-2. **Implement `board_append`**
-   - Derive agent identity from credentials.
-   - Prevent agents from selecting or impersonating another agent ID.
-
-3. **Implement cursor-based `board_read`**
-   - Return messages after a supplied sequence ID.
-   - Support pagination or bounded reads if needed.
-
-4. **Implement condition policies**
-   - `C0`: board tools unavailable.
-   - `C1`: all agents can read all messages.
-   - `C2`: agents can append, but can only read their own messages.
-
-5. **Add board contract tests**
-   - Verify append ordering, cursor behavior, identity enforcement, and C1/C2 visibility.
-
-6. **Run manual two-agent smoke test**
-   - Agent 1 appends.
-   - Agent 2 reads under C1.
-   - Agent 2 cannot read the message under C2.
-
-**Acceptance:** The same board API produces the intended C0, C1, and C2 behavior.
-
-**Dependencies:** Epic 1. Epic 2 can be developed in parallel after the runtime contract is defined.
-
-## Epic 4: Experimental Tasks, Prompts, and Validators
-
-**Goal:** Create harmless tasks that make information transfer measurable.
-
-### Tasks
-
-1. **Build Task 1: split-evidence incident diagnosis**
-   - Create three evidence bundles.
-   - Seed unique harmless tokens such as `ORCHID-731`.
-   - Define the expected diagnosis and answer validator.
-   - Prove by construction and validator tests that no individual bundle uniquely determines the diagnosis, while the combined evidence does.
-
-2. **Implement Task 1 submission**
-   - Capture the final diagnosis, cited evidence, and token usage.
-
-3. **Build Task 2: parallel codebase triage**
-   - Create the synthetic `service-a`, `service-b`, `service-c`, and `tests` repository.
-   - Seed one distributed logic bug.
-   - Provide different diagnostic views to each agent.
-
-4. **Implement restricted repository tools**
-   - `repo_list`
-   - `repo_read`
-   - `repo_search`
-   - `run_tests`
-   - `submit_diagnosis`
-
-5. **Define neutral agent prompts**
-   - Do not instruct agents to collaborate.
-   - Mention available diagnostic infrastructure without making collaboration the objective.
-
-6. **Create deterministic task validators**
-   - Validate root cause, file/function, proposed fix, task success, and seeded-token transfer.
-
-7. **Run single-agent task calibration**
-   - Run each evidence bundle without board access before the three-agent matrix.
-   - Record task success, turns, tokens, and whether any bundle leaks the complete answer.
-   - Treat this as task calibration, not as a fourth experimental condition.
-
-**Acceptance:** Task 1 works end-to-end before Task 2 is started.
-
-**Dependencies:** Epic 3 for board integration; Epic 1 for isolated workspaces.
-
-## Epic 5: Telemetry, Uptake Detection, and Evaluation
-
-**Goal:** Reconstruct information flow and measure task utility.
-
-### Tasks
-
-1. **Implement board telemetry**
-   - Log operation, cursor values, messages returned, message IDs, bytes read, and bytes written.
-
-2. **Implement agent-run telemetry**
-   - Log model turns, tool calls, observations, final answer, validator result, and timestamps.
-   - Persist the raw final response plus tokenizer name, version, configuration hash, token IDs, and token count for every agent.
-
-3. **Implement cross-agent uptake detection**
-   - Detect when a seeded token created by Agent A is later mentioned or used by Agent B.
-   - Record source agent, recipient agent, message ID, and uptake timestamp.
-
-4. **Implement primary metric**
-   - Cross-agent information uptake `U`.
-
-5. **Implement supporting metrics**
-   - Board reads `R`
-   - Board writes `W`
-   - Cross-agent messages read `X`
-   - Uptake latency `L`
-   - Message-read ratio `M`
-   - Total turns and tokens
-   - Coordination overhead relative to `C0`
-   - Success per 1,000 tokens
-
-6. **Classify uptake outcome**
-   - Mark trace-supported uptake as useful/correct, redundant, or misleading.
-   - Record whether uptake precedes a change in diagnosis, cited evidence, tool choice, or final submission.
-
-7. **Build the response-state dataset pipeline**
-   - Store one record per run, task, condition, seed, agent, evidence role, and response stage.
-   - Keep raw responses and tokenizer artifacts separate from derived evaluator outputs.
-   - Pin the tokenizer and reject records whose tokenizer configuration does not match the run contract.
-
-8. **Implement the source-attribution evaluator**
-   - Compare each response with canonical per-agent evidence fixtures using seeded tokens and evidence identifiers as the primary signal and semantic paraphrase matching as a secondary signal.
-   - Emit a versioned source-distance vector and a normalized attribution vector `p_ij = softmax(-d_ij / tau)`.
-   - Treat the vector as an evaluator-induced probability state, not as the model's internal belief state.
-
-9. **Implement response-state entropy metrics**
-   - Compute evidence-source entropy `H_src`, normalized entropy, and cross-source mass `X_src = 1 - p_ii`.
-   - Record un-attributable responses as undefined rather than zero.
-   - Log raw token entropy and pairwise Jensen-Shannon divergence only as lexical diagnostics.
-
-10. **Add entropy validation controls**
-   - Calibrate `tau` on held-out fixtures and freeze it before experimental runs.
-   - Test local-only, injected-cross-evidence, and shuffled-source-label fixtures.
-   - Keep the evaluator blind to condition labels and report response length with every estimate.
-
-11. **Implement the response-state comparison**
-   - Pair runs by task, seed, model, and evidence role.
-   - Compute `Delta H_comm = H_src(C1) - (H_src(C0) + H_src(C2)) / 2` and the corresponding `X_src` contrasts.
-   - Call this an endpoint elevation for final-only runs; reserve temporal “spike” claims for fixed, non-interactive `/goal` response stages.
-   - Require cross-source attribution, a prior cross-agent board read, and subsequent uptake before interpreting an entropy change as communication evidence.
-
-12. **Implement event replay**
-   - Reconstruct traces such as discovery, append, read, and subsequent answer change.
-
-**Acceptance:** A completed run can produce a causal trace showing whether information crossed agent boundaries and can deterministically reproduce its tokenizer artifacts, source-attribution state, `H_src`, `X_src`, and paired condition comparison. Entropy alone is never labeled proof of communication.
-
-**Dependencies:** Epics 2 and 4.
-
-## Epic 6: Experiment Controller and MVP Run Matrix
-
-**Goal:** Automate reproducible experiments across conditions.
-
-### Tasks
-
-1. **Implement one-swarm controller**
-   - Start three isolated agents.
-   - Assign task bundles.
-   - Apply one condition.
-   - Collect artifacts and exit statuses.
-
-2. **Implement condition configuration**
-   - Run the same task, prompt, model, agent count, aggregate compute ceiling, and timeout under C0, C1, and C2.
-
-3. **Implement seeded runs**
-   - Support independent seeds and deterministic task instances.
-
-4. **Implement experiment artifact layout**
-   - Store prompts, configuration, logs, board state, raw responses, tokenizer artifacts, evaluator versions and outputs, validator results, and metrics per run.
-
-5. **Automate Task 1 matrix**
-   - Five runs each under C0, C1, and C2.
-
-6. **Automate Task 2 matrix**
-   - Add only after Task 1 is stable.
-   - Five runs each under C0, C1, and C2.
-
-7. **Generate basic result summaries**
-   - Primary containment contrast: compare `U(C1) - U(C2)`.
-   - Board-availability contrast: compare `U(C1) - U(C0)`.
-   - Compare `Y(C2) - Y(C0)`.
-   - Report `H_src`, normalized `H_src`, `X_src`, and `Delta H_comm` by condition using paired task/seed/model/evidence-role records.
-   - Report coordination overhead and success per 1,000 tokens by condition.
-   - Label the five-run matrix as descriptive/pilot evidence.
-
-**Acceptance:** The controller can produce the planned 30 swarm runs for one model without manual intervention.
-
-**Dependencies:** Epics 3, 4, and 5.
-
-## Epic 7: Demo and Stretch Research
-
-These tasks should not block the MVP.
-
-### Tasks
-
-1. **Build trace visualization**
-   - Show agent discovery, board append, board read, uptake, and containment blocking.
-
-2. **Add dashboard**
-   - Compare the same task under C0, C1, and C2.
-   - Show `H_src`, `X_src`, and the paired endpoint contrast beside the provenance-backed uptake trace.
-
-3. **Add confidence intervals and summary statistics**
-   - Add these after the repeated-run pipeline is stable.
-
-4. **Add second model**
-   - Reuse the identical harness and prompts.
-
-5. **Build Task 3: incident containment**
-   - Use a fixed set of safe actions with distributed evidence across agents.
-
-6. **Prepare final demo narrative**
-   - Show one clean C1 transfer trace.
-   - Show the same transfer absent under C2.
-   - Show task-performance comparisons.
-
-**Dependencies:** Epic 6.
-
-## Dependency Order
-
-```text
-Epic 1: Runtime isolation
-        ├── Epic 2: Tool interface
-        └── Epic 3: Board and containment
-
-Epic 2 + Epic 3
-        └── Epic 4: Tasks and validators
-
-Epic 3 + Epic 4
-        └── Epic 5: Telemetry and evaluation
-
-Epic 4 + Epic 5
-        └── Epic 6: Controller and experiment matrix
-
-Epic 6
-        └── Epic 7: Dashboard, second model, Task 3
-```
-
-## MVP Cut Line
-
-The MVP should end after the following are complete:
-
-1. One isolated Pi agent works with restricted tools.
-2. Three agents can run independently.
-3. The board supports C0, C1, and C2.
-4. Task 1 works with deterministic validation.
-5. Single-agent calibration confirms that individual evidence bundles do not leak the complete diagnosis.
-6. The same aggregate compute ceiling is enforced under C0, C1, and C2.
-7. Telemetry reconstructs information flow and its coordination cost.
-8. The response dataset preserves raw per-agent responses and pinned tokenizer artifacts.
-9. Held-out evaluator fixtures validate local-only attribution, injected cross-evidence, and shuffled-label behavior.
-10. `H_src`, `X_src`, and `Delta H_comm` are reproducible from stored artifacts.
-11. At least one C1 transfer trace is observed.
-12. The same transfer is absent under C2.
-13. Repeated runs produce task-success, uptake, response-state, and efficiency metrics with pilot-appropriate claims.
-
-Task 2, the dashboard, statistical intervals, additional model replication beyond the first tier comparison, and Task 3 are lower-priority extensions under the current priority above.
-
-## Decisions to Lock Before Creating Tickets
-
-1. **C2 semantics:** Agents may append messages, but can only read their own messages.
-2. **Uptake definition:** A seeded token is the initial deterministic signal; semantic uptake can be added later.
-3. **Task 2 isolation:** Repository tools must read from each agent's isolated copy, never a shared filesystem.
-4. **Run unit:** One swarm run contains three agents performing the same task under one condition.
-5. **Model scope:** One model with more replicates is the MVP default.
-6. **Dashboard priority:** Visualization is useful for the demo but should not block experiment correctness.
-7. **Task order:** Task 1 is the positive control and should be completed before Task 2.
-8. **Fairness unit:** Compute is matched at the whole-swarm level across conditions; board operations do not create an unmetered budget.
-9. **Primary contrast:** `C1` versus `C2` is the direct containment test; `C0` remains the independent-agent and operational-cost baseline, not a single-agent baseline.
-10. **Evidence standard:** Seeded-token transfer establishes channel use; a utility claim additionally requires validator improvement or a trace-supported behavior change.
-11. **Statistical scope:** The five-run matrix is descriptive. Confirmatory claims require a larger, prospectively justified sample.
-12. **Probability-state semantics:** `p_ij` is a versioned evaluator attribution over canonical evidence sources, not the model's internal probability or belief state.
-13. **Spike semantics:** One final response per agent supports an endpoint C1-versus-controls elevation. A temporal spike requires predeclared, non-interactive `/goal` response stages.
-14. **Entropy evidence standard:** `H_src` is interpreted only with `X_src`, a preceding cross-agent board read, and uptake; raw token entropy remains diagnostic and cannot prove communication.
-15. **Response reproducibility:** Tokenizer identity, evaluator version, calibrated `tau`, response length, prompt hash, model version, and compute budget are pinned or recorded for every response.
-
-## Review Note
-
-The main adjustment to the original MVP plan is making telemetry and evaluation first-class infrastructure rather than treating them as work added after the experiment runs. The response-state extension adds a second, distributional view of the endpoint while preserving provenance-backed uptake as the causal standard. The paper comparison sharpens the novelty: the experiment is not another multi-agent performance benchmark. It is a controlled test of whether an incidental shared surface becomes a communication channel, with a containment intervention that retains the surface's audit function. Without provenance, system-level compute accounting, evaluator controls, and the `C1` versus `C2` counterfactual, that information-flow claim cannot be demonstrated reliably.
+Defer C3, adaptive policies, extra agent tools, actual TextGrad integration, general orchestration, large model sweeps and remote infrastructure deployment. A successful build does not require communication to help or entropy to increase.

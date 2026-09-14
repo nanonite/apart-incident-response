@@ -5,7 +5,13 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 artifacts/
-qwen3-cache/
+exports/
 .uv-cache/
+.openai/
+APART_MODEL_TOKEN
+APART_MODEL_TOKEN*
+qwen3-cache/
 ollama-models/
 experiments/
+Experiments/Experiment-1/batches/
+Experiments/Experiment-1/fixture/

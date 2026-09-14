@@ -1,5 +1,23 @@
 # Apart incident response runtime
 
+The active observatory study is `response_dynamics_v1`: two restricted agents, C0 isolation, C1 peer history, and C2 scheduled unlock. Start its panel from the repository root:
+
+```bash
+UV_CACHE_DIR=.uv-cache uv run env PYTHONPATH=src python -m apart_incident_response.panel --db artifacts/observatory.sqlite --port 8765
+```
+
+After updating code, stop the previous panel with Ctrl+C, restart it, and reload `http://127.0.0.1:8765`. Ollama can remain running. The UI prevents launches when it detects an older panel API. Logs remain in the selected SQLite database; exports are in Research handoff. See [the asymmetric evidence study](docs/asymmetric-evidence-study.md).
+
+[Experiment 1: B unlocks, A advises](Experiments/Experiment-1/README.md) adds a
+controller-owned encrypted SQLite fixture and private JSON key. B runs first and is
+the only solver; A provides feedback only. Compare full history with highlighted,
+agent-authored key insights. Live run shows both roles, delivered facts, verified
+unlock results, and disclosures that stay open across polling. Terminal batches
+provide ZIP/JSONL downloads; generated fixtures and final proposals live under
+`Experiments/Experiment-1/batches/`. No agent filesystem or network access is added.
+
+The upstream runtime and historical board experiments below are retained tooling. Their C2 board-read restriction is different from the panel's scheduled unlock. Keep their protocol identifiers and artifacts separate. See `mvp-plan.md` §8 for the active restricted-agent surface.
+
 Builds, tests, and smoke checks run in reproducible Docker stages. From the
 repository root:
 

@@ -151,8 +151,16 @@ Every phase shares `budget.json` (default cap $10). Runs are resumable.
 `results/exp1/` holds the committed summaries: `runs.csv`, `calls.csv` (per agent-turn, full
 completion text and entropy summaries), `system_entropy.csv`, `aligned_tau_read.csv`,
 `report_full.html`, and the gate and full summaries. The raw data (1.2 GB: logprobs,
-top-k, API bodies and scenario keys) is **not** in git. It lives at
-`artifacts/two-agent-entropy/exp1/` on the machine that ran it.
+top-k, API bodies and scenario keys) is **not** in git. It is published as zstd archives
+(164 MB) on the GitHub release
+[`exp1-raw-data`](https://github.com/nanonite/apart-incident-response/releases/tag/exp1-raw-data):
+
+```bash
+gh release download exp1-raw-data -R nanonite/apart-incident-response -D exp1-release
+cd exp1-release && sha256sum -c SHA256SUMS.txt
+mkdir -p ../artifacts/two-agent-entropy
+for f in *.tar.zst; do zstd -dc --long=27 "$f" | tar -x -C ../artifacts/two-agent-entropy; done
+```
 
 Gate (switch condition, 10 runs per model, pass at ≥50%): gpt-4o-mini 80%, llama-3.3-70b 100%,
 qwen3-235b 80%. Every model passed without prompt changes.

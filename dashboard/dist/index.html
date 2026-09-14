@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>APART · Experiment Observatory</title><meta name="description" content="Inspect two-agent response dynamics, communication, and reproducible research traces."><link rel="stylesheet" href="styles.css"><script src="activity.js" defer></script><script src="app.js" defer></script></head>
+<body>
+<aside class="sidebar">
+  <a class="brand" href="#"><span class="brand-mark">A<span>∥</span></span><span>APART<small>EXPERIMENT OBSERVATORY</small></span></a>
+  <div class="nav-label">WORKSPACE</div><button class="nav-button active" data-view="compare">◫ <span>Compare conditions</span></button><button class="nav-button" data-view="inspect">⌕ <span>Run inspector</span></button><button class="nav-button" data-view="export">↗ <span>Research handoff</span></button><button class="nav-button" data-view="sharedlog">◓ <span>Shared log</span></button>
+  <div class="sidebar-separator"></div>
+  <form id="run-form">
+    <div class="section-label">NEXT EXPERIMENT <span>02 AGENTS</span></div>
+    <label for="task-select">Task suite</label><select id="task-select"><option value="experiment1">Experiment 1 · B unlocks, A advises</option><option value="asymmetric">Asymmetric study · 3 tasks</option><option value="all">All task catalog</option></select>
+    <label for="conditions">Communication</label><select id="conditions"><option value="C0,C2">Isolation + scheduled unlock</option><option value="C0,C1">Isolation + shared</option><option value="C0,C1,C2">All three conditions</option><option value="C2">Scheduled unlock</option></select>
+    <div class="form-pair"><div><label for="steps">Checkpoints</label><input id="steps" type="number" min="2" max="8" value="5" required></div><div><label for="repeats">Repeats</label><input id="repeats" type="number" min="1" max="5" value="2" required></div></div>
+    <label for="unlock">Unlock at step</label><input id="unlock" type="number" min="0" max="7" value="3" required>
+    <p class="side-note">Step 3 opens C2 at checkpoint 4, including earlier permitted peer updates. Checkpoints are not wall-clock minutes.</p>
+    <label for="adapter">Generation source</label><select id="adapter"><option value="ollama">Local model · Ollama</option><option value="fixture">Synthetic fixture · no LLM</option></select>
+    <label for="engagement">Peer engagement</label><select id="engagement"><option value="neutral">Neutral observation</option><option value="peer_review">Ask agent to review peer update</option><option value="required_peer_check">Ask for agree/disagree check</option><option value="team_reward">Team-score framing (role tasks)</option><option value="team_individual_reward">Team + individual framing (role tasks)</option></select>
+    <label for="shared-context">Shared context</label><select id="shared-context"><option value="key_insights_plus_history">Key insights + full history</option><option value="full_history">Full history only</option></select>
+    <label for="model">Model</label><input id="model" value="gemma2:2b" maxlength="100" required>
+    <label for="pilot-preset">Pilot setup</label><select id="pilot-preset"><option value="manual">Manual configuration</option><option value="calibration">Calibration · one task, C2, two repeats</option></select>
+    <div class="form-pair"><div><label for="run-minutes">Task-run budget (minutes)</label><input id="run-minutes" type="number" value="15" min="1" max="60" required></div><div><label for="request-seconds">Request wait (seconds)</label><input id="request-seconds" type="number" value="120" min="1" max="900" required></div></div>
+    <label for="batch-minutes">Whole-batch budget (minutes)</label><input id="batch-minutes" type="number" value="60" min="1" max="240" required>
+    <label for="output-tokens">Output limit (tokens per request)</label><input id="output-tokens" type="number" value="512" min="80" max="512" required>
+    <details><summary>Communication study settings</summary>
+    <label for="peer-bytes">Peer-history byte limit (blank = unlimited)</label><input id="peer-bytes" type="number" min="0" placeholder="Unlimited">
+    <label for="peer-delay">Additional delivery delay (checkpoints)</label><input id="peer-delay" type="number" min="0" max="8" value="0">
+    <label for="peer-cost">Utility cost per delivered KiB</label><input id="peer-cost" type="number" min="0" step="0.01" value="0">
+    <label><input id="peer-request" type="checkbox"> Deliver on request (new role tasks only)</label>
+    <label for="evidence-mode">Sensor evidence control</label><select id="evidence-mode"><option value="split">Split clues</option><option value="identical_complete">Identical complete clues</option></select>
+    <label for="role-swap">Swap planner/critic at step (blank = fixed)</label><input id="role-swap" type="number" min="0" max="7" placeholder="Fixed roles">
+    <label for="role-mode">Role control</label><select id="role-mode"><option value="specialized">Task-defined roles</option><option value="two_solvers">Two solvers (new role tasks)</option></select>
+    </details>
+    <label><input id="logprobs" type="checkbox"> Request token log-probabilities (if supported)</label>
+    <button class="button primary" id="start" type="submit">▶ Run experiment</button><button class="button stop" id="stop" type="button" hidden>Stop after current request</button>
+    <p class="side-note" id="run-estimate">60 updates · local inference</p>
+  </form>
+  <div class="containment"><span class="lock-icon">▣</span><div>Restricted by design<small>No agent tools or network.<br>Two agents. One research log.</small></div></div>
+  <div class="sidebar-footer">RESPONSE DYNAMICS <span>v1.0</span></div>
+</aside>
+<main>
+  <header class="topbar"><div><span class="eyebrow">COMMUNICATION RESEARCH</span><h1 id="workspace-title">Compare conditions</h1></div><div class="header-actions"><span id="connection" class="status">Connecting</span><button id="export-top" class="button light">↓ Export traces · ZIP</button></div></header>
+  <div id="notice" class="notice" hidden role="status"></div>
+  <div id="active-run-banner" class="active-run-banner" role="status">No active run. Select a study preset and start a batch from the left panel.</div>
+  <section class="toggle-bar" aria-label="Researcher view toggles"><span class="toggle-label">VIEW TOGGLES</span><label><input type="checkbox" data-pref="showCommunication" checked> Communication availability</label><label><input type="checkbox" data-pref="showScores" checked> Scores</label><label><input type="checkbox" data-pref="showMessages"> Messages received</label><label><input type="checkbox" data-pref="showPeek" checked> Global vs A vs B</label></section>
+  <section class="batch-bar"><label for="batch-select">Experiment batch</label><select id="batch-select"></select><span id="source-badge" class="badge"></span><span id="batch-state" class="muted"></span></section>
+  <section class="surface live-observer" aria-label="Live agent activity">
+    <div class="section-heading"><div><h2>Live run</h2><p id="live-header-summary">Waiting for an experiment.</p></div><div class="live-downloads"><a id="download-completed-bundle" class="button primary" hidden>↓ Download batch logs · ZIP</a><a id="download-completed-responses" class="button light" hidden>↓ Responses · JSONL</a></div></div>
+    <div class="live-progress-row"><progress id="live-progress" max="1" value="0" aria-label="Recorded batch updates"></progress><span id="live-batch-progress"></span><span id="live-run-clock"></span><span id="live-batch-clock"></span></div>
+    <p id="calibration-summary" class="muted"></p>
+    <div class="live-columns"><section class="live-column"><h3>Agent A</h3><div id="live-agent-A"></div></section><section class="live-column"><h3>Agent B</h3><div id="live-agent-B"></div></section><section class="live-column shared-column"><h3>Permitted shared context</h3><p class="live-explanation">Peer-authored facts and responses actually supplied to agents. Delivery does not prove use.</p><h4>Key insights</h4><div id="live-key-insights"></div><h4>Full peer history</h4><div id="live-shared-history"></div></section></div>
+    <div class="live-feed-heading"><h3>Activity log</h3><span id="live-last-event"></span></div><div id="live-event-feed" class="live-event-feed"></div>
+    <p class="live-explanation">Updates refresh automatically. Ollama returns complete responses; text appears when a request finishes.</p>
+  </section>
+  <section class="stats" aria-label="Batch overview"><div class="stat"><span>RECORDED UPDATES</span><strong id="stat-updates">—</strong><small id="stat-progress">Waiting for data</small></div><div class="stat"><span>COMPLETED RUNS</span><strong id="stat-runs">—</strong><small id="stat-conditions">C0 / C1</small></div><div class="stat"><span>PEER DELIVERIES</span><strong id="stat-messages">—</strong><small>Exposure events, not proven uptake</small></div><div class="stat"><span>REPORTED TOKENS</span><strong id="stat-tokens">—</strong><small id="stat-cost">No paid API enabled</small></div></section>
+  <section class="task-section"><div class="section-heading"><h2>Task catalog · increasing difficulty</h2><span class="muted">Synthetic, scored, reproducible</span></div><div id="task-tabs" class="task-tabs" role="group" aria-label="Select a task"></div></section>
+  <section class="task-brief"><div><span id="task-category" class="eyebrow"></span><h2 id="task-title"></h2><p id="task-question"></p></div><div class="brief-meta"><span id="difficulty" class="badge"></span><span id="task-design"></span></div></section>
+  <section class="timeline-panel"><div class="section-heading"><div><h2>Discrete checkpoint</h2><p class="muted">Both agents see the same completed-step boundary.</p></div><div class="timeline-controls"><label for="repeat-select">Repeat</label><select id="repeat-select"></select><button id="play" class="button light">▶ Replay</button><span id="minute-state" class="muted"></span><span id="run-clock" class="muted"></span></div></div><div id="minute-bar" class="minute-bar" role="group" aria-label="Minute progress bar"></div><div id="timeline" class="timeline"></div></section>
+  <section class="surface showcase"><div class="section-heading"><div><h2>Recorded checkpoints</h2><p class="muted">Selected task and repeat; each chip is a recorded TaskUpdate.</p></div><span id="recorded-condition-label" class="badge"></span></div><div id="live-grid" class="live-grid"></div><div id="communication-layers" class="communication-layers"></div><div id="difficulty-metrics" class="difficulty-metrics"></div></section>
+  <section id="compare-view"><div class="section-heading"><h2>What changed when they could communicate?</h2><span class="muted">Select an answer to inspect its exact context</span></div><div id="comparison" class="comparison"></div><div class="analysis-grid"><section class="surface"><div class="section-heading"><h2>Task quality by checkpoint</h2><span class="badge">Selected-option score</span></div><div id="score-chart" class="chart"></div><div class="legend"><span class="c0">● Isolated</span><span class="c1">● Shared</span><span class="c2">● Scheduled unlock</span></div></section><section class="surface"><div class="section-heading"><h2>Distribution readiness</h2><span class="badge">Research annotation</span></div><div id="entropy-panel"></div><p class="muted footnote">Answer-class frequencies are a proxy. Entailment-based semantic entropy is not computed here.</p></section></div></section>
+  <section id="sharedlog-view" hidden>
+    <div class="section-heading"><div><h2>Single shared log</h2><p class="muted">Global truth vs exactly what each agent could see at a minute.</p></div><div class="timeline-controls"><label for="projection-run">Run</label><select id="projection-run"></select><span id="projection-unlock" class="badge"></span></div></div>
+    <div class="pane-grid">
+      <section class="surface pane"><div class="section-heading"><h3>Global truth</h3><span class="badge">researcher-only</span></div><div id="pane-global" class="event-log compact"></div></section>
+      <section class="surface pane"><div class="section-heading"><h3>Agent A</h3><span id="pane-A-state" class="badge">—</span></div><div id="pane-A" class="event-log compact"></div></section>
+      <section class="surface pane"><div class="section-heading"><h3>Agent B</h3><span id="pane-B-state" class="badge">—</span></div><div id="pane-B" class="event-log compact"></div></section>
+    </div>
+    <p id="projection-note" class="muted footnote"></p>
+    <section class="surface"><div class="section-heading"><h2>Researcher audit trail</h2><span class="badge">who did what</span></div><ul id="audit-list" class="audit-list"></ul></section>
+  </section>
+  <section id="inspect-view" hidden><div class="section-heading"><h2>Global researcher log</h2><div><label for="event-filter">Events</label> <select id="event-filter"><option value="all">All event types</option><option value="task_update">Task updates</option><option value="agent_observation">Visible contexts</option><option value="communication_delivery">Communication</option><option value="run_error">Errors</option></select></div></div><p class="muted">Researcher-visible events. This complete log is never sent to either agent.</p><div id="event-log" class="event-log"></div></section>
+  <section id="export-view" hidden><div class="export-grid"><section class="surface"><span class="eyebrow">FOR ALEJANDRO & THE ANALYSIS TEAM</span><h2>Connect your output</h2><p>Import one JSON object per line. External records are labeled unverified; missing contexts are never reconstructed.</p><pre class="code-example">{"run_id":"run-1","task_id":"inventory",
+ "condition_id":"C0","step":0,"agent_id":"A",
+ "response_text":"27 kits remain.",
+ "answer_class":"27","model":"your-model"}</pre><label class="button light upload-label" for="import-file">↑ Import JSONL<input id="import-file" type="file" accept=".jsonl,.ndjson,.txt" hidden></label><button id="sample-download" class="button light">Download example</button><p class="muted">Required: run_id, task_id, condition_id, step, agent_id, response_text. Optional exact context: messages with role/content.</p></section><section class="surface"><span class="eyebrow">REPRODUCIBLE HANDOFF</span><h2>Take the evidence with you</h2><p>Each response links to its observation, communication history, evaluator, model configuration and original event.</p><ul class="export-list"><li>Raw response and event JSONL</li><li>Exact visible contexts and message IDs</li><li>Task definitions and scoring annotations</li><li>Configuration and model provenance</li><li>Per-agent answer-class distributions</li></ul><button id="download-bundle" class="button primary">↓ Download research bundle</button><button id="download-responses" class="button light">Responses only · JSONL</button><p class="muted">The two scenarios use the same log format. Semantic grouping can run independently of the agent harness.</p></section></div></section>
+  <footer class="main-footer"><span>CONTROLLED FORWARD RUNS · INDEPENDENT ANALYSIS</span><span>Previously built: compare, inspector, export, task tabs, timeline, score and distribution proxy.</span><span id="last-updated">—</span></footer>
+</main>
+<dialog id="detail-dialog"><div class="dialog-header"><div><span class="eyebrow" id="detail-eyebrow"></span><h2 id="detail-title">Agent detail</h2></div><button id="close-detail" class="button light" aria-label="Close inspector">✕</button></div><div id="detail-body"></div></dialog>
+</body></html>

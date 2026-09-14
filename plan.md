@@ -1,6 +1,8 @@
 # Model–Harness Swarm Scaling: Consolidated Experimental Plan
 
 **Status:** research plan / pre-registration scaffold
+
+**Active hackathon scope:** [mvp-plan.md](mvp-plan.md) is the current two-agent response-dynamics protocol and replaces the former three-agent board-containment MVP. Its Section 8 restrictions remain authoritative. C2 now means scheduled unlock with retrospective permitted history. This broader scaling document is background/future research, not the implementation scope or condition dictionary for the hackathon.
 **Primary objective:** measure, validate, and ultimately benchmark how adversarial capability changes as a function of compute, independent breadth, concurrency, shared-state interaction, explicit communication, and harness mechanisms.
 
 ---
