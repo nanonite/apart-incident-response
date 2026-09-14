@@ -9,7 +9,7 @@
     "api_key_env": "OPENCODE_API_KEY",
     "provider_user_agent": "apart-incident-response/1",
     "launch_command": ["bun", "run", "{pi_root}/packages/coding-agent/src/cli.ts"],
-    "thinking_level": "xhigh"
+    "thinking_level": "medium"
   },
   "limits": {
     "agent_count": 3,
