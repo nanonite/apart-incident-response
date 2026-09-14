@@ -9,6 +9,8 @@ from apart_incident_response.task_one import (
     TASK_ONE_TOKEN,
     materialize_task_one,
     materialize_task_one_bundle,
+    task_one_bundle_for_agent,
+    task_one_instance,
     validate_task_one_answer,
 )
 
@@ -82,6 +84,46 @@ class TaskOneTests(unittest.TestCase):
         result = validate_task_one_answer(None)  # type: ignore[arg-type]
         self.assertFalse(result.accepted)
         self.assertEqual(result.missing_terms, ("answer must be text",))
+
+
+class TaskOneTwoAgentFixtureTests(unittest.TestCase):
+    """agent_count=2 must be a genuine two-role fixture, not a rotated 2-of-3."""
+
+    def test_two_role_instance_has_exactly_two_bundles(self):
+        for seed in range(1, 21):
+            with self.subTest(seed=seed):
+                instance = task_one_instance(seed, agent_count=2)
+                self.assertEqual(len(instance.bundles), 2)
+                self.assertEqual(
+                    [bundle.agent_id for bundle in instance.bundles], ["agent-1", "agent-2"]
+                )
+
+    def test_every_seed_covers_the_private_token_role_at_n_equals_2(self):
+        # This is the exact failure mode fixed here: with the old rotated
+        # 2-of-3 selection, roughly one in three seeds excluded the role
+        # holding the private token from a 2-agent launch entirely.
+        for seed in range(1, 21):
+            with self.subTest(seed=seed):
+                instance = task_one_instance(seed, agent_count=2)
+                roles = {task_one_bundle_for_agent(instance, number).agent_id for number in (1, 2)}
+                self.assertEqual(roles, {"agent-1", "agent-2"})
+                owners = instance.manifest()["token_provenance"]["private_token_owner_roles"]
+                self.assertEqual(owners, {instance.token: ["agent-2"]})
+
+    def test_two_role_evidence_is_individually_insufficient_but_jointly_sufficient(self):
+        instance = task_one_instance(1, agent_count=2)
+        for bundle in instance.bundles:
+            result = instance.validate_answer(bundle.content)
+            self.assertFalse(result.accepted)
+        result = instance.validate_answer(instance.diagnosis)
+        self.assertTrue(result.accepted)
+
+    def test_three_role_default_is_unaffected(self):
+        instance = task_one_instance(1)
+        self.assertEqual(len(instance.bundles), 3)
+        self.assertEqual(
+            [bundle.agent_id for bundle in instance.bundles], ["agent-1", "agent-2", "agent-3"]
+        )
 
 
 if __name__ == "__main__":

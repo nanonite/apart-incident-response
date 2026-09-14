@@ -312,7 +312,7 @@ class ExperimentController:
         count = self.protocol.anchor_agent_count if agent_count is None else agent_count
         profile_name = self.protocol.default_capability_profile if capability_profile is None else capability_profile
         get_capability_profile(profile_name)
-        instance = task_one_instance(seed, difficulty)
+        instance = task_one_instance(seed, difficulty, count)
         run_config = self._config_for_n(count, model)
         if self.invocation is not None and run_config.model != self.invocation.model:
             raise RuntimeConfigError(
@@ -461,6 +461,7 @@ class ExperimentController:
         """Run one matched C0/C1/C2 triplet and attach baseline overhead fields."""
 
         triplet = _safe_component(triplet_id or f"task1-seed-{seed}", "triplet_id")
+        resolved_agent_count = self.protocol.anchor_agent_count if agent_count is None else agent_count
         selected_config = self.config if model is None else self.config.for_model(model)
         ollama_probe_result = probe_ollama(selected_config)
         execution_order = tuple(
@@ -491,7 +492,7 @@ class ExperimentController:
         for run in runs[1:]:
             metrics = write_derived_artifacts(
                 run.artifact_root,
-                (task_one_instance(seed, difficulty).token,),
+                (task_one_instance(seed, difficulty, resolved_agent_count).token,),
                 observation_window_turns=observation_window_turns,
                 baseline=baseline,
             )

@@ -38,6 +38,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 - Confirm OpenRouter logprob support for a pinned model and route (#93, main)
+- Refactor Task 1 to a genuine two-role fixture for agent_count=2 (#100)
 - Enforce board engagement as a hard gate on task_submit for C1/C2 (#99)
 - Inject redundant clean tool schema to work around Ollama's Qwen3 tools-field templating bug (#97)
 - Single-sweep before/after comparisons can't isolate small-lever effects from seed variance (#98)
