@@ -1,7 +1,9 @@
 import importlib.util
+import io
 import json
 import math
 import os
+from contextlib import redirect_stdout
 from pathlib import Path
 import tempfile
 import unittest
@@ -176,14 +178,21 @@ class Qwen3LiveSmokeTests(unittest.TestCase):
             "cuda",
             "--local-files-only",
         ]
-        self.assertEqual(full_logits_main(arguments), 0)
-        loaded = load_full_logits_artifact(output)
+        result_output = io.StringIO()
+        with redirect_stdout(result_output):
+            self.assertEqual(full_logits_main(arguments), 0)
+        run_result = json.loads(result_output.getvalue())
+        artifact_root = Path(run_result["artifact_root"])
+        self.assertNotEqual(artifact_root, output)
+        loaded = load_full_logits_artifact(artifact_root)
         self.assertTrue(torch.isfinite(loaded.logits).all().item())
         self.assertEqual(loaded.logits.shape[0], loaded.generated_token_ids.shape[0])
-        generated = json.loads(next(output.rglob("generated.json")).read_text(encoding="utf-8"))
+        generated = json.loads(
+            (artifact_root / "full-logits" / "generated.json").read_text(encoding="utf-8")
+        )
         self.assertEqual(generated["generated_token_ids"], loaded.generated_token_ids.tolist())
         self.assertIsInstance(generated["completion_text"], str)
-        replayed = replay_entropy(output)
+        replayed = replay_entropy(artifact_root)
         self.assertEqual(replayed["token_count"], loaded.logits.shape[0])
 
         if os.environ.get("QWEN3_LIVE_DETERMINISM") == "1":
@@ -191,8 +200,12 @@ class Qwen3LiveSmokeTests(unittest.TestCase):
             repeat_arguments = [*arguments]
             repeat_arguments[repeat_arguments.index("--output") + 1] = str(repeat)
             repeat_arguments[repeat_arguments.index("--run-id") + 1] = "live-smoke-seed-17-repeat"
-            self.assertEqual(full_logits_main(repeat_arguments), 0)
-            repeated = load_full_logits_artifact(repeat)
+            repeat_result_output = io.StringIO()
+            with redirect_stdout(repeat_result_output):
+                self.assertEqual(full_logits_main(repeat_arguments), 0)
+            repeat_result = json.loads(repeat_result_output.getvalue())
+            repeat_artifact_root = Path(repeat_result["artifact_root"])
+            repeated = load_full_logits_artifact(repeat_artifact_root)
             self.assertEqual(loaded.generated_token_ids.tolist(), repeated.generated_token_ids.tolist())
 
 
