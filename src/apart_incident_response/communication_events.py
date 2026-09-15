@@ -96,11 +96,9 @@ class CommunicationEventLog:
                                     "input_tokens": input_tokens, "output_tokens": output_tokens,
                                     "cost_usd": cost_usd})
 
-    def verified_use(self, agent_id: str, message: MessageInformation, output_id: str,
-                     *, checker_evidence: Mapping[str, Any]) -> CommunicationEvent:
-        if not checker_evidence.get("verified", False):
-            raise ValueError("useful communication requires checker evidence")
-        return self.record("verified_use", agent_id, message_id=message.message_id,
+    def post_read_success(self, agent_id: str, message: MessageInformation, output_id: str,
+                          *, checker_evidence: Mapping[str, Any]) -> CommunicationEvent:
+        return self.record("post_read_success", agent_id, message_id=message.message_id,
                            delta_i_bits=message.delta_i_bits, output_id=output_id,
                            useful=message.useful, payload={"checker_evidence": dict(checker_evidence)})
 
@@ -108,7 +106,8 @@ class CommunicationEventLog:
         writes = {event.message_id: event for event in self._events if event.kind == "board_write" and event.message_id}
         reads = [event for event in self._events if event.kind == "peer_read_exposure"]
         outputs = [event for event in self._events if event.kind == "model_output"]
-        uses = [event for event in self._events if event.kind == "verified_use"]
+        provider_failures = [event for event in self._events if event.kind == "provider_failure"]
+        uses = [event for event in self._events if event.kind == "post_read_success"]
         rows: list[dict[str, Any]] = []
         for read in reads:
             write = writes.get(read.message_id)
@@ -123,7 +122,7 @@ class CommunicationEventLog:
             rows.append({"message_id": read.message_id, "writer_agent": write.agent_id,
                          "reader_agent": read.agent_id, "write_sequence": write.sequence,
                          "read_sequence": read.sequence, "first_post_read_output_id": output.output_id if output else None,
-                         "verified_use_sequence": use.sequence if use else None,
+                         "post_read_success_sequence": use.sequence if use else None,
                          "delta_i_bits": write.delta_i_bits, "useful": use.useful if use else False,
                          "status": "joined" if output else "read_without_post_exposure_output"})
         return rows
@@ -136,6 +135,7 @@ class CommunicationEventLog:
         tokens = [event.message_tokens for event in writes if event.message_tokens]
         useful = [row for row in joins if row["useful"] and row["delta_i_bits"] is not None]
         outputs = [event for event in self._events if event.kind == "model_output"]
+        provider_failures = [event for event in self._events if event.kind == "provider_failure"]
         logprob_rows = [event for event in outputs if (event.payload or {}).get("logprob_status") not in {None, "not_requested", "unavailable"}]
         def latency(kind: str) -> float | None:
             if started is None:
@@ -147,20 +147,22 @@ class CommunicationEventLog:
             "run_id": self.run_id,
             "message_count": len(writes),
             "transmitted_bits": sum(transmitted) if transmitted else 0.0,
-            "verified_useful_bits": sum(row["delta_i_bits"] for row in useful),
+            "post_read_correlated_bits": sum(row["delta_i_bits"] for row in useful),
             "communication_tokens": sum(tokens),
             "input_tokens": sum((event.payload or {}).get("input_tokens") or 0 for event in outputs),
             "output_tokens": sum((event.payload or {}).get("output_tokens") or 0 for event in outputs),
             "provider_cost_usd": sum(float((event.payload or {}).get("cost_usd") or 0.0) for event in outputs),
+            "provider_failure_count": len(provider_failures),
+            "provider_failure_types": sorted({(event.payload or {}).get("error_type", "unknown") for event in provider_failures}),
             "bits_per_communication_token": sum(transmitted) / sum(tokens) if sum(tokens) else None,
-            "verified_use_count": len(useful),
+            "post_read_success_count": len(useful),
             "logprob_output_count": len(logprob_rows),
             "logprob_complete_output_count": sum((event.payload or {}).get("logprob_status") == "complete" for event in logprob_rows),
             "logprob_coverage": [(event.payload or {}).get("logprob_coverage") for event in logprob_rows],
             "logprob_mass_coverage": [(event.payload or {}).get("logprob_mass_coverage") for event in logprob_rows],
             "first_write_latency_seconds": latency("board_write"),
             "first_read_latency_seconds": latency("peer_read_exposure"),
-            "first_verified_use_latency_seconds": latency("verified_use"),
+            "first_post_read_success_latency_seconds": latency("post_read_success"),
             "event_count": len(self._events),
             "joins": joins,
             "event_hash": _json_hash({"events": [event.to_dict() for event in self._events]}),

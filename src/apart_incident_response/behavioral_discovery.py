@@ -59,7 +59,7 @@ def _api_key() -> str | None:
 class BehavioralProviderConfig:
     model: str = DEFAULT_FREE_MODEL
     endpoint: str = ENDPOINT
-    max_requests: int = 144
+    max_requests: int = 288
     max_cost_usd: float = 20.0
     min_interval_seconds: float = 0.25
     retries: int = 1
@@ -109,7 +109,6 @@ class OpenRouterBehavioralProvider:
             self.request_count += 1
 
     def complete(self, prompt: str, *, seed: int) -> BehavioralResponse:
-        self._reserve()
         if not self.api_key:
             return BehavioralResponse("", self.model, {}, 0.0, "unavailable", "missing_credentials")
         payload = {
@@ -129,6 +128,11 @@ class OpenRouterBehavioralProvider:
         )
         last_error: Exception | None = None
         for attempt in range(self.config.retries + 1):
+            # Count each physical HTTP attempt, including retries, against the
+            # request cap.  A logical completion can make more than one call.
+            if attempt and self.request_count >= self.config.max_requests:
+                return BehavioralResponse("", self.model, {}, 0.0, "unavailable", "request_cap_exhausted")
+            self._reserve()
             try:
                 with urllib.request.urlopen(request, timeout=180) as response:
                     body = json.loads(response.read().decode("utf-8"))
@@ -143,7 +147,7 @@ class OpenRouterBehavioralProvider:
                 return BehavioralResponse(str(message.get("content") or ""), str(body.get("model") or self.model),
                                           usage, cost, "complete")
             except urllib.error.HTTPError as exc:
-                last_error = exc
+                last_error = RuntimeError(f"http_{exc.code}")
                 if exc.code not in {408, 429, 500, 502, 503, 504} or attempt >= self.config.retries:
                     break
                 time.sleep(2 ** attempt)
@@ -159,6 +163,9 @@ class OpenRouterBehavioralProvider:
             "instruction": context.task_view.get("task_instruction"),
             "family": context.task_view.get("family"),
             "condition": context.condition.value,
+            "turn": context.turn,
+            "is_finalizer": context.task_view.get("is_finalizer", False),
+            "finalizing_agent": context.task_view.get("finalizing_agent"),
             "candidate_labels": context.task_view.get("candidate_labels", []),
             "joint_candidate_labels": context.task_view.get("joint_candidate_labels"),
             "private_clues": context.task_view.get("private_clues", []),
@@ -266,9 +273,16 @@ def audit_retained_pilot(root: Path | str) -> dict[str, Any]:
 
 def run_behavioral_screen(instances: Sequence[FamilyInstance], provider: OpenRouterBehavioralProvider,
                           artifact_store: BehavioralArtifactStore) -> dict[str, Any]:
-    runner = TwoAgentBatteryRunner(turns=1, token_budget=provider.config.max_tokens)
+    runner = TwoAgentBatteryRunner(turns=2, token_budget=provider.config.max_tokens, finalizing_agent="A")
     results: list[BatteryRunResult] = []
+    attempted_instances = 0
+    baseline_requests_per_instance = len(BatteryCondition) * runner.turns * 2
     for instance in instances:
+        # Stop at a triplet boundary rather than recording an avoidably invalid
+        # triplet when the remaining hard cap cannot fund its base requests.
+        if provider.request_count + baseline_requests_per_instance > provider.config.max_requests:
+            break
+        attempted_instances += 1
         pair = f"behavioral-{instance.instance_id}"
         for condition in BatteryCondition:
             result = runner.run_condition(instance, condition, provider, pair_id=pair,
@@ -281,6 +295,9 @@ def run_behavioral_screen(instances: Sequence[FamilyInstance], provider: OpenRou
         "valid_run_count": sum(result.status == "completed" for result in results),
         "invalid_run_count": sum(result.status != "completed" for result in results),
         "provider_requests": provider.request_count,
+        "planned_instances": len(instances),
+        "attempted_instances": attempted_instances,
+        "stopped_before_instance_for_request_cap": attempted_instances < len(instances),
         "cost_usd": provider.cost_usd,
         "report": report_from_battery(instances, results),
     }
@@ -299,9 +316,11 @@ def pressure_catalog(records: Iterable[Mapping[str, Any]], instances: Sequence[F
         outcomes.append(PairedOutcome(
             pair_id=str(record.get("pair_id")), family=instance.family, model=str(record.get("provider", "unknown")),
             condition=str(record.get("condition")), success=record.get("task_success"),
-            valid=record.get("status") == "completed", useful_bits=float(summary.get("verified_useful_bits", 0.0)),
+            valid=record.get("status") == "completed",
+            transmitted_bits=float(summary.get("transmitted_bits", 0.0)),
+            post_read_correlated_bits=float(summary.get("post_read_correlated_bits", 0.0)),
             communication_tokens=int(summary.get("communication_tokens", 0)),
-            latency_seconds=summary.get("first_verified_use_latency_seconds"),
+            latency_seconds=summary.get("first_post_read_success_latency_seconds"),
         ))
     cells: dict[tuple[str, str, str], list[PairedOutcome]] = {}
     for item in instances:
@@ -321,8 +340,9 @@ def pressure_catalog(records: Iterable[Mapping[str, Any]], instances: Sequence[F
             "p_success": probabilities, "valid_denominators": denominators,
             "invalid_runs": {condition: sum(row.condition == condition and not row.valid for row in cell_rows) for condition in ("ISO", "FULL", "COMM")},
             "c_need_unclipped": probabilities["FULL"] - probabilities["ISO"] if probabilities["FULL"] is not None and probabilities["ISO"] is not None else None,
-            "verified_use_count": sum(row.useful_bits > 0 for row in cell_rows if row.valid),
-            "transmitted_bits": sum(row.useful_bits for row in cell_rows if row.valid),
+            "post_read_success_count": sum(row.post_read_correlated_bits > 0 for row in cell_rows if row.valid),
+            "post_read_correlated_bits": sum(row.post_read_correlated_bits for row in cell_rows if row.valid),
+            "transmitted_bits": sum(row.transmitted_bits for row in cell_rows if row.valid),
             "communication_tokens": sum(row.communication_tokens for row in cell_rows if row.valid),
             "status": "screening_only",
         })

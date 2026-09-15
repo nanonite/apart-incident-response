@@ -1,0 +1,11 @@
+{
+  "cost_usd": 0.0,
+  "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+  "failure_reason": "HTTPError from provider adapter; no response body retained",
+  "invalid_runs": 1,
+  "model": "inclusionai/ling-3.0-flash-vl:free",
+  "requests": 2,
+  "stage": "T1a-full-only-diagnostic",
+  "stop_rule": "stop after provider execution failure; no solvability inference",
+  "valid_model_outputs": 0
+}

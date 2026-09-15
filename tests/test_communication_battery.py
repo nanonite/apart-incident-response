@@ -50,7 +50,7 @@ class CommunicationBatteryTests(unittest.TestCase):
         self.assertEqual([(row.before_count, row.after_count, row.delta_i_bits) for row in trajectory],
                          [(8, 4, 1.0), (4, 2, 1.0), (2, 1, 1.0)])
 
-    def test_provenance_distinguishes_read_output_and_verified_use(self):
+    def test_provenance_distinguishes_read_output_and_post_read_success(self):
         log = CommunicationEventLog("run")
         message = generate_instance("hypothesis", 1).information("A", "bit0=0", "m1")
         log.board_write("A", message, message_tokens=1)
@@ -58,7 +58,7 @@ class CommunicationBatteryTests(unittest.TestCase):
         log.peer_read("B", message)
         log.model_output("B", "o1", exposed_message_ids=("m1",), logprob_entropy_bits=1.2,
                          logprob_coverage=1.0, logprob_status="complete")
-        log.verified_use("B", message, "o1", checker_evidence={"verified": True})
+        log.post_read_success("B", message, "o1", checker_evidence={"evidence_class": "post_read_correlation"})
         self.assertEqual(len([event for event in log.events if event.kind == "peer_read_exposure"]), 1)
         self.assertEqual([row["status"] for row in log.replay_joins()], ["joined"])
 
@@ -81,19 +81,39 @@ class CommunicationBatteryTests(unittest.TestCase):
 
     def test_comm_optional_message_is_read_and_machine_verified(self):
         instance = generate_instance("hypothesis", 51, DependenceRegime.N)
-        answers = {(instance.instance_id, condition, agent): instance.target
-                   for condition in BatteryCondition for agent in ("A", "B")}
-        messages = {
-            (instance.instance_id, BatteryCondition.COMM, "A", 0): instance.claims[0].text,
-            (instance.instance_id, BatteryCondition.COMM, "B", 0): instance.claims[1].text,
-        }
+        class UptakeProvider:
+            provider = "fixture"
+            version = "uptake-test-v1"
+            model = "fixture-model"
+            def respond(self, context):
+                if context.agent_id == "B" and context.turn == 0:
+                    return AgentResponse(answer=None, message=instance.claims[1].text)
+                if context.agent_id == "A" and context.turn == 1 and context.visible_messages:
+                    return AgentResponse(answer=instance.target)
+                return AgentResponse(answer=None)
         result = TwoAgentBatteryRunner(turns=2, finalizing_agent="A").run_condition(
-            instance, BatteryCondition.COMM, ScriptedProvider(answers, messages),
+            instance, BatteryCondition.COMM, UptakeProvider(),
         )
         self.assertEqual(result.status, "completed")
         self.assertGreaterEqual(result.event_summary["message_count"], 1)
-        self.assertGreaterEqual(result.event_summary["verified_use_count"], 1)
-        self.assertEqual(result.artifact["model_id"], "unknown")
+        self.assertGreaterEqual(result.event_summary["post_read_success_count"], 1)
+        self.assertEqual(result.artifact["model_id"], "fixture-model")
+
+    def test_informative_message_does_not_pass_when_finalizer_already_knew_answer(self):
+        instance = generate_instance("hypothesis", 54, DependenceRegime.N)
+        class AlreadyKnowsProvider:
+            provider = "fixture"
+            version = "no-uptake-test-v1"
+            model = "fixture-model"
+            def respond(self, context):
+                if context.agent_id == "B" and context.turn == 0:
+                    return AgentResponse(answer=instance.target, message=instance.claims[1].text)
+                return AgentResponse(answer=instance.target)
+        result = TwoAgentBatteryRunner(turns=2, finalizing_agent="A").run_condition(
+            instance, BatteryCondition.COMM, AlreadyKnowsProvider(),
+        )
+        self.assertTrue(result.task_success)
+        self.assertEqual(result.event_summary["post_read_success_count"], 0)
 
     def test_self_reported_use_without_information_or_checker_does_not_pass(self):
         instance = generate_instance("hypothesis", 52, DependenceRegime.N)
@@ -102,7 +122,7 @@ class CommunicationBatteryTests(unittest.TestCase):
         messages = {(instance.instance_id, BatteryCondition.COMM, "A", 0): "ambiguous self report"}
         provider = ScriptedProvider(answers, messages)
         result = TwoAgentBatteryRunner(turns=2, finalizing_agent="A").run_condition(instance, BatteryCondition.COMM, provider)
-        self.assertEqual(result.event_summary["verified_use_count"], 0)
+        self.assertEqual(result.event_summary["post_read_success_count"], 0)
 
     def test_finalizer_only_scoring_rejects_other_agent_answer(self):
         instance = generate_instance("hypothesis", 53, DependenceRegime.N)
@@ -120,7 +140,8 @@ class CommunicationBatteryTests(unittest.TestCase):
         rows = [
             PairedOutcome("p", "hypothesis", "fixture", "ISO", False, communication_tokens=9),
             PairedOutcome("p", "hypothesis", "fixture", "FULL", True, communication_tokens=1),
-            PairedOutcome("p", "hypothesis", "fixture", "COMM", True, useful_bits=1, communication_tokens=99),
+            PairedOutcome("p", "hypothesis", "fixture", "COMM", True,
+                          transmitted_bits=1, post_read_correlated_bits=1, communication_tokens=99),
         ]
         metrics = paired_metrics(rows)[0]
         self.assertEqual(metrics["c_need"], 1.0)

@@ -21,7 +21,8 @@ class PairedOutcome:
     query_cost: str = "unspecified"
     urgency: str = "unspecified"
     reward_pressure: float = 0.0
-    useful_bits: float = 0.0
+    transmitted_bits: float = 0.0
+    post_read_correlated_bits: float = 0.0
     communication_tokens: int = 0
     latency_seconds: float | None = None
 
@@ -96,21 +97,22 @@ def paired_contrasts(rows: Sequence[PairedOutcome]) -> dict[str, Any]:
     return output
 
 
-def communication_efficiency(useful_bits: float, communication_tokens: int) -> float | None:
-    if useful_bits < 0 or communication_tokens < 0:
+def communication_efficiency(transmitted_bits: float, communication_tokens: int) -> float | None:
+    """Objective information sent per communication token; not causal uptake."""
+    if transmitted_bits < 0 or communication_tokens < 0:
         raise ValueError("bits and tokens must not be negative")
-    return useful_bits / communication_tokens if communication_tokens else None
+    return transmitted_bits / communication_tokens if communication_tokens else None
 
 
 def classify_communication_behavior(row: Mapping[str, Any]) -> str:
-    """Classify silence/chatter/use from verified checker evidence."""
+    """Classify message informativeness, without claiming downstream use."""
 
     tokens = int(row.get("communication_tokens", 0))
-    bits = float(row.get("useful_bits", 0.0))
+    bits = float(row.get("transmitted_bits", 0.0))
     if tokens == 0:
         return "silence"
     if bits > 0:
-        return "efficient" if bits / tokens >= 0.5 else "useful_low_efficiency"
+        return "informative_efficient" if bits / tokens >= 0.5 else "informative_low_efficiency"
     return "chatter"
 
 
@@ -143,10 +145,10 @@ def _design(rows: Sequence[PairedOutcome]) -> tuple[list[list[float]], list[str]
 
 
 def fit_communication_propensity(rows: Sequence[PairedOutcome], *, iterations: int = 800, learning_rate: float = 0.08) -> dict[str, Any]:
-    """Fit useful-communication propensity from outcomes and factors.
+    """Fit exploratory post-read-success propensity from outcomes and factors.
 
     Message volume is intentionally absent from the design.  The response is
-    the verified-use indicator, and message latency is reported separately.
+    an observed correlation, not a verified-use indicator; latency is separate.
     """
 
     usable = [row for row in rows if row.valid]
@@ -158,7 +160,7 @@ def fit_communication_propensity(rows: Sequence[PairedOutcome], *, iterations: i
         gradient = [0.0] * len(beta)
         for features, row in zip(matrix, usable):
             expected = _sigmoid(sum(weight * value for weight, value in zip(beta, features)))
-            outcome = float(row.useful_bits > 0)
+            outcome = float(row.post_read_correlated_bits > 0)
             for index, feature in enumerate(features):
                 gradient[index] += (expected - outcome) * feature
         scale = learning_rate / len(usable)
@@ -167,7 +169,8 @@ def fit_communication_propensity(rows: Sequence[PairedOutcome], *, iterations: i
     latency = [row.latency_seconds for row in usable if row.latency_seconds is not None]
     return {
         "status": "fitted", "n": len(usable), "features": columns, "coefficients": beta,
-        "phi_definition": "P(verified_use > 0 | experimental factors)",
+        "phi_definition": "P(post_read_success > 0 | experimental factors)",
+        "causal_use_verified": False,
         "message_volume_is_not_a_predictor": True,
         "fitted_mean": sum(fitted) / len(fitted),
         "latency": {"n": len(latency), "mean_seconds": sum(latency) / len(latency) if latency else None},
@@ -183,7 +186,7 @@ def analyze_runs(rows: Sequence[PairedOutcome]) -> dict[str, Any]:
         "propensity": fit_communication_propensity(rows),
         "behavior_counts": {
             category: sum(classify_communication_behavior(row.__dict__) == category for row in rows)
-            for category in ("silence", "chatter", "useful_low_efficiency", "efficient")
+            for category in ("silence", "chatter", "informative_low_efficiency", "informative_efficient")
         },
         "run_count": len(rows),
         "invalid_run_count": sum(not row.valid for row in rows),

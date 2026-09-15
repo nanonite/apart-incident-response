@@ -1,6 +1,7 @@
 import json
 import tempfile
 import unittest
+import urllib.error
 from pathlib import Path
 from unittest.mock import patch
 
@@ -9,9 +10,11 @@ from apart_incident_response.behavioral_discovery import (
     BehavioralProviderConfig,
     OpenRouterBehavioralProvider,
     audit_retained_pilot,
+    run_behavioral_screen,
 )
-from apart_incident_response.communication_protocol import BatteryCondition
-from apart_incident_response.communication_runner import AgentContext
+from apart_incident_response.communication_protocol import BatteryCondition, DependenceRegime
+from apart_incident_response.communication_runner import AgentContext, AgentResponse
+from apart_incident_response.task_families import generate_instance
 
 
 class FakeResponse:
@@ -59,6 +62,44 @@ class BehavioralDiscoveryTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             store = BehavioralArtifactStore(Path(directory) / "runs.jsonl")
             self.assertTrue(store.path.parent.stat().st_mode & 0o700)
+
+    def test_retry_attempts_count_against_hard_cap(self):
+        provider = OpenRouterBehavioralProvider(
+            BehavioralProviderConfig(max_requests=2, min_interval_seconds=0, retries=1), api_key="secret"
+        )
+        rate_limit = urllib.error.HTTPError("https://example.invalid", 429, "rate limited", {}, None)
+        response = FakeResponse({"model": "fixture", "choices": [{"message": {"content": "ANSWER: x"}}]})
+        with patch("apart_incident_response.behavioral_discovery.urllib.request.urlopen",
+                   side_effect=[rate_limit, response]) as opener, patch(
+                       "apart_incident_response.behavioral_discovery.time.sleep"):
+            self.assertEqual(provider.complete("answer", seed=1).status, "complete")
+        self.assertEqual(provider.request_count, 2)
+        self.assertEqual(opener.call_count, 2)
+
+        exhausted = OpenRouterBehavioralProvider(
+            BehavioralProviderConfig(max_requests=1, min_interval_seconds=0, retries=1), api_key="secret"
+        )
+        with patch("apart_incident_response.behavioral_discovery.urllib.request.urlopen",
+                   side_effect=rate_limit) as opener, patch(
+                       "apart_incident_response.behavioral_discovery.time.sleep"):
+            self.assertEqual(exhausted.complete("answer", seed=1).error_type, "request_cap_exhausted")
+        self.assertEqual(exhausted.request_count, 1)
+        self.assertEqual(opener.call_count, 1)
+
+    def test_screen_stops_at_triplet_boundary(self):
+        class FakeProvider(OpenRouterBehavioralProvider):
+            def respond(self, context):
+                self._reserve()
+                return AgentResponse()
+
+        provider = FakeProvider(BehavioralProviderConfig(max_requests=12, min_interval_seconds=0), api_key="secret")
+        instances = [generate_instance("hypothesis", seed, DependenceRegime.N) for seed in (51, 52)]
+        with tempfile.TemporaryDirectory() as directory:
+            report = run_behavioral_screen(instances, provider, BehavioralArtifactStore(Path(directory) / "runs.jsonl"))
+        self.assertEqual(report["attempted_instances"], 1)
+        self.assertEqual(report["run_count"], 3)
+        self.assertEqual(report["provider_requests"], 12)
+        self.assertTrue(report["stopped_before_instance_for_request_cap"])
 
     def test_retained_failed_pilot_is_not_salvaged(self):
         with tempfile.TemporaryDirectory() as directory:

@@ -1,0 +1,14 @@
+{
+  "artifact_path": "runs/epic-126/full-gate.jsonl",
+  "cost_usd": 0.0,
+  "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+  "instances": 8,
+  "invalid_runs": 8,
+  "model": "inclusionai/ling-3.0-flash-vl:free",
+  "raw_responses_retained": false,
+  "requests_made": 16,
+  "stage": "T1a-full-only-gate",
+  "stop_rule": "no paired screen unless gate reviewed",
+  "successes": 0,
+  "valid_runs": 0
+}

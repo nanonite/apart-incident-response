@@ -124,7 +124,8 @@ class TwoAgentBatteryRunner:
         board: list[dict[str, Any]] = []
         message_info: dict[str, Any] = {}
         received_information: dict[tuple[str, str], Any] = {}
-        used_outputs: list[tuple[str, str, tuple[str, ...]]] = []
+        read_sequences: dict[tuple[str, str], int] = {}
+        used_outputs: list[tuple[str, str, tuple[str, ...], str | None]] = []
         answers: dict[str, str | None] = {"A": None, "B": None}
         invalid: list[str] = []
         for turn in range(self.turns):
@@ -139,7 +140,9 @@ class TwoAgentBatteryRunner:
                 for row in visible:
                     received_info = instance.information(agent, row["text"], row["message_id"])
                     received_information[(agent, row["message_id"])] = received_info
-                    log.peer_read(agent, received_info, exposure_id=f"turn-{turn}")
+                    read_event = log.peer_read(agent, received_info, exposure_id=f"turn-{turn}")
+                    if read_event is not None:
+                        read_sequences[(agent, row["message_id"])] = read_event.sequence
                 context = AgentContext(run, instance.instance_id, agent, condition, turn, view,
                                        visible, self.prompt_version, self.token_budget)
                 try:
@@ -163,7 +166,7 @@ class TwoAgentBatteryRunner:
                                  input_tokens=response.input_tokens,
                                  output_tokens=response.output_tokens,
                                  cost_usd=response.cost_usd)
-                used_outputs.append((agent, output_id, response.used_message_ids))
+                used_outputs.append((agent, output_id, response.used_message_ids, response.answer))
                 if response.answer is not None:
                     answers[agent] = response.answer
                 if condition is BatteryCondition.COMM and response.message:
@@ -179,19 +182,34 @@ class TwoAgentBatteryRunner:
                     for agent, answer in answers.items()}
         final_outcome = outcomes[self.finalizing_agent]
         task_success = bool(final_outcome.get("accepted", False))
-        for agent, output_id, _self_reported_ids in used_outputs:
+        output_sequences = {event.output_id: event.sequence for event in log.events if event.kind == "model_output"}
+        for agent, output_id, _self_reported_ids, answer in used_outputs:
             if agent != self.finalizing_agent or not task_success:
                 continue
             for (received_agent, used_id), info in received_information.items():
                 if received_agent != agent:
                     continue
                 row = next((item for item in board if item["message_id"] == used_id), None)
-                if info is None or row is None or row["author"] == agent:
+                read_sequence = read_sequences.get((agent, used_id))
+                output_sequence = output_sequences.get(output_id)
+                if (info is None or row is None or row["author"] == agent
+                        or read_sequence is None or output_sequence is None
+                        or output_sequence <= read_sequence):
                     continue
-                if info.useful:
-                    log.verified_use(agent, info, output_id,
-                                     checker_evidence={"verified": True, "task_checker": f"{instance.family}-oracle-v1",
-                                                       "answer_accepted": True})
+                prior_finalizer_success = any(
+                    prior_agent == agent and prior_sequence < read_sequence and
+                    instance.validate(prior_answer).get("accepted", False)
+                    for prior_agent, prior_output, _ids, prior_answer in used_outputs
+                    for prior_sequence in [output_sequences.get(prior_output)]
+                    if prior_sequence is not None and prior_answer is not None
+                )
+                if info.useful and not prior_finalizer_success and instance.validate(answer or "").get("accepted", False):
+                    log.post_read_success(agent, info, output_id,
+                                          checker_evidence={"evidence_class": "post_read_correlation",
+                                                            "task_checker": f"{instance.family}-oracle-v1",
+                                                            "answer_accepted": True,
+                                                            "uptake_rule": "first_checker_accepted_finalizer_output_after_peer_read",
+                                                            "prior_finalizer_success": False})
         status = "invalid" if invalid else "completed"
         task_success = task_success and status == "completed"
         artifact = {
