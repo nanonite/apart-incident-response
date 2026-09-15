@@ -1,0 +1,28 @@
+{
+  "study_id": "creative_calibration_v2",
+  "task_ids": [
+    "poetry-duet"
+  ],
+  "conditions": [
+    "C2"
+  ],
+  "steps": 2,
+  "repeats": 1,
+  "unlock_step": 1,
+  "adapter": "ollama",
+  "model": "gemma2:2b",
+  "deadline_seconds": 900,
+  "request_timeout_seconds": 120,
+  "batch_timeout_seconds": 600,
+  "max_output_tokens": 512,
+  "communication_budget_bytes": 6000,
+  "communication_delay_steps": 0,
+  "communication_cost_per_kib": 0,
+  "communication_request_required": false,
+  "shared_context_mode": "full_history",
+  "engagement_mode": "neutral",
+  "evidence_mode": "split",
+  "role_mode": "specialized",
+  "logprobs": true,
+  "schedule": "synchronous_snapshot_serial_inference"
+}

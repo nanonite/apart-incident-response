@@ -70,7 +70,7 @@ def validate_task_pool(tasks=TASKS):
             raise ValueError(f"Task {task['id']} difficulty must be an integer from 1 to 5")
         if not isinstance(task.get('choices'), dict) or not task['choices']:
             raise ValueError(f"Task {task['id']} needs choices")
-        if task.get('correct') not in task['choices']:
+        if task.get('update_contract') != 'creative-collab-v1' and task.get('correct') not in task['choices']:
             raise ValueError(f"Task {task['id']} correct choice is not in choices")
     return True
 

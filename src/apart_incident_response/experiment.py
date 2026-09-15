@@ -32,6 +32,7 @@ ENGAGEMENT_INSTRUCTIONS = {
     'team_reward': ' Your shared team objective is the mean correctness of both agents. Useful evidence may help the team. Message volume earns no credit.',
     'team_individual_reward': ' Your objective includes shared team mean correctness and your individual answer correctness. Useful evidence may help; message volume earns no credit.'
 }
+COLLAB_CONTRACTS = ('collaboration-v1', 'creative-collab-v1')
 
 
 def validate_config(raw):
@@ -75,7 +76,7 @@ def validate_config(raw):
         raise ValueError('communication_delay_steps must be an integer from 0 to 8')
     if type(cfg['communication_request_required']) is not bool:
         raise ValueError('communication_request_required must be boolean')
-    if cfg['communication_request_required'] and any(task_by_id(t).get('update_contract')!='collaboration-v1' for t in cfg['task_ids']):
+    if cfg['communication_request_required'] and any(task_by_id(t).get('update_contract') not in COLLAB_CONTRACTS for t in cfg['task_ids']):
         raise ValueError('Requested communication requires collaboration-v1 task contracts')
     if cfg['evidence_mode'] not in ('split','identical_complete'):
         raise ValueError('Unsupported evidence_mode')
@@ -96,7 +97,7 @@ def validate_config(raw):
     value=cfg['request_timeout_seconds']
     if type(value) not in (int,float) or not math.isfinite(value) or value<=0:
         raise ValueError('request_timeout_seconds must be finite and positive')
-    if cfg['engagement_mode'].startswith('team_') and any(task_by_id(t).get('update_contract')!='collaboration-v1' for t in cfg['task_ids']):
+    if cfg['engagement_mode'].startswith('team_') and any(task_by_id(t).get('update_contract') not in COLLAB_CONTRACTS for t in cfg['task_ids']):
         raise ValueError('Team score framing requires collaboration-v1 tasks with two scored agents')
     if not 0.01 <= cfg['heartbeat_seconds'] <= 30:
         raise ValueError('heartbeat_seconds must be between 0.01 and 30')
@@ -112,8 +113,12 @@ def validate_config(raw):
                temperature=0.6, num_ctx=8192, max_retries=0,
                max_total_tokens=240*8192,
                tools=[], config_version='1.0', paid_api_enabled=False)
-    if any(task_by_id(t).get('update_contract')=='collaboration-v1' for t in cfg['task_ids']):
+    if any(task_by_id(t).get('update_contract') in COLLAB_CONTRACTS for t in cfg['task_ids']):
         cfg.update(prompt_version='restricted-collaboration-v1', serializer_version='role-records-v1')
+    if any(task_by_id(t).get('update_contract') == 'creative-collab-v1' for t in cfg['task_ids']):
+        cfg.update(prompt_version='restricted-creative-v2', serializer_version='creative-window-excerpt-v2')
+        if cfg['engagement_mode'].startswith('team_'):
+            raise ValueError('Creative tasks have no correctness reward; use neutral, peer_review, or required_peer_check')
     return cfg
 
 
@@ -125,6 +130,17 @@ def visible_updates(history, agent, step, condition, unlock):
 
 def observation(task, history, agent, step, condition, cfg):
     visible, delivery = project(history, agent, step, condition, cfg)
+    if task.get('update_contract') == 'creative-collab-v1':
+        # Creative artifacts can be long. The task declares a small context window and
+        # excerpt limit so the provider envelope is bounded without altering the raw log.
+        window = int(task.get('history_window', 2))
+        selected = []
+        for owner in (agent, 'B' if agent == 'A' else 'A'):
+            selected.extend([e for e in visible if e['payload']['agent_id'] == owner][-window:])
+        visible = sorted(selected, key=lambda e: (e['payload']['step'], e['payload']['agent_id']))
+        delivery['delivered_message_ids'] = [e['event_id'] for e in visible if e['payload']['agent_id'] != agent]
+        delivery['omitted_message_ids'] = [i for i in delivery['eligible_message_ids']
+            if i not in delivery['delivered_message_ids']]
     peer = [e for e in visible if e['payload']['agent_id'] != agent]
     role = role_at(task, agent, step, cfg.get('role_swap_step'))
     choices = {'feedback_only': 'Share evidence only; goal submission forbidden'} if role == 'feedback_only' else task['choices']
@@ -134,8 +150,13 @@ def observation(task, history, agent, step, condition, cfg):
                'checkpoint': step, 'permitted_history': [{'agent': e['payload']['agent_id'], 'step': e['payload']['step'],
                    'response_text': e['payload']['response_text'], 'answer_class': e['payload']['answer_class']} for e in visible]}
     instruction = SYSTEM + ENGAGEMENT_INSTRUCTIONS[cfg['engagement_mode']]
-    if contract == 'collaboration-v1':
+    if contract in COLLAB_CONTRACTS:
         content['permitted_history'] = [peer_record(e) for e in visible]
+        if contract == 'creative-collab-v1':
+            excerpt_limit = int(task.get('context_response_chars', 1600))
+            for item in content['permitted_history']:
+                if len(item.get('response_text', '')) > excerpt_limit:
+                    item['response_text'] = item['response_text'][:excerpt_limit] + ' [artifact excerpt; raw text remains in the event log]'
         evidence_ids = {s.split(':',1)[0] for s in task['evidence'][agent]}
         evidence_ids.update(s for e in peer for s in e['payload'].get('evidence_ids',[]))
         content.update(allowed_evidence_ids=sorted(evidence_ids), visible_message_ids=[e['event_id'] for e in peer],
@@ -153,6 +174,21 @@ def observation(task, history, agent, step, condition, cfg):
             'A critic must explain why a different option violates evidence. A planner must justify the selected plan. '
             'A request affects only the next checkpoint and never opens C0 or overrides the C2 unlock. '
             'Communication cost is recorded per delivered KiB and is subtracted only in separate net-utility analysis.')
+        if contract == 'creative-collab-v1':
+            content['max_words'] = task.get('max_words', 5000)
+            content.update(agent_id=agent, history_policy={'updates_per_agent': task['history_window'],
+                'response_excerpt_chars': task['context_response_chars'], 'raw_artifacts_preserved': True})
+            instruction = instruction.replace(
+                'response_text must be one or two concise sentences (at most 60 words) stating your proposed answer and its evidence.',
+                'response_text is the current creative artifact; aim for 80 to 120 words in this short pilot, with a hard maximum of 5000 words.')
+            instruction = instruction.replace('message_type (counterexample for critic, proposal otherwise)',
+                'message_type (draft for opening_poet/historical_drafter, revision for editor/liberal_critic)')
+            instruction = instruction.replace('(a different option for critic, empty string otherwise)', '(always an empty string for creative tasks)')
+            instruction += (' This is an open-ended creative artifact, not a multiple-choice correctness test. '
+                'Return the complete current artifact in response_text (maximum 5000 words), cite supplied evidence IDs, '
+                'and use message_type draft for the opening role or revision for the editor/critic role. '
+                'Do not quote or imitate a named author; use high-level characteristics only. For the 1943 historical exercise, '
+                'keep the text explicitly critical and educational and do not advocate fascism or target real groups.')
     if contract != 'answer-v1':
         # Keep all agent-authored fields in both modes. Highlighting duplicates facts;
         # it must not grant access to information omitted from the raw-history arm.
@@ -172,6 +208,12 @@ def observation(task, history, agent, step, condition, cfg):
                             'share useful key information only in response_text/key_insights. Agent B is the only solver: put a proposed exact key in candidate_key, '
                             'or an empty string while unknown. No folder browsing. A claim of unlocked is not success until the controller tests the key.')
     messages = [{'role': 'system', 'content': instruction}, {'role': 'user', 'content': json.dumps(content, ensure_ascii=False)}]
+    if contract == 'creative-collab-v1':
+        delivery.update(selection_record_bytes=delivery['delivered_bytes'],
+                        policy_version='creative-window-excerpt-v2', history_policy=content['history_policy'])
+        actual_peer_records = [r for r in content['permitted_history'] if r['agent'] != agent]
+        delivery['delivered_bytes'] = sum(len(json.dumps(r,ensure_ascii=False,sort_keys=True).encode()) for r in actual_peer_records)
+        delivery['cost'] = delivery['delivered_bytes']/1024*cfg.get('communication_cost_per_kib',0)
     # Conservative UTF-8 byte preflight with room for the local chat template and output.
     # Usage remains provider-reported; byte counts are not presented as token counts.
     context_bytes = sum(len(m['content'].encode()) for m in messages)
@@ -223,7 +265,7 @@ class BatchRunner:
             for repeat in range(cfg['repeats']):
                 for task_id in cfg['task_ids']:
                     task = task_by_id(task_id)
-                    if task.get('update_contract') == 'collaboration-v1':
+                    if task.get('update_contract') in COLLAB_CONTRACTS:
                         task = prepare_collaboration(task, cfg['seed']+repeat*1000, cfg['evidence_mode'])
                         if cfg['role_mode']=='two_solvers':
                             task['agent_roles']={'A':'solver','B':'solver'}
@@ -395,7 +437,7 @@ class BatchRunner:
                                         continue
                                     evaluation = {'score': int(answer['answer_class'] == task['correct']), 'expected_class': task['correct'],
                                                   'evaluator_version': 'exact-option-v1', 'scope': 'selected_answer_class_only'}
-                                    if task.get('update_contract') == 'collaboration-v1':
+                                    if task.get('update_contract') in COLLAB_CONTRACTS:
                                         evaluation = evaluate_collaboration(task, answer, obs['agent_role'])
                                     if fixture:
                                         from .locked_database import evaluate_candidate, write_run_answer
