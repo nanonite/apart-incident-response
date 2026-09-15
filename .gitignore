@@ -8,6 +8,7 @@ __pycache__/
 exports/
 .uv-cache/
 .openai/
+.claude/
 APART_MODEL_TOKEN
 APART_MODEL_TOKEN*
 qwen3-cache/
