@@ -62,6 +62,45 @@ def token_metrics(entry: Mapping) -> dict:
     }
 
 
+def restore_temperature(tokens: Sequence[Mapping], temperature: float) -> list[dict]:
+    """Undo provider-side temperature scaling of returned logprobs (top-k only).
+
+    Some providers return log p_T = z/T - logsumexp(z/T). Multiplying by T gives z - T*logsumexp(z/T),
+    i.e. the model logits up to a per-position constant, so renormalising over the returned top-k
+    recovers the model's own (T=1) distribution restricted to those k tokens. The unseen tail mass
+    cannot be recovered, so restored positions have coverage 1 by construction. Placeholders stay.
+    """
+
+    if temperature <= 0:
+        raise ValueError("temperature must be > 0 to restore logprobs")
+    restored = []
+    for entry in tokens:
+        alts = [a for a in (entry.get("top_logprobs") or []) if _valid(a.get("logprob"))]
+        scaled = {id(a): float(a["logprob"]) * temperature for a in alts}
+        values = list(scaled.values())
+        sampled = entry.get("logprob")
+        in_topk = any(a.get("token") == entry.get("token") for a in alts)
+        if _valid(sampled) and not in_topk:
+            values.append(float(sampled) * temperature)
+        if not values:
+            restored.append(dict(entry))
+            continue
+        top = max(values)
+        log_z = top + math.log(sum(math.exp(v - top) for v in values))
+        new_alts = []
+        for a in entry.get("top_logprobs") or []:
+            b = dict(a)
+            if id(a) in scaled:
+                b["logprob"] = scaled[id(a)] - log_z
+            new_alts.append(b)
+        new = dict(entry)
+        new["top_logprobs"] = new_alts
+        if _valid(sampled):
+            new["logprob"] = float(sampled) * temperature - log_z
+        restored.append(new)
+    return restored
+
+
 # --------------------------------------------------------------------------- level 2: call
 
 def _mean(values: Iterable[float | None]) -> float | None:

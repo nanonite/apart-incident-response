@@ -25,7 +25,7 @@ from statistics import mean
 import entropy as E
 from scenario import AGENTS
 
-CONDITION_COLOURS = {"base": "#64748b", "switch": "#0b6e8a", "placebo": "#c2410c"}
+CONDITION_COLOURS = {"base": "#64748b", "switch": "#0b6e8a", "placebo": "#c2410c", "placebo_inert": "#a16207"}
 Q_STATES = list(E.ACTIONS) + [E.DONE]
 
 
@@ -76,6 +76,14 @@ def main(exp: Path, phase: str = "full") -> dict:
             **{f"{d}_{k}": comm[d][k] for d in comm for k in ("verdict", "tau_write", "tau_read", "tau_use")},
             "tau_first_foreign_read": check["tau_first_foreign_read"],
             "placebo_decrypt_attempts": check["placebo_decrypt_attempts"], "parse_fail_rate": check["parse_fail_rate"],
+            # schema_version 2 extras (None for version-1 runs)
+            "switch_turn_effective": meta.get("switch_turn_effective"), "switch_closed_turn": meta.get("switch_closed_turn"),
+            "n_agents": meta.get("n_agents", 2),
+            "entropy_valid": (check.get("logprob_integrity") or {}).get("entropy_valid"),
+            "logprob_frac_flagged": (check.get("logprob_integrity") or {}).get("frac_flagged"),
+            "logprob_mean_similarity": (check.get("logprob_integrity") or {}).get("mean_similarity"),
+            "grade_A3": check["completion"].get("A3"),
+            "A3_provenance_ok": ((check.get("observers") or {}).get("A3") or {}).get("provenance_ok"),
         })
         for t in _load_jsonl(run_dir / "turns.jsonl"):
             ent = t.get("entropy") or {}
@@ -87,6 +95,8 @@ def main(exp: Path, phase: str = "full") -> dict:
                 "action": t.get("action"), "parse_mode": t.get("parse_mode"), "api_error": t.get("api_error"),
                 "n_real_foreign_returned": len(t.get("returned_real_foreign_seqs") or []) if t.get("action") == "read_log" else None,
                 "n_placebo_returned": len(t.get("returned_placebo_seqs") or []) if t.get("action") == "read_log" else None,
+                "n_inert_returned": len(t.get("returned_inert_seqs") or []) if t.get("action") == "read_log" else None,
+                "switch_open": t.get("switch_open"), "role": t.get("role"),
                 "decrypt_asset": t.get("asset"), "decrypt_ok": t.get("decrypt_ok"), "password_source": t.get("password_source"),
                 "submit_grade": t.get("grade"), "decrypted_after": "|".join(t.get("decrypted_after") or []),
                 **{k: ent.get(k) for k in ("n_tokens", "n_placeholders", "mean_H_lower_bits", "mean_H_renorm_bits",
@@ -252,7 +262,7 @@ def _chart(title: str, series: list[dict], *, switch_turn: int | None = 8, y_lab
 
 def _report(exp: Path, phase: str, runs: list[dict], system: list[dict], aligned: list[dict]) -> Path:
     models = sorted({r["model"] for r in runs})
-    conditions = [c for c in ("base", "switch", "placebo") if any(r["condition"] == c for r in runs)]
+    conditions = [c for c in ("base", "switch", "placebo", "placebo_inert") if any(r["condition"] == c for r in runs)]
     sections = []
     for model in models:
         rate_rows = []
