@@ -108,6 +108,19 @@ valid denominator is too small to interpret FULL success. No paired ISO/FULL/COM
 screen or T3 entropy work was launched. Next bounded step: re-run the same
 FULL gate with a larger per-agent token budget before any paired spend.
 
+Budget follow-up (`--max-tokens 512`, separate artifacts): re-ran the same frozen
+set to separate the budget floor from a model floor. Result: valid executions 6,
+successes 6, valid denominator 6, valid success rate 1.0, checker-valid runs 6,
+`invalid_output_empty` 2. The two remaining empties are both hypothesis medium
+(seeds 15002/15003) and each consumed exactly `2 x 512 = 1024` completion tokens,
+so that cell still truncates at 512. No provider failures, no HTTP 429, `$0.00`.
+Raising the budget converted every previously-empty run except hypothesis medium.
+Artifacts: `runs/epic-126/full-gate-budget512.jsonl`,
+`full-gate-budget512-report.json`, `full-gate-budget512-diagnostic.json`. The gate
+now has valid model outputs, independent checker results and a nonzero comparable
+denominator, satisfying the mechanical prerequisite for a paired screen; the
+paired ISO/FULL/COMM and T3 work remain unlaunched pending an explicit go.
+
 ## T3/T4
 
 T3 was not run because T1 selected no useful cells and T2 found no aligned
