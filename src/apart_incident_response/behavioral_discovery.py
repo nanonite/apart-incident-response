@@ -692,6 +692,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--model", default=DEFAULT_FREE_MODEL)
     parser.add_argument("--endpoint", default=ENDPOINT)
     parser.add_argument("--max-runs", type=int, default=8)
+    parser.add_argument("--max-tokens", type=int, default=96,
+                        help="per-agent completion token budget; raise for reasoning models")
     parser.add_argument("--output", type=Path, default=Path("runs/epic-126/full-gate-repair.jsonl"))
     parser.add_argument("--report", type=Path, default=Path("runs/epic-126/full-gate-repair-report.json"))
     parser.add_argument("--diagnostic-output", type=Path,
@@ -709,7 +711,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     else:
         config = BehavioralProviderConfig(model=args.model, endpoint=args.endpoint,
                                           max_requests=args.max_runs * 2, max_cost_usd=20.0,
-                                          min_interval_seconds=0.25)
+                                          min_interval_seconds=0.25, max_tokens=args.max_tokens)
         provider = OpenRouterBehavioralProvider(config)
         store = BehavioralArtifactStore(args.output)
         report = run_full_gate(instances, provider, store, max_runs=args.max_runs)

@@ -1,6 +1,6 @@
 {
-  "attempted_runs": 2,
-  "blocking_issue": "provider_credentials_unavailable",
+  "attempted_runs": 8,
+  "blocking_issue": null,
   "cells": [
     {
       "attempted": 2,
@@ -10,11 +10,39 @@
       "regime": "N",
       "successes": 0,
       "valid": 0
+    },
+    {
+      "attempted": 2,
+      "complexity": "medium",
+      "family": "hypothesis",
+      "planned": 2,
+      "regime": "N",
+      "successes": 0,
+      "valid": 0
+    },
+    {
+      "attempted": 2,
+      "complexity": "low",
+      "family": "reference",
+      "planned": 2,
+      "regime": "N",
+      "successes": 1,
+      "valid": 1
+    },
+    {
+      "attempted": 2,
+      "complexity": "medium",
+      "family": "reference",
+      "planned": 2,
+      "regime": "N",
+      "successes": 1,
+      "valid": 1
     }
   ],
-  "checker_valid_runs": 0,
+  "checker_valid_runs": 2,
   "classification_counts": {
-    "provider_execution_failure": 2
+    "invalid_output_empty": 6,
+    "success": 2
   },
   "condition": "FULL",
   "cost_cap_usd": 20.0,
@@ -22,7 +50,7 @@
   "credentials_retained": false,
   "endpoint": "https://openrouter.ai/api/v1/chat/completions",
   "failure_reasons": {
-    "http_401_auth_error": 2
+    "invalid_output_empty": 6
   },
   "finalizing_agent": "A",
   "frozen_instance_ids": [
@@ -37,48 +65,46 @@
   ],
   "frozen_manifest_hash": "60e548f12c770e8cd6ba73d3afda03c855925facc6fd410aee109b329a120946",
   "gate_version": "t1a-full-only-gate-v1",
-  "input_tokens": 0,
-  "invalid_runs": 2,
+  "input_tokens": 1834,
+  "invalid_runs": 6,
   "model": "inclusionai/ling-3.0-flash-vl:free",
-  "model_output_runs": 0,
-  "next_decision": "restore a valid provider credential, then re-run the FULL gate; no floor-effect inference",
-  "output_tokens": 0,
-  "paired_screen_ready": false,
+  "model_output_runs": 2,
+  "next_decision": "review cells before paired ISO/FULL/COMM",
+  "output_tokens": 701,
+  "paired_screen_ready": true,
   "planned_runs": 8,
   "provider": "openrouter",
-  "provider_credential_blocked": true,
+  "provider_credential_blocked": false,
   "provider_diagnostics": {
-    "consecutive_failures": 4,
+    "consecutive_failures": 0,
     "cost_cap_usd": 20.0,
     "cost_usd": 0.0,
     "endpoint": "https://openrouter.ai/api/v1/chat/completions",
-    "failure_classes": {
-      "auth_error": 4
-    },
-    "input_tokens": 0,
+    "failure_classes": {},
+    "input_tokens": 3668,
     "last_served_model": "inclusionai/ling-3.0-flash-vl:free",
     "logprobs_requested": false,
     "model": "inclusionai/ling-3.0-flash-vl:free",
-    "output_tokens": 0,
+    "output_tokens": 1431,
     "provider": "openrouter",
     "provider_version": "behavioral-discovery-v1",
     "request_cap": 16,
-    "requests": 4
+    "requests": 16
   },
   "provider_version": "behavioral-discovery-v1",
   "rate_floor_seconds": 0.25,
   "raw_responses_retained": false,
   "request_cap": 16,
-  "requests_made": 4,
+  "requests_made": 16,
   "requests_per_run": 2,
   "resumed_runs": 0,
-  "solvability_conclusion": "not_available",
+  "solvability_conclusion": "valid_denominator_present",
   "stage": "T1a-full-only-gate",
-  "stop_reason": "repeated_http_failure",
-  "successes": 0,
+  "stop_reason": "completed_planned_runs",
+  "successes": 2,
   "turns": 1,
-  "valid_denominator": 0,
-  "valid_run_rate": 0.0,
-  "valid_runs": 0,
-  "valid_success_rate": null
+  "valid_denominator": 2,
+  "valid_run_rate": 0.25,
+  "valid_runs": 2,
+  "valid_success_rate": 1.0
 }

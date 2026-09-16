@@ -89,6 +89,25 @@ ISO/FULL/COMM screen was launched and no solvability conclusion is permitted
 until a valid credential is restored and the gate produces valid outputs with
 independent checker evidence.
 
+Follow-up (credential refreshed): the root-workspace `.env` key was rotated and
+the gate re-ran on the same frozen set. The preflight probe then returned HTTP
+200 for all five variants. The gate completed all 8 planned runs (16 requests,
+16 physical attempts, `$0.00`, 1834 input / 701 output tokens):
+
+- valid executions 2; successes 2; valid denominator 2; valid success rate 1.0
+- model output runs 2; checker-valid runs 2
+- failure reasons: `invalid_output_empty` 6
+- cells: hypothesis low 0/2 valid, hypothesis medium 0/2, reference low 1/2, reference medium 1/2
+
+Every invalid run consumed exactly `2 x max_tokens` (192 = 2 agents x 96)
+completion tokens with empty content, consistent with the free reasoning model
+exhausting the 96-token budget on hidden reasoning before emitting an `ANSWER:`
+line. The two runs that finished below the cap both passed the checker. This is
+a reasoning-budget/task-harness floor effect, not a provider failure, and the
+valid denominator is too small to interpret FULL success. No paired ISO/FULL/COMM
+screen or T3 entropy work was launched. Next bounded step: re-run the same
+FULL gate with a larger per-agent token budget before any paired spend.
+
 ## T3/T4
 
 T3 was not run because T1 selected no useful cells and T2 found no aligned
