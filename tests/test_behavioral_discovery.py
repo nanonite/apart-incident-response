@@ -16,6 +16,7 @@ from apart_incident_response.behavioral_discovery import (
     is_retryable_status,
     run_behavioral_screen,
     run_full_gate,
+    run_paired_screen,
     select_frozen_instances,
 )
 from apart_incident_response.communication_protocol import BatteryCondition, DependenceRegime, ReasoningComplexity
@@ -345,6 +346,62 @@ class FullGateProviderTests(unittest.TestCase):
         return AgentContext("run", "instance", "A", BatteryCondition.FULL, 0,
                             {"family": "hypothesis", "task_instruction": "answer", "candidate_labels": ["candidate-0"]},
                             (), "prompt-v1", 96)
+
+
+class PairedFakeProvider:
+    provider = "fixture"
+    version = "paired-fixture-v1"
+
+    def __init__(self, config, responses):
+        self.config = config
+        self.model = config.model
+        self.responses = responses
+        self.request_count = 0
+        self.cost_usd = 0.0
+
+    def respond(self, context):
+        self.request_count += 1
+        return self.responses.get((context.instance_id, context.condition.value, context.agent_id),
+                                  AgentResponse(output_text="", answer=None))
+
+
+class PairedScreenTests(unittest.TestCase):
+    def test_paired_screen_reports_denominators_and_c_need(self):
+        frozen = frozen_full_gate_instances()
+        instances = [frozen[0], frozen[2]]
+        responses = {}
+        for instance in instances:
+            responses[(instance.instance_id, BatteryCondition.ISO.value, "A")] = AgentResponse(
+                answer="candidate-99", output_text="ANSWER: candidate-99")
+            responses[(instance.instance_id, BatteryCondition.FULL.value, "A")] = AgentResponse(
+                answer=instance.target, output_text=f"ANSWER: {instance.target}")
+            responses[(instance.instance_id, BatteryCondition.COMM.value, "A")] = AgentResponse(
+                answer=instance.target, output_text=f"ANSWER: {instance.target}")
+        config = BehavioralProviderConfig(max_requests=24, min_interval_seconds=0, max_cost_usd=20.0)
+        provider = PairedFakeProvider(config, responses)
+        with tempfile.TemporaryDirectory() as directory:
+            report = run_paired_screen(instances, provider, BehavioralArtifactStore(Path(directory) / "screen.jsonl"))
+        self.assertEqual(report["by_condition"]["ISO"]["valid"], 2)
+        self.assertEqual(report["by_condition"]["ISO"]["successes"], 0)
+        self.assertEqual(report["by_condition"]["FULL"]["successes"], 2)
+        self.assertEqual(report["by_condition"]["COMM"]["successes"], 2)
+        self.assertTrue(report["all_condition_denominators_present"])
+        self.assertTrue(report["paired_screen_ready"])
+        self.assertEqual(len(report["cells"]), 2)
+        for cell in report["cells"]:
+            self.assertEqual(cell["valid_denominators"], {"ISO": 1, "FULL": 1, "COMM": 1})
+            self.assertEqual(cell["c_need_unclipped"], 1.0)
+
+    def test_paired_screen_stops_at_request_cap(self):
+        instances = frozen_full_gate_instances()[:2]
+        config = BehavioralProviderConfig(max_requests=12, min_interval_seconds=0, max_cost_usd=20.0)
+        provider = PairedFakeProvider(config, {})
+        with tempfile.TemporaryDirectory() as directory:
+            report = run_paired_screen(instances, provider, BehavioralArtifactStore(Path(directory) / "screen.jsonl"))
+        self.assertEqual(report["stop_reason"], "request_cap")
+        self.assertEqual(report["attempted_instances"], 1)
+        self.assertEqual(report["requests_made"], 12)
+        self.assertFalse(report["all_condition_denominators_present"])
 
 
 if __name__ == "__main__":

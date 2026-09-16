@@ -137,6 +137,30 @@ screen is only informative if ISO/COMM are measurably harder, or the FULL view
 should expose `joint_clues` without `joint_candidate_labels` to make FULL a
 genuine reasoning gate. Paired ISO/FULL/COMM and T3 remain unlaunched.
 
+Paired ISO/FULL/COMM screen (8 frozen instances, `turns=2`, `--max-tokens 1024`,
+96 requests, `$0.00`, no HTTP 429): 24 condition-runs, 22 valid, 2
+`invalid_output_empty` (both hypothesis medium), 11 successes and 11
+valid wrong answers.
+
+- ISO: 8 valid, 2 successes (0.25)
+- FULL: 7 valid, 7 successes (1.00), at ceiling
+- COMM: 7 valid, 2 successes (0.286); 11 messages / 11 transmitted bits, 0
+  post-read-success events
+
+Per-cell `C_need` (FULL-ISO) with valid denominators: hypothesis low 1.0 (2/2/2),
+hypothesis medium 0.5 (2/1/1), reference low 0.5 (2/2/2), reference medium 1.0
+(2/2/2). Artifacts: `runs/epic-126/paired-screen.jsonl`,
+`paired-screen-report.json`, `paired-screen-diagnostic.json`.
+
+Interpretation caveats: FULL is at ceiling because its agent view passes
+`joint_candidate_labels`, which for these regime-N instances is the
+single-element joint set; COMM is statistically indistinguishable from ISO at
+this n and produced no verified post-read use (`post_read_success_count` 0); the
+2 invalid outputs are hypothesis medium at the 1024-token cap. This is a
+small-n screening result, not a powered estimate. No T3 entropy work was
+launched. Next: either drop `joint_candidate_labels` from the FULL view to make
+FULL a genuine gate, or enlarge n per cell before interpreting `C_need`.
+
 ## T3/T4
 
 T3 was not run because T1 selected no useful cells and T2 found no aligned

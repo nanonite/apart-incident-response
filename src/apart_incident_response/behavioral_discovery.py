@@ -500,8 +500,8 @@ class _RecordingProvider:
         return response
 
 
-def _classify_full_run(*, status: str, output_present: bool, answer_parsed: bool,
-                       checker_valid: bool, accepted: bool) -> str:
+def _classify_run(*, status: str, output_present: bool, answer_parsed: bool,
+                  checker_valid: bool, accepted: bool) -> str:
     if status != "completed":
         return "provider_execution_failure"
     if not output_present:
@@ -548,9 +548,9 @@ def run_full_gate(instances: Sequence[FamilyInstance], provider: Any,
         checker_result = instance.validate(answer or "")
         checker_valid = answer_parsed and isinstance(checker_result, Mapping) and "accepted" in checker_result
         accepted = bool(checker_result.get("accepted", False))
-        classification = _classify_full_run(status=result.status, output_present=output_present,
-                                            answer_parsed=answer_parsed, checker_valid=checker_valid,
-                                            accepted=accepted)
+        classification = _classify_run(status=result.status, output_present=output_present,
+                                       answer_parsed=answer_parsed, checker_valid=checker_valid,
+                                       accepted=accepted)
         valid_execution = classification in {"success", "valid_wrong_answer"}
         if valid_execution:
             failure_reason = None
@@ -688,6 +688,179 @@ def run_full_gate(instances: Sequence[FamilyInstance], provider: Any,
     return report
 
 
+def run_paired_screen(instances: Sequence[FamilyInstance], provider: Any,
+                      artifact_store: BehavioralArtifactStore, *, max_runs: int = 8,
+                      finalizing_agent: str = "A", turns: int = 2) -> dict[str, Any]:
+    """Run bounded paired ISO/FULL/COMM triplets with per-run validity classes."""
+
+    if max_runs <= 0 or turns <= 0:
+        raise ValueError("max_runs and turns must be positive")
+    runner = TwoAgentBatteryRunner(turns=turns, token_budget=provider.config.max_tokens,
+                                   finalizing_agent=finalizing_agent)
+    selected = list(instances)[:max_runs]
+    requests_per_instance = turns * 2 * len(BatteryCondition)
+    rows: list[dict[str, Any]] = []
+    stop_reason: str | None = None
+    consecutive_http_failures = 0
+    stop = False
+    for instance in selected:
+        if provider.request_count + requests_per_instance > provider.config.max_requests:
+            stop_reason = "request_cap"
+            break
+        if provider.cost_usd >= provider.config.max_cost_usd:
+            stop_reason = "cost_cap"
+            break
+        pair = f"paired-{instance.instance_id}"
+        for condition in BatteryCondition:
+            recorder = _RecordingProvider(provider)
+            run_id = f"paired-{condition.value}-{instance.instance_id}"
+            result = runner.run_condition(instance, condition, recorder, pair_id=pair, run_id=run_id)
+            final_response = recorder.responses.get((run_id, finalizing_agent, turns - 1))
+            output_present = bool(final_response is not None and final_response.output_text.strip())
+            answer = result.submitted_answers.get(finalizing_agent)
+            answer_parsed = answer is not None and str(answer).strip() != ""
+            checker_result = instance.validate(answer or "")
+            checker_valid = answer_parsed and isinstance(checker_result, Mapping) and "accepted" in checker_result
+            accepted = bool(checker_result.get("accepted", False))
+            classification = _classify_run(status=result.status, output_present=output_present,
+                                           answer_parsed=answer_parsed, checker_valid=checker_valid,
+                                           accepted=accepted)
+            valid_execution = classification in {"success", "valid_wrong_answer"}
+            if valid_execution:
+                failure_reason = None
+            elif final_response is not None and final_response.failure_reason:
+                failure_reason = final_response.failure_reason
+            else:
+                failure_reason = classification
+            summary = result.event_summary
+            finalizer_failure = final_response.failure_reason if final_response else None
+            if finalizer_failure and finalizer_failure.startswith("http_"):
+                consecutive_http_failures += 1
+            else:
+                consecutive_http_failures = 0
+            row = {
+                "run_id": run_id, "pair_id": pair, "instance_id": instance.instance_id,
+                "family": instance.family, "seed": instance.seed,
+                "complexity": instance.complexity.value,
+                "regime": instance.assignment.regime.value if instance.assignment.regime else None,
+                "condition": condition.value, "status": result.status,
+                "classification": classification, "valid_execution": valid_execution,
+                "output_present": output_present, "answer_parsed": answer_parsed,
+                "checker_valid": checker_valid, "checker_accepted": accepted,
+                "failure_reason": failure_reason,
+                "message_count": int(summary.get("message_count", 0)),
+                "transmitted_bits": float(summary.get("transmitted_bits", 0.0)),
+                "communication_tokens": int(summary.get("communication_tokens", 0)),
+                "post_read_success_count": int(summary.get("post_read_success_count", 0)),
+                "post_read_correlated_bits": float(summary.get("post_read_correlated_bits", 0.0)),
+                "provider": result.provider, "provider_version": result.provider_version,
+                "model_id": result.model_id,
+                "input_tokens": final_response.input_tokens if final_response else None,
+                "output_tokens": final_response.output_tokens if final_response else None,
+                "cost_usd": float(final_response.cost_usd) if final_response else 0.0,
+                "artifact_hash": hashlib.sha256(json.dumps(result.artifact, sort_keys=True).encode()).hexdigest(),
+            }
+            artifact_store.append(result, extra={"classification": classification,
+                                                 "valid_execution": valid_execution,
+                                                 "failure_reason": failure_reason})
+            rows.append(row)
+            if consecutive_http_failures >= provider.config.max_consecutive_failures:
+                stop_reason = "repeated_http_failure"
+                stop = True
+                break
+        if stop:
+            break
+
+    valid_rows = [row for row in rows if row["valid_execution"]]
+    successful = [row for row in valid_rows if row["checker_accepted"]]
+    by_condition: dict[str, Any] = {}
+    for condition in BatteryCondition:
+        condition_rows = [row for row in rows if row["condition"] == condition.value]
+        condition_valid = [row for row in condition_rows if row["valid_execution"]]
+        condition_success = [row for row in condition_valid if row["checker_accepted"]]
+        by_condition[condition.value] = {
+            "attempted": len(condition_rows), "valid": len(condition_valid),
+            "invalid": len(condition_rows) - len(condition_valid),
+            "successes": len(condition_success),
+            "valid_success_rate": len(condition_success) / len(condition_valid) if condition_valid else None,
+            "messages": sum(row["message_count"] for row in condition_rows),
+            "transmitted_bits": sum(row["transmitted_bits"] for row in condition_rows),
+            "communication_tokens": sum(row["communication_tokens"] for row in condition_rows),
+            "post_read_success_count": sum(row["post_read_success_count"] for row in condition_rows),
+            "post_read_correlated_bits": sum(row["post_read_correlated_bits"] for row in condition_rows),
+        }
+    cell_keys = sorted({(row["family"], row["complexity"]) for row in rows})
+    cells: list[dict[str, Any]] = []
+    for family, complexity in cell_keys:
+        cell_rows = [row for row in rows if row["family"] == family and row["complexity"] == complexity]
+        probabilities: dict[str, float | None] = {}
+        denominators: dict[str, int] = {}
+        success_counts: dict[str, int] = {}
+        for condition in BatteryCondition:
+            condition_valid = [row for row in cell_rows if row["condition"] == condition.value and row["valid_execution"]]
+            probabilities[condition.value] = (sum(row["checker_accepted"] for row in condition_valid) / len(condition_valid)
+                                              if condition_valid else None)
+            denominators[condition.value] = len(condition_valid)
+            success_counts[condition.value] = sum(row["checker_accepted"] for row in condition_valid)
+        cells.append({
+            "family": family, "complexity": complexity,
+            "p_success": probabilities, "successes": success_counts,
+            "valid_denominators": denominators,
+            "c_need_unclipped": (probabilities["FULL"] - probabilities["ISO"]
+                                 if probabilities["FULL"] is not None and probabilities["ISO"] is not None else None),
+        })
+
+    failure_reasons = Counter(row["failure_reason"] for row in rows if row["failure_reason"])
+    classifications = Counter(row["classification"] for row in rows)
+    failure_classes = dict(provider.diagnostics().get("failure_classes", {})) if hasattr(provider, "diagnostics") else {}
+    credential_blocked = any(name in {"auth_error", "credentials_unavailable", "payment_required"}
+                             for name in failure_classes)
+    all_denominators = all(by_condition[condition.value]["valid"] > 0 for condition in BatteryCondition)
+    if not rows:
+        stop_reason = stop_reason or "no_instances_attempted"
+    elif stop_reason is None:
+        stop_reason = "completed_planned_runs"
+    return {
+        "screen_version": "paired-iso-full-comm-v1",
+        "stage": "T1a-paired-screen",
+        "endpoint": provider.config.endpoint,
+        "model": provider.model,
+        "provider": getattr(provider, "provider", "unknown"),
+        "provider_version": getattr(provider, "version", "unknown"),
+        "finalizing_agent": finalizing_agent, "turns": turns,
+        "requests_per_instance": requests_per_instance,
+        "request_cap": provider.config.max_requests,
+        "rate_floor_seconds": provider.config.min_interval_seconds,
+        "cost_cap_usd": provider.config.max_cost_usd,
+        "planned_instances": len(selected),
+        "attempted_instances": len({row["instance_id"] for row in rows}),
+        "attempted_runs": len(rows),
+        "valid_runs": len(valid_rows),
+        "invalid_runs": len(rows) - len(valid_rows),
+        "successes": len(successful),
+        "requests_made": provider.request_count,
+        "input_tokens": sum(row["input_tokens"] or 0 for row in rows),
+        "output_tokens": sum(row["output_tokens"] or 0 for row in rows),
+        "cost_usd": sum(row["cost_usd"] for row in rows),
+        "by_condition": by_condition,
+        "cells": cells,
+        "failure_reasons": dict(failure_reasons),
+        "classification_counts": dict(classifications),
+        "stop_reason": stop_reason,
+        "frozen_instance_ids": [instance.instance_id for instance in selected],
+        "frozen_manifest_hash": hashlib.sha256(
+            json.dumps([instance.instance_id for instance in selected], sort_keys=True).encode()).hexdigest(),
+        "all_condition_denominators_present": all_denominators,
+        "paired_screen_ready": bool(valid_rows) and all_denominators,
+        "provider_credential_blocked": credential_blocked,
+        "provider_diagnostics": provider.diagnostics() if hasattr(provider, "diagnostics") else {},
+        "raw_responses_retained": False,
+        "credentials_retained": False,
+        "next_decision": ("review by_condition/cells before any T3 entropy work"
+                          if all_denominators else "denominators incomplete; do not advance"),
+    }
+
+
 def next_decision_for(blocking_issue: str | None) -> str:
     if blocking_issue is None:
         return "review cells before paired ISO/FULL/COMM"
@@ -701,50 +874,60 @@ def next_decision_for(blocking_issue: str | None) -> str:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="T1a FULL-only solvability execution gate")
-    parser.add_argument("--live", action="store_true", help="run the bounded live gate (requires credentials)")
+    parser = argparse.ArgumentParser(description="T1a FULL-only gate and paired ISO/FULL/COMM screen")
+    parser.add_argument("--mode", choices=["full-gate", "paired-screen"], default="full-gate")
+    parser.add_argument("--live", action="store_true", help="run the bounded live path (requires credentials)")
     parser.add_argument("--model", default=DEFAULT_FREE_MODEL)
     parser.add_argument("--endpoint", default=ENDPOINT)
     parser.add_argument("--max-runs", type=int, default=8)
     parser.add_argument("--max-tokens", type=int, default=96,
                         help="per-agent completion token budget; raise for reasoning models")
+    parser.add_argument("--turns", type=int, default=2, help="dialogue turns per agent for the paired screen")
     parser.add_argument("--families", help="comma-separated family filter over the frozen manifest")
     parser.add_argument("--complexities", help="comma-separated complexity filter (low, medium, high)")
-    parser.add_argument("--output", type=Path, default=Path("runs/epic-126/full-gate-repair.jsonl"))
-    parser.add_argument("--report", type=Path, default=Path("runs/epic-126/full-gate-repair-report.json"))
-    parser.add_argument("--diagnostic-output", type=Path,
-                        default=Path("runs/epic-126/full-gate-repair-diagnostic.json"))
+    parser.add_argument("--output", type=Path)
+    parser.add_argument("--report", type=Path)
+    parser.add_argument("--diagnostic-output", type=Path)
     args = parser.parse_args(argv)
     instances = select_frozen_instances(families=args.families, complexities=args.complexities)
+    base = "full-gate-repair" if args.mode == "full-gate" else "paired-screen"
+    output = args.output or Path(f"runs/epic-126/{base}.jsonl")
+    report_path = args.report or Path(f"runs/epic-126/{base}-report.json")
+    diagnostic_path = args.diagnostic_output or Path(f"runs/epic-126/{base}-diagnostic.json")
     if not args.live:
         report = {
-            "gate_version": FULL_GATE_VERSION, "stage": "T1a-full-only-gate", "status": "not_run",
-            "model": args.model, "endpoint": args.endpoint, "planned_runs": len(instances),
+            "mode": args.mode, "status": "not_run", "model": args.model, "endpoint": args.endpoint,
+            "planned_instances": len(instances),
             "frozen_instance_ids": [instance.instance_id for instance in instances],
             "cost_usd": 0.0, "raw_responses_retained": False, "credentials_retained": False,
             "next_step": "re-run with --live once a valid OPENROUTER_API_KEY is configured",
         }
     else:
+        if args.mode == "full-gate":
+            max_requests = args.max_runs * 2
+        else:
+            max_requests = args.max_runs * args.turns * 2 * len(BatteryCondition)
         config = BehavioralProviderConfig(model=args.model, endpoint=args.endpoint,
-                                          max_requests=args.max_runs * 2, max_cost_usd=20.0,
+                                          max_requests=max_requests, max_cost_usd=20.0,
                                           min_interval_seconds=0.25, max_tokens=args.max_tokens)
         provider = OpenRouterBehavioralProvider(config)
-        store = BehavioralArtifactStore(args.output)
-        report = run_full_gate(instances, provider, store, max_runs=args.max_runs)
+        store = BehavioralArtifactStore(output)
+        if args.mode == "full-gate":
+            report = run_full_gate(instances, provider, store, max_runs=args.max_runs)
+        else:
+            report = run_paired_screen(instances, provider, store, max_runs=args.max_runs, turns=args.turns)
         diagnostic = {
-            "gate_version": FULL_GATE_VERSION,
-            "stage": "T1a-full-only-diagnostic",
+            "mode": args.mode, "stage": f"T1a-{args.mode}-diagnostic",
             "provider_diagnostics": report["provider_diagnostics"],
-            "failure_reasons": report["failure_reasons"],
+            "failure_reasons": report.get("failure_reasons", {}),
             "stop_reason": report["stop_reason"],
-            "raw_responses_retained": False,
-            "credentials_retained": False,
+            "raw_responses_retained": False, "credentials_retained": False,
         }
-        args.diagnostic_output.parent.mkdir(parents=True, exist_ok=True)
-        args.diagnostic_output.write_text(
+        diagnostic_path.parent.mkdir(parents=True, exist_ok=True)
+        diagnostic_path.write_text(
             json.dumps(diagnostic, indent=2, sort_keys=True, allow_nan=False) + "\n", encoding="utf-8")
-    args.report.parent.mkdir(parents=True, exist_ok=True)
-    args.report.write_text(json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n", encoding="utf-8")
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n", encoding="utf-8")
     print(json.dumps(report, indent=2, sort_keys=True, allow_nan=False))
     if not args.live:
         return 0
@@ -811,7 +994,7 @@ __all__ = [
     "BehavioralArtifactStore", "BehavioralProviderConfig", "BehavioralResponse",
     "OpenRouterBehavioralProvider", "audit_retained_pilot", "classify_http_status",
     "frozen_full_gate_instances", "is_retryable_status", "main", "pressure_catalog",
-    "run_behavioral_screen", "run_full_gate", "select_frozen_instances",
+    "run_behavioral_screen", "run_full_gate", "run_paired_screen", "select_frozen_instances",
 ]
 
 
