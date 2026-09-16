@@ -16,6 +16,7 @@ from apart_incident_response.behavioral_discovery import (
     is_retryable_status,
     run_behavioral_screen,
     run_full_gate,
+    select_frozen_instances,
 )
 from apart_incident_response.communication_protocol import BatteryCondition, DependenceRegime, ReasoningComplexity
 from apart_incident_response.communication_runner import AgentContext, AgentResponse
@@ -333,6 +334,12 @@ class FullGateProviderTests(unittest.TestCase):
             "hypothesis-00003a98", "hypothesis-00003a99", "hypothesis-00003a9a", "hypothesis-00003a9b",
             "reference-00003a9c", "reference-00003a9d", "reference-00003a9e", "reference-00003a9f",
         ])
+
+    def test_select_frozen_instances_filters_family_and_complexity(self):
+        selected = select_frozen_instances(families="hypothesis", complexities="medium")
+        self.assertEqual([instance.instance_id for instance in selected],
+                         ["hypothesis-00003a9a", "hypothesis-00003a9b"])
+        self.assertEqual([instance.complexity.value for instance in selected], ["medium", "medium"])
 
     def context(self):
         return AgentContext("run", "instance", "A", BatteryCondition.FULL, 0,

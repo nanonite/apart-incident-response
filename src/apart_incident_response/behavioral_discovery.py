@@ -467,6 +467,20 @@ def frozen_full_gate_instances() -> list[FamilyInstance]:
             for family, seed, complexity in FROZEN_FULL_GATE_MANIFEST]
 
 
+def select_frozen_instances(*, families: str | None = None,
+                            complexities: str | None = None) -> list[FamilyInstance]:
+    """Filter the frozen manifest by family and/or complexity for bounded cells."""
+
+    instances = frozen_full_gate_instances()
+    if families:
+        wanted = {name.strip() for name in families.split(",") if name.strip()}
+        instances = [instance for instance in instances if instance.family in wanted]
+    if complexities:
+        wanted = {name.strip() for name in complexities.split(",") if name.strip()}
+        instances = [instance for instance in instances if instance.complexity.value in wanted]
+    return instances
+
+
 class _RecordingProvider:
     """Capture sanitized AgentResponses while delegating to the live provider."""
 
@@ -694,12 +708,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--max-runs", type=int, default=8)
     parser.add_argument("--max-tokens", type=int, default=96,
                         help="per-agent completion token budget; raise for reasoning models")
+    parser.add_argument("--families", help="comma-separated family filter over the frozen manifest")
+    parser.add_argument("--complexities", help="comma-separated complexity filter (low, medium, high)")
     parser.add_argument("--output", type=Path, default=Path("runs/epic-126/full-gate-repair.jsonl"))
     parser.add_argument("--report", type=Path, default=Path("runs/epic-126/full-gate-repair-report.json"))
     parser.add_argument("--diagnostic-output", type=Path,
                         default=Path("runs/epic-126/full-gate-repair-diagnostic.json"))
     args = parser.parse_args(argv)
-    instances = frozen_full_gate_instances()
+    instances = select_frozen_instances(families=args.families, complexities=args.complexities)
     if not args.live:
         report = {
             "gate_version": FULL_GATE_VERSION, "stage": "T1a-full-only-gate", "status": "not_run",
@@ -795,7 +811,7 @@ __all__ = [
     "BehavioralArtifactStore", "BehavioralProviderConfig", "BehavioralResponse",
     "OpenRouterBehavioralProvider", "audit_retained_pilot", "classify_http_status",
     "frozen_full_gate_instances", "is_retryable_status", "main", "pressure_catalog",
-    "run_behavioral_screen", "run_full_gate",
+    "run_behavioral_screen", "run_full_gate", "select_frozen_instances",
 ]
 
 

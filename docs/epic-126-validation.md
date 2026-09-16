@@ -121,6 +121,22 @@ now has valid model outputs, independent checker results and a nonzero comparabl
 denominator, satisfying the mechanical prerequisite for a paired screen; the
 paired ISO/FULL/COMM and T3 work remain unlaunched pending an explicit go.
 
+Consolidated 1024 gate (all 8 frozen instances, one run, `--max-tokens 1024`):
+valid executions 8, successes 8, valid denominator 8, valid run rate 1.0,
+checker-valid runs 8, model output runs 8, failures 0, 16 requests, `$0.00`, no
+HTTP 429. Artifacts: `runs/epic-126/full-gate-1024.jsonl`,
+`full-gate-1024-report.json`, `full-gate-1024-diagnostic.json`.
+
+Caveat: the FULL agent view currently includes `joint_candidate_labels`, which
+for these measured regime-N instances is the single-element joint feasible set
+containing the target (`joint_clues` are the constraints). A format-following
+finalizer can therefore echo the joint set. The 8/8 result validates provider
+execution, output parsing and the checker and bounds the FULL condition at
+ceiling, but it is not by itself a discriminating reasoning signal. A paired
+screen is only informative if ISO/COMM are measurably harder, or the FULL view
+should expose `joint_clues` without `joint_candidate_labels` to make FULL a
+genuine reasoning gate. Paired ISO/FULL/COMM and T3 remain unlaunched.
+
 ## T3/T4
 
 T3 was not run because T1 selected no useful cells and T2 found no aligned
