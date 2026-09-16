@@ -116,6 +116,7 @@ class BehavioralProviderConfig:
     retries: int = 1
     max_tokens: int = 96
     max_consecutive_failures: int = 2
+    include_joint_candidate_labels: bool = True
 
     def __post_init__(self) -> None:
         if not self.model.endswith(":free"):
@@ -272,7 +273,7 @@ class OpenRouterBehavioralProvider:
                                           error_class="transport_error")
 
     def respond(self, context: AgentContext) -> AgentResponse:
-        prompt = json.dumps({
+        prompt_fields = {
             "instruction": context.task_view.get("task_instruction"),
             "family": context.task_view.get("family"),
             "complexity": context.task_view.get("complexity"),
@@ -282,10 +283,14 @@ class OpenRouterBehavioralProvider:
             "finalizing_agent": context.task_view.get("finalizing_agent"),
             "candidate_labels": context.task_view.get("candidate_labels", []),
             "joint_clues": context.task_view.get("joint_clues", []),
-            "joint_candidate_labels": context.task_view.get("joint_candidate_labels"),
             "private_clues": context.task_view.get("private_clues", []),
             "visible_messages": list(context.visible_messages),
-        }, sort_keys=True)
+        }
+        if self.config.include_joint_candidate_labels:
+            # Preregistered full treatment. Passing the joint candidate set makes
+            # the finalizer able to echo the answer, so FULL sits at ceiling.
+            prompt_fields["joint_candidate_labels"] = context.task_view.get("joint_candidate_labels")
+        prompt = json.dumps(prompt_fields, sort_keys=True)
         result = self.complete(prompt, seed=context.turn)
         match = re.search(r"answer\s*:\s*([^\n.]+)", result.text, flags=re.IGNORECASE)
         message_match = re.search(r"message\s*:\s*([^\n]+)", result.text, flags=re.IGNORECASE)
@@ -478,6 +483,31 @@ def select_frozen_instances(*, families: str | None = None,
     if complexities:
         wanted = {name.strip() for name in complexities.split(",") if name.strip()}
         instances = [instance for instance in instances if instance.complexity.value in wanted]
+    return instances
+
+
+PAIRED_CELLS: tuple[tuple[str, ReasoningComplexity], ...] = (
+    ("hypothesis", ReasoningComplexity.LOW),
+    ("hypothesis", ReasoningComplexity.MEDIUM),
+    ("reference", ReasoningComplexity.LOW),
+    ("reference", ReasoningComplexity.MEDIUM),
+)
+
+
+def extended_paired_instances(seeds_per_cell: int = 5) -> list[FamilyInstance]:
+    """Build an equal-n paired screen over the four family x complexity cells.
+
+    Seeds are independent of the eight frozen gate instances and unique per
+    cell, so each cell has exactly ``seeds_per_cell`` measured instances.
+    """
+
+    if seeds_per_cell <= 0:
+        raise ValueError("seeds_per_cell must be positive")
+    instances: list[FamilyInstance] = []
+    for cell_index, (family, complexity) in enumerate(PAIRED_CELLS):
+        for replicate in range(seeds_per_cell):
+            seed = 16000 + cell_index * 100 + replicate
+            instances.append(generate_instance(family, seed, DependenceRegime.N, complexity))
     return instances
 
 
@@ -879,17 +909,25 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--live", action="store_true", help="run the bounded live path (requires credentials)")
     parser.add_argument("--model", default=DEFAULT_FREE_MODEL)
     parser.add_argument("--endpoint", default=ENDPOINT)
-    parser.add_argument("--max-runs", type=int, default=8)
+    parser.add_argument("--max-runs", type=int)
     parser.add_argument("--max-tokens", type=int, default=96,
                         help="per-agent completion token budget; raise for reasoning models")
     parser.add_argument("--turns", type=int, default=2, help="dialogue turns per agent for the paired screen")
+    parser.add_argument("--full-view", choices=["joint-set", "joint-clues"], default="joint-set",
+                        help="FULL prompt view: include the joint candidate set (default) or joint clues only")
+    parser.add_argument("--seeds-per-cell", type=int,
+                        help="build an equal-n paired screen with this many seeds per family x complexity cell")
     parser.add_argument("--families", help="comma-separated family filter over the frozen manifest")
     parser.add_argument("--complexities", help="comma-separated complexity filter (low, medium, high)")
     parser.add_argument("--output", type=Path)
     parser.add_argument("--report", type=Path)
     parser.add_argument("--diagnostic-output", type=Path)
     args = parser.parse_args(argv)
-    instances = select_frozen_instances(families=args.families, complexities=args.complexities)
+    if args.seeds_per_cell:
+        instances = extended_paired_instances(args.seeds_per_cell)
+    else:
+        instances = select_frozen_instances(families=args.families, complexities=args.complexities)
+    max_runs = args.max_runs or len(instances)
     base = "full-gate-repair" if args.mode == "full-gate" else "paired-screen"
     output = args.output or Path(f"runs/epic-126/{base}.jsonl")
     report_path = args.report or Path(f"runs/epic-126/{base}-report.json")
@@ -904,18 +942,19 @@ def main(argv: Sequence[str] | None = None) -> int:
         }
     else:
         if args.mode == "full-gate":
-            max_requests = args.max_runs * 2
+            max_requests = max_runs * 2
         else:
-            max_requests = args.max_runs * args.turns * 2 * len(BatteryCondition)
+            max_requests = max_runs * args.turns * 2 * len(BatteryCondition)
         config = BehavioralProviderConfig(model=args.model, endpoint=args.endpoint,
                                           max_requests=max_requests, max_cost_usd=20.0,
-                                          min_interval_seconds=0.25, max_tokens=args.max_tokens)
+                                          min_interval_seconds=0.25, max_tokens=args.max_tokens,
+                                          include_joint_candidate_labels=(args.full_view == "joint-set"))
         provider = OpenRouterBehavioralProvider(config)
         store = BehavioralArtifactStore(output)
         if args.mode == "full-gate":
-            report = run_full_gate(instances, provider, store, max_runs=args.max_runs)
+            report = run_full_gate(instances, provider, store, max_runs=max_runs)
         else:
-            report = run_paired_screen(instances, provider, store, max_runs=args.max_runs, turns=args.turns)
+            report = run_paired_screen(instances, provider, store, max_runs=max_runs, turns=args.turns)
         diagnostic = {
             "mode": args.mode, "stage": f"T1a-{args.mode}-diagnostic",
             "provider_diagnostics": report["provider_diagnostics"],
@@ -995,6 +1034,7 @@ __all__ = [
     "OpenRouterBehavioralProvider", "audit_retained_pilot", "classify_http_status",
     "frozen_full_gate_instances", "is_retryable_status", "main", "pressure_catalog",
     "run_behavioral_screen", "run_full_gate", "run_paired_screen", "select_frozen_instances",
+    "PAIRED_CELLS", "extended_paired_instances",
 ]
 
 

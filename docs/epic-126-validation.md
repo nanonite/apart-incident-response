@@ -161,6 +161,53 @@ small-n screening result, not a powered estimate. No T3 entropy work was
 launched. Next: either drop `joint_candidate_labels` from the FULL view to make
 FULL a genuine gate, or enlarge n per cell before interpreting `C_need`.
 
+Extended paired screen, 5 seeds per cell (20 independent instances, same
+protocol; artifacts `runs/epic-126/paired-screen-n5.*`): 60 condition-runs, 59
+valid, 1 `invalid_output_empty`, 27 successes, 32 valid wrong answers, 240
+requests, `$0.00`, no HTTP 429.
+
+- ISO: 20 valid, 4 successes (0.20)
+- FULL: 20 valid, 19 successes (0.95)
+- COMM: 19 valid, 4 successes (0.211); 33 messages / 33 transmitted bits, 1
+  post-read-success event
+
+Per-cell `p_success` (ISO/FULL/COMM) with valid denominators and `C_need`:
+
+- hypothesis low 0.40/1.00/0.25, `C_need` 0.60 (denominators 5/5/4)
+- hypothesis medium 0.20/0.80/0.40, `C_need` 0.60 (5/5/5)
+- reference low 0.20/1.00/0.20, `C_need` 0.80 (5/5/5)
+- reference medium 0.00/1.00/0.00, `C_need` 1.00 (5/5/5)
+
+At this n, COMM is statistically indistinguishable from ISO (0.211 vs 0.20) and
+produced only 1 verified post-read success in 19 valid runs, so communication
+did not recover FULL-level performance. FULL remains near ceiling (0.95) and
+`C_need` is still inflated by `joint_candidate_labels` exposure. Next: run a
+preregistered leak-free FULL view (`joint_clues` without the joint candidate
+set) and compare.
+
+Leak-free FULL comparison, 5 seeds per cell (`--full-view joint-clues`;
+artifacts `runs/epic-126/paired-screen-n5-leakfree.*`): 60 condition-runs, 57
+valid, 3 `invalid_output_empty`, 23 successes, 34 valid wrong answers, 240
+requests, `$0.00`, no HTTP 429.
+
+- ISO: 20 valid, 4 successes (0.200)
+- FULL: 19 valid, 15 successes (0.789)
+- COMM: 18 valid, 4 successes (0.222); 39 messages, 0 post-read-success events
+
+Per-cell `p_success` (ISO/FULL/COMM) and `C_need`:
+
+- hypothesis low 0.40/1.00/0.40, `C_need` 0.60 (denominators 5/5/5)
+- hypothesis medium 0.20/1.00/0.333, `C_need` 0.80 (5/4/3)
+- reference low 0.20/0.60/0.20, `C_need` 0.40 (5/5/5)
+- reference medium 0.00/0.60/0.00, `C_need` 0.60 (5/5/5)
+
+Removing the joint candidate set lowered FULL from 0.95 to 0.79 overall (the
+reference family fell from 1.00 to 0.60), confirming the joint-set exposure
+inflated `C_need`. COMM stayed at ISO level in both variants (0.222 vs 0.200
+leak-free) with zero verified post-read use, so communication still did not
+recover FULL performance. n=5 per cell remains a screening result, not a powered
+estimate. No T3 entropy work was launched.
+
 ## T3/T4
 
 T3 was not run because T1 selected no useful cells and T2 found no aligned

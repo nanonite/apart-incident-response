@@ -2,6 +2,7 @@ import json
 import tempfile
 import unittest
 import urllib.error
+from collections import Counter
 from pathlib import Path
 from unittest.mock import patch
 
@@ -12,6 +13,7 @@ from apart_incident_response.behavioral_discovery import (
     OpenRouterBehavioralProvider,
     audit_retained_pilot,
     classify_http_status,
+    extended_paired_instances,
     frozen_full_gate_instances,
     is_retryable_status,
     run_behavioral_screen,
@@ -329,6 +331,28 @@ class FullGateProviderTests(unittest.TestCase):
         self.assertEqual(report["stop_reason"], "cost_cap")
         self.assertEqual(report["attempted_runs"], 1)
 
+    def test_full_view_can_omit_joint_candidate_labels(self):
+        body = {"model": "served", "choices": [{"message": {"content": "ANSWER: candidate-0"}}], "usage": {}}
+        task_view = {"family": "hypothesis", "task_instruction": "answer", "candidate_labels": ["candidate-0"],
+                     "joint_clues": ["bit0=0"], "joint_candidate_labels": ["candidate-0"]}
+        context = AgentContext("run", "instance", "A", BatteryCondition.FULL, 0, task_view, (), "prompt-v1", 96)
+        with patch("apart_incident_response.behavioral_discovery.urllib.request.urlopen",
+                   return_value=FakeResponse(body)) as opener:
+            OpenRouterBehavioralProvider(BehavioralProviderConfig(max_requests=1, min_interval_seconds=0),
+                                         api_key="secret").respond(context)
+        default_payload = json.loads(opener.call_args.args[0].data.decode())
+        self.assertIn("joint_candidate_labels", json.loads(default_payload["messages"][0]["content"]))
+        with patch("apart_incident_response.behavioral_discovery.urllib.request.urlopen",
+                   return_value=FakeResponse(body)) as leak_free_opener:
+            OpenRouterBehavioralProvider(
+                BehavioralProviderConfig(max_requests=1, min_interval_seconds=0,
+                                         include_joint_candidate_labels=False),
+                api_key="secret").respond(context)
+        leak_free_payload = json.loads(leak_free_opener.call_args.args[0].data.decode())
+        leak_free_content = json.loads(leak_free_payload["messages"][0]["content"])
+        self.assertNotIn("joint_candidate_labels", leak_free_content)
+        self.assertIn("joint_clues", leak_free_content)
+
     def test_frozen_manifest_ids_match_committed_gate_instances(self):
         instance_ids = [instance.instance_id for instance in frozen_full_gate_instances()]
         self.assertEqual(instance_ids, [
@@ -341,6 +365,15 @@ class FullGateProviderTests(unittest.TestCase):
         self.assertEqual([instance.instance_id for instance in selected],
                          ["hypothesis-00003a9a", "hypothesis-00003a9b"])
         self.assertEqual([instance.complexity.value for instance in selected], ["medium", "medium"])
+
+    def test_extended_paired_instances_have_equal_n_per_cell(self):
+        instances = extended_paired_instances(5)
+        self.assertEqual(len(instances), 4 * 5)
+        self.assertEqual(len({instance.instance_id for instance in instances}), len(instances))
+        counts = Counter((instance.family, instance.complexity.value) for instance in instances)
+        self.assertEqual(set(counts.values()), {5})
+        self.assertEqual(set(counts), {("hypothesis", "low"), ("hypothesis", "medium"),
+                                       ("reference", "low"), ("reference", "medium")})
 
     def context(self):
         return AgentContext("run", "instance", "A", BatteryCondition.FULL, 0,
