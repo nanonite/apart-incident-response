@@ -331,7 +331,7 @@ class FullGateProviderTests(unittest.TestCase):
         self.assertEqual(report["stop_reason"], "cost_cap")
         self.assertEqual(report["attempted_runs"], 1)
 
-    def test_full_view_can_omit_joint_candidate_labels(self):
+    def test_full_view_defaults_to_leak_free(self):
         body = {"model": "served", "choices": [{"message": {"content": "ANSWER: candidate-0"}}], "usage": {}}
         task_view = {"family": "hypothesis", "task_instruction": "answer", "candidate_labels": ["candidate-0"],
                      "joint_clues": ["bit0=0"], "joint_candidate_labels": ["candidate-0"]}
@@ -340,18 +340,17 @@ class FullGateProviderTests(unittest.TestCase):
                    return_value=FakeResponse(body)) as opener:
             OpenRouterBehavioralProvider(BehavioralProviderConfig(max_requests=1, min_interval_seconds=0),
                                          api_key="secret").respond(context)
-        default_payload = json.loads(opener.call_args.args[0].data.decode())
-        self.assertIn("joint_candidate_labels", json.loads(default_payload["messages"][0]["content"]))
+        default_content = json.loads(json.loads(opener.call_args.args[0].data.decode())["messages"][0]["content"])
+        self.assertNotIn("joint_candidate_labels", default_content)
+        self.assertIn("joint_clues", default_content)
         with patch("apart_incident_response.behavioral_discovery.urllib.request.urlopen",
-                   return_value=FakeResponse(body)) as leak_free_opener:
+                   return_value=FakeResponse(body)) as leaky_opener:
             OpenRouterBehavioralProvider(
                 BehavioralProviderConfig(max_requests=1, min_interval_seconds=0,
-                                         include_joint_candidate_labels=False),
+                                         include_joint_candidate_labels=True),
                 api_key="secret").respond(context)
-        leak_free_payload = json.loads(leak_free_opener.call_args.args[0].data.decode())
-        leak_free_content = json.loads(leak_free_payload["messages"][0]["content"])
-        self.assertNotIn("joint_candidate_labels", leak_free_content)
-        self.assertIn("joint_clues", leak_free_content)
+        leaky_content = json.loads(json.loads(leaky_opener.call_args.args[0].data.decode())["messages"][0]["content"])
+        self.assertIn("joint_candidate_labels", leaky_content)
 
     def test_frozen_manifest_ids_match_committed_gate_instances(self):
         instance_ids = [instance.instance_id for instance in frozen_full_gate_instances()]
@@ -424,6 +423,27 @@ class PairedScreenTests(unittest.TestCase):
         for cell in report["cells"]:
             self.assertEqual(cell["valid_denominators"], {"ISO": 1, "FULL": 1, "COMM": 1})
             self.assertEqual(cell["c_need_unclipped"], 1.0)
+
+    def test_paired_screen_can_run_iso_and_full_only(self):
+        frozen = frozen_full_gate_instances()
+        instances = [frozen[0], frozen[2]]
+        responses = {}
+        for instance in instances:
+            responses[(instance.instance_id, BatteryCondition.ISO.value, "A")] = AgentResponse(
+                answer="candidate-99", output_text="ANSWER: candidate-99")
+            responses[(instance.instance_id, BatteryCondition.FULL.value, "A")] = AgentResponse(
+                answer=instance.target, output_text=f"ANSWER: {instance.target}")
+        config = BehavioralProviderConfig(max_requests=16, min_interval_seconds=0, max_cost_usd=20.0)
+        provider = PairedFakeProvider(config, responses)
+        with tempfile.TemporaryDirectory() as directory:
+            report = run_paired_screen(instances, provider, BehavioralArtifactStore(Path(directory) / "screen.jsonl"),
+                                       turns=1, conditions=(BatteryCondition.ISO, BatteryCondition.FULL))
+        self.assertEqual(set(report["by_condition"]), {"ISO", "FULL"})
+        self.assertEqual(report["requests_per_instance"], 4)
+        self.assertEqual(report["requests_made"], 8)
+        self.assertTrue(report["all_condition_denominators_present"])
+        for cell in report["cells"]:
+            self.assertNotIn("COMM", cell["p_success"])
 
     def test_paired_screen_stops_at_request_cap(self):
         instances = frozen_full_gate_instances()[:2]

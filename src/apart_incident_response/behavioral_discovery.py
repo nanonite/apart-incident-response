@@ -116,7 +116,7 @@ class BehavioralProviderConfig:
     retries: int = 1
     max_tokens: int = 96
     max_consecutive_failures: int = 2
-    include_joint_candidate_labels: bool = True
+    include_joint_candidate_labels: bool = False
 
     def __post_init__(self) -> None:
         if not self.model.endswith(":free"):
@@ -720,15 +720,19 @@ def run_full_gate(instances: Sequence[FamilyInstance], provider: Any,
 
 def run_paired_screen(instances: Sequence[FamilyInstance], provider: Any,
                       artifact_store: BehavioralArtifactStore, *, max_runs: int = 8,
-                      finalizing_agent: str = "A", turns: int = 2) -> dict[str, Any]:
+                      finalizing_agent: str = "A", turns: int = 2,
+                      conditions: Sequence[BatteryCondition] | None = None) -> dict[str, Any]:
     """Run bounded paired ISO/FULL/COMM triplets with per-run validity classes."""
 
     if max_runs <= 0 or turns <= 0:
         raise ValueError("max_runs and turns must be positive")
+    selected_conditions = tuple(conditions) if conditions else tuple(BatteryCondition)
+    if not selected_conditions:
+        raise ValueError("at least one condition is required")
     runner = TwoAgentBatteryRunner(turns=turns, token_budget=provider.config.max_tokens,
                                    finalizing_agent=finalizing_agent)
     selected = list(instances)[:max_runs]
-    requests_per_instance = turns * 2 * len(BatteryCondition)
+    requests_per_instance = turns * 2 * len(selected_conditions)
     rows: list[dict[str, Any]] = []
     stop_reason: str | None = None
     consecutive_http_failures = 0
@@ -741,7 +745,7 @@ def run_paired_screen(instances: Sequence[FamilyInstance], provider: Any,
             stop_reason = "cost_cap"
             break
         pair = f"paired-{instance.instance_id}"
-        for condition in BatteryCondition:
+        for condition in selected_conditions:
             recorder = _RecordingProvider(provider)
             run_id = f"paired-{condition.value}-{instance.instance_id}"
             result = runner.run_condition(instance, condition, recorder, pair_id=pair, run_id=run_id)
@@ -804,7 +808,7 @@ def run_paired_screen(instances: Sequence[FamilyInstance], provider: Any,
     valid_rows = [row for row in rows if row["valid_execution"]]
     successful = [row for row in valid_rows if row["checker_accepted"]]
     by_condition: dict[str, Any] = {}
-    for condition in BatteryCondition:
+    for condition in selected_conditions:
         condition_rows = [row for row in rows if row["condition"] == condition.value]
         condition_valid = [row for row in condition_rows if row["valid_execution"]]
         condition_success = [row for row in condition_valid if row["checker_accepted"]]
@@ -826,7 +830,7 @@ def run_paired_screen(instances: Sequence[FamilyInstance], provider: Any,
         probabilities: dict[str, float | None] = {}
         denominators: dict[str, int] = {}
         success_counts: dict[str, int] = {}
-        for condition in BatteryCondition:
+        for condition in selected_conditions:
             condition_valid = [row for row in cell_rows if row["condition"] == condition.value and row["valid_execution"]]
             probabilities[condition.value] = (sum(row["checker_accepted"] for row in condition_valid) / len(condition_valid)
                                               if condition_valid else None)
@@ -836,8 +840,8 @@ def run_paired_screen(instances: Sequence[FamilyInstance], provider: Any,
             "family": family, "complexity": complexity,
             "p_success": probabilities, "successes": success_counts,
             "valid_denominators": denominators,
-            "c_need_unclipped": (probabilities["FULL"] - probabilities["ISO"]
-                                 if probabilities["FULL"] is not None and probabilities["ISO"] is not None else None),
+            "c_need_unclipped": (probabilities.get("FULL", 0.0) - probabilities.get("ISO", 0.0)
+                                 if probabilities.get("FULL") is not None and probabilities.get("ISO") is not None else None),
         })
 
     failure_reasons = Counter(row["failure_reason"] for row in rows if row["failure_reason"])
@@ -845,7 +849,7 @@ def run_paired_screen(instances: Sequence[FamilyInstance], provider: Any,
     failure_classes = dict(provider.diagnostics().get("failure_classes", {})) if hasattr(provider, "diagnostics") else {}
     credential_blocked = any(name in {"auth_error", "credentials_unavailable", "payment_required"}
                              for name in failure_classes)
-    all_denominators = all(by_condition[condition.value]["valid"] > 0 for condition in BatteryCondition)
+    all_denominators = all(by_condition[condition.value]["valid"] > 0 for condition in selected_conditions)
     if not rows:
         stop_reason = stop_reason or "no_instances_attempted"
     elif stop_reason is None:
@@ -913,8 +917,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--max-tokens", type=int, default=96,
                         help="per-agent completion token budget; raise for reasoning models")
     parser.add_argument("--turns", type=int, default=2, help="dialogue turns per agent for the paired screen")
-    parser.add_argument("--full-view", choices=["joint-set", "joint-clues"], default="joint-set",
-                        help="FULL prompt view: include the joint candidate set (default) or joint clues only")
+    parser.add_argument("--conditions", help="comma-separated condition subset for the paired screen (default ISO,FULL,COMM)")
+    parser.add_argument("--full-view", choices=["joint-set", "joint-clues"], default="joint-clues",
+                        help="FULL prompt view: joint clues only (default, leak-free) or include the joint candidate set")
     parser.add_argument("--seeds-per-cell", type=int,
                         help="build an equal-n paired screen with this many seeds per family x complexity cell")
     parser.add_argument("--families", help="comma-separated family filter over the frozen manifest")
@@ -941,10 +946,19 @@ def main(argv: Sequence[str] | None = None) -> int:
             "next_step": "re-run with --live once a valid OPENROUTER_API_KEY is configured",
         }
     else:
+        selected_conditions = tuple(BatteryCondition)
+        if args.mode == "paired-screen" and args.conditions:
+            try:
+                selected_conditions = tuple(BatteryCondition[name.strip().upper()]
+                                            for name in args.conditions.split(",") if name.strip())
+            except KeyError:
+                parser.error("--conditions must be a comma-separated subset of ISO,FULL,COMM")
+            if not selected_conditions:
+                parser.error("--conditions must not be empty")
         if args.mode == "full-gate":
             max_requests = max_runs * 2
         else:
-            max_requests = max_runs * args.turns * 2 * len(BatteryCondition)
+            max_requests = max_runs * args.turns * 2 * len(selected_conditions)
         config = BehavioralProviderConfig(model=args.model, endpoint=args.endpoint,
                                           max_requests=max_requests, max_cost_usd=20.0,
                                           min_interval_seconds=0.25, max_tokens=args.max_tokens,
@@ -954,7 +968,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.mode == "full-gate":
             report = run_full_gate(instances, provider, store, max_runs=max_runs)
         else:
-            report = run_paired_screen(instances, provider, store, max_runs=max_runs, turns=args.turns)
+            report = run_paired_screen(instances, provider, store, max_runs=max_runs, turns=args.turns,
+                                       conditions=selected_conditions)
         diagnostic = {
             "mode": args.mode, "stage": f"T1a-{args.mode}-diagnostic",
             "provider_diagnostics": report["provider_diagnostics"],

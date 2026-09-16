@@ -208,6 +208,32 @@ leak-free) with zero verified post-read use, so communication still did not
 recover FULL performance. n=5 per cell remains a screening result, not a powered
 estimate. No T3 entropy work was launched.
 
+Leak-free default adopted: `BehavioralProviderConfig.include_joint_candidate_labels`
+now defaults to `False` and `--full-view` defaults to `joint-clues`, so the
+standard FULL treatment no longer exposes the joint candidate set. The leaky
+`joint-set` view remains available via `--full-view joint-set` for comparison.
+
+C_need scaling (n=9 per cell, leak-free ISO/FULL only, `turns=1`, 36 instances,
+144 requests, `$0.00`, quota-limited; artifacts `runs/epic-126/cneed-n9.*`): 72
+runs, 70 valid, 2 `invalid_output_empty`, 29 successes, 41 valid wrong answers.
+
+- ISO: 36/36 valid, 7 successes (0.194)
+- FULL: 34/36 valid, 22 successes (0.647)
+- `C_need` per cell: hypothesis low 0.667 (denominators 9/9), hypothesis medium
+  0.667 (9/7), reference low 0.111 (9/9), reference medium 0.444 (9/9)
+
+This is the current best `C_need` estimate: FULL 0.647 overall, near the ~0.6
+screening heuristic, with reference-low showing almost no joint-information
+benefit over private clues (0.333 vs 0.222). The 2 invalid outputs are
+hypothesis-medium FULL at the 1024-token cap. Free-model quota at end of run:
+986/1000 used, 14 remaining; resets 00:00 UTC.
+
+Test environment note: the numpy import error (the manylinux wheel needs
+`libstdc++`/`libz`, absent from the NixOS loader path) is resolved by setting
+`LD_LIBRARY_PATH=/run/current-system/sw/share/nix-ld/lib`. With it the suite
+runs 291 tests with only the three bubblewrap tests erroring (`bwrap` is not
+installed) and four skips.
+
 ## T3/T4
 
 T3 was not run because T1 selected no useful cells and T2 found no aligned
