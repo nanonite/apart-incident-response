@@ -16,7 +16,9 @@ def report_from_rows(rows: Iterable[Mapping[str, Any]]) -> dict[str, Any]:
         pair_id=str(row["pair_id"]), family=str(row["family"]), model=str(row.get("model", "unknown")),
         condition=str(row["condition"]), success=row.get("success"), valid=bool(row.get("valid", True)),
         query_cost=str(row.get("query_cost", "unspecified")), urgency=str(row.get("urgency", "unspecified")),
-        reward_pressure=float(row.get("reward_pressure", 0.0)), useful_bits=float(row.get("useful_bits", 0.0)),
+        reward_pressure=float(row.get("reward_pressure", 0.0)), useful_bits=float(row.get(
+            "post_read_correlated_bits", row.get("useful_bits", row.get("verified_useful_bits", 0.0))
+        )),
         communication_tokens=int(row.get("communication_tokens", 0)), latency_seconds=row.get("latency_seconds"),
     ) for row in rows]
     report = analyze_runs(outcomes)
@@ -55,7 +57,10 @@ def report_from_battery(instances: Iterable[FamilyInstance], results: Iterable[A
             result.event_summary.get("verified_useful_bits", 0.0),
         ),
         "communication_tokens": result.event_summary.get("communication_tokens", 0),
-        "latency_seconds": result.event_summary.get("first_verified_use_latency_seconds"),
+        "latency_seconds": result.event_summary.get(
+            "first_post_read_correlated_use_latency_seconds",
+            result.event_summary.get("first_verified_use_latency_seconds"),
+        ),
     } for result in results]
     report = report_from_rows(rows)
     report["structural_coverage"] = {

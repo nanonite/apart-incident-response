@@ -29,12 +29,12 @@ claims have zero gain. R/H/N is assigned after measuring normalized feasible-set
 reduction; generator labels are retained only for calibration diagnostics.
 
 `C_need` is `P(success|FULL)-P(success|ISO)`. Communication efficiency is
-verified useful bits divided by communication tokens. `phi` is fitted from
-verified outcomes and experimental factors, excluding message volume.
+post-read correlated bits divided by communication tokens. `phi` is fitted from
+checker-supported correlation outcomes and experimental factors, excluding message volume.
 
 ## Provenance and entropy gate
 
-Board write, peer read, first subsequent model output, and checker-verified use
+Board write, peer read, first subsequent model output, and checker-supported post-read correlation
 are separate events. Output logprob entropy is attached to the first model
 output after actual message exposure. Read-event entropy is never used. The
 turn-8 intervention and matched placebo belong to the separately gated entropy

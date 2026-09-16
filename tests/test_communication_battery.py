@@ -50,7 +50,7 @@ class CommunicationBatteryTests(unittest.TestCase):
         self.assertEqual([(row.before_count, row.after_count, row.delta_i_bits) for row in trajectory],
                          [(8, 4, 1.0), (4, 2, 1.0), (2, 1, 1.0)])
 
-    def test_provenance_distinguishes_read_output_and_verified_use(self):
+    def test_provenance_distinguishes_read_output_and_post_read_correlation(self):
         log = CommunicationEventLog("run")
         message = generate_instance("hypothesis", 1).information("A", "bit0=0", "m1")
         log.board_write("A", message, message_tokens=1)
@@ -58,8 +58,9 @@ class CommunicationBatteryTests(unittest.TestCase):
         log.peer_read("B", message)
         log.model_output("B", "o1", exposed_message_ids=("m1",), logprob_entropy_bits=1.2,
                          logprob_coverage=1.0, logprob_status="complete")
-        log.verified_use("B", message, "o1", checker_evidence={"verified": True})
+        log.post_read_correlated_use("B", message, "o1", correlation_evidence={"correlated": True})
         self.assertEqual(len([event for event in log.events if event.kind == "peer_read_exposure"]), 1)
+        self.assertEqual([event.kind for event in log.events if "use" in event.kind], ["post_read_correlated_use"])
         self.assertEqual([row["status"] for row in log.replay_joins()], ["joined"])
 
     def test_runner_triplet_has_paired_ids_and_isolation(self):
@@ -140,9 +141,12 @@ class CommunicationBatteryTests(unittest.TestCase):
         self.assertTrue(report["generator_hints_not_used_for_assignment"])
         self.assertEqual(report["live_pilot"]["status"], "not_run")
         self.assertEqual(len(selected_fixture_instances(["hypothesis"])), 2)
-        aggregate = report_from_rows([{"pair_id": "p", "family": "hypothesis", "condition": "ISO",
-                                       "success": True, "model": "fixture"}])
+        aggregate = report_from_rows([{"pair_id": "p", "family": "hypothesis", "condition": "COMM",
+                                       "success": True, "model": "fixture",
+                                       "post_read_correlated_bits": 1.0,
+                                       "communication_tokens": 1}])
         self.assertFalse(aggregate["privacy"]["raw_messages_included"])
+        self.assertEqual(aggregate["behavior_counts"]["efficient"], 1)
 
 
 if __name__ == "__main__":

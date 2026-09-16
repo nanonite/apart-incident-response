@@ -110,6 +110,8 @@ def run() -> dict:
 
     report = {
         "schema": "solvability-gate-v2",
+        "status": "valid_candidate",
+        "analysis_eligible": True,
         "minimum_valid_runs_for_viable": MIN_VALID_RUNS_FOR_VIABLE,
         "pre_registration": {
             "models": {k: {"slug": REGISTRY[k].slug, "seeds": list(v)}

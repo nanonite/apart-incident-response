@@ -17,7 +17,7 @@ Estimands reported:
   C_need = P(success|FULL) - P(success|ISO)  [unclipped]
   eta_comm = (P(COMM)-P(ISO)) / C_need        [undefined when C_need≈0]
   D_idx (measured feasible-set reduction)
-  sum_m DeltaI_m (verified useful bits)
+  sum_m DeltaI_m (post-read correlated bits)
   raw R/H/N regime counts
 
 Artifacts: runs/discovery-145/anchor_screen/ (turn-1 files are retained as
@@ -170,7 +170,7 @@ def run() -> dict:
 
 
 def _analyze(rows: list[dict]) -> dict:
-    """Compute per-cell C_need, eta_comm, regime distribution, useful bits."""
+    """Compute per-cell C_need, eta_comm, regime distribution, and correlation bits."""
     from collections import defaultdict
     from apart_incident_response.communication_analysis import wilson_interval
 
@@ -252,6 +252,9 @@ def _analyze(rows: list[dict]) -> dict:
 
     return {
         "model": ANCHOR_MODEL,
+        "analysis_status": "corrected_two_turn_candidate",
+        "analysis_eligible": True,
+        "turns": 2,
         "cell_metrics": cell_metrics,
         "aggregate_rows": aggregate_rows,
         "regime_counts": dict(regime_counts),

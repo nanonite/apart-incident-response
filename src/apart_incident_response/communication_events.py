@@ -1,4 +1,4 @@
-"""Append-only provenance for board exposure, model outputs, and checker use."""
+"""Append-only provenance for board exposure, model outputs, and post-read correlation."""
 
 from __future__ import annotations
 
@@ -93,19 +93,38 @@ class CommunicationEventLog:
                                     "logprob_mass_coverage": logprob_mass_coverage,
                                     "logprob_status": logprob_status})
 
+    def post_read_correlated_use(self, agent_id: str, message: MessageInformation, output_id: str,
+                                 *, correlation_evidence: Mapping[str, Any]) -> CommunicationEvent:
+        """Record checker-supported post-read correlation, without causal language."""
+
+        if not (correlation_evidence.get("correlated", False)
+                or correlation_evidence.get("verified", False)):
+            raise ValueError("post-read correlation requires checker evidence")
+        evidence = dict(correlation_evidence)
+        evidence.setdefault("correlated", True)
+        return self.record("post_read_correlated_use", agent_id, message_id=message.message_id,
+                           delta_i_bits=message.delta_i_bits, output_id=output_id,
+                           useful=message.useful, payload={"correlation_evidence": evidence})
+
     def verified_use(self, agent_id: str, message: MessageInformation, output_id: str,
                      *, checker_evidence: Mapping[str, Any]) -> CommunicationEvent:
-        if not checker_evidence.get("verified", False):
-            raise ValueError("useful communication requires checker evidence")
-        return self.record("verified_use", agent_id, message_id=message.message_id,
-                           delta_i_bits=message.delta_i_bits, output_id=output_id,
-                           useful=message.useful, payload={"checker_evidence": dict(checker_evidence)})
+        """Compatibility alias for pre-v2 callers; emits the canonical event kind."""
+
+        return self.post_read_correlated_use(
+            agent_id, message, output_id,
+            correlation_evidence={
+                **checker_evidence,
+                "correlated": bool(checker_evidence.get("correlated", False)
+                                    or checker_evidence.get("verified", False)),
+            },
+        )
 
     def replay_joins(self) -> list[dict[str, Any]]:
         writes = {event.message_id: event for event in self._events if event.kind == "board_write" and event.message_id}
         reads = [event for event in self._events if event.kind == "peer_read_exposure"]
         outputs = [event for event in self._events if event.kind == "model_output"]
-        uses = [event for event in self._events if event.kind == "verified_use"]
+        uses = [event for event in self._events
+                if event.kind in {"post_read_correlated_use", "verified_use"}]
         rows: list[dict[str, Any]] = []
         for read in reads:
             write = writes.get(read.message_id)
@@ -120,7 +139,7 @@ class CommunicationEventLog:
             rows.append({"message_id": read.message_id, "writer_agent": write.agent_id,
                          "reader_agent": read.agent_id, "write_sequence": write.sequence,
                          "read_sequence": read.sequence, "first_post_read_output_id": output.output_id if output else None,
-                         "verified_use_sequence": use.sequence if use else None,
+                         "post_read_correlated_use_sequence": use.sequence if use else None,
                          "delta_i_bits": write.delta_i_bits, "useful": use.useful if use else False,
                          "status": "joined" if output else "read_without_post_exposure_output"})
         return rows
@@ -151,7 +170,7 @@ class CommunicationEventLog:
             "verified_useful_bits": post_read_correlated_bits,
             "communication_tokens": sum(tokens),
             "bits_per_communication_token": sum(transmitted) / sum(tokens) if sum(tokens) else None,
-            "verified_use_count": len(useful),
+            "post_read_correlated_use_count": len(useful),
             "post_read_success_count": len(useful),
             "logprob_output_count": len(logprob_rows),
             "logprob_complete_output_count": sum((event.payload or {}).get("logprob_status") == "complete" for event in logprob_rows),
@@ -159,7 +178,7 @@ class CommunicationEventLog:
             "logprob_mass_coverage": [(event.payload or {}).get("logprob_mass_coverage") for event in logprob_rows],
             "first_write_latency_seconds": latency("board_write"),
             "first_read_latency_seconds": latency("peer_read_exposure"),
-            "first_verified_use_latency_seconds": latency("verified_use"),
+            "first_post_read_correlated_use_latency_seconds": latency("post_read_correlated_use"),
             "event_count": len(self._events),
             "joins": joins,
             "event_hash": _json_hash({"events": [event.to_dict() for event in self._events]}),

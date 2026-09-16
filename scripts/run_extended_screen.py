@@ -112,7 +112,7 @@ def run() -> dict:
 
                     for r in cell_results:
                         ev = r.event_summary or {}
-                        useful_bits = float(ev.get("post_read_correlated_bits") or 0.0)
+                        post_read_correlated_bits = float(ev.get("post_read_correlated_bits") or 0.0)
                         row = {
                             "pair_id": r.pair_id,
                             "instance_id": r.instance_id,
@@ -126,7 +126,7 @@ def run() -> dict:
                             "valid": r.status == "completed",
                             "d_idx": inst.assignment.d_idx,
                             "regime_measured": inst.assignment.regime.value if inst.assignment.regime else None,
-                            "useful_bits": useful_bits,
+                            "post_read_correlated_bits": post_read_correlated_bits,
                             "communication_tokens": ev.get("total_message_tokens", 0),
                             "invalid_agents": list(r.invalid_agents),
                         }
@@ -182,17 +182,17 @@ def _analyze(rows: list[dict]) -> dict:
             "p_iso": p_iso, "p_full": p_full, "p_comm": p_comm,
             "c_need": cn, "eta_comm": ec, "d_idx": d,
             "regime_measured": (full or iso or comm or {}).get("regime_measured"),
-            "useful_bits": (comm or {}).get("useful_bits", 0.0),
+            "post_read_correlated_bits": (comm or {}).get("post_read_correlated_bits", 0.0),
         })
 
-    agg: dict = defaultdict(lambda: {"iso":[], "full":[], "comm":[], "c_need":[], "useful_bits":[]})
+    agg: dict = defaultdict(lambda: {"iso":[], "full":[], "comm":[], "c_need":[], "post_read_correlated_bits":[]})
     for m in cell_metrics:
         k = (m["family"], m["regime_hint"], m["complexity"])
         if m["p_iso"]  is not None: agg[k]["iso"].append(m["p_iso"])
         if m["p_full"] is not None: agg[k]["full"].append(m["p_full"])
         if m["p_comm"] is not None: agg[k]["comm"].append(m["p_comm"])
         if m["c_need"] is not None: agg[k]["c_need"].append(m["c_need"])
-        agg[k]["useful_bits"].append(m.get("useful_bits", 0.0))
+        agg[k]["post_read_correlated_bits"].append(m.get("post_read_correlated_bits", 0.0))
 
     aggregate_rows = []
     for (family, regime, complexity), vals in sorted(agg.items()):
@@ -204,11 +204,11 @@ def _analyze(rows: list[dict]) -> dict:
         ec_mean = eta_comm(p_comm_mean, p_iso_mean, p_full_mean) if (
             p_comm_mean is not None and p_iso_mean is not None and p_full_mean is not None
         ) else None
-        total_bits = sum(vals["useful_bits"])
+        total_bits = sum(vals["post_read_correlated_bits"])
         aggregate_rows.append({
             "family": family, "regime_hint": regime, "complexity": complexity, "n": n,
             "p_iso_mean": p_iso_mean, "p_full_mean": p_full_mean, "p_comm_mean": p_comm_mean,
-            "c_need_mean": cn_mean, "eta_comm_mean": ec_mean, "total_useful_bits": total_bits,
+            "c_need_mean": cn_mean, "eta_comm_mean": ec_mean, "total_post_read_correlated_bits": total_bits,
             "ci_iso":  wilson_interval(round(sum(vals["iso"])),  len(vals["iso"]))  if vals["iso"]  else None,
             "ci_full": wilson_interval(round(sum(vals["full"])), len(vals["full"])) if vals["full"] else None,
             "ci_comm": wilson_interval(round(sum(vals["comm"])), len(vals["comm"])) if vals["comm"] else None,
@@ -222,6 +222,9 @@ def _analyze(rows: list[dict]) -> dict:
     return {
         "model": ANCHOR_MODEL,
         "families": FAMILIES,
+        "analysis_status": "corrected_two_turn_candidate",
+        "analysis_eligible": True,
+        "turns": 2,
         "cell_metrics": cell_metrics,
         "aggregate_rows": aggregate_rows,
         "regime_counts": dict(regime_counts),

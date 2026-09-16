@@ -13,7 +13,7 @@
       "eta_comm": null,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "hypothesis",
@@ -27,7 +27,7 @@
       "eta_comm": null,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "hypothesis",
@@ -41,7 +41,7 @@
       "eta_comm": null,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "hypothesis",
@@ -55,7 +55,7 @@
       "eta_comm": null,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "hypothesis",
@@ -69,7 +69,7 @@
       "eta_comm": null,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "hypothesis",
@@ -83,7 +83,7 @@
       "eta_comm": null,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "hypothesis",
@@ -97,7 +97,7 @@
       "eta_comm": null,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "hypothesis",
@@ -111,7 +111,7 @@
       "eta_comm": null,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "hypothesis",
@@ -125,7 +125,7 @@
       "eta_comm": null,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "hypothesis",
@@ -139,7 +139,7 @@
       "eta_comm": null,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "hypothesis",
@@ -153,7 +153,7 @@
       "eta_comm": null,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "hypothesis",
@@ -167,7 +167,7 @@
       "eta_comm": null,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "reference",
@@ -181,7 +181,7 @@
       "eta_comm": null,
       "d_idx": 0.25,
       "regime_measured": "H",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "reference",
@@ -195,7 +195,7 @@
       "eta_comm": null,
       "d_idx": 0.25,
       "regime_measured": "H",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "reference",
@@ -209,7 +209,7 @@
       "eta_comm": 0.0,
       "d_idx": 0.25,
       "regime_measured": "H",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "reference",
@@ -223,7 +223,7 @@
       "eta_comm": null,
       "d_idx": 0.25,
       "regime_measured": "H",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "reference",
@@ -237,7 +237,7 @@
       "eta_comm": null,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "reference",
@@ -251,7 +251,7 @@
       "eta_comm": null,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "reference",
@@ -265,7 +265,7 @@
       "eta_comm": 0.0,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "reference",
@@ -279,7 +279,7 @@
       "eta_comm": null,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "reference",
@@ -293,7 +293,7 @@
       "eta_comm": null,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "reference",
@@ -307,7 +307,7 @@
       "eta_comm": null,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "reference",
@@ -321,7 +321,7 @@
       "eta_comm": null,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     }
   ],
   "aggregate_rows": [
@@ -335,7 +335,7 @@
       "p_comm_mean": 1.0,
       "c_need_mean": null,
       "eta_comm_mean": null,
-      "total_useful_bits": 0.0,
+      "total_post_read_correlated_bits": 0.0,
       "ci_iso": [
         0.34237195288961925,
         1.0
@@ -356,7 +356,7 @@
       "p_comm_mean": 1.0,
       "c_need_mean": null,
       "eta_comm_mean": null,
-      "total_useful_bits": 0.0,
+      "total_post_read_correlated_bits": 0.0,
       "ci_iso": [
         0.34237195288961925,
         1.0
@@ -377,7 +377,7 @@
       "p_comm_mean": 1.0,
       "c_need_mean": null,
       "eta_comm_mean": null,
-      "total_useful_bits": 0.0,
+      "total_post_read_correlated_bits": 0.0,
       "ci_iso": null,
       "ci_full": [
         0.34237195288961925,
@@ -398,7 +398,7 @@
       "p_comm_mean": 1.0,
       "c_need_mean": 0.5,
       "eta_comm_mean": 1.0,
-      "total_useful_bits": 0.0,
+      "total_post_read_correlated_bits": 0.0,
       "ci_iso": [
         0.09452865480086614,
         0.9054713451991339
@@ -422,7 +422,7 @@
       "p_comm_mean": 1.0,
       "c_need_mean": null,
       "eta_comm_mean": null,
-      "total_useful_bits": 0.0,
+      "total_post_read_correlated_bits": 0.0,
       "ci_iso": [
         0.20654329147389294,
         1.0
@@ -443,7 +443,7 @@
       "p_comm_mean": 1.0,
       "c_need_mean": null,
       "eta_comm_mean": null,
-      "total_useful_bits": 0.0,
+      "total_post_read_correlated_bits": 0.0,
       "ci_iso": [
         0.34237195288961925,
         1.0
@@ -464,7 +464,7 @@
       "p_comm_mean": 0.5,
       "c_need_mean": null,
       "eta_comm_mean": null,
-      "total_useful_bits": 0.0,
+      "total_post_read_correlated_bits": 0.0,
       "ci_iso": [
         0.09452865480086614,
         0.9054713451991339
@@ -485,7 +485,7 @@
       "p_comm_mean": 0.5,
       "c_need_mean": 1.0,
       "eta_comm_mean": 0.0,
-      "total_useful_bits": 0.0,
+      "total_post_read_correlated_bits": 0.0,
       "ci_iso": [
         0.09452865480086614,
         0.9054713451991339
@@ -509,7 +509,7 @@
       "p_comm_mean": 0.0,
       "c_need_mean": null,
       "eta_comm_mean": null,
-      "total_useful_bits": 0.0,
+      "total_post_read_correlated_bits": 0.0,
       "ci_iso": null,
       "ci_full": null,
       "ci_comm": [
@@ -527,7 +527,7 @@
       "p_comm_mean": 0.0,
       "c_need_mean": 1.0,
       "eta_comm_mean": 0.0,
-      "total_useful_bits": 0.0,
+      "total_post_read_correlated_bits": 0.0,
       "ci_iso": [
         0.0,
         0.6576280471103807
@@ -551,7 +551,7 @@
       "p_comm_mean": 1.0,
       "c_need_mean": 0.0,
       "eta_comm_mean": null,
-      "total_useful_bits": 0.0,
+      "total_post_read_correlated_bits": 0.0,
       "ci_iso": [
         0.20654329147389294,
         1.0
@@ -575,7 +575,7 @@
       "p_comm_mean": 1.0,
       "c_need_mean": 0.0,
       "eta_comm_mean": null,
-      "total_useful_bits": 0.0,
+      "total_post_read_correlated_bits": 0.0,
       "ci_iso": [
         0.34237195288961925,
         1.0
@@ -596,5 +596,11 @@
     "R": 24
   },
   "total_valid_rows": 47,
-  "total_invalid_rows": 25
+  "total_invalid_rows": 25,
+  "status": "invalidated",
+  "analysis_eligible": false,
+  "invalidated_reasons": [
+    "historical one-turn runner output; corrected two-turn artifacts have not been run",
+    "FULL prompt in the source run exposed controller-side joint candidate labels"
+  ]
 }

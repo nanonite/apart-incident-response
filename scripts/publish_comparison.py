@@ -8,7 +8,7 @@ Estimands reported:
   C_need = P(success|FULL) - P(success|ISO)  [unclipped, can be negative]
   eta_comm = (P(COMM)-P(ISO)) / C_need        [only when |C_need| > 0.1]
   D_idx (measured feasible-set reduction, from instance structure)
-  sum_m DeltaI_m (verified useful bits, from COMM event log)
+  sum_m DeltaI_m (post-read correlated bits, from COMM event log)
   Raw R/H/N rates, latency, tokens, cost per model
   Wilson CIs on each proportion
 """
@@ -205,7 +205,14 @@ def publish() -> dict:
         })
 
     report = {
-        "schema": "model-comparison-v1",
+        "schema": "model-comparison-v2",
+        "status": "corrected_two_turn_candidate",
+        "analysis_eligible": True,
+        "protocol": {
+            "turns": 2,
+            "historical_one_turn_inputs_excluded": True,
+            "post_read_metric": "post_read_correlated_bits",
+        },
         "models": models,
         "total_rows": len(rows),
         "valid_rows": sum(1 for r in rows if r.get("valid")),

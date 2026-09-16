@@ -189,7 +189,7 @@ class BatteryProtocol:
                 "delta_i_m_bits": "log2(|S_before|)-log2(|S_after|)",
                 "c_need": "P(success|FULL)-P(success|ISO)",
                 "eta_comm": "(p_COMM-p_ISO)/(p_FULL-p_ISO), undefined when denominator is zero",
-                "communication_efficiency": "verified useful bits / communication tokens",
+                "communication_efficiency": "post-read correlated bits / communication tokens",
             },
             "primary_contrasts": ["FULL-ISO", "COMM-ISO", "COMM recovery of FULL-ISO"],
             "invalidity_rules": [

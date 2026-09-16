@@ -198,11 +198,16 @@ class TwoAgentBatteryRunner:
                     if prior_sequence is not None and prior_answer is not None
                 )
                 if info.useful and not prior_finalizer_success and instance.validate(answer or "").get("accepted", False):
-                    log.verified_use(agent, info, output_id,
-                                     checker_evidence={"verified": True, "task_checker": f"{instance.family}-oracle-v1",
-                                                       "answer_accepted": True,
-                                                       "uptake_rule": "first_checker_accepted_finalizer_output_after_peer_read",
-                                                       "prior_finalizer_success": False})
+                    log.post_read_correlated_use(
+                        agent, info, output_id,
+                        correlation_evidence={
+                            "correlated": True,
+                            "task_checker": f"{instance.family}-oracle-v1",
+                            "answer_accepted": True,
+                            "uptake_rule": "first_checker_accepted_finalizer_output_after_peer_read",
+                            "prior_finalizer_success": False,
+                        },
+                    )
         status = "invalid" if invalid else "completed"
         task_success = task_success and status == "completed"
         model_id = getattr(provider, "model", "unknown")

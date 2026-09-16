@@ -8,7 +8,7 @@ and produces:
 Estimands:
   C_need = P(success|FULL) - P(success|ISO)
   eta_comm = (P(COMM)-P(ISO)) / C_need  [only when |C_need| >= 0.1]
-  D_idx, useful_bits, Wilson CIs
+  D_idx, post-read correlated bits, Wilson CIs
 """
 
 from __future__ import annotations
@@ -68,11 +68,14 @@ def family_summary(rows: list[dict]) -> list[dict]:
             "p_iso": p_iso, "p_full": p_full, "p_comm": p_comm,
             "c_need": cn, "eta_comm": ec, "d_idx": d,
             "regime_measured": (full or iso or comm or {}).get("regime_measured"),
-            "useful_bits": (comm or {}).get("useful_bits", 0.0),
+            "post_read_correlated_bits": (comm or {}).get(
+                "post_read_correlated_bits",
+                (comm or {}).get("useful_bits", 0.0),
+            ),
         })
 
     # aggregate per (family, regime, complexity)
-    agg: dict = defaultdict(lambda: {"iso":[], "full":[], "comm":[], "c_need":[], "eta_comm":[], "d_idx":[], "useful_bits":[]})
+    agg: dict = defaultdict(lambda: {"iso":[], "full":[], "comm":[], "c_need":[], "eta_comm":[], "d_idx":[], "post_read_correlated_bits":[]})
     for m in cell_metrics:
         k = (m["family"], m["regime_hint"], m["complexity"])
         if m["p_iso"]  is not None: agg[k]["iso"].append(m["p_iso"])
@@ -81,7 +84,7 @@ def family_summary(rows: list[dict]) -> list[dict]:
         if m["c_need"] is not None: agg[k]["c_need"].append(m["c_need"])
         if m["eta_comm"] is not None: agg[k]["eta_comm"].append(m["eta_comm"])
         if m["d_idx"]  is not None: agg[k]["d_idx"].append(m["d_idx"])
-        agg[k]["useful_bits"].append(m.get("useful_bits", 0.0))
+        agg[k]["post_read_correlated_bits"].append(m.get("post_read_correlated_bits", 0.0))
 
     agg_rows = []
     for (family, regime, complexity), vals in sorted(agg.items()):
@@ -99,7 +102,7 @@ def family_summary(rows: list[dict]) -> list[dict]:
             "p_iso_mean": p_iso_m, "p_full_mean": p_full_m, "p_comm_mean": p_comm_m,
             "c_need_mean": cn_m, "eta_comm_mean": ec_m,
             "d_idx_mean": mean(vals["d_idx"]),
-            "total_useful_bits": sum(vals["useful_bits"]),
+            "total_post_read_correlated_bits": sum(vals["post_read_correlated_bits"]),
             "eta_comm_denominator_supported": cn_m is not None and abs(cn_m) >= ETA_COMM_MIN_DENOMINATOR,
             "ci_iso":  wilson_interval(round(sum(vals["iso"])),  len(vals["iso"]))  if vals["iso"]  else None,
             "ci_full": wilson_interval(round(sum(vals["full"])), len(vals["full"])) if vals["full"] else None,
@@ -152,12 +155,19 @@ def publish() -> dict:
         "instance_id": r["instance_id"], "task_success": r["task_success"],
         "valid": r["valid"], "d_idx": r.get("d_idx"),
         "regime_measured": r.get("regime_measured"),
-        "useful_bits": r.get("useful_bits", 0.0),
+        "post_read_correlated_bits": r.get("post_read_correlated_bits", r.get("useful_bits", 0.0)),
         "communication_tokens": r.get("communication_tokens", 0),
     } for r in rows]
 
     report = {
-        "schema": "six-family-analysis-v1",
+        "schema": "six-family-analysis-v2",
+        "status": "corrected_two_turn_candidate",
+        "analysis_eligible": True,
+        "protocol": {
+            "turns": 2,
+            "historical_one_turn_inputs_excluded": True,
+            "post_read_metric": "post_read_correlated_bits",
+        },
         "families": families,
         "total_rows": len(rows),
         "valid_rows": sum(1 for r in rows if r.get("valid")),

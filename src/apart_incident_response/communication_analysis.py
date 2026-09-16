@@ -103,7 +103,7 @@ def communication_efficiency(useful_bits: float, communication_tokens: int) -> f
 
 
 def classify_communication_behavior(row: Mapping[str, Any]) -> str:
-    """Classify silence/chatter/use from verified checker evidence."""
+    """Classify silence/chatter/use from checker-supported correlation evidence."""
 
     tokens = int(row.get("communication_tokens", 0))
     bits = float(row.get("useful_bits", 0.0))
@@ -143,10 +143,10 @@ def _design(rows: Sequence[PairedOutcome]) -> tuple[list[list[float]], list[str]
 
 
 def fit_communication_propensity(rows: Sequence[PairedOutcome], *, iterations: int = 800, learning_rate: float = 0.08) -> dict[str, Any]:
-    """Fit useful-communication propensity from outcomes and factors.
+    """Fit post-read correlation propensity from outcomes and factors.
 
     Message volume is intentionally absent from the design.  The response is
-    the verified-use indicator, and message latency is reported separately.
+    the post-read correlation indicator, and message latency is reported separately.
     """
 
     usable = [row for row in rows if row.valid]
@@ -167,7 +167,7 @@ def fit_communication_propensity(rows: Sequence[PairedOutcome], *, iterations: i
     latency = [row.latency_seconds for row in usable if row.latency_seconds is not None]
     return {
         "status": "fitted", "n": len(usable), "features": columns, "coefficients": beta,
-        "phi_definition": "P(verified_use > 0 | experimental factors)",
+        "phi_definition": "P(post_read_correlated_use > 0 | experimental factors)",
         "message_volume_is_not_a_predictor": True,
         "fitted_mean": sum(fitted) / len(fitted),
         "latency": {"n": len(latency), "mean_seconds": sum(latency) / len(latency) if latency else None},

@@ -24,7 +24,7 @@
       "eta_comm": null,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "hypothesis",
@@ -38,7 +38,7 @@
       "eta_comm": null,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "hypothesis",
@@ -52,7 +52,7 @@
       "eta_comm": null,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "hypothesis",
@@ -66,7 +66,7 @@
       "eta_comm": null,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "hypothesis",
@@ -80,7 +80,7 @@
       "eta_comm": null,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "hypothesis",
@@ -94,7 +94,7 @@
       "eta_comm": null,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "hypothesis",
@@ -108,7 +108,7 @@
       "eta_comm": null,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "hypothesis",
@@ -122,7 +122,7 @@
       "eta_comm": null,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "hypothesis",
@@ -136,7 +136,7 @@
       "eta_comm": null,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "hypothesis",
@@ -150,7 +150,7 @@
       "eta_comm": null,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "hypothesis",
@@ -164,7 +164,7 @@
       "eta_comm": null,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "hypothesis",
@@ -178,7 +178,7 @@
       "eta_comm": null,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "planning",
@@ -192,7 +192,7 @@
       "eta_comm": null,
       "d_idx": 0.21810429198553155,
       "regime_measured": "H",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "planning",
@@ -206,7 +206,7 @@
       "eta_comm": 1.0,
       "d_idx": 0.21810429198553155,
       "regime_measured": "H",
-      "useful_bits": 0
+      "post_read_correlated_bits": 0
     },
     {
       "family": "planning",
@@ -220,7 +220,7 @@
       "eta_comm": 0.0,
       "d_idx": 0.38685280723454163,
       "regime_measured": "H",
-      "useful_bits": 0
+      "post_read_correlated_bits": 0
     },
     {
       "family": "planning",
@@ -234,7 +234,7 @@
       "eta_comm": null,
       "d_idx": 0.38685280723454163,
       "regime_measured": "H",
-      "useful_bits": 0
+      "post_read_correlated_bits": 0
     },
     {
       "family": "planning",
@@ -248,7 +248,7 @@
       "eta_comm": null,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "planning",
@@ -262,7 +262,7 @@
       "eta_comm": null,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "planning",
@@ -276,7 +276,7 @@
       "eta_comm": null,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0
+      "post_read_correlated_bits": 0
     },
     {
       "family": "planning",
@@ -290,7 +290,7 @@
       "eta_comm": null,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0
+      "post_read_correlated_bits": 0
     },
     {
       "family": "planning",
@@ -304,7 +304,7 @@
       "eta_comm": null,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0
+      "post_read_correlated_bits": 0
     },
     {
       "family": "reference",
@@ -318,7 +318,7 @@
       "eta_comm": null,
       "d_idx": 0.25,
       "regime_measured": "H",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "reference",
@@ -332,7 +332,7 @@
       "eta_comm": null,
       "d_idx": 0.25,
       "regime_measured": "H",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "reference",
@@ -346,7 +346,7 @@
       "eta_comm": 0.0,
       "d_idx": 0.25,
       "regime_measured": "H",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "reference",
@@ -360,7 +360,7 @@
       "eta_comm": null,
       "d_idx": 0.25,
       "regime_measured": "H",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "reference",
@@ -374,7 +374,7 @@
       "eta_comm": null,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "reference",
@@ -388,7 +388,7 @@
       "eta_comm": null,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "reference",
@@ -402,7 +402,7 @@
       "eta_comm": 0.0,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "reference",
@@ -416,7 +416,7 @@
       "eta_comm": null,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "reference",
@@ -430,7 +430,7 @@
       "eta_comm": null,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "reference",
@@ -444,7 +444,7 @@
       "eta_comm": null,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     },
     {
       "family": "reference",
@@ -458,7 +458,7 @@
       "eta_comm": null,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0
+      "post_read_correlated_bits": 0.0
     }
   ],
   "aggregate_rows": [
@@ -473,7 +473,7 @@
       "c_need_mean": null,
       "eta_comm_mean": null,
       "d_idx_mean": 0.3333333333333333,
-      "total_useful_bits": 0.0,
+      "total_post_read_correlated_bits": 0.0,
       "eta_comm_denominator_supported": false,
       "ci_iso": [
         0.34237195288961925,
@@ -496,7 +496,7 @@
       "c_need_mean": null,
       "eta_comm_mean": null,
       "d_idx_mean": 0.3333333333333333,
-      "total_useful_bits": 0.0,
+      "total_post_read_correlated_bits": 0.0,
       "eta_comm_denominator_supported": false,
       "ci_iso": [
         0.34237195288961925,
@@ -519,7 +519,7 @@
       "c_need_mean": null,
       "eta_comm_mean": null,
       "d_idx_mean": 1.0,
-      "total_useful_bits": 0.0,
+      "total_post_read_correlated_bits": 0.0,
       "eta_comm_denominator_supported": false,
       "ci_iso": null,
       "ci_full": [
@@ -542,7 +542,7 @@
       "c_need_mean": 0.5,
       "eta_comm_mean": 1.0,
       "d_idx_mean": 1.0,
-      "total_useful_bits": 0.0,
+      "total_post_read_correlated_bits": 0.0,
       "eta_comm_denominator_supported": true,
       "ci_iso": [
         0.09452865480086614,
@@ -568,7 +568,7 @@
       "c_need_mean": null,
       "eta_comm_mean": null,
       "d_idx_mean": 0.0,
-      "total_useful_bits": 0.0,
+      "total_post_read_correlated_bits": 0.0,
       "eta_comm_denominator_supported": false,
       "ci_iso": [
         0.20654329147389294,
@@ -591,7 +591,7 @@
       "c_need_mean": null,
       "eta_comm_mean": null,
       "d_idx_mean": 0.0,
-      "total_useful_bits": 0.0,
+      "total_post_read_correlated_bits": 0.0,
       "eta_comm_denominator_supported": false,
       "ci_iso": [
         0.34237195288961925,
@@ -614,7 +614,7 @@
       "c_need_mean": 1.0,
       "eta_comm_mean": 1.0,
       "d_idx_mean": 0.21810429198553155,
-      "total_useful_bits": 0.0,
+      "total_post_read_correlated_bits": 0.0,
       "eta_comm_denominator_supported": true,
       "ci_iso": [
         0.0,
@@ -640,7 +640,7 @@
       "c_need_mean": 1.0,
       "eta_comm_mean": 0.0,
       "d_idx_mean": 0.38685280723454163,
-      "total_useful_bits": 0,
+      "total_post_read_correlated_bits": 0,
       "eta_comm_denominator_supported": true,
       "ci_iso": [
         0.0,
@@ -666,7 +666,7 @@
       "c_need_mean": null,
       "eta_comm_mean": null,
       "d_idx_mean": 1.0,
-      "total_useful_bits": 0.0,
+      "total_post_read_correlated_bits": 0.0,
       "eta_comm_denominator_supported": false,
       "ci_iso": [
         0.0,
@@ -686,7 +686,7 @@
       "c_need_mean": 0.0,
       "eta_comm_mean": null,
       "d_idx_mean": 0.0,
-      "total_useful_bits": 0.0,
+      "total_post_read_correlated_bits": 0.0,
       "eta_comm_denominator_supported": false,
       "ci_iso": [
         0.20654329147389294,
@@ -712,7 +712,7 @@
       "c_need_mean": 0.0,
       "eta_comm_mean": null,
       "d_idx_mean": 0.0,
-      "total_useful_bits": 0,
+      "total_post_read_correlated_bits": 0,
       "eta_comm_denominator_supported": false,
       "ci_iso": [
         0.34237195288961925,
@@ -738,7 +738,7 @@
       "c_need_mean": null,
       "eta_comm_mean": null,
       "d_idx_mean": 0.25,
-      "total_useful_bits": 0.0,
+      "total_post_read_correlated_bits": 0.0,
       "eta_comm_denominator_supported": false,
       "ci_iso": [
         0.09452865480086614,
@@ -761,7 +761,7 @@
       "c_need_mean": 0.5,
       "eta_comm_mean": 0.0,
       "d_idx_mean": 0.25,
-      "total_useful_bits": 0.0,
+      "total_post_read_correlated_bits": 0.0,
       "eta_comm_denominator_supported": true,
       "ci_iso": [
         0.09452865480086614,
@@ -787,7 +787,7 @@
       "c_need_mean": null,
       "eta_comm_mean": null,
       "d_idx_mean": 1.0,
-      "total_useful_bits": 0.0,
+      "total_post_read_correlated_bits": 0.0,
       "eta_comm_denominator_supported": false,
       "ci_iso": null,
       "ci_full": null,
@@ -807,7 +807,7 @@
       "c_need_mean": 1.0,
       "eta_comm_mean": 0.0,
       "d_idx_mean": 1.0,
-      "total_useful_bits": 0.0,
+      "total_post_read_correlated_bits": 0.0,
       "eta_comm_denominator_supported": true,
       "ci_iso": [
         0.0,
@@ -833,7 +833,7 @@
       "c_need_mean": 0.0,
       "eta_comm_mean": null,
       "d_idx_mean": 0.0,
-      "total_useful_bits": 0.0,
+      "total_post_read_correlated_bits": 0.0,
       "eta_comm_denominator_supported": false,
       "ci_iso": [
         0.20654329147389294,
@@ -859,7 +859,7 @@
       "c_need_mean": 0.0,
       "eta_comm_mean": null,
       "d_idx_mean": 0.0,
-      "total_useful_bits": 0.0,
+      "total_post_read_correlated_bits": 0.0,
       "eta_comm_denominator_supported": false,
       "ci_iso": [
         0.34237195288961925,
@@ -914,7 +914,7 @@
       "valid": true,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -929,7 +929,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -944,7 +944,7 @@
       "valid": true,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -959,7 +959,7 @@
       "valid": true,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -974,7 +974,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -989,7 +989,7 @@
       "valid": true,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1004,7 +1004,7 @@
       "valid": true,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1019,7 +1019,7 @@
       "valid": true,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1034,7 +1034,7 @@
       "valid": true,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1049,7 +1049,7 @@
       "valid": true,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1064,7 +1064,7 @@
       "valid": true,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1079,7 +1079,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1094,7 +1094,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1109,7 +1109,7 @@
       "valid": true,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1124,7 +1124,7 @@
       "valid": true,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1139,7 +1139,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1154,7 +1154,7 @@
       "valid": true,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1169,7 +1169,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1184,7 +1184,7 @@
       "valid": true,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1199,7 +1199,7 @@
       "valid": true,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1214,7 +1214,7 @@
       "valid": true,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1229,7 +1229,7 @@
       "valid": true,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1244,7 +1244,7 @@
       "valid": true,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1259,7 +1259,7 @@
       "valid": true,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1274,7 +1274,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1289,7 +1289,7 @@
       "valid": true,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1304,7 +1304,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1319,7 +1319,7 @@
       "valid": true,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1334,7 +1334,7 @@
       "valid": true,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1349,7 +1349,7 @@
       "valid": true,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1364,7 +1364,7 @@
       "valid": true,
       "d_idx": 0.25,
       "regime_measured": "H",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1379,7 +1379,7 @@
       "valid": true,
       "d_idx": 0.25,
       "regime_measured": "H",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1394,7 +1394,7 @@
       "valid": true,
       "d_idx": 0.25,
       "regime_measured": "H",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1409,7 +1409,7 @@
       "valid": true,
       "d_idx": 0.25,
       "regime_measured": "H",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1417,96 +1417,6 @@
       "model": "ling",
       "regime_hint": "H",
       "complexity": "low",
-      "seed": 102,
-      "condition": "FULL",
-      "instance_id": "reference-00000066",
-      "task_success": false,
-      "valid": false,
-      "d_idx": 0.25,
-      "regime_measured": "H",
-      "useful_bits": 0.0,
-      "communication_tokens": 0
-    },
-    {
-      "family": "reference",
-      "model": "ling",
-      "regime_hint": "H",
-      "complexity": "low",
-      "seed": 102,
-      "condition": "COMM",
-      "instance_id": "reference-00000066",
-      "task_success": true,
-      "valid": true,
-      "d_idx": 0.25,
-      "regime_measured": "H",
-      "useful_bits": 0.0,
-      "communication_tokens": 0
-    },
-    {
-      "family": "reference",
-      "model": "ling",
-      "regime_hint": "H",
-      "complexity": "high",
-      "seed": 101,
-      "condition": "ISO",
-      "instance_id": "reference-00000065",
-      "task_success": false,
-      "valid": true,
-      "d_idx": 0.25,
-      "regime_measured": "H",
-      "useful_bits": 0.0,
-      "communication_tokens": 0
-    },
-    {
-      "family": "reference",
-      "model": "ling",
-      "regime_hint": "H",
-      "complexity": "high",
-      "seed": 101,
-      "condition": "FULL",
-      "instance_id": "reference-00000065",
-      "task_success": false,
-      "valid": false,
-      "d_idx": 0.25,
-      "regime_measured": "H",
-      "useful_bits": 0.0,
-      "communication_tokens": 0
-    },
-    {
-      "family": "reference",
-      "model": "ling",
-      "regime_hint": "H",
-      "complexity": "high",
-      "seed": 101,
-      "condition": "COMM",
-      "instance_id": "reference-00000065",
-      "task_success": false,
-      "valid": true,
-      "d_idx": 0.25,
-      "regime_measured": "H",
-      "useful_bits": 0.0,
-      "communication_tokens": 0
-    },
-    {
-      "family": "reference",
-      "model": "ling",
-      "regime_hint": "H",
-      "complexity": "high",
-      "seed": 102,
-      "condition": "ISO",
-      "instance_id": "reference-00000066",
-      "task_success": true,
-      "valid": true,
-      "d_idx": 0.25,
-      "regime_measured": "H",
-      "useful_bits": 0.0,
-      "communication_tokens": 0
-    },
-    {
-      "family": "reference",
-      "model": "ling",
-      "regime_hint": "H",
-      "complexity": "high",
       "seed": 102,
       "condition": "FULL",
       "instance_id": "reference-00000066",
@@ -1514,7 +1424,97 @@
       "valid": false,
       "d_idx": 0.25,
       "regime_measured": "H",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
+      "communication_tokens": 0
+    },
+    {
+      "family": "reference",
+      "model": "ling",
+      "regime_hint": "H",
+      "complexity": "low",
+      "seed": 102,
+      "condition": "COMM",
+      "instance_id": "reference-00000066",
+      "task_success": true,
+      "valid": true,
+      "d_idx": 0.25,
+      "regime_measured": "H",
+      "post_read_correlated_bits": 0.0,
+      "communication_tokens": 0
+    },
+    {
+      "family": "reference",
+      "model": "ling",
+      "regime_hint": "H",
+      "complexity": "high",
+      "seed": 101,
+      "condition": "ISO",
+      "instance_id": "reference-00000065",
+      "task_success": false,
+      "valid": true,
+      "d_idx": 0.25,
+      "regime_measured": "H",
+      "post_read_correlated_bits": 0.0,
+      "communication_tokens": 0
+    },
+    {
+      "family": "reference",
+      "model": "ling",
+      "regime_hint": "H",
+      "complexity": "high",
+      "seed": 101,
+      "condition": "FULL",
+      "instance_id": "reference-00000065",
+      "task_success": false,
+      "valid": false,
+      "d_idx": 0.25,
+      "regime_measured": "H",
+      "post_read_correlated_bits": 0.0,
+      "communication_tokens": 0
+    },
+    {
+      "family": "reference",
+      "model": "ling",
+      "regime_hint": "H",
+      "complexity": "high",
+      "seed": 101,
+      "condition": "COMM",
+      "instance_id": "reference-00000065",
+      "task_success": false,
+      "valid": true,
+      "d_idx": 0.25,
+      "regime_measured": "H",
+      "post_read_correlated_bits": 0.0,
+      "communication_tokens": 0
+    },
+    {
+      "family": "reference",
+      "model": "ling",
+      "regime_hint": "H",
+      "complexity": "high",
+      "seed": 102,
+      "condition": "ISO",
+      "instance_id": "reference-00000066",
+      "task_success": true,
+      "valid": true,
+      "d_idx": 0.25,
+      "regime_measured": "H",
+      "post_read_correlated_bits": 0.0,
+      "communication_tokens": 0
+    },
+    {
+      "family": "reference",
+      "model": "ling",
+      "regime_hint": "H",
+      "complexity": "high",
+      "seed": 102,
+      "condition": "FULL",
+      "instance_id": "reference-00000066",
+      "task_success": false,
+      "valid": false,
+      "d_idx": 0.25,
+      "regime_measured": "H",
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1529,7 +1529,7 @@
       "valid": true,
       "d_idx": 0.25,
       "regime_measured": "H",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1544,7 +1544,7 @@
       "valid": true,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1559,7 +1559,7 @@
       "valid": true,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1574,7 +1574,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1589,7 +1589,7 @@
       "valid": true,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1604,7 +1604,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1619,7 +1619,7 @@
       "valid": true,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1634,7 +1634,7 @@
       "valid": true,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1649,7 +1649,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1664,7 +1664,7 @@
       "valid": true,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1679,7 +1679,7 @@
       "valid": true,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1694,7 +1694,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1709,7 +1709,7 @@
       "valid": true,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1724,7 +1724,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1739,7 +1739,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1754,7 +1754,7 @@
       "valid": true,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1769,7 +1769,7 @@
       "valid": true,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1784,7 +1784,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1799,7 +1799,7 @@
       "valid": true,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1814,7 +1814,7 @@
       "valid": true,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1829,7 +1829,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1844,7 +1844,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1859,7 +1859,7 @@
       "valid": true,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1874,7 +1874,7 @@
       "valid": true,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1889,7 +1889,7 @@
       "valid": true,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1904,7 +1904,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1919,7 +1919,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1934,7 +1934,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1949,7 +1949,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1964,7 +1964,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1979,7 +1979,7 @@
       "valid": true,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0.0,
+      "post_read_correlated_bits": 0.0,
       "communication_tokens": 0
     },
     {
@@ -1994,7 +1994,7 @@
       "valid": true,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2009,7 +2009,7 @@
       "valid": true,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2024,7 +2024,7 @@
       "valid": true,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2039,7 +2039,7 @@
       "valid": true,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2054,7 +2054,7 @@
       "valid": true,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2069,7 +2069,7 @@
       "valid": true,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2084,7 +2084,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2099,7 +2099,7 @@
       "valid": true,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2114,7 +2114,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2129,7 +2129,7 @@
       "valid": true,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2144,7 +2144,7 @@
       "valid": true,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2159,7 +2159,7 @@
       "valid": true,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2174,7 +2174,7 @@
       "valid": true,
       "d_idx": 0.38685280723454163,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2189,7 +2189,7 @@
       "valid": true,
       "d_idx": 0.38685280723454163,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2204,7 +2204,7 @@
       "valid": true,
       "d_idx": 0.38685280723454163,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2219,7 +2219,7 @@
       "valid": false,
       "d_idx": 0.38685280723454163,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2234,7 +2234,7 @@
       "valid": true,
       "d_idx": 0.38685280723454163,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2249,7 +2249,7 @@
       "valid": true,
       "d_idx": 0.38685280723454163,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2264,7 +2264,7 @@
       "valid": true,
       "d_idx": 0.21810429198553155,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2279,7 +2279,7 @@
       "valid": true,
       "d_idx": 0.21810429198553155,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2294,7 +2294,7 @@
       "valid": false,
       "d_idx": 0.21810429198553155,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2309,7 +2309,7 @@
       "valid": true,
       "d_idx": 0.21810429198553155,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2324,7 +2324,7 @@
       "valid": true,
       "d_idx": 0.21810429198553155,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2339,7 +2339,7 @@
       "valid": true,
       "d_idx": 0.21810429198553155,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2354,7 +2354,7 @@
       "valid": true,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2369,7 +2369,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2384,7 +2384,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2399,7 +2399,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2414,7 +2414,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2429,7 +2429,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2444,7 +2444,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2459,7 +2459,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2474,7 +2474,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2489,7 +2489,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2504,7 +2504,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2519,7 +2519,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2534,7 +2534,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2549,7 +2549,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2564,7 +2564,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2579,7 +2579,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2594,7 +2594,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2609,7 +2609,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2624,7 +2624,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2639,7 +2639,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2654,7 +2654,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2669,7 +2669,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2684,7 +2684,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2699,7 +2699,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2714,7 +2714,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2729,7 +2729,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2744,7 +2744,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2759,7 +2759,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2774,7 +2774,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2789,7 +2789,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2804,7 +2804,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2819,7 +2819,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2834,7 +2834,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2849,7 +2849,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2864,7 +2864,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2879,7 +2879,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2894,7 +2894,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2909,7 +2909,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2924,7 +2924,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2939,7 +2939,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2954,7 +2954,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2969,7 +2969,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2984,7 +2984,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -2999,7 +2999,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3014,7 +3014,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3029,7 +3029,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3044,7 +3044,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3059,7 +3059,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3074,7 +3074,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3089,7 +3089,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3104,7 +3104,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3119,7 +3119,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3134,7 +3134,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3149,7 +3149,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3164,7 +3164,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3179,7 +3179,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3194,7 +3194,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3209,7 +3209,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3224,7 +3224,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3239,7 +3239,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3254,7 +3254,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3269,7 +3269,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3284,7 +3284,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3299,7 +3299,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3314,7 +3314,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3329,7 +3329,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3344,7 +3344,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3359,7 +3359,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3374,7 +3374,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3389,7 +3389,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3404,7 +3404,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3419,7 +3419,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3434,7 +3434,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3449,7 +3449,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3464,7 +3464,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3479,7 +3479,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3494,7 +3494,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3509,7 +3509,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3524,7 +3524,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3539,7 +3539,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3554,7 +3554,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3569,7 +3569,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3584,7 +3584,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3599,7 +3599,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3614,7 +3614,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3629,7 +3629,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3644,7 +3644,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3659,7 +3659,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3674,7 +3674,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3689,7 +3689,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3704,7 +3704,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3719,7 +3719,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3734,7 +3734,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3749,7 +3749,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3764,7 +3764,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3779,7 +3779,7 @@
       "valid": false,
       "d_idx": 0.0,
       "regime_measured": "R",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3794,7 +3794,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3809,7 +3809,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3824,7 +3824,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3839,7 +3839,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3854,7 +3854,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3869,7 +3869,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3884,7 +3884,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3899,7 +3899,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3914,7 +3914,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3929,7 +3929,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3944,7 +3944,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3959,7 +3959,7 @@
       "valid": false,
       "d_idx": 0.3333333333333333,
       "regime_measured": "H",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3974,7 +3974,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -3989,7 +3989,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -4004,7 +4004,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -4019,7 +4019,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -4034,7 +4034,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -4049,7 +4049,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -4064,7 +4064,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -4079,7 +4079,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -4094,7 +4094,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -4109,7 +4109,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -4124,7 +4124,7 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     },
     {
@@ -4139,13 +4139,20 @@
       "valid": false,
       "d_idx": 1.0,
       "regime_measured": "N",
-      "useful_bits": 0,
+      "post_read_correlated_bits": 0,
       "communication_tokens": 0
     }
   ],
   "notes": {
     "c_need": "unclipped P(FULL)-P(ISO); negative means ISO outperforms FULL",
     "eta_comm": "only when |C_need| >= 0.1",
-    "invalid_runs": "valid=False preserved in denominators; task_success=False"
-  }
+    "invalid_runs": "valid=False preserved in denominators; task_success=False",
+    "post_read_correlated_bits": "post-read correlated bits from checker-supported COMM event joins; correlation does not establish causal use; 0.0 for ISO/FULL"
+  },
+  "status": "invalidated",
+  "analysis_eligible": false,
+  "invalidated_reasons": [
+    "historical one-turn runner output; corrected two-turn artifacts have not been run",
+    "FULL prompt in the source run exposed controller-side joint candidate labels"
+  ]
 }

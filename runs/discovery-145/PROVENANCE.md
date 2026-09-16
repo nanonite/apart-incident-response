@@ -10,6 +10,23 @@ The corrected runners use two turns and write to `runs.turns2.jsonl`,
 scripts read only those corrected row files, so an old one-turn result cannot
 silently enter a new comparison.
 
-The checked-in solvability gate report is marked `invalidated` because its
-FULL prompt exposed the controller-side joint candidate labels. It must be
-rerun after the repaired prompt and minimum-valid-run gate are in use.
+The checked-in solvability gate, anchor, extended, six-family, and comparison
+reports are marked `invalidated` because they were derived from the old
+one-turn protocol and the FULL prompt exposed the controller-side joint
+candidate labels. They must be rerun after the repaired prompt and
+minimum-valid-run gate are in use.
+
+No corrected live screen has been run or included in this checkout. The
+corrected artifacts are therefore implementation-ready candidates rather than
+new model evidence; the invalidated historical reports remain excluded from
+analysis.
+
+## Chainlink reconciliation
+
+Main's `.chainlink/issues.db` is the canonical tracker. Main issue #145 is the
+T1a discovery epic, with main issues #146-#150 as its open children. The
+discovery worktree independently used IDs #145-#150 for different records;
+the overlapping discovery #146-#150 titles were therefore not merged by ID,
+and their closed statuses and parent links were not imported. The reconciliation
+decision is also recorded in main Chainlink issue #145, while the discovery
+branch history remains available in git.
