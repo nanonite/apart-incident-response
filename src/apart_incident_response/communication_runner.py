@@ -91,18 +91,22 @@ class BatteryRunResult:
     invalid_agents: tuple[str, ...]
     event_summary: Mapping[str, Any]
     artifact: Mapping[str, Any]
+    model_id: str = "unknown"
 
 
 class TwoAgentBatteryRunner:
     """Run new-condition triplets without touching the legacy ExperimentController."""
 
     def __init__(self, *, prompt_version: str = "communication-battery-prompt-v1",
-                 token_budget: int = 512, turns: int = 2) -> None:
+                 token_budget: int = 512, turns: int = 2, finalizing_agent: str = "A") -> None:
         if token_budget <= 0 or turns <= 0:
             raise ValueError("token budget and turns must be positive")
+        if finalizing_agent not in {"A", "B"}:
+            raise ValueError("finalizing_agent must be A or B")
         self.prompt_version = prompt_version
         self.token_budget = token_budget
         self.turns = turns
+        self.finalizing_agent = finalizing_agent
 
     def run_condition(self, instance: FamilyInstance, condition: BatteryCondition,
                       provider: BatteryProvider, *, pair_id: str | None = None,
@@ -112,11 +116,13 @@ class TwoAgentBatteryRunner:
         log = CommunicationEventLog(run)
         log.record("run_started", "controller", payload={"condition": condition.value,
                                                            "prompt_version": self.prompt_version,
-                                                           "token_budget": self.token_budget})
+                                                           "token_budget": self.token_budget,
+                                                           "finalizing_agent": self.finalizing_agent})
         board: list[dict[str, Any]] = []
         message_info: dict[str, Any] = {}
         received_information: dict[tuple[str, str], Any] = {}
-        used_outputs: list[tuple[str, str, tuple[str, ...]]] = []
+        read_sequences: dict[tuple[str, str], int] = {}
+        used_outputs: list[tuple[str, str, tuple[str, ...], str | None]] = []
         answers: dict[str, str | None] = {"A": None, "B": None}
         invalid: list[str] = []
         for turn in range(self.turns):
@@ -125,11 +131,15 @@ class TwoAgentBatteryRunner:
                     view = instance.agent_view(agent, "FULL")
                 else:
                     view = instance.agent_view(agent, condition.value)
+                view = {**view, "is_finalizer": agent == self.finalizing_agent,
+                        "finalizing_agent": self.finalizing_agent}
                 visible = tuple(row for row in board if row["author"] != agent) if condition is BatteryCondition.COMM else ()
                 for row in visible:
                     received_info = instance.information(agent, row["text"], row["message_id"])
                     received_information[(agent, row["message_id"])] = received_info
-                    log.peer_read(agent, received_info, exposure_id=f"turn-{turn}")
+                    read_event = log.peer_read(agent, received_info, exposure_id=f"turn-{turn}")
+                    if read_event is not None:
+                        read_sequences[(agent, row["message_id"])] = read_event.sequence
                 context = AgentContext(run, instance.instance_id, agent, condition, turn, view,
                                        visible, self.prompt_version, self.token_budget)
                 try:
@@ -150,7 +160,7 @@ class TwoAgentBatteryRunner:
                                  logprob_coverage=response.logprob_coverage,
                                  logprob_mass_coverage=response.logprob_mass_coverage,
                                  logprob_status=response.logprob_status)
-                used_outputs.append((agent, output_id, response.used_message_ids))
+                used_outputs.append((agent, output_id, response.used_message_ids, response.answer))
                 if response.answer is not None:
                     answers[agent] = response.answer
                 if condition is BatteryCondition.COMM and response.message:
@@ -164,26 +174,44 @@ class TwoAgentBatteryRunner:
                     log.board_write(agent, info, message_tokens=row["message_tokens"])
         outcomes = {agent: instance.validate(answer) if answer is not None else {"accepted": False, "score": None}
                     for agent, answer in answers.items()}
-        task_success = any(outcome.get("accepted", False) for outcome in outcomes.values())
-        for agent, output_id, used_ids in used_outputs:
-            if not outcomes[agent].get("accepted", False):
+        final_outcome = outcomes[self.finalizing_agent]
+        task_success = bool(final_outcome.get("accepted", False))
+        output_sequences = {event.output_id: event.sequence for event in log.events if event.kind == "model_output"}
+        for agent, output_id, _self_reported_ids, answer in used_outputs:
+            if agent != self.finalizing_agent or not task_success:
                 continue
-            for used_id in used_ids:
-                info = received_information.get((agent, used_id))
-                row = next((item for item in board if item["message_id"] == used_id), None)
-                if info is None or row is None or row["author"] == agent:
+            for (received_agent, used_id), info in received_information.items():
+                if received_agent != agent:
                     continue
-                if info.useful:
+                row = next((item for item in board if item["message_id"] == used_id), None)
+                read_sequence = read_sequences.get((agent, used_id))
+                output_sequence = output_sequences.get(output_id)
+                if (info is None or row is None or row["author"] == agent
+                        or read_sequence is None or output_sequence is None
+                        or output_sequence <= read_sequence):
+                    continue
+                prior_finalizer_success = any(
+                    prior_agent == agent and prior_sequence < read_sequence and
+                    instance.validate(prior_answer).get("accepted", False)
+                    for prior_agent, prior_output, _ids, prior_answer in used_outputs
+                    for prior_sequence in [output_sequences.get(prior_output)]
+                    if prior_sequence is not None and prior_answer is not None
+                )
+                if info.useful and not prior_finalizer_success and instance.validate(answer or "").get("accepted", False):
                     log.verified_use(agent, info, output_id,
                                      checker_evidence={"verified": True, "task_checker": f"{instance.family}-oracle-v1",
-                                                       "answer_accepted": True})
+                                                       "answer_accepted": True,
+                                                       "uptake_rule": "first_checker_accepted_finalizer_output_after_peer_read",
+                                                       "prior_finalizer_success": False})
         status = "invalid" if invalid else "completed"
         task_success = task_success and status == "completed"
+        model_id = getattr(provider, "model", "unknown")
         artifact = {
             "run_id": run, "pair_id": pair, "condition": condition.value,
             "family": instance.family, "instance_id": instance.instance_id, "seed": instance.seed,
             "provider": getattr(provider, "provider", type(provider).__name__),
             "provider_version": getattr(provider, "version", "unknown"),
+            "model_id": model_id,
             "prompt_version": self.prompt_version, "task_success": task_success,
             "answers_present": sorted(agent for agent, answer in answers.items() if answer is not None),
             "invalid_agents": invalid, "task": instance.public_manifest(),
@@ -191,7 +219,8 @@ class TwoAgentBatteryRunner:
         }
         return BatteryRunResult(run, pair, instance.instance_id, condition, instance.family, instance.seed,
                                 artifact["provider"], artifact["provider_version"], self.prompt_version,
-                                status, task_success, answers, tuple(invalid), log.summary(), artifact)
+                                status, task_success, answers, tuple(invalid), log.summary(), artifact,
+                                model_id=model_id)
 
     def run_triplet(self, instance: FamilyInstance, provider: BatteryProvider, *, pair_id: str | None = None) -> tuple[BatteryRunResult, ...]:
         pair = pair_id or f"pair-{instance.instance_id}"

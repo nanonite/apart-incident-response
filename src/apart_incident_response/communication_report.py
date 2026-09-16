@@ -50,7 +50,10 @@ def report_from_battery(instances: Iterable[FamilyInstance], results: Iterable[A
         "condition": result.condition.value,
         "success": result.task_success,
         "valid": result.status == "completed",
-        "useful_bits": result.event_summary.get("verified_useful_bits", 0.0),
+        "useful_bits": result.event_summary.get(
+            "post_read_correlated_bits",
+            result.event_summary.get("verified_useful_bits", 0.0),
+        ),
         "communication_tokens": result.event_summary.get("communication_tokens", 0),
         "latency_seconds": result.event_summary.get("first_verified_use_latency_seconds"),
     } for result in results]

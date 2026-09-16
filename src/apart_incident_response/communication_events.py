@@ -132,6 +132,7 @@ class CommunicationEventLog:
         transmitted = [event.delta_i_bits for event in writes if event.delta_i_bits is not None]
         tokens = [event.message_tokens for event in writes if event.message_tokens]
         useful = [row for row in joins if row["useful"] and row["delta_i_bits"] is not None]
+        post_read_correlated_bits = sum(row["delta_i_bits"] for row in useful)
         outputs = [event for event in self._events if event.kind == "model_output"]
         logprob_rows = [event for event in outputs if (event.payload or {}).get("logprob_status") not in {None, "not_requested", "unavailable"}]
         def latency(kind: str) -> float | None:
@@ -144,10 +145,14 @@ class CommunicationEventLog:
             "run_id": self.run_id,
             "message_count": len(writes),
             "transmitted_bits": sum(transmitted) if transmitted else 0.0,
-            "verified_useful_bits": sum(row["delta_i_bits"] for row in useful),
+            "post_read_correlated_bits": post_read_correlated_bits,
+            # Deprecated alias for readers of pre-epic-126 artifacts. New
+            # consumers must use post_read_correlated_bits.
+            "verified_useful_bits": post_read_correlated_bits,
             "communication_tokens": sum(tokens),
             "bits_per_communication_token": sum(transmitted) / sum(tokens) if sum(tokens) else None,
             "verified_use_count": len(useful),
+            "post_read_success_count": len(useful),
             "logprob_output_count": len(logprob_rows),
             "logprob_complete_output_count": sum((event.payload or {}).get("logprob_status") == "complete" for event in logprob_rows),
             "logprob_coverage": [(event.payload or {}).get("logprob_coverage") for event in logprob_rows],

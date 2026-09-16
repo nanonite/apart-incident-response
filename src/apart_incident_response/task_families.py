@@ -93,8 +93,6 @@ class FamilyInstance:
         }
         if condition == "FULL":
             view["joint_clues"] = [claim.text for claim in self.claims]
-            view["joint_candidate_count"] = len(self.joint_solutions)
-            view["joint_candidate_labels"] = sorted(self.joint_solutions)
         return view
 
     def public_manifest(self) -> dict[str, Any]:

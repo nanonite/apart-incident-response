@@ -1,0 +1,260 @@
+{
+  "model": "ling",
+  "families": [
+    "planning",
+    "poetry",
+    "legal",
+    "lexicon"
+  ],
+  "cell_metrics": [
+    {
+      "family": "planning",
+      "regime_hint": "H",
+      "complexity": "high",
+      "seed": 101,
+      "p_iso": 0.0,
+      "p_full": 1.0,
+      "p_comm": null,
+      "c_need": 1.0,
+      "eta_comm": null,
+      "d_idx": 0.21810429198553155,
+      "regime_measured": "H",
+      "useful_bits": 0.0
+    },
+    {
+      "family": "planning",
+      "regime_hint": "H",
+      "complexity": "high",
+      "seed": 102,
+      "p_iso": 0.0,
+      "p_full": 1.0,
+      "p_comm": 1.0,
+      "c_need": 1.0,
+      "eta_comm": 1.0,
+      "d_idx": 0.21810429198553155,
+      "regime_measured": "H",
+      "useful_bits": 0
+    },
+    {
+      "family": "planning",
+      "regime_hint": "H",
+      "complexity": "low",
+      "seed": 101,
+      "p_iso": 0.0,
+      "p_full": 1.0,
+      "p_comm": 0.0,
+      "c_need": 1.0,
+      "eta_comm": 0.0,
+      "d_idx": 0.38685280723454163,
+      "regime_measured": "H",
+      "useful_bits": 0
+    },
+    {
+      "family": "planning",
+      "regime_hint": "H",
+      "complexity": "low",
+      "seed": 102,
+      "p_iso": null,
+      "p_full": 1.0,
+      "p_comm": 0.0,
+      "c_need": null,
+      "eta_comm": null,
+      "d_idx": 0.38685280723454163,
+      "regime_measured": "H",
+      "useful_bits": 0
+    },
+    {
+      "family": "planning",
+      "regime_hint": "N",
+      "complexity": "low",
+      "seed": 101,
+      "p_iso": 0.0,
+      "p_full": null,
+      "p_comm": null,
+      "c_need": null,
+      "eta_comm": null,
+      "d_idx": 1.0,
+      "regime_measured": "N",
+      "useful_bits": 0.0
+    },
+    {
+      "family": "planning",
+      "regime_hint": "R",
+      "complexity": "high",
+      "seed": 101,
+      "p_iso": null,
+      "p_full": 1.0,
+      "p_comm": null,
+      "c_need": null,
+      "eta_comm": null,
+      "d_idx": 0.0,
+      "regime_measured": "R",
+      "useful_bits": 0.0
+    },
+    {
+      "family": "planning",
+      "regime_hint": "R",
+      "complexity": "high",
+      "seed": 102,
+      "p_iso": 1.0,
+      "p_full": 1.0,
+      "p_comm": 1.0,
+      "c_need": 0.0,
+      "eta_comm": null,
+      "d_idx": 0.0,
+      "regime_measured": "R",
+      "useful_bits": 0
+    },
+    {
+      "family": "planning",
+      "regime_hint": "R",
+      "complexity": "low",
+      "seed": 101,
+      "p_iso": 1.0,
+      "p_full": 1.0,
+      "p_comm": 1.0,
+      "c_need": 0.0,
+      "eta_comm": null,
+      "d_idx": 0.0,
+      "regime_measured": "R",
+      "useful_bits": 0
+    },
+    {
+      "family": "planning",
+      "regime_hint": "R",
+      "complexity": "low",
+      "seed": 102,
+      "p_iso": 1.0,
+      "p_full": 1.0,
+      "p_comm": 1.0,
+      "c_need": 0.0,
+      "eta_comm": null,
+      "d_idx": 0.0,
+      "regime_measured": "R",
+      "useful_bits": 0
+    }
+  ],
+  "aggregate_rows": [
+    {
+      "family": "planning",
+      "regime_hint": "H",
+      "complexity": "high",
+      "n": 2,
+      "p_iso_mean": 0.0,
+      "p_full_mean": 1.0,
+      "p_comm_mean": 1.0,
+      "c_need_mean": 1.0,
+      "eta_comm_mean": 1.0,
+      "total_useful_bits": 0.0,
+      "ci_iso": [
+        0.0,
+        0.6576280471103807
+      ],
+      "ci_full": [
+        0.34237195288961925,
+        1.0
+      ],
+      "ci_comm": [
+        0.20654329147389294,
+        1.0
+      ]
+    },
+    {
+      "family": "planning",
+      "regime_hint": "H",
+      "complexity": "low",
+      "n": 2,
+      "p_iso_mean": 0.0,
+      "p_full_mean": 1.0,
+      "p_comm_mean": 0.0,
+      "c_need_mean": 1.0,
+      "eta_comm_mean": 0.0,
+      "total_useful_bits": 0,
+      "ci_iso": [
+        0.0,
+        0.7934567085261071
+      ],
+      "ci_full": [
+        0.34237195288961925,
+        1.0
+      ],
+      "ci_comm": [
+        0.0,
+        0.6576280471103807
+      ]
+    },
+    {
+      "family": "planning",
+      "regime_hint": "N",
+      "complexity": "low",
+      "n": 0,
+      "p_iso_mean": 0.0,
+      "p_full_mean": null,
+      "p_comm_mean": null,
+      "c_need_mean": null,
+      "eta_comm_mean": null,
+      "total_useful_bits": 0.0,
+      "ci_iso": [
+        0.0,
+        0.7934567085261071
+      ],
+      "ci_full": null,
+      "ci_comm": null
+    },
+    {
+      "family": "planning",
+      "regime_hint": "R",
+      "complexity": "high",
+      "n": 2,
+      "p_iso_mean": 1.0,
+      "p_full_mean": 1.0,
+      "p_comm_mean": 1.0,
+      "c_need_mean": 0.0,
+      "eta_comm_mean": null,
+      "total_useful_bits": 0.0,
+      "ci_iso": [
+        0.20654329147389294,
+        1.0
+      ],
+      "ci_full": [
+        0.34237195288961925,
+        1.0
+      ],
+      "ci_comm": [
+        0.20654329147389294,
+        1.0
+      ]
+    },
+    {
+      "family": "planning",
+      "regime_hint": "R",
+      "complexity": "low",
+      "n": 2,
+      "p_iso_mean": 1.0,
+      "p_full_mean": 1.0,
+      "p_comm_mean": 1.0,
+      "c_need_mean": 0.0,
+      "eta_comm_mean": null,
+      "total_useful_bits": 0,
+      "ci_iso": [
+        0.34237195288961925,
+        1.0
+      ],
+      "ci_full": [
+        0.34237195288961925,
+        1.0
+      ],
+      "ci_comm": [
+        0.34237195288961925,
+        1.0
+      ]
+    }
+  ],
+  "regime_counts": {
+    "R": 48,
+    "H": 48,
+    "N": 48
+  },
+  "total_valid_rows": 21,
+  "total_invalid_rows": 123
+}

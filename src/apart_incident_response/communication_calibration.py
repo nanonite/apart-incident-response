@@ -58,7 +58,10 @@ def run_fixture_pilot(families: Sequence[str], *, seed: int = 1) -> dict[str, An
     rows = [PairedOutcome(
         pair_id=result.pair_id, family=result.family, model="fixture",
         condition=result.condition.value, success=result.task_success,
-        valid=result.status == "completed", useful_bits=float(result.event_summary["verified_useful_bits"]),
+        valid=result.status == "completed", useful_bits=float(result.event_summary.get(
+            "post_read_correlated_bits",
+            result.event_summary.get("verified_useful_bits", 0.0),
+        )),
         communication_tokens=int(result.event_summary["communication_tokens"]),
     ) for result in results]
     return {

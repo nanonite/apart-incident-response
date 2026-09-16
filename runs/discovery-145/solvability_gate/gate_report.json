@@ -1,0 +1,204 @@
+{
+  "schema": "solvability-gate-v2",
+  "pre_registration": {
+    "models": {
+      "lfm25": {
+        "slug": "liquid/lfm-2.5-2.6b:free",
+        "seeds": [
+          1,
+          2,
+          3
+        ],
+        "role": "small_floor"
+      },
+      "ling": {
+        "slug": "inclusionai/ling-3.0-flash-vl:free",
+        "seeds": [
+          1,
+          2,
+          3
+        ],
+        "role": "prior_baseline"
+      },
+      "nemotron": {
+        "slug": "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "seeds": [
+          1
+        ],
+        "role": "strong_free"
+      }
+    },
+    "families": [
+      "hypothesis",
+      "reference"
+    ],
+    "complexities": [
+      "low",
+      "high"
+    ],
+    "regime": "N",
+    "solvability_heuristic": 0.6,
+    "cap": {
+      "max_total_usd": 0.0,
+      "max_total_runs": 90
+    },
+    "note": "nemotron uses 1 seed per stratum (capability ceiling; smoke-test already passed)"
+  },
+  "stratum_results": [
+    {
+      "family": "hypothesis",
+      "complexity": "low",
+      "model": "lfm25",
+      "verdict": "invalidated",
+      "n_success": 3,
+      "n_valid": 3,
+      "success_rate": 1.0,
+      "original_verdict": "viable"
+    },
+    {
+      "family": "hypothesis",
+      "complexity": "high",
+      "model": "lfm25",
+      "verdict": "invalidated",
+      "n_success": 3,
+      "n_valid": 3,
+      "success_rate": 1.0,
+      "original_verdict": "viable"
+    },
+    {
+      "family": "reference",
+      "complexity": "low",
+      "model": "lfm25",
+      "verdict": "invalidated",
+      "n_success": 3,
+      "n_valid": 3,
+      "success_rate": 1.0,
+      "original_verdict": "viable"
+    },
+    {
+      "family": "reference",
+      "complexity": "high",
+      "model": "lfm25",
+      "verdict": "invalidated",
+      "n_success": 1,
+      "n_valid": 1,
+      "success_rate": 1.0,
+      "original_verdict": "viable"
+    },
+    {
+      "family": "hypothesis",
+      "complexity": "low",
+      "model": "ling",
+      "verdict": "invalidated",
+      "n_success": 3,
+      "n_valid": 3,
+      "success_rate": 1.0,
+      "original_verdict": "viable"
+    },
+    {
+      "family": "hypothesis",
+      "complexity": "high",
+      "model": "ling",
+      "verdict": "invalidated",
+      "n_success": 3,
+      "n_valid": 3,
+      "success_rate": 1.0,
+      "original_verdict": "viable"
+    },
+    {
+      "family": "reference",
+      "complexity": "low",
+      "model": "ling",
+      "verdict": "invalidated",
+      "n_success": 3,
+      "n_valid": 3,
+      "success_rate": 1.0,
+      "original_verdict": "viable"
+    },
+    {
+      "family": "reference",
+      "complexity": "high",
+      "model": "ling",
+      "verdict": "invalidated",
+      "n_success": 3,
+      "n_valid": 3,
+      "success_rate": 1.0,
+      "original_verdict": "viable"
+    },
+    {
+      "family": "hypothesis",
+      "complexity": "low",
+      "model": "nemotron",
+      "verdict": "invalidated",
+      "n_success": 1,
+      "n_valid": 1,
+      "success_rate": 1.0,
+      "original_verdict": "viable"
+    },
+    {
+      "family": "hypothesis",
+      "complexity": "high",
+      "model": "nemotron",
+      "verdict": "invalidated",
+      "n_success": 1,
+      "n_valid": 1,
+      "success_rate": 1.0,
+      "original_verdict": "viable"
+    },
+    {
+      "family": "reference",
+      "complexity": "low",
+      "model": "nemotron",
+      "verdict": "invalidated",
+      "n_success": 1,
+      "n_valid": 1,
+      "success_rate": 1.0,
+      "original_verdict": "viable"
+    },
+    {
+      "family": "reference",
+      "complexity": "high",
+      "model": "nemotron",
+      "verdict": "invalidated",
+      "n_success": 1,
+      "n_valid": 1,
+      "success_rate": 1.0,
+      "original_verdict": "viable"
+    }
+  ],
+  "summary": {
+    "total_strata": 12,
+    "viable": 0,
+    "floor": 0,
+    "uncertain": 0,
+    "insufficient": 5,
+    "invalidated": 12
+  },
+  "gate_verdict": {
+    "recommendation": "rerun_after_prompt_and_gate_repair",
+    "viable_count": 0,
+    "floor_count": 0,
+    "uncertain_count": 0,
+    "insufficient_count": 5,
+    "invalidated": true
+  },
+  "status": "invalidated",
+  "analysis_eligible": false,
+  "minimum_valid_runs_for_viable": 2,
+  "invalidated_reasons": [
+    "FULL prompt exposed joint_candidate_labels, so the recorded gate measured answer copying rather than solving",
+    "strata with one valid run were classified as viable"
+  ],
+  "original_gate_verdict": {
+    "recommendation": "proceed_with_full_battery",
+    "viable_count": 12,
+    "floor_count": 0,
+    "uncertain_count": 0
+  },
+  "original_summary": {
+    "total_strata": 12,
+    "viable": 12,
+    "floor": 0,
+    "uncertain": 0
+  }
+}

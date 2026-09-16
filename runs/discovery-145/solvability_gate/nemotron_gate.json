@@ -1,0 +1,38 @@
+[
+  {
+    "family": "hypothesis",
+    "complexity": "low",
+    "model": "nemotron",
+    "verdict": "viable",
+    "n_success": 1,
+    "n_valid": 1,
+    "success_rate": 1.0
+  },
+  {
+    "family": "hypothesis",
+    "complexity": "high",
+    "model": "nemotron",
+    "verdict": "viable",
+    "n_success": 1,
+    "n_valid": 1,
+    "success_rate": 1.0
+  },
+  {
+    "family": "reference",
+    "complexity": "low",
+    "model": "nemotron",
+    "verdict": "viable",
+    "n_success": 1,
+    "n_valid": 1,
+    "success_rate": 1.0
+  },
+  {
+    "family": "reference",
+    "complexity": "high",
+    "model": "nemotron",
+    "verdict": "viable",
+    "n_success": 1,
+    "n_valid": 1,
+    "success_rate": 1.0
+  }
+]

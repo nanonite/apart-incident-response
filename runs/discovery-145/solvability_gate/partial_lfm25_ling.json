@@ -1,0 +1,74 @@
+[
+  {
+    "family": "hypothesis",
+    "complexity": "low",
+    "model": "lfm25",
+    "verdict": "viable",
+    "n_success": 3,
+    "n_valid": 3,
+    "success_rate": 1.0
+  },
+  {
+    "family": "hypothesis",
+    "complexity": "high",
+    "model": "lfm25",
+    "verdict": "viable",
+    "n_success": 3,
+    "n_valid": 3,
+    "success_rate": 1.0
+  },
+  {
+    "family": "reference",
+    "complexity": "low",
+    "model": "lfm25",
+    "verdict": "viable",
+    "n_success": 3,
+    "n_valid": 3,
+    "success_rate": 1.0
+  },
+  {
+    "family": "reference",
+    "complexity": "high",
+    "model": "lfm25",
+    "verdict": "viable",
+    "n_success": 1,
+    "n_valid": 1,
+    "success_rate": 1.0
+  },
+  {
+    "family": "hypothesis",
+    "complexity": "low",
+    "model": "ling",
+    "verdict": "viable",
+    "n_success": 3,
+    "n_valid": 3,
+    "success_rate": 1.0
+  },
+  {
+    "family": "hypothesis",
+    "complexity": "high",
+    "model": "ling",
+    "verdict": "viable",
+    "n_success": 3,
+    "n_valid": 3,
+    "success_rate": 1.0
+  },
+  {
+    "family": "reference",
+    "complexity": "low",
+    "model": "ling",
+    "verdict": "viable",
+    "n_success": 3,
+    "n_valid": 3,
+    "success_rate": 1.0
+  },
+  {
+    "family": "reference",
+    "complexity": "high",
+    "model": "ling",
+    "verdict": "viable",
+    "n_success": 3,
+    "n_valid": 3,
+    "success_rate": 1.0
+  }
+]

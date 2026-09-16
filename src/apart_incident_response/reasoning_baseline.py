@@ -188,7 +188,7 @@ class OpenRouterFreeProvider:
             "family": context.task_view.get("family"),
             "condition": context.condition.value,
             "candidate_labels": context.task_view.get("candidate_labels", []),
-            "joint_candidate_labels": context.task_view.get("joint_candidate_labels"),
+            "joint_clues": context.task_view.get("joint_clues", []),
             "private_clues": context.task_view.get("private_clues", []),
             "visible_messages": list(context.visible_messages),
         }, sort_keys=True)
