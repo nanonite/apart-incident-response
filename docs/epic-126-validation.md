@@ -56,6 +56,39 @@ coverage substitute. T3 is therefore blocked.
 
 Artifact: `runs/epic-126/t2-capability-report.json`.
 
+## T1a FULL-only execution gate (#147)
+
+The FULL-only gate was repaired to classify provider HTTP failures, retry only
+on 408/429/5xx, keep credentials out of payloads and artifacts, disable
+logprobs, and record per-run request/rate/token/usage/cost/model/provider
+provenance plus an invalid-output versus valid-wrong-answer distinction.
+
+Gate command (bounded to 8 FULL runs / 16 agent requests, 0.25 s rate floor,
+`$20` cost ceiling, stop on repeated HTTP failure, request/cost cap, or missing
+checker evidence):
+
+    UV_CACHE_DIR=.uv-cache uv run env PYTHONPATH=src \
+      python -m apart_incident_response.behavioral_discovery --live --max-runs 8
+
+Artifacts:
+
+- `runs/epic-126/full-gate-repair.jsonl`
+- `runs/epic-126/full-gate-repair-report.json`
+- `runs/epic-126/full-gate-repair-diagnostic.json`
+- `runs/epic-126/full-gate-repair-preflight.json`
+
+Observed result (2026-09-15): the preflight probe returned HTTP 401
+"API key expired." for all five payload variants (with and without provider
+routing parameters, seed, and temperature), so the pinned endpoint and model
+never reached model execution. The gate attempted 2 of 8 frozen runs
+(4 requests, `$0.00`) against the frozen instance set and stopped on
+`repeated_http_failure`; 0 valid model outputs, 0 checker-valid outputs, 0
+successes, valid denominator 0. The blocker is the expired provider credential
+configured in the project `.env`, not a task/scorer/model floor. No paired
+ISO/FULL/COMM screen was launched and no solvability conclusion is permitted
+until a valid credential is restored and the gate produces valid outputs with
+independent checker evidence.
+
 ## T3/T4
 
 T3 was not run because T1 selected no useful cells and T2 found no aligned
