@@ -274,6 +274,44 @@ low (8/78). Caveat: the COMM condition used `turns=2` while ISO/FULL used
 `turns=1`, because the finalizer needs at least one turn to read a peer message.
 No T3 entropy work was launched.
 
+Paired inference (Wilson + McNemar) is now built in (`paired_contrasts`); the
+n=20 analysis (`runs/epic-126/paired-analysis-n20.json`) gives:
+
+- ISO -> FULL: n=73, 0 left-only / 34 right-only, `C_need` 0.466, Newcombe 95%
+  CI [0.341, 0.566], McNemar exact p=1.2e-10
+- ISO -> COMM: n=78, 2 left-only / 13 right-only, difference 0.141, Newcombe
+  95% CI [0.048, 0.233], McNemar exact p=0.0074 (mid-p 0.0042)
+- FULL -> COMM: n=71, difference -0.310, Newcombe 95% CI [-0.419, -0.183],
+  McNemar exact p=1.1e-05
+
+So communication recovers about a third of the FULL-ISO gap and remains
+significantly below FULL.
+
+Four-family C_need screen (planning, poetry, legal, lexicon; leak-free
+ISO/FULL, `turns=1`, n=9/cell; artifacts
+`runs/epic-126/cneed-fourfamilies-n9.*`): 72 instances, 144 runs, 143 valid, 1
+`invalid_output_empty`, 51 successes, 288 requests, `$0.00`, no HTTP 429.
+
+Per-cell ISO/FULL/`C_need` with Newcombe 95% CI and McNemar exact p:
+
+- planning low 0.333/1.000/0.667 [0.234, 0.879] p=0.031
+- planning medium 0.333/1.000/0.667 [0.234, 0.879] p=0.031
+- lexicon medium 0.222/0.875/0.653 [0.196, 0.810] p=0.063
+- poetry low 0.111/0.444/0.333 [0.010, 0.600] p=0.250
+- lexicon low 0.333/0.556/0.222 [-0.266, 0.603] p=0.688
+- legal medium 0.222/0.333/0.111 [-0.104, 0.330] p=1.000
+- legal low 0.000/0.000/0.000 [-0.299, 0.299] p=1.000
+- poetry medium 0.000/0.000/0.000 [-0.299, 0.299] p=1.000
+
+Overall across the four new families: ISO 0.197, FULL 0.521, `C_need` 0.324,
+Newcombe [0.196, 0.436], McNemar p=5.7e-06. The strongest new family is
+**planning** (0.667 at both complexities, p=0.031); lexicon-medium is marginal
+(0.653, p=0.063). legal and poetry show task/scorer **floor** effects (FULL 0.000
+even with all constraints), so `C_need` is not measurable there. Combined with
+hypothesis (n=20 `C_need` 0.60-0.65), the leading focus families for the
+cross-model transfer stage (#152) are **planning and hypothesis**. No T3 entropy
+work was launched.
+
 ## T3/T4
 
 T3 was not run because T1 selected no useful cells and T2 found no aligned
