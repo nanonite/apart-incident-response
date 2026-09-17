@@ -62,11 +62,14 @@ class CommunicationEventLog:
         self._events.append(event)
         return event
 
-    def board_write(self, agent_id: str, message: MessageInformation, *, message_tokens: int) -> CommunicationEvent:
+    def board_write(self, agent_id: str, message: MessageInformation, *, message_tokens: int,
+                    receiver_id: str | None = None) -> CommunicationEvent:
         return self.record("board_write", agent_id, message_id=message.message_id,
                            delta_i_bits=message.delta_i_bits, message_tokens=message_tokens,
                            status=message.status, useful=message.useful,
-                           payload={"raw_text": message.raw_text, "normalized_claim": message.normalized_claim})
+                           payload={"raw_text": message.raw_text, "normalized_claim": message.normalized_claim,
+                                    "information_perspective": "receiver",
+                                    "receiver_id": receiver_id})
 
     def peer_read(self, agent_id: str, message: MessageInformation, *, exposure_id: str | None = None) -> CommunicationEvent | None:
         # Re-reading an already exposed message is an idempotent read for

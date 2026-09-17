@@ -56,6 +56,30 @@ class CommunicationBatteryTests(unittest.TestCase):
         self.assertEqual([(row.before_count, row.after_count, row.delta_i_bits) for row in trajectory],
                          [(2, 2, 0.0), (2, 1, 1.0), (1, 1, 0.0)])
 
+    def test_board_write_reports_receiver_information(self):
+        instance = generate_instance("hypothesis", 16000, DependenceRegime.N)
+        # B holds bit1=0; A does not. The same claim carries 0 bits for the
+        # writer B and 1 bit for the receiver A.
+        self.assertEqual(instance.information("B", "bit1=0", "m").delta_i_bits, 0.0)
+        self.assertEqual(instance.information("A", "bit1=0", "m").delta_i_bits, 1.0)
+
+        class Provider:
+            provider = "fixture"
+            version = "receiver-info-test"
+
+            def respond(self, context):
+                if context.agent_id == "B" and context.turn == 0:
+                    return AgentResponse(answer=instance.target, message="bit1=0")
+                return AgentResponse(answer=instance.target)
+
+        result = TwoAgentBatteryRunner(turns=2).run_condition(
+            instance, BatteryCondition.COMM, Provider())
+        self.assertEqual(result.event_summary["message_count"], 1)
+        self.assertEqual(result.event_summary["transmitted_bits"], 1.0)
+        join = next(row for row in result.event_summary["joins"])
+        self.assertEqual(join["delta_i_bits"], 1.0)
+        self.assertEqual(join["reader_agent"], "A")
+
     def test_provenance_distinguishes_read_output_and_post_read_success(self):
         log = CommunicationEventLog("run")
         message = generate_instance("hypothesis", 1).information("A", "bit0=0", "m1")

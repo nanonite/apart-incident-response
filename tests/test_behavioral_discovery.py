@@ -11,6 +11,7 @@ from apart_incident_response.behavioral_discovery import (
     ENDPOINT,
     ORACLE_CONDITION,
     PROMPT_SCHEMA_VERSION,
+    PROTOCOL_OUTPUT_STEM,
     TREATMENT_PROMPT_FIELDS,
     BehavioralArtifactStore,
     BehavioralProviderConfig,
@@ -19,12 +20,14 @@ from apart_incident_response.behavioral_discovery import (
     audit_retained_pilot,
     channel_audit_manifest,
     classify_http_status,
+    current_protocol_key,
     extended_paired_instances,
     frozen_full_gate_instances,
     is_retryable_status,
     mcnemar_exact_p,
     mcnemar_midp,
     paired_contrast,
+    paired_contrasts_by_protocol,
     provider_seed,
     request_budget,
     run_behavioral_screen,
@@ -773,6 +776,69 @@ class TreatmentSchemaTests(unittest.TestCase):
         self.assertEqual(report["requests_per_instance"],
                          sum(request_budget(condition.value, 2) for condition in BatteryCondition))
         self.assertEqual(report["requests_made"], expected)
+
+
+class ProtocolBoundaryTests(unittest.TestCase):
+    def test_protocol_key_is_deterministic_and_config_scoped(self):
+        key = current_protocol_key("model-a", "provider-v1")
+        self.assertEqual(key, current_protocol_key("model-a", "provider-v1"))
+        self.assertNotEqual(key, current_protocol_key("model-b", "provider-v1"))
+        self.assertNotEqual(key, current_protocol_key("model-a", "provider-v2"))
+
+    def test_protocol_output_stem_is_versioned(self):
+        self.assertEqual(PROTOCOL_OUTPUT_STEM, GENERATOR_VERSION)
+        self.assertNotIn(".jsonl", PROTOCOL_OUTPUT_STEM)
+        self.assertNotEqual(PROTOCOL_OUTPUT_STEM, "")
+
+    def test_paired_contrasts_segregate_by_protocol(self):
+        key_a = current_protocol_key("model-a", "v1")
+        key_b = current_protocol_key("model-b", "v1")
+        records = [
+            {"instance_id": "x", "condition": "ISO", "valid_execution": True,
+             "checker_accepted": False, "protocol_key": key_a},
+            {"instance_id": "x", "condition": "FULL", "valid_execution": True,
+             "checker_accepted": True, "protocol_key": key_a},
+            {"instance_id": "x", "condition": "ISO", "valid_execution": True,
+             "checker_accepted": True, "protocol_key": key_b},
+            {"instance_id": "x", "condition": "FULL", "valid_execution": True,
+             "checker_accepted": False, "protocol_key": key_b},
+        ]
+        grouped = paired_contrasts_by_protocol(records)
+        self.assertEqual(set(grouped), {key_a, key_b})
+        self.assertEqual(grouped[key_a]["record_count"], 2)
+        self.assertEqual(grouped[key_a]["paired_contrasts"]["ISO->FULL"]["difference"], 1.0)
+        self.assertEqual(grouped[key_b]["paired_contrasts"]["ISO->FULL"]["difference"], -1.0)
+
+    def test_resume_ignores_records_from_other_protocols(self):
+        with tempfile.TemporaryDirectory() as directory:
+            store = BehavioralArtifactStore(Path(directory) / "mixed.jsonl")
+            store.append_oracle({"instance_id": "i1", "valid_execution": True,
+                                 "checker_accepted": True, "protocol_key": "other-protocol"})
+            self.assertEqual(store.oracle_completed_instance_ids(protocol_key="other-protocol"), {"i1"})
+            self.assertEqual(store.oracle_completed_instance_ids(protocol_key="current-protocol"), set())
+            self.assertEqual(store.completed_instance_ids(protocol_key="current-protocol"), set())
+
+    def test_oracle_provider_exception_records_invalid_artifact(self):
+        class ExplodingProvider(PairedFakeProvider):
+            def respond(self, context):
+                self.request_count += 1
+                raise RuntimeError("boom")
+
+        instances = frozen_full_gate_instances()[:2]
+        config = BehavioralProviderConfig(max_requests=8, min_interval_seconds=0,
+                                          max_cost_usd=20.0, max_consecutive_failures=5)
+        provider = ExplodingProvider(config, {})
+        with tempfile.TemporaryDirectory() as directory:
+            store = BehavioralArtifactStore(Path(directory) / "oracle.jsonl")
+            report = run_oracle_probe(instances, provider, store)
+            records = store.records()
+        self.assertEqual(report["attempted_instances"], 2)
+        self.assertEqual(report["valid_runs"], 0)
+        self.assertEqual(report["invalid_runs"], 2)
+        self.assertEqual(len(records), 2)
+        self.assertTrue(all(record["classification"] == "provider_execution_failure" for record in records))
+        self.assertTrue(all(record["valid_execution"] is False for record in records))
+        self.assertTrue(all(record["protocol_key"] for record in records))
 
 
 if __name__ == "__main__":

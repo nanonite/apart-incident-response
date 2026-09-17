@@ -175,13 +175,20 @@ class TwoAgentBatteryRunner:
                     answers[agent] = response.answer
                 if condition is BatteryCondition.COMM and response.message:
                     message_id = f"message-{agent}-{turn}"
-                    info = instance.information(agent, response.message, message_id)
+                    receiver = "B" if agent == "A" else "A"
+                    # Transmitted information is measured against the receiver's
+                    # feasible set: the writer already knows its own claim, so a
+                    # writer-perspective value would report zero bits even when
+                    # the message genuinely narrows the peer's set.
+                    info = instance.information(receiver, response.message, message_id)
                     message_info[message_id] = info
-                    row = {"message_id": message_id, "author": agent, "text": response.message,
-                           "status": info.status, "delta_i_bits": info.delta_i_bits,
+                    row = {"message_id": message_id, "author": agent, "receiver": receiver,
+                           "text": response.message, "status": info.status,
+                           "delta_i_bits": info.delta_i_bits,
                            "message_tokens": len(response.message.split())}
                     board.append(row)
-                    log.board_write(agent, info, message_tokens=row["message_tokens"])
+                    log.board_write(agent, info, message_tokens=row["message_tokens"],
+                                    receiver_id=receiver)
         outcomes = {agent: instance.validate(answer) if answer is not None else {"accepted": False, "score": None}
                     for agent, answer in answers.items()}
         final_outcome = outcomes[self.finalizing_agent]

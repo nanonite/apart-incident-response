@@ -29,6 +29,7 @@ from .communication_report import report_from_battery
 from .communication_runner import AgentContext, AgentResponse, BatteryRunResult, TwoAgentBatteryRunner
 from .reasoning_baseline import DEFAULT_FREE_MODEL, PROJECT_ENV_FILE, OPENROUTER_ENV_FILE
 from .task_families import (
+    GENERATOR_VERSION,
     FamilyInstance,
     audit_channel_invariants,
     generate_instance,
@@ -86,6 +87,24 @@ def treatment_prompt(context: AgentContext) -> dict[str, Any]:
 
 def treatment_prompt_hash(context: AgentContext) -> str:
     return hashlib.sha256(json.dumps(treatment_prompt(context), sort_keys=True).encode()).hexdigest()
+
+
+PROTOCOL_OUTPUT_STEM = GENERATOR_VERSION
+
+
+def current_protocol_key(model_id: str, provider_version: str) -> str:
+    """Boundary that prevents mixing runs from different protocols or models."""
+
+    return "|".join([GENERATOR_VERSION, PROMPT_SCHEMA_VERSION, str(model_id), str(provider_version)])
+
+
+def _protocol_extra(provider: Any) -> dict[str, Any]:
+    return {
+        "generator_version": GENERATOR_VERSION,
+        "prompt_schema_version": PROMPT_SCHEMA_VERSION,
+        "protocol_key": current_protocol_key(getattr(provider, "model", "unknown"),
+                                             getattr(provider, "version", "unknown")),
+    }
 
 
 def request_budget(condition: str, turns: int, *, finalizer_only_board_free: bool = True) -> int:
@@ -425,11 +444,17 @@ class BehavioralArtifactStore:
                 records.append(value)
         return records
 
-    def completed_instance_ids(self) -> set[str]:
-        """Instances with a resumable valid execution already on disk."""
+    def completed_instance_ids(self, *, protocol_key: str | None = None) -> set[str]:
+        """Instances with a resumable valid execution already on disk.
+
+        When ``protocol_key`` is given, records from a different generator,
+        treatment schema or model configuration are ignored so old and new runs
+        are never mixed.
+        """
 
         return {str(record["instance_id"]) for record in self.records()
-                if record.get("valid_execution") is True and record.get("instance_id")}
+                if record.get("valid_execution") is True and record.get("instance_id")
+                and (protocol_key is None or record.get("protocol_key") == protocol_key)}
 
     def append_oracle(self, record: Mapping[str, Any]) -> None:
         """Append a separately-schemed ORACLE manipulation-check record."""
@@ -439,12 +464,13 @@ class BehavioralArtifactStore:
             handle.write(json.dumps(payload, sort_keys=True, allow_nan=False) + "\n")
         self.path.chmod(0o600)
 
-    def oracle_completed_instance_ids(self) -> set[str]:
-        """Instances with a resumable valid ORACLE record."""
+    def oracle_completed_instance_ids(self, *, protocol_key: str | None = None) -> set[str]:
+        """Instances with a resumable valid ORACLE record for the given protocol."""
 
         return {str(record["instance_id"]) for record in self.records()
                 if record.get("schema_version") == ORACLE_SCHEMA_VERSION
-                and record.get("valid_execution") is True and record.get("instance_id")}
+                and record.get("valid_execution") is True and record.get("instance_id")
+                and (protocol_key is None or record.get("protocol_key") == protocol_key)}
 
 
 def audit_retained_pilot(root: Path | str) -> dict[str, Any]:
@@ -803,6 +829,34 @@ def _pairwise_contrasts(rows: Sequence[Mapping[str, Any]],
     return contrasts
 
 
+ANALYSIS_PAIRS: tuple[tuple[str, str], ...] = (
+    ("ISO", "FULL"), ("ISO", "COMM"), ("FULL", "COMM"), ("FULL", ORACLE_CONDITION),
+)
+
+
+def paired_contrasts_by_protocol(records: Iterable[Mapping[str, Any]],
+                                 pairs: Sequence[tuple[str, str]] = ANALYSIS_PAIRS) -> dict[str, Any]:
+    """Segregate records by protocol boundary before computing paired contrasts.
+
+    Records from a different generator, treatment schema or model configuration
+    are never pooled together.
+    """
+
+    groups: dict[str, list[Mapping[str, Any]]] = {}
+    for record in records:
+        key = str(record.get("protocol_key") or "legacy_unknown_protocol")
+        groups.setdefault(key, []).append(record)
+    report: dict[str, Any] = {}
+    for key, group in sorted(groups.items()):
+        contrasts: dict[str, Any] = {}
+        for left, right in pairs:
+            contrast = paired_contrast(group, left, right)
+            if contrast is not None:
+                contrasts[f"{left}->{right}"] = contrast
+        report[key] = {"record_count": len(group), "paired_contrasts": contrasts}
+    return report
+
+
 def run_oracle_probe(instances: Sequence[FamilyInstance], provider: Any,
                      artifact_store: BehavioralArtifactStore, *, max_runs: int = 8,
                      finalizing_agent: str = "A", resume: bool = True) -> dict[str, Any]:
@@ -815,7 +869,9 @@ def run_oracle_probe(instances: Sequence[FamilyInstance], provider: Any,
     if max_runs <= 0:
         raise ValueError("max_runs must be positive")
     selected = list(instances)[:max_runs]
-    completed = artifact_store.oracle_completed_instance_ids() if resume else set()
+    protocol_key = current_protocol_key(getattr(provider, "model", "unknown"),
+                                        getattr(provider, "version", "unknown"))
+    completed = artifact_store.oracle_completed_instance_ids(protocol_key=protocol_key) if resume else set()
     pending = [instance for instance in selected if instance.instance_id not in completed]
     rows: list[dict[str, Any]] = []
     stop_reason: str | None = None
@@ -834,7 +890,28 @@ def run_oracle_probe(instances: Sequence[FamilyInstance], provider: Any,
         run_id = f"oracle-{instance.instance_id}"
         context = AgentContext(run_id, instance.instance_id, finalizing_agent, DiagnosticCondition.ORACLE,
                                0, view, (), PROMPT_SCHEMA_VERSION, provider.config.max_tokens)
-        response = provider.respond(context)
+        try:
+            response = provider.respond(context)
+        except Exception as exc:  # preserve invalid ORACLE runs for denominator reporting
+            invalid_row = {
+                "instance_id": instance.instance_id, "family": instance.family,
+                "complexity": instance.complexity.value,
+                "regime": instance.assignment.regime.value if instance.assignment.regime else None,
+                "condition": ORACLE_CONDITION, "classification": "provider_execution_failure",
+                "valid_execution": False, "checker_accepted": False,
+                "failure_reason": type(exc).__name__,
+                "generator_version": GENERATOR_VERSION,
+                "prompt_schema_version": PROMPT_SCHEMA_VERSION,
+                "protocol_key": protocol_key, "prompt_hash": None,
+                "channel": instance.channel_analysis(),
+            }
+            artifact_store.append_oracle(invalid_row)
+            rows.append(invalid_row)
+            consecutive_http_failures += 1
+            if consecutive_http_failures >= provider.config.max_consecutive_failures:
+                stop_reason = "repeated_http_failure"
+                break
+            continue
         output_present = bool(response.output_text.strip())
         answer = response.answer
         answer_parsed = answer is not None and str(answer).strip() != ""
@@ -863,7 +940,9 @@ def run_oracle_probe(instances: Sequence[FamilyInstance], provider: Any,
             "condition": ORACLE_CONDITION, "classification": classification,
             "valid_execution": valid_execution, "checker_accepted": accepted,
             "failure_reason": failure_reason,
+            "generator_version": GENERATOR_VERSION,
             "prompt_schema_version": response.prompt_schema_version or PROMPT_SCHEMA_VERSION,
+            "protocol_key": protocol_key,
             "prompt_hash": response.prompt_hash,
             "channel": instance.channel_analysis(),
         }
@@ -927,7 +1006,9 @@ def run_full_gate(instances: Sequence[FamilyInstance], provider: Any,
     runner = TwoAgentBatteryRunner(turns=1, token_budget=provider.config.max_tokens,
                                    finalizing_agent=finalizing_agent)
     selected = list(instances)[:max_runs]
-    completed = artifact_store.completed_instance_ids() if resume else set()
+    protocol_key = current_protocol_key(getattr(provider, "model", "unknown"),
+                                        getattr(provider, "version", "unknown"))
+    completed = artifact_store.completed_instance_ids(protocol_key=protocol_key) if resume else set()
     pending = [instance for instance in selected if instance.instance_id not in completed]
     requests_per_run = request_budget(BatteryCondition.FULL.value, runner.turns)
     rows: list[dict[str, Any]] = []
@@ -994,7 +1075,8 @@ def run_full_gate(instances: Sequence[FamilyInstance], provider: Any,
         }
         artifact_store.append(result, extra={"classification": classification,
                                              "valid_execution": valid_execution,
-                                             "failure_reason": failure_reason})
+                                             "failure_reason": failure_reason,
+                                             **_protocol_extra(provider)})
         rows.append(row)
         if consecutive_http_failures >= provider.config.max_consecutive_failures:
             stop_reason = "repeated_http_failure"
@@ -1172,7 +1254,8 @@ def run_paired_screen(instances: Sequence[FamilyInstance], provider: Any,
             }
             artifact_store.append(result, extra={"classification": classification,
                                                  "valid_execution": valid_execution,
-                                                 "failure_reason": failure_reason})
+                                                 "failure_reason": failure_reason,
+                                                 **_protocol_extra(provider)})
             rows.append(row)
             if consecutive_http_failures >= provider.config.max_consecutive_failures:
                 stop_reason = "repeated_http_failure"
@@ -1315,12 +1398,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             for line in path.read_text(encoding="utf-8").splitlines():
                 if line.strip():
                     records.append(json.loads(line))
-        contrasts: dict[str, Any] = {}
-        for left, right in (("ISO", "FULL"), ("ISO", "COMM"), ("FULL", "COMM"), ("FULL", ORACLE_CONDITION)):
-            contrast = paired_contrast(records, left, right)
-            if contrast is not None:
-                contrasts[f"{left}->{right}"] = contrast
-        report = {"mode": "analyze", "record_count": len(records), "paired_contrasts": contrasts,
+        grouped = paired_contrasts_by_protocol(records)
+        mixed = len(grouped) > 1
+        single = next(iter(grouped.values()))["paired_contrasts"] if len(grouped) == 1 else {}
+        report = {"mode": "analyze", "record_count": len(records),
+                  "mixed_protocols": mixed, "protocol_groups": sorted(grouped),
+                  "by_protocol": grouped, "paired_contrasts": single,
                   "raw_responses_retained": False, "credentials_retained": False}
         if args.report:
             args.report.parent.mkdir(parents=True, exist_ok=True)
@@ -1376,7 +1459,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     else:
         instances = select_frozen_instances(families=args.families, complexities=args.complexities)
     max_runs = args.max_runs or len(instances)
-    base = "full-gate-repair" if args.mode == "full-gate" else "paired-screen"
+    mode_stem = {"full-gate": "full-gate-repair", "paired-screen": "paired-screen",
+                 "oracle": "oracle"}.get(args.mode, args.mode)
+    base = f"{mode_stem}-{PROTOCOL_OUTPUT_STEM}"
     output = args.output or Path(f"runs/epic-126/{base}.jsonl")
     report_path = args.report or Path(f"runs/epic-126/{base}-report.json")
     diagnostic_path = args.diagnostic_output or Path(f"runs/epic-126/{base}-diagnostic.json")
@@ -1495,7 +1580,8 @@ __all__ = [
     "PROMPT_SCHEMA_VERSION", "ORACLE_SCHEMA_VERSION", "ORACLE_CONDITION",
     "FINALIZER_POLICY", "FINALIZER_AGENT", "BOARD_FREE_CONDITIONS", "TREATMENT_PROMPT_FIELDS",
     "DiagnosticCondition", "provider_seed", "treatment_prompt", "treatment_prompt_hash",
-    "request_budget", "treatment_schema",
+    "request_budget", "treatment_schema", "current_protocol_key", "PROTOCOL_OUTPUT_STEM",
+    "paired_contrasts_by_protocol", "ANALYSIS_PAIRS",
     "BehavioralArtifactStore", "BehavioralProviderConfig", "BehavioralResponse",
     "OpenRouterBehavioralProvider", "audit_retained_pilot", "classify_http_status",
     "frozen_full_gate_instances", "is_retryable_status", "main", "pressure_catalog",
