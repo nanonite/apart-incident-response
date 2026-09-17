@@ -234,6 +234,29 @@ Test environment note: the numpy import error (the manylinux wheel needs
 runs 291 tests with only the three bubblewrap tests erroring (`bwrap` is not
 installed) and four skips.
 
+C_need scaled to n=20 per cell (leak-free ISO/FULL, `turns=1`; artifacts
+`runs/epic-126/cneed-n20.*`): 80 instances, 160 runs, 153 valid, 7
+`invalid_output_empty` (all FULL at the 1024-token cap), 65 successes, 88 valid
+wrong answers, 320 requests, `$0.00`, no HTTP 429.
+
+- ISO: 80/80 valid, success 0.212
+- FULL: 73/80 valid, success 0.658
+
+Per-cell `C_need` (FULL-ISO) with 95% normal-approximation CI:
+
+- hypothesis low 0.597 [0.365, 0.829] (denominators 20/19)
+- hypothesis medium 0.650 [0.441, 0.859] (20/16)
+- reference low 0.300 [0.032, 0.568] (20/20)
+- reference medium 0.278 [0.071, 0.485] (20/18)
+- overall `C_need` 0.445 [0.304, 0.586] (80/73)
+
+The n=9 reference-low `C_need` (0.111) was noise; at n=20 it is 0.300. The two
+hypothesis cells carry the largest joint-information need (~0.6), while the
+reference cells are lower. The seven truncated FULL runs are all
+hypothesis-medium, so its FULL denominator is 16/20. The COMM arm was not
+re-run at n=20; the COMM ~= ISO null stands from the n=5 screen. No T3 entropy
+work was launched.
+
 ## T3/T4
 
 T3 was not run because T1 selected no useful cells and T2 found no aligned
