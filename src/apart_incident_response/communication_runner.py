@@ -206,7 +206,7 @@ class TwoAgentBatteryRunner:
                 if info.useful and not prior_finalizer_success and instance.validate(answer or "").get("accepted", False):
                     log.post_read_success(agent, info, output_id,
                                           checker_evidence={"evidence_class": "post_read_correlation",
-                                                            "task_checker": f"{instance.family}-oracle-v1",
+                                                            "task_checker": instance.checker_id,
                                                             "answer_accepted": True,
                                                             "uptake_rule": "first_checker_accepted_finalizer_output_after_peer_read",
                                                             "prior_finalizer_success": False})

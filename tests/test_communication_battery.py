@@ -41,14 +41,20 @@ class CommunicationBatteryTests(unittest.TestCase):
             report = validate_family_grid(family)
             self.assertTrue(report["all_finite"], family)
             self.assertTrue(report["all_valid"], family)
-            self.assertEqual(len(report["cells"]), 9)
-            self.assertEqual({cell["regime"] for cell in report["cells"]}, {"R", "H", "N"})
+            self.assertEqual(report["supported_regimes"], ["N"])
+            self.assertEqual(len(report["cells"]), 3)
+            self.assertEqual({cell["regime"] for cell in report["cells"]}, {"N"})
+        # redundant/helpful hints are unsupported by the clue-consistent generator
+        for regime in (DependenceRegime.R, DependenceRegime.H):
+            with self.assertRaises(ValueError):
+                generate_instance("hypothesis", 1, regime)
 
     def test_hypothesis_trajectory_is_auditable(self):
         instance = generate_instance("hypothesis", 4, DependenceRegime.N)
+        self.assertEqual(len(instance.private_solutions["A"]), 2)
         trajectory = instance.trajectory("A", tuple(claim.text for claim in instance.claims[:3]))
         self.assertEqual([(row.before_count, row.after_count, row.delta_i_bits) for row in trajectory],
-                         [(8, 4, 1.0), (4, 2, 1.0), (2, 1, 1.0)])
+                         [(2, 2, 0.0), (2, 1, 1.0), (1, 1, 0.0)])
 
     def test_provenance_distinguishes_read_output_and_post_read_success(self):
         log = CommunicationEventLog("run")
@@ -194,10 +200,10 @@ class CommunicationBatteryTests(unittest.TestCase):
 
     def test_calibration_and_report_are_fixture_only_and_privacy_safe(self):
         report = calibration_report(["hypothesis", "reference"])
-        self.assertEqual(report["cell_count"], 18)
+        self.assertEqual(report["cell_count"], 6)
         self.assertTrue(report["generator_hints_not_used_for_assignment"])
         self.assertEqual(report["live_pilot"]["status"], "not_run")
-        self.assertEqual(len(selected_fixture_instances(["hypothesis"])), 2)
+        self.assertEqual(len(selected_fixture_instances(["hypothesis"])), 1)
         aggregate = report_from_rows([{"pair_id": "p", "family": "hypothesis", "condition": "ISO",
                                        "success": True, "model": "fixture"}])
         self.assertFalse(aggregate["privacy"]["raw_messages_included"])

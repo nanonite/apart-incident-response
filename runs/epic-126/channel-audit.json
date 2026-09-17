@@ -3,63 +3,8 @@
   "both_agents_needed_count": 52,
   "channel_complete_count": 54,
   "channel_incomplete_ids": [],
-  "declared_mismatch_count": 54,
-  "declared_mismatch_ids": [
-    "hypothesis-00003e80",
-    "hypothesis-00003e81",
-    "hypothesis-00003e82",
-    "hypothesis-00003ee4",
-    "hypothesis-00003ee5",
-    "hypothesis-00003ee6",
-    "hypothesis-00003f48",
-    "hypothesis-00003f49",
-    "hypothesis-00003f4a",
-    "reference-00003f48",
-    "reference-00003f49",
-    "reference-00003f4a",
-    "reference-00003fac",
-    "reference-00003fad",
-    "reference-00003fae",
-    "reference-00004010",
-    "reference-00004011",
-    "reference-00004012",
-    "planning-00004010",
-    "planning-00004011",
-    "planning-00004012",
-    "planning-00004074",
-    "planning-00004075",
-    "planning-00004076",
-    "planning-000040d8",
-    "planning-000040d9",
-    "planning-000040da",
-    "poetry-000040d8",
-    "poetry-000040d9",
-    "poetry-000040da",
-    "poetry-0000413c",
-    "poetry-0000413d",
-    "poetry-0000413e",
-    "poetry-000041a0",
-    "poetry-000041a1",
-    "poetry-000041a2",
-    "legal-000041a0",
-    "legal-000041a1",
-    "legal-000041a2",
-    "legal-00004204",
-    "legal-00004205",
-    "legal-00004206",
-    "legal-00004268",
-    "legal-00004269",
-    "legal-0000426a",
-    "lexicon-00004268",
-    "lexicon-00004269",
-    "lexicon-0000426a",
-    "lexicon-000042cc",
-    "lexicon-000042cd",
-    "lexicon-000042ce",
-    "lexicon-00004330",
-    "lexicon-00004331",
-    "lexicon-00004332"
-  ],
+  "declared_mismatch_count": 0,
+  "declared_mismatch_ids": [],
   "finalizer_needs_peer_count": 52,
   "instance_count": 54,
   "mode": "audit-channels",
@@ -68,6 +13,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "candidate-1",
         "candidate-3"
@@ -80,10 +26,10 @@
       ],
       "complexity": "low",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
       "family": "hypothesis",
       "finalizer_needs_peer": true,
       "instance_id": "hypothesis-00003e80",
@@ -100,6 +46,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "candidate-5",
         "candidate-7"
@@ -112,10 +59,10 @@
       ],
       "complexity": "low",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
       "family": "hypothesis",
       "finalizer_needs_peer": true,
       "instance_id": "hypothesis-00003e81",
@@ -132,6 +79,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "candidate-1",
         "candidate-3"
@@ -144,10 +92,10 @@
       ],
       "complexity": "low",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
       "family": "hypothesis",
       "finalizer_needs_peer": true,
       "instance_id": "hypothesis-00003e82",
@@ -164,6 +112,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "candidate-1",
         "candidate-3"
@@ -174,10 +123,10 @@
       ],
       "complexity": "medium",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 2,
       "family": "hypothesis",
       "finalizer_needs_peer": true,
       "instance_id": "hypothesis-00003ee4",
@@ -194,6 +143,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "candidate-0",
         "candidate-2"
@@ -204,10 +154,10 @@
       ],
       "complexity": "medium",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 2,
       "family": "hypothesis",
       "finalizer_needs_peer": true,
       "instance_id": "hypothesis-00003ee5",
@@ -224,6 +174,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "candidate-1",
         "candidate-3"
@@ -234,10 +185,10 @@
       ],
       "complexity": "medium",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 2,
       "family": "hypothesis",
       "finalizer_needs_peer": true,
       "instance_id": "hypothesis-00003ee6",
@@ -254,6 +205,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "candidate-0",
         "candidate-2"
@@ -264,10 +216,10 @@
       ],
       "complexity": "high",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 2,
       "family": "hypothesis",
       "finalizer_needs_peer": true,
       "instance_id": "hypothesis-00003f48",
@@ -284,6 +236,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "candidate-0",
         "candidate-2"
@@ -294,10 +247,10 @@
       ],
       "complexity": "high",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 2,
       "family": "hypothesis",
       "finalizer_needs_peer": true,
       "instance_id": "hypothesis-00003f49",
@@ -314,6 +267,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "candidate-4",
         "candidate-6"
@@ -324,10 +278,10 @@
       ],
       "complexity": "high",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 2,
       "family": "hypothesis",
       "finalizer_needs_peer": true,
       "instance_id": "hypothesis-00003f4a",
@@ -344,6 +298,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "object-13",
         "object-15",
@@ -358,10 +313,10 @@
       ],
       "complexity": "low",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 16,
-      "declared_private_b_size": 16,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 4,
+      "declared_private_b_size": 4,
       "family": "reference",
       "finalizer_needs_peer": true,
       "instance_id": "reference-00003f48",
@@ -378,6 +333,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "object-13",
         "object-15",
@@ -392,10 +348,10 @@
       ],
       "complexity": "low",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 16,
-      "declared_private_b_size": 16,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 4,
+      "declared_private_b_size": 4,
       "family": "reference",
       "finalizer_needs_peer": true,
       "instance_id": "reference-00003f49",
@@ -412,6 +368,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "object-12",
         "object-14",
@@ -426,10 +383,10 @@
       ],
       "complexity": "low",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 16,
-      "declared_private_b_size": 16,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 4,
+      "declared_private_b_size": 4,
       "family": "reference",
       "finalizer_needs_peer": true,
       "instance_id": "reference-00003f4a",
@@ -446,6 +403,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "object-13",
         "object-15",
@@ -460,10 +418,10 @@
       ],
       "complexity": "medium",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 16,
-      "declared_private_b_size": 16,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 4,
+      "declared_private_b_size": 4,
       "family": "reference",
       "finalizer_needs_peer": true,
       "instance_id": "reference-00003fac",
@@ -480,6 +438,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "object-1",
         "object-11",
@@ -494,10 +453,10 @@
       ],
       "complexity": "medium",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 16,
-      "declared_private_b_size": 16,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 4,
+      "declared_private_b_size": 4,
       "family": "reference",
       "finalizer_needs_peer": true,
       "instance_id": "reference-00003fad",
@@ -514,6 +473,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "object-1",
         "object-11",
@@ -528,10 +488,10 @@
       ],
       "complexity": "medium",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 16,
-      "declared_private_b_size": 16,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 4,
+      "declared_private_b_size": 4,
       "family": "reference",
       "finalizer_needs_peer": true,
       "instance_id": "reference-00003fae",
@@ -548,6 +508,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "object-13",
         "object-7"
@@ -560,10 +521,10 @@
       ],
       "complexity": "high",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 16,
-      "declared_private_b_size": 16,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
       "family": "reference",
       "finalizer_needs_peer": true,
       "instance_id": "reference-00004010",
@@ -580,6 +541,7 @@
     {
       "both_agents_needed": false,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "object-15"
       ],
@@ -591,10 +553,10 @@
       ],
       "complexity": "high",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 16,
-      "declared_private_b_size": 16,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 1,
+      "declared_private_b_size": 4,
       "family": "reference",
       "finalizer_needs_peer": false,
       "instance_id": "reference-00004011",
@@ -611,6 +573,7 @@
     {
       "both_agents_needed": false,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "object-14"
       ],
@@ -622,10 +585,10 @@
       ],
       "complexity": "high",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 16,
-      "declared_private_b_size": 16,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 1,
+      "declared_private_b_size": 4,
       "family": "reference",
       "finalizer_needs_peer": false,
       "instance_id": "reference-00004012",
@@ -642,6 +605,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "inspect>deploy>stage",
         "inspect>stage>deploy",
@@ -654,10 +618,10 @@
       ],
       "complexity": "low",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 6,
-      "declared_private_b_size": 6,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 3,
+      "declared_private_b_size": 3,
       "family": "planning",
       "finalizer_needs_peer": true,
       "instance_id": "planning-00004010",
@@ -674,6 +638,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "inspect>deploy>stage",
         "inspect>stage>deploy",
@@ -686,10 +651,10 @@
       ],
       "complexity": "low",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 6,
-      "declared_private_b_size": 6,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 3,
+      "declared_private_b_size": 3,
       "family": "planning",
       "finalizer_needs_peer": true,
       "instance_id": "planning-00004011",
@@ -706,6 +671,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "inspect>stage>deploy",
         "stage>deploy>inspect",
@@ -718,10 +684,10 @@
       ],
       "complexity": "low",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 6,
-      "declared_private_b_size": 6,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 3,
+      "declared_private_b_size": 3,
       "family": "planning",
       "finalizer_needs_peer": true,
       "instance_id": "planning-00004012",
@@ -738,6 +704,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "deploy>inspect>stage",
         "deploy>stage>inspect",
@@ -750,10 +717,10 @@
       ],
       "complexity": "medium",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 6,
-      "declared_private_b_size": 6,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 3,
+      "declared_private_b_size": 3,
       "family": "planning",
       "finalizer_needs_peer": true,
       "instance_id": "planning-00004074",
@@ -770,6 +737,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "inspect>deploy>stage",
         "inspect>stage>deploy",
@@ -782,10 +750,10 @@
       ],
       "complexity": "medium",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 6,
-      "declared_private_b_size": 6,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 3,
+      "declared_private_b_size": 3,
       "family": "planning",
       "finalizer_needs_peer": true,
       "instance_id": "planning-00004075",
@@ -802,6 +770,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "deploy>inspect>stage",
         "deploy>stage>inspect",
@@ -814,10 +783,10 @@
       ],
       "complexity": "medium",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 6,
-      "declared_private_b_size": 6,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 3,
+      "declared_private_b_size": 3,
       "family": "planning",
       "finalizer_needs_peer": true,
       "instance_id": "planning-00004076",
@@ -834,6 +803,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "approve>inspect>stage>deploy",
         "approve>stage>deploy>inspect",
@@ -858,10 +828,10 @@
       ],
       "complexity": "high",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 24,
-      "declared_private_b_size": 24,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 6,
+      "declared_private_b_size": 12,
       "family": "planning",
       "finalizer_needs_peer": true,
       "instance_id": "planning-000040d8",
@@ -878,6 +848,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "approve>inspect>deploy>stage",
         "approve>inspect>stage>deploy",
@@ -902,10 +873,10 @@
       ],
       "complexity": "high",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 24,
-      "declared_private_b_size": 24,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 6,
+      "declared_private_b_size": 12,
       "family": "planning",
       "finalizer_needs_peer": true,
       "instance_id": "planning-000040d9",
@@ -922,6 +893,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "approve>deploy>inspect>stage",
         "approve>inspect>deploy>stage",
@@ -946,10 +918,10 @@
       ],
       "complexity": "high",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 24,
-      "declared_private_b_size": 24,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 6,
+      "declared_private_b_size": 12,
       "family": "planning",
       "finalizer_needs_peer": true,
       "instance_id": "planning-000040da",
@@ -966,6 +938,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "skeleton-0",
         "skeleton-2"
@@ -978,10 +951,10 @@
       ],
       "complexity": "low",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
       "family": "poetry",
       "finalizer_needs_peer": true,
       "instance_id": "poetry-000040d8",
@@ -998,6 +971,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "skeleton-4",
         "skeleton-6"
@@ -1010,10 +984,10 @@
       ],
       "complexity": "low",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
       "family": "poetry",
       "finalizer_needs_peer": true,
       "instance_id": "poetry-000040d9",
@@ -1030,6 +1004,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "skeleton-4",
         "skeleton-6"
@@ -1042,10 +1017,10 @@
       ],
       "complexity": "low",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
       "family": "poetry",
       "finalizer_needs_peer": true,
       "instance_id": "poetry-000040da",
@@ -1062,6 +1037,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "skeleton-5",
         "skeleton-7"
@@ -1074,10 +1050,10 @@
       ],
       "complexity": "medium",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
       "family": "poetry",
       "finalizer_needs_peer": true,
       "instance_id": "poetry-0000413c",
@@ -1094,6 +1070,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "skeleton-1",
         "skeleton-3"
@@ -1106,10 +1083,10 @@
       ],
       "complexity": "medium",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
       "family": "poetry",
       "finalizer_needs_peer": true,
       "instance_id": "poetry-0000413d",
@@ -1126,6 +1103,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "skeleton-4",
         "skeleton-6"
@@ -1138,10 +1116,10 @@
       ],
       "complexity": "medium",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
       "family": "poetry",
       "finalizer_needs_peer": true,
       "instance_id": "poetry-0000413e",
@@ -1158,6 +1136,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "skeleton-1",
         "skeleton-3"
@@ -1170,10 +1149,10 @@
       ],
       "complexity": "high",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
       "family": "poetry",
       "finalizer_needs_peer": true,
       "instance_id": "poetry-000041a0",
@@ -1190,6 +1169,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "skeleton-0",
         "skeleton-2"
@@ -1202,10 +1182,10 @@
       ],
       "complexity": "high",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
       "family": "poetry",
       "finalizer_needs_peer": true,
       "instance_id": "poetry-000041a1",
@@ -1222,6 +1202,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "skeleton-0",
         "skeleton-2"
@@ -1234,10 +1215,10 @@
       ],
       "complexity": "high",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
       "family": "poetry",
       "finalizer_needs_peer": true,
       "instance_id": "poetry-000041a2",
@@ -1254,6 +1235,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "disposition-5",
         "disposition-7"
@@ -1266,10 +1248,10 @@
       ],
       "complexity": "low",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
       "family": "legal",
       "finalizer_needs_peer": true,
       "instance_id": "legal-000041a0",
@@ -1286,6 +1268,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "disposition-5",
         "disposition-7"
@@ -1298,10 +1281,10 @@
       ],
       "complexity": "low",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
       "family": "legal",
       "finalizer_needs_peer": true,
       "instance_id": "legal-000041a1",
@@ -1318,6 +1301,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "disposition-5",
         "disposition-7"
@@ -1330,10 +1314,10 @@
       ],
       "complexity": "low",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
       "family": "legal",
       "finalizer_needs_peer": true,
       "instance_id": "legal-000041a2",
@@ -1350,6 +1334,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "disposition-0",
         "disposition-2"
@@ -1362,10 +1347,10 @@
       ],
       "complexity": "medium",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
       "family": "legal",
       "finalizer_needs_peer": true,
       "instance_id": "legal-00004204",
@@ -1382,6 +1367,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "disposition-5",
         "disposition-7"
@@ -1394,10 +1380,10 @@
       ],
       "complexity": "medium",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
       "family": "legal",
       "finalizer_needs_peer": true,
       "instance_id": "legal-00004205",
@@ -1414,6 +1400,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "disposition-1",
         "disposition-3"
@@ -1426,10 +1413,10 @@
       ],
       "complexity": "medium",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
       "family": "legal",
       "finalizer_needs_peer": true,
       "instance_id": "legal-00004206",
@@ -1446,6 +1433,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "disposition-0",
         "disposition-2"
@@ -1458,10 +1446,10 @@
       ],
       "complexity": "high",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
       "family": "legal",
       "finalizer_needs_peer": true,
       "instance_id": "legal-00004268",
@@ -1478,6 +1466,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "disposition-5",
         "disposition-7"
@@ -1490,10 +1479,10 @@
       ],
       "complexity": "high",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
       "family": "legal",
       "finalizer_needs_peer": true,
       "instance_id": "legal-00004269",
@@ -1510,6 +1499,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "disposition-5",
         "disposition-7"
@@ -1522,10 +1512,10 @@
       ],
       "complexity": "high",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
       "family": "legal",
       "finalizer_needs_peer": true,
       "instance_id": "legal-0000426a",
@@ -1542,6 +1532,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "relay-05",
         "relay-07"
@@ -1554,10 +1545,10 @@
       ],
       "complexity": "low",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
       "family": "lexicon",
       "finalizer_needs_peer": true,
       "instance_id": "lexicon-00004268",
@@ -1574,6 +1565,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "relay-00",
         "relay-02"
@@ -1586,10 +1578,10 @@
       ],
       "complexity": "low",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
       "family": "lexicon",
       "finalizer_needs_peer": true,
       "instance_id": "lexicon-00004269",
@@ -1606,6 +1598,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "relay-05",
         "relay-07"
@@ -1618,10 +1611,10 @@
       ],
       "complexity": "low",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
       "family": "lexicon",
       "finalizer_needs_peer": true,
       "instance_id": "lexicon-0000426a",
@@ -1638,6 +1631,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "relay-00",
         "relay-02"
@@ -1650,10 +1644,10 @@
       ],
       "complexity": "medium",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
       "family": "lexicon",
       "finalizer_needs_peer": true,
       "instance_id": "lexicon-000042cc",
@@ -1670,6 +1664,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "relay-04",
         "relay-06"
@@ -1682,10 +1677,10 @@
       ],
       "complexity": "medium",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
       "family": "lexicon",
       "finalizer_needs_peer": true,
       "instance_id": "lexicon-000042cd",
@@ -1702,6 +1697,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "relay-04",
         "relay-06"
@@ -1714,10 +1710,10 @@
       ],
       "complexity": "medium",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
       "family": "lexicon",
       "finalizer_needs_peer": true,
       "instance_id": "lexicon-000042ce",
@@ -1734,6 +1730,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "relay-01",
         "relay-03"
@@ -1746,10 +1743,10 @@
       ],
       "complexity": "high",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
       "family": "lexicon",
       "finalizer_needs_peer": true,
       "instance_id": "lexicon-00004330",
@@ -1766,6 +1763,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "relay-00",
         "relay-02"
@@ -1778,10 +1776,10 @@
       ],
       "complexity": "high",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
       "family": "lexicon",
       "finalizer_needs_peer": true,
       "instance_id": "lexicon-00004331",
@@ -1798,6 +1796,7 @@
     {
       "both_agents_needed": true,
       "channel_complete": true,
+      "claims_partitioned": true,
       "clue_consistent_a": [
         "relay-00",
         "relay-02"
@@ -1810,10 +1809,10 @@
       ],
       "complexity": "high",
       "covers_joint": true,
-      "declared_matches_clue_consistent_a": false,
-      "declared_matches_clue_consistent_b": false,
-      "declared_private_a_size": 8,
-      "declared_private_b_size": 8,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
       "family": "lexicon",
       "finalizer_needs_peer": true,
       "instance_id": "lexicon-00004332",
@@ -1831,5 +1830,6 @@
   "singleton_agent_ids": [
     "reference-00004011",
     "reference-00004012"
-  ]
+  ],
+  "unpartitioned_claims_ids": []
 }

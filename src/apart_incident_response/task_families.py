@@ -11,6 +11,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 import hashlib
 import itertools
+import json
 import random
 from typing import Any, Callable, ClassVar, Iterable, Mapping
 
@@ -20,6 +21,15 @@ from .communication_protocol import (
     ReasoningComplexity,
 )
 from .finite_information import ExactInformationEvaluator, FeasibleSet, MessageInformation, MessageInterpretation
+
+
+GENERATOR_VERSION = "six-family-clue-consistent-v2"
+CHECKER_VERSION = "oracle-v2"
+# Only necessary (N) tasks are realized: the clue-consistent generator makes the
+# joint feasible set a unique target. R/H would require redundant or partially
+# narrowing claims that the current construction does not implement, so they are
+# rejected rather than labelled misleadingly.
+SUPPORTED_REGIMES: tuple[DependenceRegime, ...] = (DependenceRegime.N,)
 
 
 def _instance_id(family: str, seed: int) -> str:
@@ -66,10 +76,27 @@ class FamilyInstance:
     assignment: CellAssignment = field(init=False)
 
     def __post_init__(self) -> None:
-        if self.target not in self.joint_solutions:
-            raise ValueError("target must be in the joint feasible set")
-        if not self.joint_solutions <= self.solutions:
-            raise ValueError("joint solutions must be a subset of the full set")
+        if self.generator_hint not in SUPPORTED_REGIMES:
+            raise ValueError(
+                f"unsupported regime {self.generator_hint.value}: {GENERATOR_VERSION} only realizes "
+                "necessary (N) tasks with a unique clue-consistent target")
+        clue_consistent_a = self.clue_consistent(self.private_clues.get("A", ()))
+        clue_consistent_b = self.clue_consistent(self.private_clues.get("B", ()))
+        pooled = self.clue_consistent(self.pooled_private_clues())
+        if not pooled:
+            raise ValueError("pooled private clues exclude every candidate")
+        if not pooled <= self.solutions:
+            raise ValueError("clue-consistent joint set must be a subset of the full set")
+        if len(pooled) != 1:
+            raise ValueError(
+                "necessary (N) tasks require a unique clue-consistent target; "
+                f"pooled clues leave {len(pooled)} candidates")
+        if self.target not in pooled:
+            raise ValueError("target must be in the clue-consistent joint set")
+        # The clue-consistent sets are authoritative. The declared generator sets
+        # are not trusted for D_idx, receiver I_m, trajectory or scoring.
+        object.__setattr__(self, "private_solutions", {"A": clue_consistent_a, "B": clue_consistent_b})
+        object.__setattr__(self, "joint_solutions", pooled)
         directional = {
             agent: _d_idx(self.private_solutions[agent], self.joint_solutions)
             for agent in ("A", "B")
@@ -77,6 +104,10 @@ class FamilyInstance:
         object.__setattr__(self, "assignment", CellAssignment.from_directional(
             self.family, self.instance_id, self.complexity, directional, self.generator_hint.value
         ))
+
+    @property
+    def checker_id(self) -> str:
+        return f"{self.family}-{CHECKER_VERSION}"
 
     def agent_view(self, agent: str, condition: str) -> dict[str, Any]:
         if agent not in self.private_solutions:
@@ -86,9 +117,13 @@ class FamilyInstance:
             "instance_id": self.instance_id,
             "complexity": self.complexity.value,
             "agent_id": agent,
+            "generator_version": GENERATOR_VERSION,
             "private_clues": list(self.private_clues.get(agent, ())),
-            "candidate_count": len(self.private_solutions[agent]),
-            "candidate_labels": sorted(self.private_solutions[agent]),
+            # Public option set only: the controller keeps the clue-consistent
+            # private feasible set separate and never exposes it as the task menu.
+            "candidate_count": len(self.solutions),
+            "candidate_labels": sorted(self.solutions),
+            "public_option_count": len(self.solutions),
             "task_instruction": "Choose one candidate and reply exactly as ANSWER: <candidate label>. In COMM only, you may optionally add MESSAGE: <exact private clue>; silence is allowed. Do not invent a label or claim message use.",
         }
         if condition == "FULL":
@@ -106,6 +141,7 @@ class FamilyInstance:
             "seed": self.seed,
             "complexity": self.complexity.value,
             "generator_hint": self.generator_hint.value,
+            "generator_version": GENERATOR_VERSION,
             "public_data": dict(self.public_data),
             "quality": dict(self.quality),
             "assignment": self.assignment.to_dict(),
@@ -149,6 +185,9 @@ class FamilyInstance:
         joint = self.joint_solutions
         declared_a = self.private_solutions["A"]
         declared_b = self.private_solutions["B"]
+        claim_texts = {claim.text for claim in self.claims}
+        held_a = set(clue_a)
+        held_b = set(clue_b)
         return {
             "private_a_size": len(clue_consistent_a),
             "private_b_size": len(clue_consistent_b),
@@ -161,6 +200,7 @@ class FamilyInstance:
             "declared_private_b_size": len(declared_b),
             "declared_matches_clue_consistent_a": clue_consistent_a == declared_a,
             "declared_matches_clue_consistent_b": clue_consistent_b == declared_b,
+            "claims_partitioned": held_a.isdisjoint(held_b) and (held_a | held_b) == claim_texts,
             "covers_joint": joint <= pooled,
             "pooled_equals_joint": pooled == joint,
             "channel_complete": pooled == joint,
@@ -175,7 +215,9 @@ class FamilyInstance:
     def validate(self, submission: str) -> dict[str, Any]:
         accepted = submission in self.joint_solutions
         return {"accepted": accepted, "score": 1.0 if accepted else 0.0,
-                "checker": f"{self.family}-oracle-v1", "submission": submission}
+                "checker": self.checker_id, "submission": submission,
+                "generator_version": GENERATOR_VERSION,
+                "solution_criterion": "unique_joint_target"}
 
     def trajectory(self, agent: str, claim_texts: Iterable[str]) -> list[MessageInformation]:
         current = FeasibleSet.from_values(self.private_solutions[agent])
@@ -343,6 +385,10 @@ FAMILY_GENERATORS: Mapping[str, Any] = {
 
 def generate_instance(family: str, seed: int, regime: DependenceRegime = DependenceRegime.N,
                       complexity: ReasoningComplexity = ReasoningComplexity.LOW) -> FamilyInstance:
+    if regime not in SUPPORTED_REGIMES:
+        raise ValueError(
+            f"unsupported regime {regime.value}: {GENERATOR_VERSION} supports "
+            f"{[item.value for item in SUPPORTED_REGIMES]}")
     try:
         generator = FAMILY_GENERATORS[family]
     except KeyError as exc:
@@ -350,12 +396,13 @@ def generate_instance(family: str, seed: int, regime: DependenceRegime = Depende
     return generator.generate(seed, regime, complexity)
 
 
-def generate_grid(family: str, seed: int = 1) -> list[FamilyInstance]:
-    """Generate independent deterministic fixtures for all hint x complexity cells."""
+def generate_grid(family: str, seed: int = 1,
+                  regimes: Iterable[DependenceRegime] = SUPPORTED_REGIMES) -> list[FamilyInstance]:
+    """Generate independent deterministic fixtures for supported regime x complexity cells."""
 
     return [generate_instance(family, seed + index, regime, complexity)
             for index, (regime, complexity) in enumerate(
-                itertools.product(DependenceRegime, ReasoningComplexity)
+                itertools.product(regimes, ReasoningComplexity)
             )]
 
 
@@ -363,11 +410,37 @@ def validate_family_grid(family: str, seed: int = 1) -> dict[str, Any]:
     instances = generate_grid(family, seed)
     return {
         "family": family,
+        "generator_version": GENERATOR_VERSION,
+        "supported_regimes": [item.value for item in SUPPORTED_REGIMES],
         "instances": len(instances),
         "cells": [instance.assignment.to_dict() for instance in instances],
         "all_finite": all(instance.solutions and instance.joint_solutions for instance in instances),
         "all_valid": all(instance.validate(instance.target)["accepted"] for instance in instances),
         "unique_ids": len({instance.instance_id for instance in instances}) == len(instances),
+    }
+
+
+def preregistered_manifest(instances: Iterable[FamilyInstance]) -> dict[str, Any]:
+    """Deterministic, leak-safe manifest of frozen instances for preregistration."""
+
+    rows: list[dict[str, Any]] = []
+    for instance in instances:
+        analysis = instance.channel_analysis()
+        manifest = instance.public_manifest()
+        manifest["channel"] = {key: analysis[key] for key in (
+            "private_a_size", "private_b_size", "pooled_size", "joint_size",
+            "channel_complete", "both_agents_needed", "finalizer_needs_peer")}
+        rows.append(manifest)
+    blob = json.dumps(rows, sort_keys=True)
+    return {
+        "generator_version": GENERATOR_VERSION,
+        "checker_version": CHECKER_VERSION,
+        "regime": "N",
+        "channel_complete_required": True,
+        "instance_count": len(rows),
+        "instances": rows,
+        "manifest_hash": hashlib.sha256((GENERATOR_VERSION + blob).encode()).hexdigest(),
+        "no_live_screen": True,
     }
 
 
@@ -397,6 +470,7 @@ def audit_channel_invariants(instances: Iterable[FamilyInstance]) -> dict[str, A
                                  and row["declared_matches_clue_consistent_b"])]
     singleton_agent = [row["instance_id"] for row in rows
                        if row["private_a_size"] <= 1 or row["private_b_size"] <= 1]
+    unpartitioned = [row["instance_id"] for row in rows if not row["claims_partitioned"]]
     return {
         "audit_version": "channel-invariants-v1",
         "instance_count": len(rows),
@@ -405,6 +479,7 @@ def audit_channel_invariants(instances: Iterable[FamilyInstance]) -> dict[str, A
         "both_agents_needed_count": sum(row["both_agents_needed"] for row in rows),
         "finalizer_needs_peer_count": sum(row["finalizer_needs_peer"] for row in rows),
         "singleton_agent_ids": singleton_agent,
+        "unpartitioned_claims_ids": unpartitioned,
         "declared_mismatch_count": len(declared_mismatch),
         "declared_mismatch_ids": declared_mismatch,
         "rows": rows,
@@ -415,5 +490,7 @@ def audit_channel_invariants(instances: Iterable[FamilyInstance]) -> dict[str, A
 __all__ = [
     "Claim", "FamilyInstance", "FAMILY_GENERATORS", "HypothesisFamily", "LegalFamily",
     "LexiconFamily", "PlanningFamily", "PoetryFamily", "ReferenceFamily",
-    "audit_channel_invariants", "generate_grid", "generate_instance", "validate_family_grid",
+    "GENERATOR_VERSION", "CHECKER_VERSION", "SUPPORTED_REGIMES",
+    "audit_channel_invariants", "generate_grid", "generate_instance",
+    "preregistered_manifest", "validate_family_grid",
 ]

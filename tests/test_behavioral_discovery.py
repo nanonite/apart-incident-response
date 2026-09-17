@@ -28,10 +28,21 @@ from apart_incident_response.behavioral_discovery import (
     select_frozen_instances,
     wilson_interval,
 )
-from apart_incident_response.communication_protocol import BatteryCondition, DependenceRegime, ReasoningComplexity
+from apart_incident_response.communication_protocol import (
+    BatteryCondition,
+    DependenceRegime,
+    ReasoningComplexity,
+    assign_dependence,
+    directional_d_idx,
+)
 from apart_incident_response.communication_runner import AgentContext, AgentResponse
 from apart_incident_response.reasoning_baseline import DEFAULT_FREE_MODEL
-from apart_incident_response.task_families import audit_channel_invariants, generate_instance
+from apart_incident_response.task_families import (
+    GENERATOR_VERSION,
+    audit_channel_invariants,
+    generate_instance,
+    preregistered_manifest,
+)
 
 
 class FakeResponse:
@@ -536,22 +547,21 @@ class ChannelCoverageTests(unittest.TestCase):
                     self.assertTrue(analysis["both_agents_needed"], (family, complexity.value, seed, analysis))
                     self.assertTrue(analysis["finalizer_needs_peer"], (family, complexity.value, seed, analysis))
 
-    def test_missing_decisive_clue_fails_equality_but_passes_subset(self):
+    def test_missing_decisive_clue_is_rejected_by_unique_target_invariant(self):
         base = generate_instance("hypothesis", 16000, DependenceRegime.N, ReasoningComplexity.LOW)
-        under_constrained = dataclasses.replace(
-            base, private_clues={"A": base.private_clues["A"], "B": ()})
-        analysis = under_constrained.channel_analysis()
-        self.assertTrue(analysis["covers_joint"], analysis)
-        self.assertFalse(analysis["channel_complete"], analysis)
-        self.assertGreater(analysis["pooled_size"], analysis["joint_size"])
-        audit = audit_channel_invariants([under_constrained])
-        self.assertEqual(audit["channel_incomplete_ids"], [base.instance_id])
-        self.assertEqual(audit["channel_complete_count"], 0)
+        # Dropping B's decisive clue leaves two candidates; an N task requires a
+        # unique clue-consistent target, so construction must reject it.
+        with self.assertRaises(ValueError):
+            dataclasses.replace(base, private_clues={"A": base.private_clues["A"], "B": ()})
+        audit = audit_channel_invariants([base])
+        self.assertEqual(audit["channel_incomplete_ids"], [])
+        self.assertEqual(audit["channel_complete_count"], 1)
 
     def test_audit_reports_high_complexity_singleton_honestly(self):
         instances = channel_audit_manifest(seeds_per_cell=3, families=("reference",))
         audit = audit_channel_invariants(instances)
         self.assertEqual(audit["channel_incomplete_ids"], [])
+        self.assertEqual(audit["unpartitioned_claims_ids"], [])
         high_rows = [row for row in audit["rows"] if row["complexity"] == "high"]
         self.assertTrue(high_rows)
         # reference-high can leave one agent with a singleton, so peer necessity is not universal
@@ -562,15 +572,87 @@ class ChannelCoverageTests(unittest.TestCase):
             self.assertFalse(row["both_agents_needed"], row)
         self.assertEqual(audit["no_live_screen"], True)
 
-    def test_audit_reports_declared_vs_clue_consistent_mismatch(self):
+    def test_audit_reports_declared_sets_now_match_clue_consistent_sets(self):
         instances = channel_audit_manifest(seeds_per_cell=1, families=("hypothesis",))
         audit = audit_channel_invariants(instances)
-        # declared private_solutions come from _sets (all candidates for N); clue-consistent
-        # sets are narrower, so this mismatch must be reported as input to the reconciliation work.
-        self.assertGreater(audit["declared_mismatch_count"], 0)
+        # After #166 the clue-consistent sets are authoritative, so the declared
+        # private_solutions must equal the clue-consistent feasible set.
+        self.assertEqual(audit["declared_mismatch_count"], 0)
         for row in audit["rows"]:
-            self.assertFalse(row["declared_matches_clue_consistent_a"])
-            self.assertTrue(row["private_a_size"] < row["declared_private_a_size"])
+            self.assertTrue(row["declared_matches_clue_consistent_a"])
+            self.assertTrue(row["declared_matches_clue_consistent_b"])
+
+    def test_hypothesis_low_seed_16000_counts_and_assignment(self):
+        instance = generate_instance("hypothesis", 16000, DependenceRegime.N, ReasoningComplexity.LOW)
+        self.assertEqual(len(instance.solutions), 8)
+        self.assertEqual(len(instance.private_solutions["A"]), 2)
+        self.assertEqual(len(instance.private_solutions["B"]), 4)
+        self.assertEqual(len(instance.joint_solutions), 1)
+        self.assertEqual(instance.joint_solutions,
+                         instance.clue_consistent(instance.pooled_private_clues()))
+        self.assertEqual(instance.assignment.regime, DependenceRegime.N)
+        self.assertEqual(instance.checker_id, "hypothesis-oracle-v2")
+        self.assertTrue(instance.validate(instance.target)["accepted"])
+        self.assertFalse(instance.validate("candidate-99")["accepted"])
+        self.assertEqual(instance.validate(instance.target)["generator_version"], GENERATOR_VERSION)
+
+    def test_public_options_are_distinct_from_private_feasible(self):
+        instance = generate_instance("planning", 16400, DependenceRegime.N, ReasoningComplexity.LOW)
+        view = instance.agent_view("A", "ISO")
+        self.assertEqual(set(view["candidate_labels"]), set(instance.solutions))
+        self.assertEqual(view["candidate_count"], len(instance.solutions))
+        self.assertNotIn("private_feasible_labels", view)
+        self.assertLess(len(instance.private_solutions["A"]), len(instance.solutions))
+
+    def test_redundant_and_useful_peer_claims(self):
+        instance = generate_instance("planning", 16400, DependenceRegime.N, ReasoningComplexity.LOW)
+        redundant = instance.information("A", "budget=valid", "m1")
+        self.assertEqual(redundant.delta_i_bits, 0.0)
+        peer = next(claim for claim in instance.claims if claim.text.startswith("precedes")
+                    and claim.text not in instance.private_clues["A"])
+        useful = instance.information("A", peer.text, "m2")
+        self.assertIsNotNone(useful.delta_i_bits)
+        self.assertGreater(useful.delta_i_bits, 0.0)
+
+    def test_reference_high_counterexample_finalizer_may_not_need_peer(self):
+        instance = generate_instance("reference", 16401, DependenceRegime.N, ReasoningComplexity.HIGH)
+        analysis = instance.channel_analysis()
+        self.assertTrue(analysis["channel_complete"])
+        self.assertFalse(analysis["both_agents_needed"])
+        self.assertFalse(analysis["finalizer_needs_peer"])
+        self.assertLessEqual(analysis["private_a_size"], 1)
+
+    def test_unsupported_regimes_are_rejected(self):
+        for regime in (DependenceRegime.R, DependenceRegime.H):
+            with self.assertRaises(ValueError):
+                generate_instance("hypothesis", 16000, regime)
+
+    def test_claims_are_held_by_exactly_one_writer(self):
+        for family in ("hypothesis", "reference", "planning", "poetry", "legal", "lexicon"):
+            instance = generate_instance(family, 16000, DependenceRegime.N, ReasoningComplexity.LOW)
+            analysis = instance.channel_analysis()
+            self.assertTrue(analysis["claims_partitioned"], family)
+            held = set(instance.private_clues["A"]) | set(instance.private_clues["B"])
+            self.assertEqual(held, {claim.text for claim in instance.claims})
+
+    def test_zero_and_undefined_denominators(self):
+        self.assertEqual(directional_d_idx(1, 1), 0.0)
+        self.assertIsNone(directional_d_idx(0, 1))
+        self.assertIsNone(directional_d_idx(2, 0))
+        self.assertEqual(assign_dependence(0.0), DependenceRegime.R)
+        self.assertIsNone(assign_dependence(None))
+
+    def test_preregistered_manifest_is_deterministic_and_leak_safe(self):
+        instances = [generate_instance("hypothesis", 16000, DependenceRegime.N, ReasoningComplexity.LOW)]
+        first = preregistered_manifest(instances)
+        second = preregistered_manifest(instances)
+        self.assertEqual(first["manifest_hash"], second["manifest_hash"])
+        self.assertEqual(first["generator_version"], GENERATOR_VERSION)
+        self.assertEqual(first["regime"], "N")
+        blob = json.dumps(first)
+        self.assertNotIn("candidate-4", blob)
+        self.assertNotIn("bit0", blob)
+        self.assertNotIn(instances[0].target, blob)
 
     def test_oracle_probe_reports_channel_ceiling(self):
         frozen = frozen_full_gate_instances()
