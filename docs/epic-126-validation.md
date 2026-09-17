@@ -330,6 +330,35 @@ detect. Caveat: n=17 for the paired ISO/COMM contrast, whose CI includes 0, so
 this is a screening signal, not a confirmed family difference. Free-model quota
 exhausted for the UTC day (995/1000). No T3 entropy work was launched.
 
+Protocol repair (private-clue coverage and pooled oracle). The generated private
+clues did not cover the joint clues: the decisive constraint was held by neither
+agent, so COMM could not in principle reconstruct FULL, and `eta_comm` was
+bounded by a generator artifact rather than by communication. Two generator bugs
+were fixed in `task_families.py`:
+
+- private clues now **partition** the claim list between A and B (even/odd
+  indices), so the union of both agents' clues equals the joint clues for every
+  family and complexity. Verified 0 coverage gaps across all six families x
+  low/medium/high x multiple seeds; A and B both carry genuine complementary
+  information (`channel_analysis().both_agents_needed` true).
+- hypothesis medium/high no longer append a hard-coded `derived parity=0` /
+  `chained checksum=0` claim that could contradict the target; the claim is now
+  derived from the target value.
+
+Added `FamilyInstance.channel_analysis()` (private sizes, pooled vs joint,
+`covers_joint`, `both_agents_needed`) and a **pooled-private oracle** probe
+(`--mode oracle`, `run_oracle_probe`) that gives the finalizer the union of both
+agents' clues with no board, bounding the COMM channel and separating
+information availability from message exchange. With complete coverage the
+pooled oracle and leak-free FULL carry the same information; `eta_comm` stays
+FULL-ISO based.
+
+Consequence: all prior ISO/FULL/COMM artifacts were produced under the
+under-covered protocol and are **superseded**. The cross-model transfer stage
+(#152) must not use them. A re-run of the n=20 paired screen and the four-family
+screen with the repaired generator is pending the free-model quota reset
+(995/1000 used for the UTC day); next reset 00:00 UTC.
+
 ## T3/T4
 
 T3 was not run because T1 selected no useful cells and T2 found no aligned

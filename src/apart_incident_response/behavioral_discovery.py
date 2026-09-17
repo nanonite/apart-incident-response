@@ -696,6 +696,107 @@ def _pairwise_contrasts(rows: Sequence[Mapping[str, Any]],
     return contrasts
 
 
+def run_oracle_probe(instances: Sequence[FamilyInstance], provider: Any,
+                     artifact_store: BehavioralArtifactStore, *, max_runs: int = 8,
+                     finalizing_agent: str = "A", resume: bool = True) -> dict[str, Any]:
+    """Pooled-private oracle: the finalizer sees the union of both agents' clues.
+
+    This bounds what the COMM channel could achieve in principle, separating
+    information availability from the agents' actual message exchange.
+    """
+
+    if max_runs <= 0:
+        raise ValueError("max_runs must be positive")
+    selected = list(instances)[:max_runs]
+    completed = artifact_store.completed_instance_ids() if resume else set()
+    pending = [instance for instance in selected if instance.instance_id not in completed]
+    rows: list[dict[str, Any]] = []
+    stop_reason: str | None = None
+    consecutive_http_failures = 0
+    for instance in pending:
+        if provider.request_count + 1 > provider.config.max_requests:
+            stop_reason = "request_cap"
+            break
+        if provider.cost_usd >= provider.config.max_cost_usd:
+            stop_reason = "cost_cap"
+            break
+        view = instance.agent_view(finalizing_agent, "ISO")
+        view = {**view, "private_clues": list(instance.pooled_private_clues()),
+                "is_finalizer": True, "finalizing_agent": finalizing_agent}
+        run_id = f"oracle-{instance.instance_id}"
+        context = AgentContext(run_id, instance.instance_id, finalizing_agent, BatteryCondition.FULL,
+                               0, view, (), "pooled-oracle-v1", provider.config.max_tokens)
+        response = provider.respond(context)
+        output_present = bool(response.output_text.strip())
+        answer = response.answer
+        answer_parsed = answer is not None and str(answer).strip() != ""
+        checker_result = instance.validate(answer or "")
+        checker_valid = answer_parsed and isinstance(checker_result, Mapping) and "accepted" in checker_result
+        accepted = bool(checker_result.get("accepted", False))
+        status = "completed" if not response.failure_reason else "invalid"
+        classification = _classify_run(status=status, output_present=output_present,
+                                       answer_parsed=answer_parsed, checker_valid=checker_valid,
+                                       accepted=accepted)
+        valid_execution = classification in {"success", "valid_wrong_answer"}
+        if valid_execution:
+            failure_reason = None
+        elif response.failure_reason:
+            failure_reason = response.failure_reason
+        else:
+            failure_reason = classification
+        if response.failure_reason and response.failure_reason.startswith("http_"):
+            consecutive_http_failures += 1
+        else:
+            consecutive_http_failures = 0
+        rows.append({
+            "instance_id": instance.instance_id, "family": instance.family,
+            "complexity": instance.complexity.value,
+            "regime": instance.assignment.regime.value if instance.assignment.regime else None,
+            "condition": "ORACLE", "classification": classification, "valid_execution": valid_execution,
+            "checker_accepted": accepted, "failure_reason": failure_reason,
+            "channel": instance.channel_analysis(),
+        })
+        if consecutive_http_failures >= provider.config.max_consecutive_failures:
+            stop_reason = "repeated_http_failure"
+            break
+
+    valid_rows = [row for row in rows if row["valid_execution"]]
+    successful = [row for row in valid_rows if row["checker_accepted"]]
+    cells: list[dict[str, Any]] = []
+    for key in sorted({(row["family"], row["complexity"]) for row in rows}):
+        cell_rows = [row for row in rows if (row["family"], row["complexity"]) == key]
+        cell_valid = [row for row in cell_rows if row["valid_execution"]]
+        cells.append({
+            "family": key[0], "complexity": key[1],
+            "valid_denominator": len(cell_valid), "successes": sum(row["checker_accepted"] for row in cell_valid),
+            "p_success": (sum(row["checker_accepted"] for row in cell_valid) / len(cell_valid)
+                          if cell_valid else None),
+        })
+    if not rows:
+        stop_reason = stop_reason or "no_instances_attempted"
+    elif stop_reason is None:
+        stop_reason = "completed_planned_runs"
+    return {
+        "probe_version": "pooled-private-oracle-v1",
+        "stage": "T1a-pooled-oracle",
+        "endpoint": provider.config.endpoint,
+        "model": provider.model,
+        "planned_instances": len(selected),
+        "attempted_instances": len(rows),
+        "valid_runs": len(valid_rows),
+        "invalid_runs": len(rows) - len(valid_rows),
+        "successes": len(successful),
+        "oracle_success_rate": len(successful) / len(valid_rows) if valid_rows else None,
+        "cells": cells,
+        "requests_made": provider.request_count,
+        "cost_usd": provider.cost_usd,
+        "stop_reason": stop_reason,
+        "provider_diagnostics": provider.diagnostics() if hasattr(provider, "diagnostics") else {},
+        "raw_responses_retained": False,
+        "credentials_retained": False,
+    }
+
+
 def run_full_gate(instances: Sequence[FamilyInstance], provider: Any,
                   artifact_store: BehavioralArtifactStore, *, max_runs: int = 8,
                   finalizing_agent: str = "A", resume: bool = True) -> dict[str, Any]:
@@ -1064,7 +1165,7 @@ def next_decision_for(blocking_issue: str | None) -> str:
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="T1a FULL-only gate and paired ISO/FULL/COMM screen")
-    parser.add_argument("--mode", choices=["full-gate", "paired-screen", "analyze"], default="full-gate")
+    parser.add_argument("--mode", choices=["full-gate", "paired-screen", "oracle", "analyze"], default="full-gate")
     parser.add_argument("--live", action="store_true", help="run the bounded live path (requires credentials)")
     parser.add_argument("--model", default=DEFAULT_FREE_MODEL)
     parser.add_argument("--endpoint", default=ENDPOINT)
@@ -1137,6 +1238,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 parser.error("--conditions must not be empty")
         if args.mode == "full-gate":
             max_requests = max_runs * 2
+        elif args.mode == "oracle":
+            max_requests = max_runs
         else:
             max_requests = max_runs * args.turns * 2 * len(selected_conditions)
         config = BehavioralProviderConfig(model=args.model, endpoint=args.endpoint,
@@ -1147,6 +1250,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         store = BehavioralArtifactStore(output)
         if args.mode == "full-gate":
             report = run_full_gate(instances, provider, store, max_runs=max_runs)
+        elif args.mode == "oracle":
+            report = run_oracle_probe(instances, provider, store, max_runs=max_runs)
         else:
             report = run_paired_screen(instances, provider, store, max_runs=max_runs, turns=args.turns,
                                        conditions=selected_conditions)
@@ -1230,7 +1335,7 @@ __all__ = [
     "frozen_full_gate_instances", "is_retryable_status", "main", "pressure_catalog",
     "run_behavioral_screen", "run_full_gate", "run_paired_screen", "select_frozen_instances",
     "PAIRED_CELLS", "extended_paired_instances", "wilson_interval", "mcnemar_exact_p",
-    "mcnemar_midp", "paired_contrast", "paired_difference_ci",
+    "mcnemar_midp", "paired_contrast", "paired_difference_ci", "run_oracle_probe",
 ]
 
 

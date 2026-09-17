@@ -21,6 +21,7 @@ from apart_incident_response.behavioral_discovery import (
     paired_contrast,
     run_behavioral_screen,
     run_full_gate,
+    run_oracle_probe,
     run_paired_screen,
     select_frozen_instances,
     wilson_interval,
@@ -520,6 +521,32 @@ class PairedInferenceTests(unittest.TestCase):
         contrast = paired_contrast(records, "ISO", "FULL")
         self.assertEqual(contrast["n_pairs"], 1)
         self.assertEqual(contrast["both_success"], 1)
+
+
+class ChannelCoverageTests(unittest.TestCase):
+    def test_private_clues_cover_the_joint_information(self):
+        for family in ("hypothesis", "reference", "planning", "poetry", "legal", "lexicon"):
+            for complexity in (ReasoningComplexity.LOW, ReasoningComplexity.MEDIUM):
+                for seed in (16000, 16003, 16401):
+                    instance = generate_instance(family, seed, DependenceRegime.N, complexity)
+                    analysis = instance.channel_analysis()
+                    self.assertTrue(analysis["covers_joint"], (family, complexity.value, seed, analysis))
+                    self.assertTrue(analysis["both_agents_needed"], (family, complexity.value, seed, analysis))
+
+    def test_oracle_probe_reports_channel_ceiling(self):
+        frozen = frozen_full_gate_instances()
+        instances = [frozen[0], frozen[2]]
+        responses = {(instance.instance_id, BatteryCondition.FULL.value, "A"): AgentResponse(
+            answer=instance.target, output_text=f"ANSWER: {instance.target}") for instance in instances}
+        config = BehavioralProviderConfig(max_requests=8, min_interval_seconds=0, max_cost_usd=20.0)
+        provider = PairedFakeProvider(config, responses)
+        with tempfile.TemporaryDirectory() as directory:
+            report = run_oracle_probe(instances, provider, BehavioralArtifactStore(Path(directory) / "oracle.jsonl"))
+        self.assertEqual(report["attempted_instances"], 2)
+        self.assertEqual(report["valid_runs"], 2)
+        self.assertEqual(report["successes"], 2)
+        self.assertEqual(report["oracle_success_rate"], 1.0)
+        self.assertEqual(report["stop_reason"], "completed_planned_runs")
 
 
 if __name__ == "__main__":

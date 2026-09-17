@@ -118,6 +118,33 @@ class FamilyInstance:
             return MessageInterpretation.unknown("claim is not an unambiguous validated family message")
         return MessageInterpretation.accepted(matches[0].predicate, matches[0].text)
 
+    def clue_consistent(self, clues: Iterable[str]) -> frozenset[str]:
+        """Candidates consistent with a set of exact claim texts."""
+
+        predicates = {claim.text: claim.predicate for claim in self.claims}
+        return frozenset(value for value in self.solutions
+                         if all(predicates[text](value) for text in clues if text in predicates))
+
+    def pooled_private_clues(self) -> tuple[str, ...]:
+        """Union of both agents' private clues; the maximum a COMM channel can convey."""
+
+        return tuple(self.private_clues.get("A", ())) + tuple(self.private_clues.get("B", ()))
+
+    def channel_analysis(self) -> dict[str, Any]:
+        """Whether the distributed private clues can reconstruct the joint information."""
+
+        private_a = self.clue_consistent(self.private_clues.get("A", ()))
+        private_b = self.clue_consistent(self.private_clues.get("B", ()))
+        pooled = self.clue_consistent(self.pooled_private_clues())
+        return {
+            "private_a_size": len(private_a),
+            "private_b_size": len(private_b),
+            "pooled_size": len(pooled),
+            "joint_size": len(self.joint_solutions),
+            "covers_joint": self.joint_solutions <= pooled,
+            "both_agents_needed": len(private_a) > 1 and len(private_b) > 1,
+        }
+
     def information(self, agent: str, raw_text: str, message_id: str) -> MessageInformation:
         before = FeasibleSet.from_values(self.private_solutions[agent])
         return ExactInformationEvaluator().evaluate(before, raw_text, self.interpret(raw_text), message_id)
@@ -167,15 +194,20 @@ class HypothesisFamily:
         candidates = [f"candidate-{i}" for i in range(8)]
         a, b, joint = _sets(candidates, regime, seed)
         target = sorted(joint)[seed % len(joint)]
+        number = int(target.rsplit("-", 1)[-1])
         claims = _claims_for_bits(candidates, target)
         if complexity is ReasoningComplexity.MEDIUM:
-            claims = claims + (Claim("derived parity=0", lambda value: int(value.rsplit("-", 1)[-1]) % 2 == 0),)
+            parity = number % 2
+            claims = claims + (Claim(f"derived parity={parity}",
+                lambda value, expected=parity: int(value.rsplit("-", 1)[-1]) % 2 == expected),)
         if complexity is ReasoningComplexity.HIGH:
-            claims = claims + (Claim("chained checksum=0", lambda value: sum(map(int, value.rsplit("-", 1)[-1])) % 2 == 0),)
+            checksum = sum(int(digit) for digit in str(number)) % 2
+            claims = claims + (Claim(f"chained checksum={checksum}",
+                lambda value, expected=checksum: sum(int(digit) for digit in value.rsplit("-", 1)[-1]) % 2 == expected),)
         return FamilyInstance("hypothesis", _instance_id("hypothesis", seed), seed, complexity, regime,
             frozenset(candidates), {"A": a, "B": b}, joint, claims,
             {"candidate_count": 8, "predicate_style": complexity.value},
-            {"A": tuple(c.text for c in claims[:1]), "B": tuple(c.text for c in claims[1:2])}, target)
+            {"A": tuple(c.text for c in claims[0::2]), "B": tuple(c.text for c in claims[1::2])}, target)
 
 
 class ReferenceFamily:
@@ -195,7 +227,7 @@ class ReferenceFamily:
         return FamilyInstance("reference", _instance_id("reference", seed), seed, complexity, regime,
             frozenset(candidates), {"A": a, "B": b}, joint, claims,
             {"object_count": 16, "attribute_kinds": ["color", "shape", "relation"]},
-            {"A": (claims[0].text,), "B": (claims[1].text,)}, target)
+            {"A": tuple(c.text for c in claims[0::2]), "B": tuple(c.text for c in claims[1::2])}, target)
 
 
 def _plans(actions: tuple[str, ...]) -> list[str]:
@@ -218,7 +250,7 @@ class PlanningFamily:
         return FamilyInstance("planning", _instance_id("planning", seed), seed, complexity, regime,
             frozenset(candidates), {"A": a, "B": b}, joint, claims,
             {"action_count": len(actions), "resource_model": "bounded-enumeration", "budget": len(actions)},
-            {"A": ("budget=valid",), "B": (claims[0].text,)}, target)
+            {"A": tuple(c.text for c in claims[0::2]), "B": tuple(c.text for c in claims[1::2])}, target)
 
 
 class PoetryFamily:
@@ -236,7 +268,7 @@ class PoetryFamily:
         return FamilyInstance("poetry", _instance_id("poetry", seed), seed, complexity, regime,
             frozenset(skeletons), {"A": a, "B": b}, joint, claims,
             {"skeleton_count": 8, "creative_realization": "scored separately", "hard_constraints": ["meter", "rhyme", "acrostic"]},
-            {"A": (claims[0].text,), "B": (claims[1].text,)}, target,
+            {"A": tuple(c.text for c in claims[0::2]), "B": tuple(c.text for c in claims[1::2])}, target,
             {"creative_quality_is_information": False})
 
 
@@ -255,7 +287,7 @@ class LegalFamily:
         return FamilyInstance("legal", _instance_id("legal", seed), seed, complexity, regime,
             frozenset(outcomes), {"A": a, "B": b}, joint, claims,
             {"jurisdiction": "fictional-closed-world", "rule_engine": "legal-oracle-v1", "external_sources": False},
-            {"A": (claims[0].text,), "B": (claims[1].text,)}, target)
+            {"A": tuple(c.text for c in claims[0::2]), "B": tuple(c.text for c in claims[1::2])}, target)
 
 
 class LexiconFamily:
@@ -273,7 +305,7 @@ class LexiconFamily:
         return FamilyInstance("lexicon", _instance_id("lexicon", seed), seed, complexity, regime,
             frozenset(sequences), {"A": a, "B": b}, joint, claims,
             {"lexicon_size": 8, "alternation": "A->B->A->B", "dictionary_dump": "valid strategy if attempted"},
-            {"A": (claims[0].text,), "B": (claims[1].text,)}, target)
+            {"A": tuple(c.text for c in claims[0::2]), "B": tuple(c.text for c in claims[1::2])}, target)
 
 
 FAMILY_GENERATORS: Mapping[str, Any] = {
