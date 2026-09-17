@@ -38,6 +38,8 @@ class AgentResponse:
     input_tokens: int | None = None
     output_tokens: int | None = None
     cost_usd: float = 0.0
+    prompt_hash: str | None = None
+    prompt_schema_version: str | None = None
 
 
 class BatteryProvider(Protocol):
@@ -113,14 +115,15 @@ class TwoAgentBatteryRunner:
 
     def run_condition(self, instance: FamilyInstance, condition: BatteryCondition,
                       provider: BatteryProvider, *, pair_id: str | None = None,
-                      run_id: str | None = None) -> BatteryRunResult:
+                      run_id: str | None = None, finalizer_only: bool = False) -> BatteryRunResult:
         pair = pair_id or f"pair-{instance.instance_id}"
         run = run_id or f"comm-{condition.value.lower()}-{uuid.uuid4().hex}"
         log = CommunicationEventLog(run)
         log.record("run_started", "controller", payload={"condition": condition.value,
                                                            "prompt_version": self.prompt_version,
                                                            "token_budget": self.token_budget,
-                                                           "finalizing_agent": self.finalizing_agent})
+                                                           "finalizing_agent": self.finalizing_agent,
+                                                           "finalizer_only": finalizer_only})
         board: list[dict[str, Any]] = []
         message_info: dict[str, Any] = {}
         received_information: dict[tuple[str, str], Any] = {}
@@ -128,8 +131,9 @@ class TwoAgentBatteryRunner:
         used_outputs: list[tuple[str, str, tuple[str, ...], str | None]] = []
         answers: dict[str, str | None] = {"A": None, "B": None}
         invalid: list[str] = []
+        agents = (self.finalizing_agent,) if finalizer_only else ("A", "B")
         for turn in range(self.turns):
-            for agent in ("A", "B"):
+            for agent in agents:
                 if condition is BatteryCondition.FULL:
                     view = instance.agent_view(agent, "FULL")
                 else:

@@ -127,9 +127,11 @@ class FamilyInstance:
             "task_instruction": "Choose one candidate and reply exactly as ANSWER: <candidate label>. In COMM only, you may optionally add MESSAGE: <exact private clue>; silence is allowed. Do not invent a label or claim message use.",
         }
         if condition == "FULL":
+            # Leak-free invariant: FULL exposes the constraints, never the joint
+            # candidate set (answer key). There is no model-visible field that
+            # reveals the accepted answer.
             view["joint_clues"] = [claim.text for claim in self.claims]
             view["joint_candidate_count"] = len(self.joint_solutions)
-            view["joint_candidate_labels"] = sorted(self.joint_solutions)
         return view
 
     def public_manifest(self) -> dict[str, Any]:

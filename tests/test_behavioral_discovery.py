@@ -9,8 +9,12 @@ from unittest.mock import patch
 
 from apart_incident_response.behavioral_discovery import (
     ENDPOINT,
+    ORACLE_CONDITION,
+    PROMPT_SCHEMA_VERSION,
+    TREATMENT_PROMPT_FIELDS,
     BehavioralArtifactStore,
     BehavioralProviderConfig,
+    DiagnosticCondition,
     OpenRouterBehavioralProvider,
     audit_retained_pilot,
     channel_audit_manifest,
@@ -21,11 +25,16 @@ from apart_incident_response.behavioral_discovery import (
     mcnemar_exact_p,
     mcnemar_midp,
     paired_contrast,
+    provider_seed,
+    request_budget,
     run_behavioral_screen,
     run_full_gate,
     run_oracle_probe,
     run_paired_screen,
     select_frozen_instances,
+    treatment_prompt,
+    treatment_prompt_hash,
+    treatment_schema,
     wilson_interval,
 )
 from apart_incident_response.communication_protocol import (
@@ -325,7 +334,7 @@ class FullGateProviderTests(unittest.TestCase):
         self.assertEqual(report["stop_reason"], "repeated_http_failure")
         self.assertEqual(report["attempted_runs"], 2)
         self.assertEqual(report["valid_denominator"], 0)
-        self.assertEqual(report["requests_made"], 4)
+        self.assertEqual(report["requests_made"], 2)
         self.assertEqual(report["classification_counts"], {"provider_execution_failure": 2})
         self.assertFalse(report["paired_screen_ready"])
         self.assertEqual(report["solvability_conclusion"], "not_available")
@@ -337,38 +346,36 @@ class FullGateProviderTests(unittest.TestCase):
             report = run_full_gate(frozen_full_gate_instances(), provider,
                                    BehavioralArtifactStore(Path(directory) / "gate.jsonl"))
         self.assertEqual(report["stop_reason"], "request_cap")
-        self.assertEqual(report["attempted_runs"], 1)
-        self.assertEqual(report["requests_made"], 2)
+        self.assertEqual(report["attempted_runs"], 3)
+        self.assertEqual(report["requests_made"], 3)
 
     def test_full_gate_stops_at_cost_cap(self):
         config = BehavioralProviderConfig(max_requests=16, min_interval_seconds=0, max_cost_usd=0.5)
-        provider = FakeGateProvider(config, cost_per_call=0.3)
+        provider = FakeGateProvider(config, cost_per_call=0.6)
         with tempfile.TemporaryDirectory() as directory:
             report = run_full_gate(frozen_full_gate_instances(), provider,
                                    BehavioralArtifactStore(Path(directory) / "gate.jsonl"))
         self.assertEqual(report["stop_reason"], "cost_cap")
         self.assertEqual(report["attempted_runs"], 1)
 
-    def test_full_view_defaults_to_leak_free(self):
+    def test_full_prompt_is_leak_free_invariant(self):
         body = {"model": "served", "choices": [{"message": {"content": "ANSWER: candidate-0"}}], "usage": {}}
-        task_view = {"family": "hypothesis", "task_instruction": "answer", "candidate_labels": ["candidate-0"],
-                     "joint_clues": ["bit0=0"], "joint_candidate_labels": ["candidate-0"]}
+        # A hostile task_view still carrying the answer key must not leak through.
+        task_view = {"family": "hypothesis", "task_instruction": "answer",
+                     "candidate_labels": ["candidate-0"], "joint_clues": ["bit0=0"],
+                     "joint_candidate_labels": ["candidate-0"]}
         context = AgentContext("run", "instance", "A", BatteryCondition.FULL, 0, task_view, (), "prompt-v1", 96)
         with patch("apart_incident_response.behavioral_discovery.urllib.request.urlopen",
                    return_value=FakeResponse(body)) as opener:
-            OpenRouterBehavioralProvider(BehavioralProviderConfig(max_requests=1, min_interval_seconds=0),
-                                         api_key="secret").respond(context)
-        default_content = json.loads(json.loads(opener.call_args.args[0].data.decode())["messages"][0]["content"])
-        self.assertNotIn("joint_candidate_labels", default_content)
-        self.assertIn("joint_clues", default_content)
-        with patch("apart_incident_response.behavioral_discovery.urllib.request.urlopen",
-                   return_value=FakeResponse(body)) as leaky_opener:
-            OpenRouterBehavioralProvider(
-                BehavioralProviderConfig(max_requests=1, min_interval_seconds=0,
-                                         include_joint_candidate_labels=True),
+            response = OpenRouterBehavioralProvider(
+                BehavioralProviderConfig(max_requests=1, min_interval_seconds=0),
                 api_key="secret").respond(context)
-        leaky_content = json.loads(json.loads(leaky_opener.call_args.args[0].data.decode())["messages"][0]["content"])
-        self.assertIn("joint_candidate_labels", leaky_content)
+        content = json.loads(json.loads(opener.call_args.args[0].data.decode())["messages"][0]["content"])
+        self.assertEqual(set(content), set(TREATMENT_PROMPT_FIELDS))
+        self.assertNotIn("joint_candidate_labels", content)
+        self.assertIn("joint_clues", content)
+        self.assertEqual(response.prompt_schema_version, PROMPT_SCHEMA_VERSION)
+        self.assertEqual(response.prompt_hash, treatment_prompt_hash(context))
 
     def test_frozen_manifest_ids_match_committed_gate_instances(self):
         instance_ids = [instance.instance_id for instance in frozen_full_gate_instances()]
@@ -467,8 +474,8 @@ class PairedScreenTests(unittest.TestCase):
             report = run_paired_screen(instances, provider, BehavioralArtifactStore(Path(directory) / "screen.jsonl"),
                                        turns=1, conditions=(BatteryCondition.ISO, BatteryCondition.FULL))
         self.assertEqual(set(report["by_condition"]), {"ISO", "FULL"})
-        self.assertEqual(report["requests_per_instance"], 4)
-        self.assertEqual(report["requests_made"], 8)
+        self.assertEqual(report["requests_per_instance"], 2)
+        self.assertEqual(report["requests_made"], 4)
         self.assertTrue(report["all_condition_denominators_present"])
         for cell in report["cells"]:
             self.assertNotIn("COMM", cell["p_success"])
@@ -481,7 +488,7 @@ class PairedScreenTests(unittest.TestCase):
             report = run_paired_screen(instances, provider, BehavioralArtifactStore(Path(directory) / "screen.jsonl"))
         self.assertEqual(report["stop_reason"], "request_cap")
         self.assertEqual(report["attempted_instances"], 1)
-        self.assertEqual(report["requests_made"], 12)
+        self.assertEqual(report["requests_made"], 8)
         self.assertFalse(report["all_condition_denominators_present"])
 
 
@@ -657,17 +664,115 @@ class ChannelCoverageTests(unittest.TestCase):
     def test_oracle_probe_reports_channel_ceiling(self):
         frozen = frozen_full_gate_instances()
         instances = [frozen[0], frozen[2]]
-        responses = {(instance.instance_id, BatteryCondition.FULL.value, "A"): AgentResponse(
+        responses = {(instance.instance_id, ORACLE_CONDITION, "A"): AgentResponse(
             answer=instance.target, output_text=f"ANSWER: {instance.target}") for instance in instances}
         config = BehavioralProviderConfig(max_requests=8, min_interval_seconds=0, max_cost_usd=20.0)
         provider = PairedFakeProvider(config, responses)
         with tempfile.TemporaryDirectory() as directory:
-            report = run_oracle_probe(instances, provider, BehavioralArtifactStore(Path(directory) / "oracle.jsonl"))
+            store = BehavioralArtifactStore(Path(directory) / "oracle.jsonl")
+            report = run_oracle_probe(instances, provider, store)
+            records = store.records()
+            completed = store.oracle_completed_instance_ids()
         self.assertEqual(report["attempted_instances"], 2)
         self.assertEqual(report["valid_runs"], 2)
         self.assertEqual(report["successes"], 2)
         self.assertEqual(report["oracle_success_rate"], 1.0)
         self.assertEqual(report["stop_reason"], "completed_planned_runs")
+        self.assertEqual(report["condition"], ORACLE_CONDITION)
+        self.assertEqual(report["requests_per_instance"], 1)
+        # ORACLE has its own labeled, append-only artifact identity
+        self.assertEqual(len(records), 2)
+        self.assertTrue(all(record["condition"] == ORACLE_CONDITION for record in records))
+        self.assertTrue(all(record["schema_version"] == "behavioral-oracle-v1" for record in records))
+        self.assertEqual(completed, {instance.instance_id for instance in instances})
+
+
+class TreatmentSchemaTests(unittest.TestCase):
+    def context(self, condition, view, *, turn=0, agent="A"):
+        full_view = {**view, "is_finalizer": True, "finalizing_agent": "A"}
+        return AgentContext("r", "instance", agent, condition, turn, full_view, (), PROMPT_SCHEMA_VERSION, 96)
+
+    def test_agent_view_full_has_no_answer_key(self):
+        instance = generate_instance("hypothesis", 16000, DependenceRegime.N, ReasoningComplexity.LOW)
+        view = instance.agent_view("A", "FULL")
+        self.assertNotIn("joint_candidate_labels", view)
+        self.assertIn("joint_clues", view)
+        self.assertEqual(set(view["candidate_labels"]), set(instance.solutions))
+
+    def test_prompt_schema_fields_and_board_absence(self):
+        instance = generate_instance("hypothesis", 16000, DependenceRegime.N, ReasoningComplexity.LOW)
+        cases = ((BatteryCondition.ISO, "ISO"), (BatteryCondition.FULL, "FULL"),
+                 (DiagnosticCondition.ORACLE, "FULL"))
+        for condition, view_condition in cases:
+            view = instance.agent_view("A", view_condition)
+            prompt = treatment_prompt(self.context(condition, view))
+            self.assertEqual(set(prompt), set(TREATMENT_PROMPT_FIELDS))
+            self.assertEqual(prompt["condition"], condition.value)
+            self.assertEqual(prompt["visible_messages"], [])
+            self.assertNotIn("joint_candidate_labels", prompt)
+
+    def test_oracle_prompt_matches_full_schema_except_label(self):
+        instance = generate_instance("hypothesis", 16000, DependenceRegime.N, ReasoningComplexity.LOW)
+        view = instance.agent_view("A", "FULL")
+        full = treatment_prompt(self.context(BatteryCondition.FULL, view))
+        oracle = treatment_prompt(self.context(DiagnosticCondition.ORACLE, view))
+        self.assertEqual(set(full), set(oracle))
+        self.assertEqual({k: v for k, v in full.items() if k != "condition"},
+                         {k: v for k, v in oracle.items() if k != "condition"})
+        self.assertEqual(full["condition"], "FULL")
+        self.assertEqual(oracle["condition"], "ORACLE")
+
+    def test_oracle_is_outside_primary_conditions(self):
+        self.assertEqual(DiagnosticCondition.ORACLE.value, ORACLE_CONDITION)
+        self.assertNotIn(DiagnosticCondition.ORACLE, list(BatteryCondition))
+        self.assertEqual([condition.value for condition in BatteryCondition], ["ISO", "FULL", "COMM"])
+
+    def test_request_budget_is_frozen_and_comparable(self):
+        self.assertEqual(request_budget("ISO", 2), 2)
+        self.assertEqual(request_budget("FULL", 2), 2)
+        self.assertEqual(request_budget(ORACLE_CONDITION, 2), 2)
+        self.assertEqual(request_budget("COMM", 2), 4)
+        self.assertEqual(request_budget("ISO", 1), 1)
+        with self.assertRaises(ValueError):
+            request_budget("ISO", 0)
+
+    def test_treatment_schema_locks_fields_budget_and_policy(self):
+        schema = treatment_schema()
+        self.assertEqual(schema["prompt_schema_version"], PROMPT_SCHEMA_VERSION)
+        self.assertEqual(schema["prompt_fields"], list(TREATMENT_PROMPT_FIELDS))
+        self.assertEqual(schema["primary_conditions"], ["ISO", "FULL", "COMM"])
+        self.assertEqual(schema["diagnostic_conditions"], ["ORACLE"])
+        self.assertEqual(schema["forbidden_model_visible_fields"], ["joint_candidate_labels"])
+        self.assertEqual(schema["request_budget_turns_2"], {"ISO": 2, "FULL": 2, "ORACLE": 2, "COMM": 4})
+        self.assertEqual(schema["finalizer_policy"], "one_way_A_finalizer")
+        self.assertEqual(schema["cue_estimands"], {"c_need": "p_FULL - p_ISO", "oracle_gap": "p_ORACLE - p_FULL"})
+
+    def test_provider_seed_is_reproducible_and_condition_specific(self):
+        seed = provider_seed("hypothesis-1", "FULL", 0, "A")
+        self.assertEqual(seed, provider_seed("hypothesis-1", "FULL", 0, "A"))
+        self.assertNotEqual(seed, provider_seed("hypothesis-1", "ISO", 0, "A"))
+        self.assertNotEqual(seed, provider_seed("hypothesis-1", "FULL", 1, "A"))
+        self.assertNotEqual(seed, provider_seed("hypothesis-1", "FULL", 0, "B"))
+
+    def test_paired_screen_requests_match_frozen_budget(self):
+        frozen = frozen_full_gate_instances()
+        instances = [frozen[0], frozen[2]]
+        responses = {}
+        for instance in instances:
+            for condition in BatteryCondition:
+                responses[(instance.instance_id, condition.value, "A")] = AgentResponse(
+                    answer=instance.target, output_text=f"ANSWER: {instance.target}")
+            responses[(instance.instance_id, BatteryCondition.COMM.value, "B")] = AgentResponse(
+                answer=instance.target, output_text=f"ANSWER: {instance.target}")
+        config = BehavioralProviderConfig(max_requests=64, min_interval_seconds=0, max_cost_usd=20.0)
+        provider = PairedFakeProvider(config, responses)
+        with tempfile.TemporaryDirectory() as directory:
+            report = run_paired_screen(instances, provider,
+                                       BehavioralArtifactStore(Path(directory) / "screen.jsonl"), turns=2)
+        expected = sum(request_budget(condition.value, 2) for condition in BatteryCondition) * len(instances)
+        self.assertEqual(report["requests_per_instance"],
+                         sum(request_budget(condition.value, 2) for condition in BatteryCondition))
+        self.assertEqual(report["requests_made"], expected)
 
 
 if __name__ == "__main__":

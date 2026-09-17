@@ -14,6 +14,7 @@ import hashlib
 import json
 import math
 import os
+from enum import Enum
 from pathlib import Path
 import re
 import threading
@@ -38,6 +39,84 @@ from .task_families import (
 ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
 BEHAVIORAL_VERSION = "behavioral-discovery-v1"
 FULL_GATE_VERSION = "t1a-full-only-gate-v1"
+PROMPT_SCHEMA_VERSION = "treatment-prompt-v2"
+ORACLE_SCHEMA_VERSION = "behavioral-oracle-v1"
+ORACLE_CONDITION = "ORACLE"
+# One-way finalizer policy, preregistered: A is always the scored finalizer and B
+# is the peer. No A/B counterbalancing is attempted in this subepic.
+FINALIZER_POLICY = "one_way_A_finalizer"
+FINALIZER_AGENT = "A"
+BOARD_FREE_CONDITIONS = ("ISO", "FULL", ORACLE_CONDITION)
+TREATMENT_PROMPT_FIELDS = (
+    "instruction", "family", "complexity", "condition", "turn", "is_finalizer",
+    "finalizing_agent", "candidate_labels", "joint_clues", "private_clues", "visible_messages",
+)
+
+
+class DiagnosticCondition(str, Enum):
+    """Manipulation-check condition kept outside the primary ISO/FULL/COMM battery."""
+
+    ORACLE = ORACLE_CONDITION
+
+
+def provider_seed(instance_id: str, condition: str, turn: int, agent_id: str) -> int:
+    """Reproducible provider seed derived from instance, condition, turn and agent."""
+
+    payload = f"{instance_id}|{condition}|{turn}|{agent_id}"
+    return int(hashlib.sha256(payload.encode()).hexdigest()[:8], 16)
+
+
+def treatment_prompt(context: AgentContext) -> dict[str, Any]:
+    """Exact model-visible prompt schema; never contains a joint candidate answer key."""
+
+    return {
+        "instruction": context.task_view.get("task_instruction"),
+        "family": context.task_view.get("family"),
+        "complexity": context.task_view.get("complexity"),
+        "condition": context.condition.value,
+        "turn": context.turn,
+        "is_finalizer": context.task_view.get("is_finalizer", False),
+        "finalizing_agent": context.task_view.get("finalizing_agent"),
+        "candidate_labels": context.task_view.get("candidate_labels", []),
+        "joint_clues": context.task_view.get("joint_clues", []),
+        "private_clues": context.task_view.get("private_clues", []),
+        "visible_messages": list(context.visible_messages),
+    }
+
+
+def treatment_prompt_hash(context: AgentContext) -> str:
+    return hashlib.sha256(json.dumps(treatment_prompt(context), sort_keys=True).encode()).hexdigest()
+
+
+def request_budget(condition: str, turns: int, *, finalizer_only_board_free: bool = True) -> int:
+    """Frozen per-instance agent-request budget for a condition."""
+
+    if turns <= 0:
+        raise ValueError("turns must be positive")
+    agents = 1 if finalizer_only_board_free and condition in BOARD_FREE_CONDITIONS else 2
+    return turns * agents
+
+
+def treatment_schema() -> dict[str, Any]:
+    """Locked treatment schema for the primary battery and the ORACLE check."""
+
+    return {
+        "prompt_schema_version": PROMPT_SCHEMA_VERSION,
+        "prompt_fields": list(TREATMENT_PROMPT_FIELDS),
+        "primary_conditions": [condition.value for condition in BatteryCondition],
+        "diagnostic_conditions": [DiagnosticCondition.ORACLE.value],
+        "board_free_conditions": list(BOARD_FREE_CONDITIONS),
+        "forbidden_model_visible_fields": ["joint_candidate_labels"],
+        "finalizer_policy": FINALIZER_POLICY,
+        "finalizing_agent": FINALIZER_AGENT,
+        "provider_seed_basis": "sha256(instance_id|condition|turn|agent_id)[:8]",
+        "request_budget_turns_2": {condition: request_budget(condition, 2) for condition in
+                                   ("ISO", "FULL", ORACLE_CONDITION, "COMM")},
+        "oracle_schema_version": ORACLE_SCHEMA_VERSION,
+        "oracle_separate_from_primary": True,
+        "cue_estimands": {"c_need": "p_FULL - p_ISO", "oracle_gap": "p_ORACLE - p_FULL"},
+    }
+
 
 # Only transient conditions may be retried.  Auth/payment/not-found errors are
 # terminal so a bad credential or model slug cannot silently burn the request
@@ -122,7 +201,6 @@ class BehavioralProviderConfig:
     retries: int = 1
     max_tokens: int = 96
     max_consecutive_failures: int = 2
-    include_joint_candidate_labels: bool = False
 
     def __post_init__(self) -> None:
         if not self.model.endswith(":free"):
@@ -279,25 +357,9 @@ class OpenRouterBehavioralProvider:
                                           error_class="transport_error")
 
     def respond(self, context: AgentContext) -> AgentResponse:
-        prompt_fields = {
-            "instruction": context.task_view.get("task_instruction"),
-            "family": context.task_view.get("family"),
-            "complexity": context.task_view.get("complexity"),
-            "condition": context.condition.value,
-            "turn": context.turn,
-            "is_finalizer": context.task_view.get("is_finalizer", False),
-            "finalizing_agent": context.task_view.get("finalizing_agent"),
-            "candidate_labels": context.task_view.get("candidate_labels", []),
-            "joint_clues": context.task_view.get("joint_clues", []),
-            "private_clues": context.task_view.get("private_clues", []),
-            "visible_messages": list(context.visible_messages),
-        }
-        if self.config.include_joint_candidate_labels:
-            # Preregistered full treatment. Passing the joint candidate set makes
-            # the finalizer able to echo the answer, so FULL sits at ceiling.
-            prompt_fields["joint_candidate_labels"] = context.task_view.get("joint_candidate_labels")
-        prompt = json.dumps(prompt_fields, sort_keys=True)
-        result = self.complete(prompt, seed=context.turn)
+        prompt = json.dumps(treatment_prompt(context), sort_keys=True)
+        result = self.complete(prompt, seed=provider_seed(
+            context.instance_id, context.condition.value, context.turn, context.agent_id))
         match = re.search(r"answer\s*:\s*([^\n.]+)", result.text, flags=re.IGNORECASE)
         message_match = re.search(r"message\s*:\s*([^\n]+)", result.text, flags=re.IGNORECASE)
         return AgentResponse(
@@ -309,6 +371,8 @@ class OpenRouterBehavioralProvider:
             input_tokens=result.usage.get("prompt_tokens") if isinstance(result.usage, Mapping) else None,
             output_tokens=result.usage.get("completion_tokens") if isinstance(result.usage, Mapping) else None,
             cost_usd=result.cost_usd,
+            prompt_hash=treatment_prompt_hash(context),
+            prompt_schema_version=PROMPT_SCHEMA_VERSION,
         )
 
 
@@ -366,6 +430,21 @@ class BehavioralArtifactStore:
 
         return {str(record["instance_id"]) for record in self.records()
                 if record.get("valid_execution") is True and record.get("instance_id")}
+
+    def append_oracle(self, record: Mapping[str, Any]) -> None:
+        """Append a separately-schemed ORACLE manipulation-check record."""
+
+        payload = {"schema_version": ORACLE_SCHEMA_VERSION, "condition": ORACLE_CONDITION, **dict(record)}
+        with self.path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(payload, sort_keys=True, allow_nan=False) + "\n")
+        self.path.chmod(0o600)
+
+    def oracle_completed_instance_ids(self) -> set[str]:
+        """Instances with a resumable valid ORACLE record."""
+
+        return {str(record["instance_id"]) for record in self.records()
+                if record.get("schema_version") == ORACLE_SCHEMA_VERSION
+                and record.get("valid_execution") is True and record.get("instance_id")}
 
 
 def audit_retained_pilot(root: Path | str) -> dict[str, Any]:
@@ -736,24 +815,25 @@ def run_oracle_probe(instances: Sequence[FamilyInstance], provider: Any,
     if max_runs <= 0:
         raise ValueError("max_runs must be positive")
     selected = list(instances)[:max_runs]
-    completed = artifact_store.completed_instance_ids() if resume else set()
+    completed = artifact_store.oracle_completed_instance_ids() if resume else set()
     pending = [instance for instance in selected if instance.instance_id not in completed]
     rows: list[dict[str, Any]] = []
     stop_reason: str | None = None
     consecutive_http_failures = 0
     for instance in pending:
-        if provider.request_count + 1 > provider.config.max_requests:
+        if provider.request_count + request_budget(ORACLE_CONDITION, 1) > provider.config.max_requests:
             stop_reason = "request_cap"
             break
         if provider.cost_usd >= provider.config.max_cost_usd:
             stop_reason = "cost_cap"
             break
-        view = instance.agent_view(finalizing_agent, "ISO")
-        view = {**view, "private_clues": list(instance.pooled_private_clues()),
-                "is_finalizer": True, "finalizing_agent": finalizing_agent}
+        # ORACLE matches the FULL treatment's information and prompt schema as
+        # closely as possible, but carries its own condition identity.
+        view = instance.agent_view(finalizing_agent, "FULL")
+        view = {**view, "is_finalizer": True, "finalizing_agent": finalizing_agent}
         run_id = f"oracle-{instance.instance_id}"
-        context = AgentContext(run_id, instance.instance_id, finalizing_agent, BatteryCondition.FULL,
-                               0, view, (), "pooled-oracle-v1", provider.config.max_tokens)
+        context = AgentContext(run_id, instance.instance_id, finalizing_agent, DiagnosticCondition.ORACLE,
+                               0, view, (), PROMPT_SCHEMA_VERSION, provider.config.max_tokens)
         response = provider.respond(context)
         output_present = bool(response.output_text.strip())
         answer = response.answer
@@ -776,14 +856,19 @@ def run_oracle_probe(instances: Sequence[FamilyInstance], provider: Any,
             consecutive_http_failures += 1
         else:
             consecutive_http_failures = 0
-        rows.append({
+        row = {
             "instance_id": instance.instance_id, "family": instance.family,
             "complexity": instance.complexity.value,
             "regime": instance.assignment.regime.value if instance.assignment.regime else None,
-            "condition": "ORACLE", "classification": classification, "valid_execution": valid_execution,
-            "checker_accepted": accepted, "failure_reason": failure_reason,
+            "condition": ORACLE_CONDITION, "classification": classification,
+            "valid_execution": valid_execution, "checker_accepted": accepted,
+            "failure_reason": failure_reason,
+            "prompt_schema_version": response.prompt_schema_version or PROMPT_SCHEMA_VERSION,
+            "prompt_hash": response.prompt_hash,
             "channel": instance.channel_analysis(),
-        })
+        }
+        artifact_store.append_oracle(row)
+        rows.append(row)
         if consecutive_http_failures >= provider.config.max_consecutive_failures:
             stop_reason = "repeated_http_failure"
             break
@@ -806,9 +891,14 @@ def run_oracle_probe(instances: Sequence[FamilyInstance], provider: Any,
         stop_reason = "completed_planned_runs"
     return {
         "probe_version": "pooled-private-oracle-v1",
+        "oracle_schema_version": ORACLE_SCHEMA_VERSION,
+        "condition": ORACLE_CONDITION,
+        "separate_from_primary_conditions": True,
         "stage": "T1a-pooled-oracle",
         "endpoint": provider.config.endpoint,
         "model": provider.model,
+        "finalizing_agent": finalizing_agent,
+        "finalizer_policy": FINALIZER_POLICY,
         "planned_instances": len(selected),
         "attempted_instances": len(rows),
         "valid_runs": len(valid_rows),
@@ -817,9 +907,11 @@ def run_oracle_probe(instances: Sequence[FamilyInstance], provider: Any,
         "oracle_success_rate": len(successful) / len(valid_rows) if valid_rows else None,
         "cells": cells,
         "requests_made": provider.request_count,
+        "requests_per_instance": request_budget(ORACLE_CONDITION, 1),
         "cost_usd": provider.cost_usd,
         "stop_reason": stop_reason,
         "provider_diagnostics": provider.diagnostics() if hasattr(provider, "diagnostics") else {},
+        "p_oracle_minus_full_note": "report p_ORACLE - p_FULL from the paired analysis, not here",
         "raw_responses_retained": False,
         "credentials_retained": False,
     }
@@ -837,7 +929,7 @@ def run_full_gate(instances: Sequence[FamilyInstance], provider: Any,
     selected = list(instances)[:max_runs]
     completed = artifact_store.completed_instance_ids() if resume else set()
     pending = [instance for instance in selected if instance.instance_id not in completed]
-    requests_per_run = runner.turns * 2
+    requests_per_run = request_budget(BatteryCondition.FULL.value, runner.turns)
     rows: list[dict[str, Any]] = []
     stop_reason: str | None = None
     consecutive_http_failures = 0
@@ -852,7 +944,7 @@ def run_full_gate(instances: Sequence[FamilyInstance], provider: Any,
         recorder = _RecordingProvider(provider)
         run_id = f"full-gate-{instance.instance_id}"
         result = runner.run_condition(instance, BatteryCondition.FULL, recorder,
-                                      pair_id=run_id, run_id=run_id)
+                                      pair_id=run_id, run_id=run_id, finalizer_only=True)
         final_response = recorder.responses.get((run_id, finalizing_agent, 0))
         output_present = bool(final_response is not None and final_response.output_text.strip())
         answer = result.submitted_answers.get(finalizing_agent)
@@ -961,6 +1053,7 @@ def run_full_gate(instances: Sequence[FamilyInstance], provider: Any,
         "provider": getattr(provider, "provider", "unknown"),
         "provider_version": getattr(provider, "version", "unknown"),
         "finalizing_agent": finalizing_agent,
+        "finalizer_policy": FINALIZER_POLICY,
         "turns": runner.turns,
         "requests_per_run": requests_per_run,
         "request_cap": provider.config.max_requests,
@@ -1014,7 +1107,7 @@ def run_paired_screen(instances: Sequence[FamilyInstance], provider: Any,
     runner = TwoAgentBatteryRunner(turns=turns, token_budget=provider.config.max_tokens,
                                    finalizing_agent=finalizing_agent)
     selected = list(instances)[:max_runs]
-    requests_per_instance = turns * 2 * len(selected_conditions)
+    requests_per_instance = sum(request_budget(condition.value, turns) for condition in selected_conditions)
     rows: list[dict[str, Any]] = []
     stop_reason: str | None = None
     consecutive_http_failures = 0
@@ -1030,7 +1123,8 @@ def run_paired_screen(instances: Sequence[FamilyInstance], provider: Any,
         for condition in selected_conditions:
             recorder = _RecordingProvider(provider)
             run_id = f"paired-{condition.value}-{instance.instance_id}"
-            result = runner.run_condition(instance, condition, recorder, pair_id=pair, run_id=run_id)
+            result = runner.run_condition(instance, condition, recorder, pair_id=pair, run_id=run_id,
+                                          finalizer_only=condition.value in BOARD_FREE_CONDITIONS)
             final_response = recorder.responses.get((run_id, finalizing_agent, turns - 1))
             output_present = bool(final_response is not None and final_response.output_text.strip())
             answer = result.submitted_answers.get(finalizing_agent)
@@ -1145,6 +1239,7 @@ def run_paired_screen(instances: Sequence[FamilyInstance], provider: Any,
         "provider": getattr(provider, "provider", "unknown"),
         "provider_version": getattr(provider, "version", "unknown"),
         "finalizing_agent": finalizing_agent, "turns": turns,
+        "finalizer_policy": FINALIZER_POLICY,
         "requests_per_instance": requests_per_instance,
         "request_cap": provider.config.max_requests,
         "rate_floor_seconds": provider.config.min_interval_seconds,
@@ -1193,7 +1288,7 @@ def next_decision_for(blocking_issue: str | None) -> str:
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="T1a FULL-only gate and paired ISO/FULL/COMM screen")
-    parser.add_argument("--mode", choices=["full-gate", "paired-screen", "oracle", "analyze", "audit-channels", "preregister"], default="full-gate")
+    parser.add_argument("--mode", choices=["full-gate", "paired-screen", "oracle", "analyze", "audit-channels", "preregister", "treatment-schema"], default="full-gate")
     parser.add_argument("--live", action="store_true", help="run the bounded live path (requires credentials)")
     parser.add_argument("--model", default=DEFAULT_FREE_MODEL)
     parser.add_argument("--endpoint", default=ENDPOINT)
@@ -1202,8 +1297,6 @@ def main(argv: Sequence[str] | None = None) -> int:
                         help="per-agent completion token budget; raise for reasoning models")
     parser.add_argument("--turns", type=int, default=2, help="dialogue turns per agent for the paired screen")
     parser.add_argument("--conditions", help="comma-separated condition subset for the paired screen (default ISO,FULL,COMM)")
-    parser.add_argument("--full-view", choices=["joint-set", "joint-clues"], default="joint-clues",
-                        help="FULL prompt view: joint clues only (default, leak-free) or include the joint candidate set")
     parser.add_argument("--seeds-per-cell", type=int,
                         help="build an equal-n paired screen with this many seeds per family x complexity cell")
     parser.add_argument("--families", help="comma-separated family filter over the frozen manifest")
@@ -1223,7 +1316,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 if line.strip():
                     records.append(json.loads(line))
         contrasts: dict[str, Any] = {}
-        for left, right in (("ISO", "FULL"), ("ISO", "COMM"), ("FULL", "COMM")):
+        for left, right in (("ISO", "FULL"), ("ISO", "COMM"), ("FULL", "COMM"), ("FULL", ORACLE_CONDITION)):
             contrast = paired_contrast(records, left, right)
             if contrast is not None:
                 contrasts[f"{left}->{right}"] = contrast
@@ -1267,6 +1360,15 @@ def main(argv: Sequence[str] | None = None) -> int:
             "channel_complete_required", "instance_count", "manifest_hash", "no_live_screen")},
             indent=2, sort_keys=True, allow_nan=False))
         return 0
+    if args.mode == "treatment-schema":
+        report = treatment_schema()
+        report["mode"] = "treatment-schema"
+        if args.report:
+            args.report.parent.mkdir(parents=True, exist_ok=True)
+            args.report.write_text(json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n",
+                                   encoding="utf-8")
+        print(json.dumps(report, indent=2, sort_keys=True, allow_nan=False))
+        return 0
     if args.seeds_per_cell:
         extended_families = (tuple(name.strip() for name in args.families.split(",") if name.strip())
                              if args.families else None)
@@ -1301,11 +1403,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         elif args.mode == "oracle":
             max_requests = max_runs
         else:
-            max_requests = max_runs * args.turns * 2 * len(selected_conditions)
+            max_requests = max_runs * sum(request_budget(condition.value, args.turns)
+                                          for condition in selected_conditions)
         config = BehavioralProviderConfig(model=args.model, endpoint=args.endpoint,
                                           max_requests=max_requests, max_cost_usd=20.0,
-                                          min_interval_seconds=0.25, max_tokens=args.max_tokens,
-                                          include_joint_candidate_labels=(args.full_view == "joint-set"))
+                                          min_interval_seconds=0.25, max_tokens=args.max_tokens)
         provider = OpenRouterBehavioralProvider(config)
         store = BehavioralArtifactStore(output)
         if args.mode == "full-gate":
@@ -1390,6 +1492,10 @@ def pressure_catalog(records: Iterable[Mapping[str, Any]], instances: Sequence[F
 
 __all__ = [
     "BEHAVIORAL_VERSION", "FULL_GATE_VERSION", "FROZEN_FULL_GATE_MANIFEST",
+    "PROMPT_SCHEMA_VERSION", "ORACLE_SCHEMA_VERSION", "ORACLE_CONDITION",
+    "FINALIZER_POLICY", "FINALIZER_AGENT", "BOARD_FREE_CONDITIONS", "TREATMENT_PROMPT_FIELDS",
+    "DiagnosticCondition", "provider_seed", "treatment_prompt", "treatment_prompt_hash",
+    "request_budget", "treatment_schema",
     "BehavioralArtifactStore", "BehavioralProviderConfig", "BehavioralResponse",
     "OpenRouterBehavioralProvider", "audit_retained_pilot", "classify_http_status",
     "frozen_full_gate_instances", "is_retryable_status", "main", "pressure_catalog",

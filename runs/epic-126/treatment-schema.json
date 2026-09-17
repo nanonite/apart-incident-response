@@ -1,0 +1,48 @@
+{
+  "board_free_conditions": [
+    "ISO",
+    "FULL",
+    "ORACLE"
+  ],
+  "cue_estimands": {
+    "c_need": "p_FULL - p_ISO",
+    "oracle_gap": "p_ORACLE - p_FULL"
+  },
+  "diagnostic_conditions": [
+    "ORACLE"
+  ],
+  "finalizer_policy": "one_way_A_finalizer",
+  "finalizing_agent": "A",
+  "forbidden_model_visible_fields": [
+    "joint_candidate_labels"
+  ],
+  "mode": "treatment-schema",
+  "oracle_schema_version": "behavioral-oracle-v1",
+  "oracle_separate_from_primary": true,
+  "primary_conditions": [
+    "ISO",
+    "FULL",
+    "COMM"
+  ],
+  "prompt_fields": [
+    "instruction",
+    "family",
+    "complexity",
+    "condition",
+    "turn",
+    "is_finalizer",
+    "finalizing_agent",
+    "candidate_labels",
+    "joint_clues",
+    "private_clues",
+    "visible_messages"
+  ],
+  "prompt_schema_version": "treatment-prompt-v2",
+  "provider_seed_basis": "sha256(instance_id|condition|turn|agent_id)[:8]",
+  "request_budget_turns_2": {
+    "COMM": 4,
+    "FULL": 2,
+    "ISO": 2,
+    "ORACLE": 2
+  }
+}
