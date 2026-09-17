@@ -257,6 +257,23 @@ hypothesis-medium, so its FULL denominator is 16/20. The COMM arm was not
 re-run at n=20; the COMM ~= ISO null stands from the n=5 screen. No T3 entropy
 work was launched.
 
+COMM arm at n=20 (COMM-only, `turns=2`, same 80 instances as `cneed-n20`;
+artifacts `runs/epic-126/comm-n20.*`): 80 runs, 78 valid, 2
+`invalid_output_empty`, 28 successes, 320 requests, `$0.00`, no HTTP 429.
+
+- COMM success 0.359 (vs ISO 0.212 and FULL 0.658 on the same instances)
+- 129 messages / 129 transmitted bits; 8 verified post-read successes in 78
+  valid runs (0.103)
+- `COMM-ISO` difference 0.146, 95% CI [0.007, 0.286]
+- `eta_comm = (p_COMM-p_ISO)/(p_FULL-p_ISO)`: hypothesis low 0.21, hypothesis
+  medium 0.35, reference low 0.33, reference medium 0.54; **overall 0.33**
+
+This supersedes the n=5 COMM ~= ISO null: at n=20 communication does recover
+roughly one third of the FULL-ISO gap, though verified post-read use remains
+low (8/78). Caveat: the COMM condition used `turns=2` while ISO/FULL used
+`turns=1`, because the finalizer needs at least one turn to read a peer message.
+No T3 entropy work was launched.
+
 ## T3/T4
 
 T3 was not run because T1 selected no useful cells and T2 found no aligned
