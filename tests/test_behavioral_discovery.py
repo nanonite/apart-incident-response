@@ -2,6 +2,7 @@ import json
 import tempfile
 import unittest
 import urllib.error
+import dataclasses
 from collections import Counter
 from pathlib import Path
 from unittest.mock import patch
@@ -12,6 +13,7 @@ from apart_incident_response.behavioral_discovery import (
     BehavioralProviderConfig,
     OpenRouterBehavioralProvider,
     audit_retained_pilot,
+    channel_audit_manifest,
     classify_http_status,
     extended_paired_instances,
     frozen_full_gate_instances,
@@ -29,7 +31,7 @@ from apart_incident_response.behavioral_discovery import (
 from apart_incident_response.communication_protocol import BatteryCondition, DependenceRegime, ReasoningComplexity
 from apart_incident_response.communication_runner import AgentContext, AgentResponse
 from apart_incident_response.reasoning_baseline import DEFAULT_FREE_MODEL
-from apart_incident_response.task_families import generate_instance
+from apart_incident_response.task_families import audit_channel_invariants, generate_instance
 
 
 class FakeResponse:
@@ -530,8 +532,45 @@ class ChannelCoverageTests(unittest.TestCase):
                 for seed in (16000, 16003, 16401):
                     instance = generate_instance(family, seed, DependenceRegime.N, complexity)
                     analysis = instance.channel_analysis()
-                    self.assertTrue(analysis["covers_joint"], (family, complexity.value, seed, analysis))
+                    self.assertTrue(analysis["channel_complete"], (family, complexity.value, seed, analysis))
                     self.assertTrue(analysis["both_agents_needed"], (family, complexity.value, seed, analysis))
+                    self.assertTrue(analysis["finalizer_needs_peer"], (family, complexity.value, seed, analysis))
+
+    def test_missing_decisive_clue_fails_equality_but_passes_subset(self):
+        base = generate_instance("hypothesis", 16000, DependenceRegime.N, ReasoningComplexity.LOW)
+        under_constrained = dataclasses.replace(
+            base, private_clues={"A": base.private_clues["A"], "B": ()})
+        analysis = under_constrained.channel_analysis()
+        self.assertTrue(analysis["covers_joint"], analysis)
+        self.assertFalse(analysis["channel_complete"], analysis)
+        self.assertGreater(analysis["pooled_size"], analysis["joint_size"])
+        audit = audit_channel_invariants([under_constrained])
+        self.assertEqual(audit["channel_incomplete_ids"], [base.instance_id])
+        self.assertEqual(audit["channel_complete_count"], 0)
+
+    def test_audit_reports_high_complexity_singleton_honestly(self):
+        instances = channel_audit_manifest(seeds_per_cell=3, families=("reference",))
+        audit = audit_channel_invariants(instances)
+        self.assertEqual(audit["channel_incomplete_ids"], [])
+        high_rows = [row for row in audit["rows"] if row["complexity"] == "high"]
+        self.assertTrue(high_rows)
+        # reference-high can leave one agent with a singleton, so peer necessity is not universal
+        singleton_high = [row for row in high_rows
+                          if row["private_a_size"] <= 1 or row["private_b_size"] <= 1]
+        self.assertTrue(singleton_high, "reference-high should expose at least one singleton-agent case")
+        for row in singleton_high:
+            self.assertFalse(row["both_agents_needed"], row)
+        self.assertEqual(audit["no_live_screen"], True)
+
+    def test_audit_reports_declared_vs_clue_consistent_mismatch(self):
+        instances = channel_audit_manifest(seeds_per_cell=1, families=("hypothesis",))
+        audit = audit_channel_invariants(instances)
+        # declared private_solutions come from _sets (all candidates for N); clue-consistent
+        # sets are narrower, so this mismatch must be reported as input to the reconciliation work.
+        self.assertGreater(audit["declared_mismatch_count"], 0)
+        for row in audit["rows"]:
+            self.assertFalse(row["declared_matches_clue_consistent_a"])
+            self.assertTrue(row["private_a_size"] < row["declared_private_a_size"])
 
     def test_oracle_probe_reports_channel_ceiling(self):
         frozen = frozen_full_gate_instances()

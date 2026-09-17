@@ -27,7 +27,7 @@ from .communication_protocol import BatteryCondition, DependenceRegime, Reasonin
 from .communication_report import report_from_battery
 from .communication_runner import AgentContext, AgentResponse, BatteryRunResult, TwoAgentBatteryRunner
 from .reasoning_baseline import DEFAULT_FREE_MODEL, PROJECT_ENV_FILE, OPENROUTER_ENV_FILE
-from .task_families import FamilyInstance, generate_instance
+from .task_families import FamilyInstance, audit_channel_invariants, generate_instance
 
 
 ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
@@ -524,6 +524,29 @@ def extended_paired_instances(seeds_per_cell: int = 5, *,
             offset = _COMPLEXITY_SEED_OFFSET[complexity]
             for replicate in range(seeds_per_cell):
                 instances.append(generate_instance(family, base + offset + replicate,
+                                                   DependenceRegime.N, complexity))
+    return instances
+
+
+AUDIT_COMPLEXITIES: tuple[ReasoningComplexity, ...] = tuple(ReasoningComplexity)
+
+
+def channel_audit_manifest(seeds_per_cell: int = 3,
+                           families: Sequence[str] | None = None) -> list[FamilyInstance]:
+    """Offline audit manifest spanning every family x complexity at regime N."""
+
+    if seeds_per_cell <= 0:
+        raise ValueError("seeds_per_cell must be positive")
+    selected = tuple(families) if families else FAMILY_ORDER
+    for family in selected:
+        if family not in _FAMILY_SEED_BASE:
+            raise ValueError(f"unknown task family: {family}")
+    instances: list[FamilyInstance] = []
+    for family in selected:
+        base = _FAMILY_SEED_BASE[family]
+        for index, complexity in enumerate(AUDIT_COMPLEXITIES):
+            for replicate in range(seeds_per_cell):
+                instances.append(generate_instance(family, base + index * 100 + replicate,
                                                    DependenceRegime.N, complexity))
     return instances
 
@@ -1165,7 +1188,7 @@ def next_decision_for(blocking_issue: str | None) -> str:
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="T1a FULL-only gate and paired ISO/FULL/COMM screen")
-    parser.add_argument("--mode", choices=["full-gate", "paired-screen", "oracle", "analyze"], default="full-gate")
+    parser.add_argument("--mode", choices=["full-gate", "paired-screen", "oracle", "analyze", "audit-channels"], default="full-gate")
     parser.add_argument("--live", action="store_true", help="run the bounded live path (requires credentials)")
     parser.add_argument("--model", default=DEFAULT_FREE_MODEL)
     parser.add_argument("--endpoint", default=ENDPOINT)
@@ -1206,6 +1229,22 @@ def main(argv: Sequence[str] | None = None) -> int:
             args.report.write_text(json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n",
                                    encoding="utf-8")
         print(json.dumps(report, indent=2, sort_keys=True, allow_nan=False))
+        return 0
+    if args.mode == "audit-channels":
+        audit_families = (tuple(name.strip() for name in args.families.split(",") if name.strip())
+                          if args.families else None)
+        instances = channel_audit_manifest(args.seeds_per_cell or 3, families=audit_families)
+        report = audit_channel_invariants(instances)
+        report["mode"] = "audit-channels"
+        if args.report:
+            args.report.parent.mkdir(parents=True, exist_ok=True)
+            args.report.write_text(json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n",
+                                   encoding="utf-8")
+        print(json.dumps({key: report[key] for key in (
+            "mode", "audit_version", "instance_count", "channel_complete_count",
+            "channel_incomplete_ids", "both_agents_needed_count", "finalizer_needs_peer_count",
+            "singleton_agent_ids", "declared_mismatch_count", "no_live_screen")},
+            indent=2, sort_keys=True, allow_nan=False))
         return 0
     if args.seeds_per_cell:
         extended_families = (tuple(name.strip() for name in args.families.split(",") if name.strip())

@@ -131,18 +131,41 @@ class FamilyInstance:
         return tuple(self.private_clues.get("A", ())) + tuple(self.private_clues.get("B", ()))
 
     def channel_analysis(self) -> dict[str, Any]:
-        """Whether the distributed private clues can reconstruct the joint information."""
+        """Audit the distributed private clues against the joint feasible set.
 
-        private_a = self.clue_consistent(self.private_clues.get("A", ()))
-        private_b = self.clue_consistent(self.private_clues.get("B", ()))
+        ``channel_complete`` requires the pooled clue-consistent set to *equal*
+        the joint set, not merely contain it: a subset check passes an
+        under-constrained channel that still leaves extra candidates.
+        ``both_agents_needed`` requires each agent's clue set to strictly
+        narrow relative to the pooled set; ``finalizer_needs_peer`` is the
+        A-finalizer-specific requirement relative to the joint set.
+        """
+
+        clue_a = self.private_clues.get("A", ())
+        clue_b = self.private_clues.get("B", ())
+        clue_consistent_a = self.clue_consistent(clue_a)
+        clue_consistent_b = self.clue_consistent(clue_b)
         pooled = self.clue_consistent(self.pooled_private_clues())
+        joint = self.joint_solutions
+        declared_a = self.private_solutions["A"]
+        declared_b = self.private_solutions["B"]
         return {
-            "private_a_size": len(private_a),
-            "private_b_size": len(private_b),
+            "private_a_size": len(clue_consistent_a),
+            "private_b_size": len(clue_consistent_b),
             "pooled_size": len(pooled),
-            "joint_size": len(self.joint_solutions),
-            "covers_joint": self.joint_solutions <= pooled,
-            "both_agents_needed": len(private_a) > 1 and len(private_b) > 1,
+            "joint_size": len(joint),
+            "clue_consistent_a": sorted(clue_consistent_a),
+            "clue_consistent_b": sorted(clue_consistent_b),
+            "pooled_values": sorted(pooled),
+            "declared_private_a_size": len(declared_a),
+            "declared_private_b_size": len(declared_b),
+            "declared_matches_clue_consistent_a": clue_consistent_a == declared_a,
+            "declared_matches_clue_consistent_b": clue_consistent_b == declared_b,
+            "covers_joint": joint <= pooled,
+            "pooled_equals_joint": pooled == joint,
+            "channel_complete": pooled == joint,
+            "both_agents_needed": len(clue_consistent_a) > len(pooled) and len(clue_consistent_b) > len(pooled),
+            "finalizer_needs_peer": len(clue_consistent_a) > len(joint),
         }
 
     def information(self, agent: str, raw_text: str, message_id: str) -> MessageInformation:
@@ -348,8 +371,49 @@ def validate_family_grid(family: str, seed: int = 1) -> dict[str, Any]:
     }
 
 
+def audit_channel_invariants(instances: Iterable[FamilyInstance]) -> dict[str, Any]:
+    """Offline audit of pooled/joint equality, peer necessity and declared-set mismatch.
+
+    This is a protocol invariant check, not a live screen. It flags any instance
+    whose pooled clue-consistent set does not *equal* the joint set, any
+    instance where a single agent already suffices, and any mismatch between the
+    declared ``private_solutions`` and the clue-consistent feasible set (the
+    input contract for the feasible-set reconciliation work).
+    """
+
+    rows: list[dict[str, Any]] = []
+    for instance in instances:
+        analysis = instance.channel_analysis()
+        rows.append({
+            "instance_id": instance.instance_id,
+            "family": instance.family,
+            "complexity": instance.complexity.value,
+            "regime": instance.assignment.regime.value if instance.assignment.regime else None,
+            **analysis,
+        })
+    incomplete = [row["instance_id"] for row in rows if not row["channel_complete"]]
+    declared_mismatch = [row["instance_id"] for row in rows
+                         if not (row["declared_matches_clue_consistent_a"]
+                                 and row["declared_matches_clue_consistent_b"])]
+    singleton_agent = [row["instance_id"] for row in rows
+                       if row["private_a_size"] <= 1 or row["private_b_size"] <= 1]
+    return {
+        "audit_version": "channel-invariants-v1",
+        "instance_count": len(rows),
+        "channel_complete_count": len(rows) - len(incomplete),
+        "channel_incomplete_ids": incomplete,
+        "both_agents_needed_count": sum(row["both_agents_needed"] for row in rows),
+        "finalizer_needs_peer_count": sum(row["finalizer_needs_peer"] for row in rows),
+        "singleton_agent_ids": singleton_agent,
+        "declared_mismatch_count": len(declared_mismatch),
+        "declared_mismatch_ids": declared_mismatch,
+        "rows": rows,
+        "no_live_screen": True,
+    }
+
+
 __all__ = [
     "Claim", "FamilyInstance", "FAMILY_GENERATORS", "HypothesisFamily", "LegalFamily",
     "LexiconFamily", "PlanningFamily", "PoetryFamily", "ReferenceFamily",
-    "generate_grid", "generate_instance", "validate_family_grid",
+    "audit_channel_invariants", "generate_grid", "generate_instance", "validate_family_grid",
 ]
