@@ -34,6 +34,7 @@ from apart_incident_response.behavioral_discovery import (
     run_full_gate,
     run_oracle_probe,
     run_paired_screen,
+    run_settings_hash,
     select_frozen_instances,
     treatment_prompt,
     treatment_prompt_hash,
@@ -784,6 +785,44 @@ class ProtocolBoundaryTests(unittest.TestCase):
         self.assertEqual(key, current_protocol_key("model-a", "provider-v1"))
         self.assertNotEqual(key, current_protocol_key("model-b", "provider-v1"))
         self.assertNotEqual(key, current_protocol_key("model-a", "provider-v2"))
+        # generator | prompt schema | treatment-schema hash | run-settings hash | model | provider
+        self.assertEqual(len(key.split("|")), 6)
+
+    def test_protocol_key_binds_run_settings(self):
+        base = dict(turns=2, max_tokens=1024, finalizing_agent="A")
+        key = current_protocol_key("model-a", "provider-v1", **base)
+        self.assertEqual(key, current_protocol_key("model-a", "provider-v1", **base))
+        self.assertNotEqual(key, current_protocol_key("model-a", "provider-v1", turns=1, max_tokens=1024,
+                                                      finalizing_agent="A"))
+        self.assertNotEqual(key, current_protocol_key("model-a", "provider-v1", turns=2, max_tokens=512,
+                                                      finalizing_agent="A"))
+        self.assertNotEqual(key, current_protocol_key("model-a", "provider-v1", turns=2, max_tokens=1024,
+                                                      finalizing_agent="B"))
+        self.assertNotEqual(run_settings_hash(turns=2, max_tokens=1024),
+                            run_settings_hash(turns=2, max_tokens=512))
+
+    def test_paired_contrast_rejects_ambiguous_duplicates(self):
+        records = [
+            {"instance_id": "x", "condition": "ISO", "valid_execution": True, "checker_accepted": True},
+            {"instance_id": "x", "condition": "ISO", "valid_execution": True, "checker_accepted": False},
+            {"instance_id": "x", "condition": "FULL", "valid_execution": True, "checker_accepted": True},
+        ]
+        with self.assertRaises(ValueError):
+            paired_contrast(records, "ISO", "FULL")
+        grouped = paired_contrasts_by_protocol(records)
+        entry = grouped["legacy_unknown_protocol"]["paired_contrasts"]["ISO->FULL"]
+        self.assertTrue(entry["ambiguous"])
+        self.assertIn("duplicate", entry["error"])
+
+    def test_full_resume_requires_matching_condition(self):
+        with tempfile.TemporaryDirectory() as directory:
+            store = BehavioralArtifactStore(Path(directory) / "shared.jsonl")
+            key = current_protocol_key("model-a", "provider-v1", turns=1, max_tokens=96, finalizing_agent="A")
+            store.path.write_text(json.dumps({
+                "schema_version": "behavioral-run-v1", "valid_execution": True,
+                "instance_id": "i1", "condition": "ISO", "protocol_key": key}) + "\n", encoding="utf-8")
+            self.assertEqual(store.completed_instance_ids(protocol_key=key, condition="FULL"), set())
+            self.assertEqual(store.completed_instance_ids(protocol_key=key, condition="ISO"), {"i1"})
 
     def test_protocol_output_stem_is_versioned(self):
         self.assertEqual(PROTOCOL_OUTPUT_STEM, GENERATOR_VERSION)

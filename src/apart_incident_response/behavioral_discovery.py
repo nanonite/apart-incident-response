@@ -92,18 +92,51 @@ def treatment_prompt_hash(context: AgentContext) -> str:
 PROTOCOL_OUTPUT_STEM = GENERATOR_VERSION
 
 
-def current_protocol_key(model_id: str, provider_version: str) -> str:
-    """Boundary that prevents mixing runs from different protocols or models."""
-
-    return "|".join([GENERATOR_VERSION, PROMPT_SCHEMA_VERSION, str(model_id), str(provider_version)])
+def _treatment_schema_hash() -> str:
+    return hashlib.sha256(json.dumps(treatment_schema(), sort_keys=True).encode()).hexdigest()[:16]
 
 
-def _protocol_extra(provider: Any) -> dict[str, Any]:
+def run_settings_hash(*, turns: int | None, max_tokens: int | None,
+                      finalizing_agent: str = FINALIZER_AGENT) -> str:
+    """Hash of the frozen run settings that must match across a protocol boundary."""
+
+    settings = {
+        "turns": turns,
+        "max_tokens": max_tokens,
+        "finalizing_agent": finalizing_agent,
+        "finalizer_policy": FINALIZER_POLICY,
+        "prompt_schema_version": PROMPT_SCHEMA_VERSION,
+        "temperature": 0.0,
+        "stream": False,
+        "require_parameters": True,
+    }
+    return hashlib.sha256(json.dumps(settings, sort_keys=True).encode()).hexdigest()[:16]
+
+
+def current_protocol_key(model_id: str, provider_version: str, *, turns: int | None = None,
+                         max_tokens: int | None = None,
+                         finalizing_agent: str = FINALIZER_AGENT) -> str:
+    """Boundary that prevents mixing runs from different protocols, models or settings."""
+
+    return "|".join([
+        GENERATOR_VERSION,
+        PROMPT_SCHEMA_VERSION,
+        _treatment_schema_hash(),
+        run_settings_hash(turns=turns, max_tokens=max_tokens, finalizing_agent=finalizing_agent),
+        str(model_id),
+        str(provider_version),
+    ])
+
+
+def _protocol_extra(provider: Any, *, turns: int, max_tokens: int,
+                    finalizing_agent: str = FINALIZER_AGENT) -> dict[str, Any]:
     return {
         "generator_version": GENERATOR_VERSION,
         "prompt_schema_version": PROMPT_SCHEMA_VERSION,
         "protocol_key": current_protocol_key(getattr(provider, "model", "unknown"),
-                                             getattr(provider, "version", "unknown")),
+                                             getattr(provider, "version", "unknown"),
+                                             turns=turns, max_tokens=max_tokens,
+                                             finalizing_agent=finalizing_agent),
     }
 
 
@@ -444,17 +477,19 @@ class BehavioralArtifactStore:
                 records.append(value)
         return records
 
-    def completed_instance_ids(self, *, protocol_key: str | None = None) -> set[str]:
+    def completed_instance_ids(self, *, protocol_key: str | None = None,
+                               condition: str | None = None) -> set[str]:
         """Instances with a resumable valid execution already on disk.
 
-        When ``protocol_key`` is given, records from a different generator,
-        treatment schema or model configuration are ignored so old and new runs
-        are never mixed.
+        When ``protocol_key`` or ``condition`` is given, records that do not
+        match are ignored so old/new runs and different conditions are never
+        mixed during resume.
         """
 
         return {str(record["instance_id"]) for record in self.records()
                 if record.get("valid_execution") is True and record.get("instance_id")
-                and (protocol_key is None or record.get("protocol_key") == protocol_key)}
+                and (protocol_key is None or record.get("protocol_key") == protocol_key)
+                and (condition is None or record.get("condition") == condition)}
 
     def append_oracle(self, record: Mapping[str, Any]) -> None:
         """Append a separately-schemed ORACLE manipulation-check record."""
@@ -770,6 +805,7 @@ def paired_contrast(records: Iterable[Mapping[str, Any]], left_condition: str,
         return bool(record.get("task_success"))
 
     outcomes: dict[str, dict[str, bool]] = {}
+    duplicates: list[tuple[str, str]] = []
     for record in records:
         instance_id = record.get("instance_id")
         condition = record.get("condition")
@@ -777,7 +813,15 @@ def paired_contrast(records: Iterable[Mapping[str, Any]], left_condition: str,
             continue
         if record.get("valid_execution") is not True:
             continue
-        outcomes.setdefault(str(instance_id), {})[str(condition)] = succeeded(record)
+        bucket = outcomes.setdefault(str(instance_id), {})
+        if str(condition) in bucket:
+            duplicates.append((str(instance_id), str(condition)))
+        bucket[str(condition)] = succeeded(record)
+    if duplicates:
+        raise ValueError(
+            "ambiguous duplicate valid rows for "
+            f"{sorted(set(duplicates))[:5]} ({len(duplicates)} total); "
+            "reject mixed or repeated inputs instead of silently taking the last row")
     a = b = c = d = 0
     for pair in outcomes.values():
         if left_condition not in pair or right_condition not in pair:
@@ -850,7 +894,11 @@ def paired_contrasts_by_protocol(records: Iterable[Mapping[str, Any]],
     for key, group in sorted(groups.items()):
         contrasts: dict[str, Any] = {}
         for left, right in pairs:
-            contrast = paired_contrast(group, left, right)
+            try:
+                contrast = paired_contrast(group, left, right)
+            except ValueError as exc:
+                contrasts[f"{left}->{right}"] = {"ambiguous": True, "error": str(exc)}
+                continue
             if contrast is not None:
                 contrasts[f"{left}->{right}"] = contrast
         report[key] = {"record_count": len(group), "paired_contrasts": contrasts}
@@ -870,7 +918,9 @@ def run_oracle_probe(instances: Sequence[FamilyInstance], provider: Any,
         raise ValueError("max_runs must be positive")
     selected = list(instances)[:max_runs]
     protocol_key = current_protocol_key(getattr(provider, "model", "unknown"),
-                                        getattr(provider, "version", "unknown"))
+                                        getattr(provider, "version", "unknown"),
+                                        turns=1, max_tokens=provider.config.max_tokens,
+                                        finalizing_agent=finalizing_agent)
     completed = artifact_store.oracle_completed_instance_ids(protocol_key=protocol_key) if resume else set()
     pending = [instance for instance in selected if instance.instance_id not in completed]
     rows: list[dict[str, Any]] = []
@@ -1007,8 +1057,11 @@ def run_full_gate(instances: Sequence[FamilyInstance], provider: Any,
                                    finalizing_agent=finalizing_agent)
     selected = list(instances)[:max_runs]
     protocol_key = current_protocol_key(getattr(provider, "model", "unknown"),
-                                        getattr(provider, "version", "unknown"))
-    completed = artifact_store.completed_instance_ids(protocol_key=protocol_key) if resume else set()
+                                        getattr(provider, "version", "unknown"),
+                                        turns=runner.turns, max_tokens=provider.config.max_tokens,
+                                        finalizing_agent=finalizing_agent)
+    completed = artifact_store.completed_instance_ids(
+        protocol_key=protocol_key, condition=BatteryCondition.FULL.value) if resume else set()
     pending = [instance for instance in selected if instance.instance_id not in completed]
     requests_per_run = request_budget(BatteryCondition.FULL.value, runner.turns)
     rows: list[dict[str, Any]] = []
@@ -1076,7 +1129,9 @@ def run_full_gate(instances: Sequence[FamilyInstance], provider: Any,
         artifact_store.append(result, extra={"classification": classification,
                                              "valid_execution": valid_execution,
                                              "failure_reason": failure_reason,
-                                             **_protocol_extra(provider)})
+                                             **_protocol_extra(provider, turns=runner.turns,
+                                                               max_tokens=provider.config.max_tokens,
+                                                               finalizing_agent=finalizing_agent)})
         rows.append(row)
         if consecutive_http_failures >= provider.config.max_consecutive_failures:
             stop_reason = "repeated_http_failure"
@@ -1255,7 +1310,9 @@ def run_paired_screen(instances: Sequence[FamilyInstance], provider: Any,
             artifact_store.append(result, extra={"classification": classification,
                                                  "valid_execution": valid_execution,
                                                  "failure_reason": failure_reason,
-                                                 **_protocol_extra(provider)})
+                                                 **_protocol_extra(provider, turns=turns,
+                                                                   max_tokens=provider.config.max_tokens,
+                                                                   finalizing_agent=finalizing_agent)})
             rows.append(row)
             if consecutive_http_failures >= provider.config.max_consecutive_failures:
                 stop_reason = "repeated_http_failure"
@@ -1581,7 +1638,7 @@ __all__ = [
     "FINALIZER_POLICY", "FINALIZER_AGENT", "BOARD_FREE_CONDITIONS", "TREATMENT_PROMPT_FIELDS",
     "DiagnosticCondition", "provider_seed", "treatment_prompt", "treatment_prompt_hash",
     "request_budget", "treatment_schema", "current_protocol_key", "PROTOCOL_OUTPUT_STEM",
-    "paired_contrasts_by_protocol", "ANALYSIS_PAIRS",
+    "paired_contrasts_by_protocol", "ANALYSIS_PAIRS", "run_settings_hash",
     "BehavioralArtifactStore", "BehavioralProviderConfig", "BehavioralResponse",
     "OpenRouterBehavioralProvider", "audit_retained_pilot", "classify_http_status",
     "frozen_full_gate_instances", "is_retryable_status", "main", "pressure_catalog",
