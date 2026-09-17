@@ -37,6 +37,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix board IPC integration and CLI tool wiring (#58)
 
 ### Changed
+- Lock FULL, ORACLE and runner treatment schemas (#163)
 - Make clue-consistent feasible sets authoritative for D_idx, I_m and scoring (#166)
 - Support genuine two-role Task 1 fixtures and explicit real-anchor swarm sizes (#100, #94)
 - Capture Ollama per-turn probability records with stable per-agent sampling seeds (#91)
