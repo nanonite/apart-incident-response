@@ -312,6 +312,24 @@ hypothesis (n=20 `C_need` 0.60-0.65), the leading focus families for the
 cross-model transfer stage (#152) are **planning and hypothesis**. No T3 entropy
 work was launched.
 
+Planning COMM arm (n=9/cell, `turns=2`, COMM-only, 72 requests, `$0.00`;
+artifacts `runs/epic-126/comm-planning-n9.*`): 18 runs, 17 valid, 1
+`invalid_output_empty`, 6 successes (0.353), 20 messages / 15 transmitted bits,
+2/17 verified post-read. Combined with the planning ISO/FULL screen (18
+instances): ISO 0.333, FULL 1.000, COMM 0.353.
+
+- paired ISO -> COMM difference 0.000 (6 left-only / 6 right-only discordant),
+  Newcombe [-0.215, 0.215], McNemar p=1.0
+- paired FULL -> COMM difference -0.647 [-0.827, -0.349], McNemar p=9.8e-04
+- `eta_comm` ~= 0.0 (planning), versus ~0.33 for hypothesis/reference
+
+So planning has the **largest** `C_need` (0.667) but communication recovered
+essentially none of it, unlike the two calibration families where COMM recovered
+about a third. That is precisely the family difference the battery is meant to
+detect. Caveat: n=17 for the paired ISO/COMM contrast, whose CI includes 0, so
+this is a screening signal, not a confirmed family difference. Free-model quota
+exhausted for the UTC day (995/1000). No T3 entropy work was launched.
+
 ## T3/T4
 
 T3 was not run because T1 selected no useful cells and T2 found no aligned

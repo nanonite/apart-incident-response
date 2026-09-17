@@ -1,0 +1,98 @@
+{
+  "credentials_retained": false,
+  "mode": "analyze",
+  "paired_contrasts": {
+    "FULL->COMM": {
+      "both_fail": 0,
+      "both_success": 6,
+      "difference": -0.6470588235294117,
+      "left_condition": "FULL",
+      "left_only": 11,
+      "mcnemar_exact_p": 0.0009765625,
+      "mcnemar_midp_p": 0.00048828125,
+      "n_pairs": 17,
+      "newcombe_ci": [
+        -0.8269051385609509,
+        -0.3491345035608413
+      ],
+      "p_left": 1.0,
+      "p_right": 0.35294117647058826,
+      "paired_wald_ci": [
+        -0.8742307479578593,
+        -0.41988689910096405
+      ],
+      "right_condition": "COMM",
+      "right_only": 0,
+      "wilson_left": [
+        0.8156763396284354,
+        1.0
+      ],
+      "wilson_right": [
+        0.17309486143904904,
+        0.5870003327878818
+      ]
+    },
+    "ISO->COMM": {
+      "both_fail": 9,
+      "both_success": 4,
+      "difference": 0.0,
+      "left_condition": "ISO",
+      "left_only": 2,
+      "mcnemar_exact_p": 1.0,
+      "mcnemar_midp_p": 1.0,
+      "n_pairs": 17,
+      "newcombe_ci": [
+        -0.2151959692672653,
+        0.2151959692672653
+      ],
+      "p_left": 0.35294117647058826,
+      "p_right": 0.35294117647058826,
+      "paired_wald_ci": [
+        -0.23058823529411765,
+        0.23058823529411765
+      ],
+      "right_condition": "COMM",
+      "right_only": 2,
+      "wilson_left": [
+        0.17309486143904904,
+        0.5870003327878818
+      ],
+      "wilson_right": [
+        0.17309486143904904,
+        0.5870003327878818
+      ]
+    },
+    "ISO->FULL": {
+      "both_fail": 32,
+      "both_success": 12,
+      "difference": 0.323943661971831,
+      "left_condition": "ISO",
+      "left_only": 2,
+      "mcnemar_exact_p": 5.647540092468262e-06,
+      "mcnemar_midp_p": 3.032386302947998e-06,
+      "n_pairs": 71,
+      "newcombe_ci": [
+        0.1960496103173084,
+        0.4364462654290786
+      ],
+      "p_left": 0.19718309859154928,
+      "p_right": 0.5211267605633803,
+      "paired_wald_ci": [
+        0.20188649616240814,
+        0.44600082778125383
+      ],
+      "right_condition": "FULL",
+      "right_only": 25,
+      "wilson_left": [
+        0.12125422432474278,
+        0.3041989995507489
+      ],
+      "wilson_right": [
+        0.40685796250044975,
+        0.6332266962989344
+      ]
+    }
+  },
+  "raw_responses_retained": false,
+  "record_count": 162
+}
