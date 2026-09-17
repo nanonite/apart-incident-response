@@ -12,6 +12,7 @@ from dataclasses import dataclass
 import argparse
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import re
@@ -493,21 +494,37 @@ PAIRED_CELLS: tuple[tuple[str, ReasoningComplexity], ...] = (
     ("reference", ReasoningComplexity.MEDIUM),
 )
 
+FAMILY_ORDER: tuple[str, ...] = ("hypothesis", "reference", "planning", "poetry", "legal", "lexicon")
+DEFAULT_PAIRED_FAMILIES: tuple[str, ...] = ("hypothesis", "reference")
+PAIRED_COMPLEXITIES: tuple[ReasoningComplexity, ...] = (ReasoningComplexity.LOW, ReasoningComplexity.MEDIUM)
+_FAMILY_SEED_BASE = {"hypothesis": 16000, "reference": 16200, "planning": 16400,
+                     "poetry": 16600, "legal": 16800, "lexicon": 17000}
+_COMPLEXITY_SEED_OFFSET = {ReasoningComplexity.LOW: 0, ReasoningComplexity.MEDIUM: 100}
 
-def extended_paired_instances(seeds_per_cell: int = 5) -> list[FamilyInstance]:
-    """Build an equal-n paired screen over the four family x complexity cells.
+
+def extended_paired_instances(seeds_per_cell: int = 5, *,
+                              families: Sequence[str] | None = None) -> list[FamilyInstance]:
+    """Build an equal-n paired screen over family x complexity cells.
 
     Seeds are independent of the eight frozen gate instances and unique per
-    cell, so each cell has exactly ``seeds_per_cell`` measured instances.
+    cell. The default families keep the previously frozen hypothesis/reference
+    seeds unchanged; other families get distinct offsets.
     """
 
     if seeds_per_cell <= 0:
         raise ValueError("seeds_per_cell must be positive")
+    selected = tuple(families) if families else DEFAULT_PAIRED_FAMILIES
+    for family in selected:
+        if family not in _FAMILY_SEED_BASE:
+            raise ValueError(f"unknown task family: {family}")
     instances: list[FamilyInstance] = []
-    for cell_index, (family, complexity) in enumerate(PAIRED_CELLS):
-        for replicate in range(seeds_per_cell):
-            seed = 16000 + cell_index * 100 + replicate
-            instances.append(generate_instance(family, seed, DependenceRegime.N, complexity))
+    for family in selected:
+        base = _FAMILY_SEED_BASE[family]
+        for complexity in PAIRED_COMPLEXITIES:
+            offset = _COMPLEXITY_SEED_OFFSET[complexity]
+            for replicate in range(seeds_per_cell):
+                instances.append(generate_instance(family, base + offset + replicate,
+                                                   DependenceRegime.N, complexity))
     return instances
 
 
@@ -541,6 +558,142 @@ def _classify_run(*, status: str, output_present: bool, answer_parsed: bool,
     if not checker_valid:
         return "missing_checker_evidence"
     return "success" if accepted else "valid_wrong_answer"
+
+
+def wilson_interval(successes: int, total: int, z: float = 1.96) -> tuple[float, float] | None:
+    """Wilson score interval for a binomial proportion."""
+
+    if total <= 0:
+        return None
+    p = successes / total
+    denominator = 1 + z * z / total
+    center = (p + z * z / (2 * total)) / denominator
+    half = (z / denominator) * math.sqrt(p * (1 - p) / total + z * z / (4 * total * total))
+    return (max(0.0, center - half), min(1.0, center + half))
+
+
+def mcnemar_exact_p(left_only: int, right_only: int) -> float:
+    """Two-sided exact McNemar test on the discordant pairs."""
+
+    discordant = left_only + right_only
+    if discordant == 0:
+        return 1.0
+    k = min(left_only, right_only)
+    tail = sum(math.comb(discordant, i) for i in range(k + 1)) / (2 ** discordant)
+    return min(1.0, 2 * tail)
+
+
+def mcnemar_midp(left_only: int, right_only: int) -> float:
+    """Two-sided mid-p McNemar test; less conservative than the exact test."""
+
+    discordant = left_only + right_only
+    if discordant == 0:
+        return 1.0
+    k = min(left_only, right_only)
+    lower = sum(math.comb(discordant, i) for i in range(k)) / (2 ** discordant)
+    observed = math.comb(discordant, k) / (2 ** discordant)
+    return min(1.0, 2 * (lower + 0.5 * observed))
+
+
+def paired_difference_ci(both_success: int, left_only: int, right_only: int, both_fail: int,
+                         z: float = 1.96) -> tuple[float, float] | None:
+    """Newcombe method-10 interval for the difference of paired proportions.
+
+    Built from the Wilson intervals of the two marginals plus the discordant-pair
+    correction; robust for small matched samples where a Wald interval misbehaves.
+    """
+
+    n = both_success + left_only + right_only + both_fail
+    if n <= 0:
+        return None
+    p_left = (both_success + left_only) / n
+    p_right = (both_success + right_only) / n
+    difference = p_right - p_left
+    left_interval = wilson_interval(both_success + left_only, n, z)
+    right_interval = wilson_interval(both_success + right_only, n, z)
+    if left_interval is None or right_interval is None:
+        return None
+    l1, u1 = left_interval
+    l2, u2 = right_interval
+    denominator = math.sqrt((both_success + left_only) * (both_fail + right_only)
+                            * (both_success + right_only) * (left_only + both_fail))
+    phi = (both_success * both_fail - left_only * right_only) / denominator if denominator > 0 else 0.0
+    lower = difference - math.sqrt(max(0.0, (p_right - l2) ** 2
+                                       - 2 * phi * (p_right - l2) * (u1 - p_left)
+                                       + (u1 - p_left) ** 2))
+    upper = difference + math.sqrt(max(0.0, (u2 - p_right) ** 2
+                                       - 2 * phi * (u2 - p_right) * (p_left - l1)
+                                       + (p_left - l1) ** 2))
+    return (max(-1.0, lower), min(1.0, upper))
+
+
+def paired_contrast(records: Iterable[Mapping[str, Any]], left_condition: str,
+                    right_condition: str) -> dict[str, Any] | None:
+    """Matched-by-instance contrast of two conditions with Wilson/McNemar inference."""
+
+    def succeeded(record: Mapping[str, Any]) -> bool:
+        if "checker_accepted" in record:
+            return bool(record["checker_accepted"])
+        return bool(record.get("task_success"))
+
+    outcomes: dict[str, dict[str, bool]] = {}
+    for record in records:
+        instance_id = record.get("instance_id")
+        condition = record.get("condition")
+        if instance_id is None or condition not in {left_condition, right_condition}:
+            continue
+        if record.get("valid_execution") is not True:
+            continue
+        outcomes.setdefault(str(instance_id), {})[str(condition)] = succeeded(record)
+    a = b = c = d = 0
+    for pair in outcomes.values():
+        if left_condition not in pair or right_condition not in pair:
+            continue
+        left, right = pair[left_condition], pair[right_condition]
+        if left and right:
+            a += 1
+        elif left and not right:
+            b += 1
+        elif not left and right:
+            c += 1
+        else:
+            d += 1
+    n = a + b + c + d
+    if n == 0:
+        return None
+    p_left = (a + b) / n
+    p_right = (a + c) / n
+    difference = p_right - p_left
+    standard_error = math.sqrt(b + c - (b - c) ** 2 / n) / n
+    return {
+        "left_condition": left_condition,
+        "right_condition": right_condition,
+        "n_pairs": n,
+        "both_success": a,
+        "left_only": b,
+        "right_only": c,
+        "both_fail": d,
+        "p_left": p_left,
+        "p_right": p_right,
+        "difference": difference,
+        "wilson_left": wilson_interval(a + b, n),
+        "wilson_right": wilson_interval(a + c, n),
+        "paired_wald_ci": (difference - 1.96 * standard_error, difference + 1.96 * standard_error),
+        "newcombe_ci": paired_difference_ci(a, b, c, d),
+        "mcnemar_exact_p": mcnemar_exact_p(b, c),
+        "mcnemar_midp_p": mcnemar_midp(b, c),
+    }
+
+
+def _pairwise_contrasts(rows: Sequence[Mapping[str, Any]],
+                        conditions: Sequence[BatteryCondition]) -> dict[str, Any]:
+    contrasts: dict[str, Any] = {}
+    for index, left in enumerate(conditions):
+        for right in conditions[index + 1:]:
+            contrast = paired_contrast(rows, left.value, right.value)
+            if contrast is not None:
+                contrasts[f"{left.value}->{right.value}"] = contrast
+    return contrasts
 
 
 def run_full_gate(instances: Sequence[FamilyInstance], provider: Any,
@@ -842,6 +995,7 @@ def run_paired_screen(instances: Sequence[FamilyInstance], provider: Any,
             "valid_denominators": denominators,
             "c_need_unclipped": (probabilities.get("FULL", 0.0) - probabilities.get("ISO", 0.0)
                                  if probabilities.get("FULL") is not None and probabilities.get("ISO") is not None else None),
+            "paired_contrasts": _pairwise_contrasts(cell_rows, selected_conditions),
         })
 
     failure_reasons = Counter(row["failure_reason"] for row in rows if row["failure_reason"])
@@ -878,6 +1032,7 @@ def run_paired_screen(instances: Sequence[FamilyInstance], provider: Any,
         "cost_usd": sum(row["cost_usd"] for row in rows),
         "by_condition": by_condition,
         "cells": cells,
+        "paired_contrasts": _pairwise_contrasts(rows, selected_conditions),
         "failure_reasons": dict(failure_reasons),
         "classification_counts": dict(classifications),
         "stop_reason": stop_reason,
@@ -909,7 +1064,7 @@ def next_decision_for(blocking_issue: str | None) -> str:
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="T1a FULL-only gate and paired ISO/FULL/COMM screen")
-    parser.add_argument("--mode", choices=["full-gate", "paired-screen"], default="full-gate")
+    parser.add_argument("--mode", choices=["full-gate", "paired-screen", "analyze"], default="full-gate")
     parser.add_argument("--live", action="store_true", help="run the bounded live path (requires credentials)")
     parser.add_argument("--model", default=DEFAULT_FREE_MODEL)
     parser.add_argument("--endpoint", default=ENDPOINT)
@@ -927,9 +1082,34 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--output", type=Path)
     parser.add_argument("--report", type=Path)
     parser.add_argument("--diagnostic-output", type=Path)
+    parser.add_argument("--inputs", help="comma-separated artifact jsonl files for --mode analyze")
     args = parser.parse_args(argv)
+    if args.mode == "analyze":
+        records: list[dict[str, Any]] = []
+        for name in (args.inputs or "").split(","):
+            path = Path(name.strip())
+            if not path.is_file():
+                parser.error(f"input not found: {path}")
+            for line in path.read_text(encoding="utf-8").splitlines():
+                if line.strip():
+                    records.append(json.loads(line))
+        contrasts: dict[str, Any] = {}
+        for left, right in (("ISO", "FULL"), ("ISO", "COMM"), ("FULL", "COMM")):
+            contrast = paired_contrast(records, left, right)
+            if contrast is not None:
+                contrasts[f"{left}->{right}"] = contrast
+        report = {"mode": "analyze", "record_count": len(records), "paired_contrasts": contrasts,
+                  "raw_responses_retained": False, "credentials_retained": False}
+        if args.report:
+            args.report.parent.mkdir(parents=True, exist_ok=True)
+            args.report.write_text(json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n",
+                                   encoding="utf-8")
+        print(json.dumps(report, indent=2, sort_keys=True, allow_nan=False))
+        return 0
     if args.seeds_per_cell:
-        instances = extended_paired_instances(args.seeds_per_cell)
+        extended_families = (tuple(name.strip() for name in args.families.split(",") if name.strip())
+                             if args.families else None)
+        instances = extended_paired_instances(args.seeds_per_cell, families=extended_families)
     else:
         instances = select_frozen_instances(families=args.families, complexities=args.complexities)
     max_runs = args.max_runs or len(instances)
@@ -1049,7 +1229,8 @@ __all__ = [
     "OpenRouterBehavioralProvider", "audit_retained_pilot", "classify_http_status",
     "frozen_full_gate_instances", "is_retryable_status", "main", "pressure_catalog",
     "run_behavioral_screen", "run_full_gate", "run_paired_screen", "select_frozen_instances",
-    "PAIRED_CELLS", "extended_paired_instances",
+    "PAIRED_CELLS", "extended_paired_instances", "wilson_interval", "mcnemar_exact_p",
+    "mcnemar_midp", "paired_contrast", "paired_difference_ci",
 ]
 
 

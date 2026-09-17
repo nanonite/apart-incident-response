@@ -16,10 +16,14 @@ from apart_incident_response.behavioral_discovery import (
     extended_paired_instances,
     frozen_full_gate_instances,
     is_retryable_status,
+    mcnemar_exact_p,
+    mcnemar_midp,
+    paired_contrast,
     run_behavioral_screen,
     run_full_gate,
     run_paired_screen,
     select_frozen_instances,
+    wilson_interval,
 )
 from apart_incident_response.communication_protocol import BatteryCondition, DependenceRegime, ReasoningComplexity
 from apart_incident_response.communication_runner import AgentContext, AgentResponse
@@ -374,6 +378,13 @@ class FullGateProviderTests(unittest.TestCase):
         self.assertEqual(set(counts), {("hypothesis", "low"), ("hypothesis", "medium"),
                                        ("reference", "low"), ("reference", "medium")})
 
+    def test_extended_paired_instances_can_select_other_families(self):
+        instances = extended_paired_instances(3, families=("planning", "lexicon"))
+        self.assertEqual(len(instances), 2 * 2 * 3)
+        self.assertEqual({instance.family for instance in instances}, {"planning", "lexicon"})
+        self.assertEqual(len({instance.instance_id for instance in instances}), len(instances))
+        self.assertNotIn(instances[0].instance_id, {i.instance_id for i in extended_paired_instances(3)})
+
     def context(self):
         return AgentContext("run", "instance", "A", BatteryCondition.FULL, 0,
                             {"family": "hypothesis", "task_instruction": "answer", "candidate_labels": ["candidate-0"]},
@@ -419,10 +430,13 @@ class PairedScreenTests(unittest.TestCase):
         self.assertEqual(report["by_condition"]["COMM"]["successes"], 2)
         self.assertTrue(report["all_condition_denominators_present"])
         self.assertTrue(report["paired_screen_ready"])
+        self.assertIn("ISO->FULL", report["paired_contrasts"])
+        self.assertEqual(report["paired_contrasts"]["ISO->FULL"]["right_only"], 2)
         self.assertEqual(len(report["cells"]), 2)
         for cell in report["cells"]:
             self.assertEqual(cell["valid_denominators"], {"ISO": 1, "FULL": 1, "COMM": 1})
             self.assertEqual(cell["c_need_unclipped"], 1.0)
+            self.assertIn("ISO->FULL", cell["paired_contrasts"])
 
     def test_paired_screen_can_run_iso_and_full_only(self):
         frozen = frozen_full_gate_instances()
@@ -455,6 +469,57 @@ class PairedScreenTests(unittest.TestCase):
         self.assertEqual(report["attempted_instances"], 1)
         self.assertEqual(report["requests_made"], 12)
         self.assertFalse(report["all_condition_denominators_present"])
+
+
+class PairedInferenceTests(unittest.TestCase):
+    def test_wilson_interval_bounds(self):
+        low, high = wilson_interval(0, 20)
+        self.assertEqual(low, 0.0)
+        self.assertLess(high, 0.2)
+        low, high = wilson_interval(20, 20)
+        self.assertEqual(high, 1.0)
+        self.assertLess(low, 1.0)
+        self.assertIsNone(wilson_interval(0, 0))
+
+    def test_mcnemar_exact_and_midp(self):
+        self.assertEqual(mcnemar_exact_p(0, 0), 1.0)
+        self.assertAlmostEqual(mcnemar_exact_p(2, 13), 0.00739, places=4)
+        self.assertLess(mcnemar_midp(2, 13), mcnemar_exact_p(2, 13))
+        self.assertEqual(mcnemar_exact_p(5, 5), 1.0)
+
+    def test_paired_contrast_counts_and_newcombe_interval(self):
+        records = []
+        for index in range(3):
+            records.append({"instance_id": f"i{index}", "condition": "ISO", "valid_execution": True, "task_success": True})
+            records.append({"instance_id": f"i{index}", "condition": "FULL", "valid_execution": True, "task_success": True})
+        for index in range(3, 8):
+            records.append({"instance_id": f"i{index}", "condition": "ISO", "valid_execution": True, "task_success": False})
+            records.append({"instance_id": f"i{index}", "condition": "FULL", "valid_execution": True, "task_success": True})
+        records.append({"instance_id": "i8", "condition": "ISO", "valid_execution": True, "task_success": False})
+        records.append({"instance_id": "i8", "condition": "FULL", "valid_execution": True, "task_success": False})
+        records.append({"instance_id": "i9", "condition": "ISO", "valid_execution": True, "task_success": True})
+        records.append({"instance_id": "i9", "condition": "FULL", "valid_execution": True, "task_success": False})
+        contrast = paired_contrast(records, "ISO", "FULL")
+        self.assertEqual((contrast["both_success"], contrast["left_only"], contrast["right_only"],
+                          contrast["both_fail"]), (3, 1, 5, 1))
+        self.assertEqual(contrast["n_pairs"], 10)
+        self.assertAlmostEqual(contrast["difference"], 0.4)
+        low, high = contrast["newcombe_ci"]
+        self.assertLessEqual(low, contrast["difference"])
+        self.assertGreaterEqual(high, contrast["difference"])
+        self.assertLess(contrast["mcnemar_exact_p"], 0.3)
+
+    def test_paired_contrast_skips_invalid_and_unpaired(self):
+        records = [
+            {"instance_id": "a", "condition": "ISO", "valid_execution": True, "task_success": True},
+            {"instance_id": "a", "condition": "FULL", "valid_execution": True, "task_success": True},
+            {"instance_id": "b", "condition": "ISO", "valid_execution": False, "task_success": False},
+            {"instance_id": "b", "condition": "FULL", "valid_execution": True, "task_success": True},
+            {"instance_id": "c", "condition": "ISO", "valid_execution": True, "task_success": False},
+        ]
+        contrast = paired_contrast(records, "ISO", "FULL")
+        self.assertEqual(contrast["n_pairs"], 1)
+        self.assertEqual(contrast["both_success"], 1)
 
 
 if __name__ == "__main__":
