@@ -46,6 +46,27 @@ EXCLUDED_UNSTABLE_CELLS = ("reference:high",)
 MECHANICS_SMOKE_SEEDS_PER_GROUP = 2
 # Proposed numeric floor below which eta_comm is reported as undefined.
 MINIMUM_EFFECTIVE_C_NEED = 0.10
+# Approved mechanics-smoke envelope (every physical request and retry counts).
+SMOKE_MAX_PHYSICAL_REQUESTS = 60
+SMOKE_MAX_COST_USD = 20.0
+SMOKE_MAX_TOKENS = 1024
+SMOKE_CONDITION_TURNS: dict[str, int] = {"ISO": 1, "FULL": 1, "COMM": 2}
+SMOKE_MODEL = bd.DEFAULT_FREE_MODEL
+SMOKE_CONDITIONS = ("ISO", "FULL", "COMM")
+SMOKE_DIAGNOSTICS_NOT_RUN = ("ORACLE", "INDUCED")
+APPROVED_DECISIONS = (
+    "five representative cells: hypothesis low/medium, reference low, planning low/high",
+    "exclude unstable reference-high",
+    "two fresh seeds per group, 10 instances, non-powered mechanics smoke",
+    "1024 max tokens",
+    "ISO/FULL one turn, COMM two",
+    "INDUCED and ORACLE not run in this smoke",
+    "overall matched ISO->FULL C_need is primary; voluntary COMM->ISO secondary",
+    "Holm only for later five confirmatory group-specific claims",
+    "minimum effective C_need 0.10 for reporting eta_comm",
+    "smoke cap 60 physical requests / $20 total; retries and preflight count",
+    "confirmatory sample size and spend deferred to the separate seed block after the smoke",
+)
 SUPERSEDED_CURRENT = {"preregistration-v1.json", "treatment-schema.json",
                       "channel-audit.json", "preregistered-manifest.json"}
 
@@ -252,14 +273,24 @@ def superseded_artifacts(root: Path) -> list[dict[str, Any]]:
 
 
 def build_preregistration(*, repo_root: Path, generator_commit: str | None = None,
-                          seeds_per_cell: int = MECHANICS_SMOKE_SEEDS_PER_GROUP) -> dict[str, Any]:
+                          seeds_per_cell: int = MECHANICS_SMOKE_SEEDS_PER_GROUP,
+                          approved: bool = False,
+                          smoke_request_cap: int = SMOKE_MAX_PHYSICAL_REQUESTS,
+                          smoke_cost_cap_usd: float = SMOKE_MAX_COST_USD) -> dict[str, Any]:
     src = repo_root / "src" / "apart_incident_response"
     cell_audit = audit_cells()
     smoke = stage2_instances(seeds_per_cell)
     smoke_ids = assert_unique_instance_ids(smoke)
+    smoke_protocol_key = bd.current_protocol_key(
+        SMOKE_MODEL, bd.BEHAVIORAL_VERSION, turns=dict(SMOKE_CONDITION_TURNS),
+        max_tokens=SMOKE_MAX_TOKENS, finalizing_agent=bd.FINALIZER_AGENT)
     document: dict[str, Any] = {
         "preregistration_version": PREREGISTRATION_VERSION,
-        "status": "draft_for_review",
+        "status": "locked_for_mechanics_smoke" if approved else "draft_for_review",
+        "approval_required": not approved,
+        "approval": ({"approved": True, "approved_by": "reviewer",
+                      "scope": "bounded Ling mechanics smoke targeting the pinned free model"}
+                     if approved else {"approved": False}),
         "generator_commit": generator_commit,
         "generator_file_sha256": file_sha256(src / "task_families.py"),
         "treatment_file_sha256": file_sha256(src / "behavioral_discovery.py"),
@@ -280,12 +311,16 @@ def build_preregistration(*, repo_root: Path, generator_commit: str | None = Non
         "treatment_schema": bd.treatment_schema(),
         "provider_settings": {
             "endpoint": bd.ENDPOINT,
+            "model": SMOKE_MODEL,
             "temperature": 0.0,
             "stream": False,
             "require_parameters": True,
             "seed_basis": "sha256(instance_id|condition|turn|agent_id)[:8]",
-            "max_tokens": 1024,
-            "condition_turns": {"ISO": 1, "FULL": 1, "COMM": 2, "ORACLE": 1},
+            "max_tokens": SMOKE_MAX_TOKENS,
+            "condition_turns": dict(SMOKE_CONDITION_TURNS),
+            "conditions_run": list(SMOKE_CONDITIONS),
+            "diagnostics_not_run": list(SMOKE_DIAGNOSTICS_NOT_RUN),
+            "expected_protocol_key": smoke_protocol_key,
         },
         "caps": {
             "min_interval_seconds": 0.25,
@@ -293,6 +328,12 @@ def build_preregistration(*, repo_root: Path, generator_commit: str | None = Non
             "max_requests": "per-run explicit cap",
             "stop_rules": ["request_cap", "cost_cap", "repeated_http_failure",
                            "missing_checker_evidence"],
+            "smoke": {
+                "max_physical_requests": smoke_request_cap,
+                "max_cost_usd": smoke_cost_cap_usd,
+                "counts_retries": True,
+                "counts_preflight": True,
+            },
         },
         "invalidity_classes": sorted({
             "provider_execution_failure", "invalid_output_empty", "invalid_output_unparsed",
@@ -302,7 +343,7 @@ def build_preregistration(*, repo_root: Path, generator_commit: str | None = Non
         "superseded_artifacts": superseded_artifacts(repo_root / "runs" / "epic-126"),
         "cell_audit": cell_audit,
         "declared_distinct_cells": {
-            "status": "proposed",
+            "status": "approved" if approved else "proposed",
             "representatives": [f"{family}:{complexity.value}"
                                 for family, complexity in PROPOSED_REPRESENTATIVE_CELLS],
             "excluded_unstable": list(EXCLUDED_UNSTABLE_CELLS),
@@ -315,6 +356,8 @@ def build_preregistration(*, repo_root: Path, generator_commit: str | None = Non
             "secondary": "voluntary COMM - ISO (never pooled with inducement)",
             "diagnostics": ["ORACLE - FULL manipulation check", "INDUCED inducement (separate)"],
             "holm_scope": "only if making five confirmatory group-specific claims",
+            "run_in_smoke": list(SMOKE_CONDITIONS),
+            "not_run_in_smoke": list(SMOKE_DIAGNOSTICS_NOT_RUN),
         },
         "inference": {
             "paired": "complete-pair McNemar exact plus Newcombe paired-difference interval",
@@ -354,21 +397,21 @@ def build_preregistration(*, repo_root: Path, generator_commit: str | None = Non
                 "manifest_hash": hashlib.sha256(json.dumps(smoke_ids, sort_keys=True).encode()).hexdigest(),
             },
             "confirmatory": {
-                "status": "proposed",
+                "status": "proposed_pending_smoke",
                 "seed_base": STAGE2_CONFIRMATORY_SEED_BASE,
                 "size_pending": True,
                 "note": "choose per-cell size and spend cap after the smoke discordance and invalidity rates",
             },
         },
-        "proposed_decisions": [
-            "one representative per audited structural group; exclude unstable reference-high",
-            "first two fresh seeds per group are a mechanics smoke, not a powered result",
-            "max_tokens 1024; ISO/FULL 1 turn, COMM 2, ORACLE 1",
-            "leave INDUCED out of this screen",
-            "overall matched ISO->FULL is primary; Holm only for five confirmatory group claims",
-            "confirmatory sample size and spend cap chosen after the smoke, on a separate seed block",
+        "approved_decisions": list(APPROVED_DECISIONS) if approved else [],
+        "pending_decisions": [
+            "confirmatory sample size per cell (from observed discordant pairs)",
+            "confirmatory spend cap",
         ],
-        "approval_required": True,
+        "proposed_decisions": [
+            "confirmatory sample size per cell on the separate seed block",
+            "confirmatory spend cap",
+        ],
     }
     payload = json.dumps({key: value for key, value in document.items()
                           if key != "preregistration_hash"}, sort_keys=True)
@@ -376,16 +419,59 @@ def build_preregistration(*, repo_root: Path, generator_commit: str | None = Non
     return document
 
 
+def verify_against_preregistration(document: Mapping[str, Any], *, instance_ids: Sequence[str],
+                                   model: str, provider_version: str,
+                                   condition_turns: Mapping[str, int], max_tokens: int,
+                                   finalizing_agent: str = bd.FINALIZER_AGENT) -> dict[str, Any]:
+    """Verify a planned smoke against the locked preregistration before any request."""
+
+    errors: list[str] = []
+    if document.get("status") != "locked_for_mechanics_smoke":
+        errors.append("preregistration is not locked for the mechanics smoke")
+    expected_ids = list(document["stage2"]["mechanics_smoke"]["instance_ids"])
+    if sorted(instance_ids) != sorted(expected_ids):
+        errors.append(f"selected instance ids differ from the locked manifest "
+                      f"({len(instance_ids)} selected vs {len(expected_ids)} expected)")
+    locked_model = document["provider_settings"].get("model")
+    if model != locked_model:
+        errors.append(f"model {model!r} != locked {locked_model!r}")
+    if dict(condition_turns) != dict(SMOKE_CONDITION_TURNS):
+        errors.append(f"condition turns {dict(condition_turns)!r} != approved "
+                      f"{dict(SMOKE_CONDITION_TURNS)!r}")
+    if max_tokens != SMOKE_MAX_TOKENS:
+        errors.append(f"max tokens {max_tokens} != approved {SMOKE_MAX_TOKENS}")
+    actual_key = bd.current_protocol_key(model, provider_version, turns=dict(condition_turns),
+                                         max_tokens=max_tokens, finalizing_agent=finalizing_agent)
+    expected_key = document["provider_settings"].get("expected_protocol_key")
+    if actual_key != expected_key:
+        errors.append("protocol key differs from the locked preregistration")
+    return {
+        "ok": not errors,
+        "errors": errors,
+        "expected_protocol_key": expected_key,
+        "actual_protocol_key": actual_key,
+        "expected_instance_ids": expected_ids,
+        "selected_instance_ids": list(instance_ids),
+    }
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Build the stage-2 preregistration document")
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--generator-commit", default=None)
     parser.add_argument("--seeds-per-cell", type=int, default=MECHANICS_SMOKE_SEEDS_PER_GROUP)
+    parser.add_argument("--approve", action="store_true",
+                        help="record the reviewer approval and lock the mechanics smoke")
+    parser.add_argument("--smoke-request-cap", type=int, default=SMOKE_MAX_PHYSICAL_REQUESTS)
+    parser.add_argument("--smoke-cost-cap", type=float, default=SMOKE_MAX_COST_USD)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args(argv)
     document = build_preregistration(repo_root=args.repo_root.resolve(),
                                      generator_commit=args.generator_commit,
-                                     seeds_per_cell=args.seeds_per_cell)
+                                     seeds_per_cell=args.seeds_per_cell,
+                                     approved=args.approve,
+                                     smoke_request_cap=args.smoke_request_cap,
+                                     smoke_cost_cap_usd=args.smoke_cost_cap)
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps(document, indent=2, sort_keys=True, allow_nan=False) + "\n",
@@ -399,6 +485,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         "distinct_cell_count": document["cell_audit"]["distinct_cell_count"],
         "cell_count": document["cell_audit"]["cell_count"],
         "smoke_instance_count": len(document["stage2"]["mechanics_smoke"]["instance_ids"]),
+        "smoke_request_cap": document["caps"]["smoke"]["max_physical_requests"],
+        "smoke_cost_cap_usd": document["caps"]["smoke"]["max_cost_usd"],
         "preregistration_hash": document["preregistration_hash"],
         "approval_required": document["approval_required"],
     }, indent=2, sort_keys=True, allow_nan=False))
@@ -413,7 +501,10 @@ __all__ = [
     "PREREGISTRATION_VERSION", "STAGE2_SEED_BASE", "STAGE2_CONFIRMATORY_SEED_BASE",
     "STAGE2_FAMILY_STRIDE", "STAGE2_COMPLEXITY_STRIDE", "STAGE2_MAX_SEEDS_PER_CELL",
     "PROPOSED_REPRESENTATIVE_CELLS", "EXCLUDED_UNSTABLE_CELLS", "MINIMUM_EFFECTIVE_C_NEED",
+    "SMOKE_MAX_PHYSICAL_REQUESTS", "SMOKE_MAX_COST_USD", "SMOKE_MAX_TOKENS",
+    "SMOKE_CONDITION_TURNS", "SMOKE_CONDITIONS", "SMOKE_DIAGNOSTICS_NOT_RUN", "SMOKE_MODEL",
     "audit_cells", "assert_unique_instance_ids", "build_preregistration", "cell_fingerprint",
     "file_sha256", "holm_adjust", "main", "mcnemar_required_pairs", "mechanics_smoke_instances",
     "missingness_report", "stage2_cell_seed", "stage2_instances", "superseded_artifacts",
+    "verify_against_preregistration",
 ]

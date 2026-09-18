@@ -7,6 +7,10 @@ from apart_incident_response.preregistration import (
     MINIMUM_EFFECTIVE_C_NEED,
     PREREGISTRATION_VERSION,
     PROPOSED_REPRESENTATIVE_CELLS,
+    SMOKE_CONDITION_TURNS,
+    SMOKE_MAX_COST_USD,
+    SMOKE_MAX_PHYSICAL_REQUESTS,
+    SMOKE_MAX_TOKENS,
     STAGE2_MAX_SEEDS_PER_CELL,
     STAGE2_SEED_BASE,
     assert_unique_instance_ids,
@@ -17,6 +21,7 @@ from apart_incident_response.preregistration import (
     mcnemar_required_pairs,
     missingness_report,
     stage2_instances,
+    verify_against_preregistration,
 )
 from apart_incident_response.communication_protocol import ReasoningComplexity
 
@@ -136,7 +141,8 @@ class PreregistrationDocumentTests(unittest.TestCase):
         self.assertTrue(document["proposed_decisions"])
         self.assertEqual(document["inference"]["minimum_effective_c_need"], MINIMUM_EFFECTIVE_C_NEED)
         self.assertEqual(document["provider_settings"]["condition_turns"],
-                         {"ISO": 1, "FULL": 1, "COMM": 2, "ORACLE": 1})
+                         {"ISO": 1, "FULL": 1, "COMM": 2})
+        self.assertEqual(document["provider_settings"]["diagnostics_not_run"], ["ORACLE", "INDUCED"])
         self.assertTrue(document["stage2"]["layout"]["collision_free"])
         self.assertEqual(document["declared_distinct_cells"]["excluded_unstable"], ["reference:high"])
         smoke_ids = document["stage2"]["mechanics_smoke"]["instance_ids"]
@@ -153,6 +159,50 @@ class PreregistrationDocumentTests(unittest.TestCase):
 
     def test_hash_is_deterministic(self):
         self.assertEqual(self.build()["preregistration_hash"], self.build()["preregistration_hash"])
+
+    def test_approved_lock_records_caps_and_decisions(self):
+        document = build_preregistration(repo_root=Path(__file__).resolve().parents[1],
+                                         generator_commit="deadbeef", approved=True)
+        self.assertEqual(document["status"], "locked_for_mechanics_smoke")
+        self.assertFalse(document["approval_required"])
+        self.assertTrue(document["approval"]["approved"])
+        self.assertEqual(document["caps"]["smoke"]["max_physical_requests"], SMOKE_MAX_PHYSICAL_REQUESTS)
+        self.assertEqual(document["caps"]["smoke"]["max_cost_usd"], SMOKE_MAX_COST_USD)
+        self.assertTrue(document["caps"]["smoke"]["counts_retries"])
+        self.assertTrue(document["caps"]["smoke"]["counts_preflight"])
+        self.assertEqual(document["declared_distinct_cells"]["status"], "approved")
+        self.assertEqual(document["provider_settings"]["condition_turns"], SMOKE_CONDITION_TURNS)
+        self.assertEqual(document["provider_settings"]["max_tokens"], SMOKE_MAX_TOKENS)
+        self.assertEqual(document["provider_settings"]["conditions_run"], ["ISO", "FULL", "COMM"])
+        self.assertEqual(document["provider_settings"]["diagnostics_not_run"], ["ORACLE", "INDUCED"])
+        self.assertEqual(document["provider_settings"]["model"], "inclusionai/ling-3.0-flash-vl:free")
+        self.assertTrue(document["provider_settings"]["expected_protocol_key"])
+        self.assertTrue(document["approved_decisions"])
+        self.assertEqual(document["contrasts"]["run_in_smoke"], ["ISO", "FULL", "COMM"])
+        self.assertEqual(document["stage2"]["confirmatory"]["status"], "proposed_pending_smoke")
+        self.assertTrue(document["pending_decisions"])
+
+    def test_verify_against_preregistration_accepts_locked_and_rejects_drift(self):
+        document = build_preregistration(repo_root=Path(__file__).resolve().parents[1],
+                                         generator_commit="deadbeef", approved=True)
+        instance_ids = document["stage2"]["mechanics_smoke"]["instance_ids"]
+        model = document["provider_settings"]["model"]
+        good = verify_against_preregistration(document, instance_ids=instance_ids, model=model,
+                                              provider_version="behavioral-discovery-v1",
+                                              condition_turns=SMOKE_CONDITION_TURNS,
+                                              max_tokens=SMOKE_MAX_TOKENS)
+        self.assertTrue(good["ok"], good["errors"])
+        drift = verify_against_preregistration(document, instance_ids=instance_ids[:-1], model=model,
+                                               provider_version="behavioral-discovery-v1",
+                                               condition_turns={"ISO": 1, "FULL": 1, "COMM": 3},
+                                               max_tokens=SMOKE_MAX_TOKENS)
+        self.assertFalse(drift["ok"])
+        wrong_model = verify_against_preregistration(document, instance_ids=instance_ids,
+                                                     model="deepseek/deepseek-v4.1-flash",
+                                                     provider_version="behavioral-discovery-v1",
+                                                     condition_turns=SMOKE_CONDITION_TURNS,
+                                                     max_tokens=SMOKE_MAX_TOKENS)
+        self.assertFalse(wrong_model["ok"])
 
     def test_cli_writes_document(self):
         from apart_incident_response import preregistration

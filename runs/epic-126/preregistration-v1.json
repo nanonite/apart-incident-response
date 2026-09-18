@@ -1,9 +1,33 @@
 {
-  "approval_required": true,
+  "approval": {
+    "approved": true,
+    "approved_by": "reviewer",
+    "scope": "bounded Ling mechanics smoke targeting the pinned free model"
+  },
+  "approval_required": false,
+  "approved_decisions": [
+    "five representative cells: hypothesis low/medium, reference low, planning low/high",
+    "exclude unstable reference-high",
+    "two fresh seeds per group, 10 instances, non-powered mechanics smoke",
+    "1024 max tokens",
+    "ISO/FULL one turn, COMM two",
+    "INDUCED and ORACLE not run in this smoke",
+    "overall matched ISO->FULL C_need is primary; voluntary COMM->ISO secondary",
+    "Holm only for later five confirmatory group-specific claims",
+    "minimum effective C_need 0.10 for reporting eta_comm",
+    "smoke cap 60 physical requests / $20 total; retries and preflight count",
+    "confirmatory sample size and spend deferred to the separate seed block after the smoke"
+  ],
   "caps": {
     "max_cost_usd": 20.0,
     "max_requests": "per-run explicit cap",
     "min_interval_seconds": 0.25,
+    "smoke": {
+      "counts_preflight": true,
+      "counts_retries": true,
+      "max_cost_usd": 20.0,
+      "max_physical_requests": 60
+    },
     "stop_rules": [
       "request_cap",
       "cost_cap",
@@ -418,7 +442,16 @@
       "INDUCED inducement (separate)"
     ],
     "holm_scope": "only if making five confirmatory group-specific claims",
+    "not_run_in_smoke": [
+      "ORACLE",
+      "INDUCED"
+    ],
     "primary": "matched ISO -> FULL C_need on preregistered complete pairs",
+    "run_in_smoke": [
+      "ISO",
+      "FULL",
+      "COMM"
+    ],
     "secondary": "voluntary COMM - ISO (never pooled with inducement)"
   },
   "declared_distinct_cells": {
@@ -462,7 +495,7 @@
       "planning:low",
       "planning:high"
     ],
-    "status": "proposed"
+    "status": "approved"
   },
   "feasible_set_definitions": {
     "channel_complete": "S_pooled == S_joint",
@@ -495,25 +528,35 @@
     "helper": "holm_adjust",
     "method": "Holm step-down over preregistered family claims"
   },
-  "preregistration_hash": "bba82e4b1c2d65c20ff1ef1d172bd050749052b83bfd9d1b132bb359ab3150e5",
+  "pending_decisions": [
+    "confirmatory sample size per cell (from observed discordant pairs)",
+    "confirmatory spend cap"
+  ],
+  "preregistration_hash": "addb263007ee827380ba19d8dfffcbb1b13b0f067b95c25c4728d125c554ddd2",
   "preregistration_version": "stage2-preregistration-v1",
   "proposed_decisions": [
-    "one representative per audited structural group; exclude unstable reference-high",
-    "first two fresh seeds per group are a mechanics smoke, not a powered result",
-    "max_tokens 1024; ISO/FULL 1 turn, COMM 2, ORACLE 1",
-    "leave INDUCED out of this screen",
-    "overall matched ISO->FULL is primary; Holm only for five confirmatory group claims",
-    "confirmatory sample size and spend cap chosen after the smoke, on a separate seed block"
+    "confirmatory sample size per cell on the separate seed block",
+    "confirmatory spend cap"
   ],
   "provider_settings": {
     "condition_turns": {
       "COMM": 2,
       "FULL": 1,
-      "ISO": 1,
-      "ORACLE": 1
+      "ISO": 1
     },
+    "conditions_run": [
+      "ISO",
+      "FULL",
+      "COMM"
+    ],
+    "diagnostics_not_run": [
+      "ORACLE",
+      "INDUCED"
+    ],
     "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+    "expected_protocol_key": "six-family-clue-consistent-v2|treatment-prompt-v2|4bf8982bdc6428f5|2e4a93c27d3224c2|inclusionai/ling-3.0-flash-vl:free|behavioral-discovery-v1",
     "max_tokens": 1024,
+    "model": "inclusionai/ling-3.0-flash-vl:free",
     "require_parameters": true,
     "seed_basis": "sha256(instance_id|condition|turn|agent_id)[:8]",
     "stream": false,
@@ -560,7 +603,7 @@
       "note": "choose per-cell size and spend cap after the smoke discordance and invalidity rates",
       "seed_base": 50000,
       "size_pending": true,
-      "status": "proposed"
+      "status": "proposed_pending_smoke"
     },
     "layout": {
       "collision_free": true,
@@ -600,7 +643,7 @@
       "status": "frozen"
     }
   },
-  "status": "draft_for_review",
+  "status": "locked_for_mechanics_smoke",
   "superseded_artifacts": [
     {
       "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/cneed-fourfamilies-n9-diagnostic.json",
