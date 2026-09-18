@@ -3,6 +3,7 @@ import tempfile
 import unittest
 import urllib.error
 import dataclasses
+import io
 from collections import Counter
 from pathlib import Path
 from unittest.mock import patch
@@ -29,6 +30,7 @@ from apart_incident_response.behavioral_discovery import (
     mcnemar_exact_p,
     mcnemar_midp,
     matched_replay_uptake,
+    pair_attempt_state,
     paired_contrast,
     paired_contrasts_by_protocol,
     provider_seed,
@@ -39,6 +41,7 @@ from apart_incident_response.behavioral_discovery import (
     run_oracle_probe,
     run_paired_screen,
     run_settings_hash,
+    sanitize_provider_message,
     select_frozen_instances,
     treatment_prompt,
     treatment_prompt_hash,
@@ -997,6 +1000,73 @@ class CommunicationGrammarTests(unittest.TestCase):
                          [instance.instance_id for instance in mechanics_smoke_instances()])
         self.assertEqual(len({instance.instance_id for instance in instances}), len(instances))
         self.assertGreaterEqual(min(instance.seed for instance in instances), 19000)
+
+
+class ProviderDiagnosticsTests(unittest.TestCase):
+    def test_sanitize_provider_message_redacts_credentials_and_tokens(self):
+        key = "sk-secret-abcdefghijklmnopqrstuvwxyz0123456789"
+        raw = ('{"error":{"message":"bad request for ' + key +
+               ' token abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMN0123456789"}}')
+        clean = sanitize_provider_message(raw, key)
+        self.assertNotIn(key, clean)
+        self.assertIn("<redacted-key>", clean)
+        self.assertLessEqual(len(clean), 300)
+
+    def test_provider_captures_sanitized_http_error_message(self):
+        key = "sk-secret-abcdefghijklmnopqrstuvwxyz0123456789"
+        body = b'{"error":{"message":"invalid request: upstream rejected","code":400}}'
+        error = urllib.error.HTTPError("https://example.invalid", 400, "bad", {}, io.BytesIO(body))
+        provider = OpenRouterBehavioralProvider(
+            BehavioralProviderConfig(max_requests=2, min_interval_seconds=0, retries=0), api_key=key)
+        with patch("apart_incident_response.behavioral_discovery.urllib.request.urlopen",
+                   side_effect=error):
+            response = provider.complete("prompt", seed=1)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("invalid request", response.error_message)
+        self.assertNotIn(key, response.error_message or "")
+        self.assertEqual(provider.diagnostics()["last_error_message"], response.error_message)
+
+
+class RecoveryTests(unittest.TestCase):
+    def test_pair_attempt_state_reports_missing_and_invalid(self):
+        instance = frozen_full_gate_instances()[0]
+        records = [
+            {"instance_id": instance.instance_id, "condition": "ISO",
+             "valid_execution": True, "checker_accepted": True},
+            {"instance_id": instance.instance_id, "condition": "FULL",
+             "valid_execution": False, "checker_accepted": False},
+        ]
+        state = pair_attempt_state(records, [instance], condition_requests={"ISO": 1, "FULL": 1, "COMM": 4})
+        self.assertEqual(state["valid_pairs"], 1)
+        self.assertEqual(state["invalid_pairs"], 1)
+        self.assertEqual(state["missing_pairs"], 1)
+        self.assertEqual(state["incomplete_instances"], 1)
+        self.assertEqual(state["resume_pairs"],
+                         [(instance.instance_id, "FULL"), (instance.instance_id, "COMM")])
+        self.assertEqual(state["resume_requests"], 5)
+
+    def test_resume_skips_valid_pairs_without_duplicates(self):
+        instance = frozen_full_gate_instances()[0]
+        responses = {}
+        for condition in (BatteryCondition.FULL, BatteryCondition.COMM):
+            responses[(instance.instance_id, condition.value, "A")] = AgentResponse(
+                answer=instance.target, output_text=f"ANSWER: {instance.target}")
+        responses[(instance.instance_id, BatteryCondition.COMM.value, "B")] = AgentResponse(
+            answer=instance.target, output_text=f"ANSWER: {instance.target}")
+        config = BehavioralProviderConfig(max_requests=8, min_interval_seconds=0, max_cost_usd=20.0)
+        provider = PairedFakeProvider(config, responses)
+        resume = [{"instance_id": instance.instance_id, "condition": "ISO", "valid_execution": True}]
+        with tempfile.TemporaryDirectory() as directory:
+            store = BehavioralArtifactStore(Path(directory) / "resume.jsonl")
+            report = run_paired_screen([instance], provider, store,
+                                       condition_turns={"ISO": 1, "FULL": 1, "COMM": 2},
+                                       resume_records=resume)
+            records = store.records()
+        self.assertEqual(report["resumed_runs"], 1)
+        self.assertEqual(report["attempted_runs"], 2)
+        self.assertEqual(report["requests_made"], 5)  # FULL 1 + COMM 4
+        self.assertEqual(sorted(record["condition"] for record in records), ["COMM", "FULL"])
+        self.assertEqual(len(records), 2)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,288 @@
+{
+  "complete_instances": 0,
+  "condition_requests": {
+    "COMM": 4,
+    "FULL": 1,
+    "ISO": 1
+  },
+  "incomplete_instances": 10,
+  "inputs": [
+    "runs/epic-126/stage2-smoke.jsonl"
+  ],
+  "invalid_pairs": 2,
+  "missing_pairs": 27,
+  "mode": "attempt-state",
+  "planned_pairs": 30,
+  "resume_pairs": [
+    [
+      "hypothesis-00004a38",
+      "FULL"
+    ],
+    [
+      "hypothesis-00004a38",
+      "COMM"
+    ],
+    [
+      "hypothesis-00004a39",
+      "ISO"
+    ],
+    [
+      "hypothesis-00004a39",
+      "FULL"
+    ],
+    [
+      "hypothesis-00004a39",
+      "COMM"
+    ],
+    [
+      "hypothesis-00004e20",
+      "ISO"
+    ],
+    [
+      "hypothesis-00004e20",
+      "FULL"
+    ],
+    [
+      "hypothesis-00004e20",
+      "COMM"
+    ],
+    [
+      "hypothesis-00004e21",
+      "ISO"
+    ],
+    [
+      "hypothesis-00004e21",
+      "FULL"
+    ],
+    [
+      "hypothesis-00004e21",
+      "COMM"
+    ],
+    [
+      "reference-00007148",
+      "ISO"
+    ],
+    [
+      "reference-00007148",
+      "FULL"
+    ],
+    [
+      "reference-00007148",
+      "COMM"
+    ],
+    [
+      "reference-00007149",
+      "ISO"
+    ],
+    [
+      "reference-00007149",
+      "FULL"
+    ],
+    [
+      "reference-00007149",
+      "COMM"
+    ],
+    [
+      "planning-00009858",
+      "ISO"
+    ],
+    [
+      "planning-00009858",
+      "FULL"
+    ],
+    [
+      "planning-00009858",
+      "COMM"
+    ],
+    [
+      "planning-00009859",
+      "ISO"
+    ],
+    [
+      "planning-00009859",
+      "FULL"
+    ],
+    [
+      "planning-00009859",
+      "COMM"
+    ],
+    [
+      "planning-0000a028",
+      "ISO"
+    ],
+    [
+      "planning-0000a028",
+      "FULL"
+    ],
+    [
+      "planning-0000a028",
+      "COMM"
+    ],
+    [
+      "planning-0000a029",
+      "ISO"
+    ],
+    [
+      "planning-0000a029",
+      "FULL"
+    ],
+    [
+      "planning-0000a029",
+      "COMM"
+    ]
+  ],
+  "resume_requests": 59,
+  "rows": [
+    {
+      "condition": "ISO",
+      "instance_id": "hypothesis-00004a38",
+      "status": "valid"
+    },
+    {
+      "condition": "FULL",
+      "instance_id": "hypothesis-00004a38",
+      "status": "invalid_present"
+    },
+    {
+      "condition": "COMM",
+      "instance_id": "hypothesis-00004a38",
+      "status": "invalid_present"
+    },
+    {
+      "condition": "ISO",
+      "instance_id": "hypothesis-00004a39",
+      "status": "missing"
+    },
+    {
+      "condition": "FULL",
+      "instance_id": "hypothesis-00004a39",
+      "status": "missing"
+    },
+    {
+      "condition": "COMM",
+      "instance_id": "hypothesis-00004a39",
+      "status": "missing"
+    },
+    {
+      "condition": "ISO",
+      "instance_id": "hypothesis-00004e20",
+      "status": "missing"
+    },
+    {
+      "condition": "FULL",
+      "instance_id": "hypothesis-00004e20",
+      "status": "missing"
+    },
+    {
+      "condition": "COMM",
+      "instance_id": "hypothesis-00004e20",
+      "status": "missing"
+    },
+    {
+      "condition": "ISO",
+      "instance_id": "hypothesis-00004e21",
+      "status": "missing"
+    },
+    {
+      "condition": "FULL",
+      "instance_id": "hypothesis-00004e21",
+      "status": "missing"
+    },
+    {
+      "condition": "COMM",
+      "instance_id": "hypothesis-00004e21",
+      "status": "missing"
+    },
+    {
+      "condition": "ISO",
+      "instance_id": "reference-00007148",
+      "status": "missing"
+    },
+    {
+      "condition": "FULL",
+      "instance_id": "reference-00007148",
+      "status": "missing"
+    },
+    {
+      "condition": "COMM",
+      "instance_id": "reference-00007148",
+      "status": "missing"
+    },
+    {
+      "condition": "ISO",
+      "instance_id": "reference-00007149",
+      "status": "missing"
+    },
+    {
+      "condition": "FULL",
+      "instance_id": "reference-00007149",
+      "status": "missing"
+    },
+    {
+      "condition": "COMM",
+      "instance_id": "reference-00007149",
+      "status": "missing"
+    },
+    {
+      "condition": "ISO",
+      "instance_id": "planning-00009858",
+      "status": "missing"
+    },
+    {
+      "condition": "FULL",
+      "instance_id": "planning-00009858",
+      "status": "missing"
+    },
+    {
+      "condition": "COMM",
+      "instance_id": "planning-00009858",
+      "status": "missing"
+    },
+    {
+      "condition": "ISO",
+      "instance_id": "planning-00009859",
+      "status": "missing"
+    },
+    {
+      "condition": "FULL",
+      "instance_id": "planning-00009859",
+      "status": "missing"
+    },
+    {
+      "condition": "COMM",
+      "instance_id": "planning-00009859",
+      "status": "missing"
+    },
+    {
+      "condition": "ISO",
+      "instance_id": "planning-0000a028",
+      "status": "missing"
+    },
+    {
+      "condition": "FULL",
+      "instance_id": "planning-0000a028",
+      "status": "missing"
+    },
+    {
+      "condition": "COMM",
+      "instance_id": "planning-0000a028",
+      "status": "missing"
+    },
+    {
+      "condition": "ISO",
+      "instance_id": "planning-0000a029",
+      "status": "missing"
+    },
+    {
+      "condition": "FULL",
+      "instance_id": "planning-0000a029",
+      "status": "missing"
+    },
+    {
+      "condition": "COMM",
+      "instance_id": "planning-0000a029",
+      "status": "missing"
+    }
+  ],
+  "valid_pairs": 1
+}

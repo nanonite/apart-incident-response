@@ -263,6 +263,18 @@ def _retry_after_seconds(exc: urllib.error.HTTPError) -> float | None:
         return None
 
 
+def sanitize_provider_message(raw: str | None, api_key: str | None = None, *, limit: int = 300) -> str:
+    """Redact credentials and token-like strings from a provider error message."""
+
+    if not raw:
+        return ""
+    text = str(raw)
+    if api_key:
+        text = text.replace(api_key, "<redacted-key>")
+    text = re.sub(r"[A-Za-z0-9_\-\.]{40,}", "<redacted-token>", text)
+    return text[:limit]
+
+
 def _secret_from_env_file(path: Path) -> str | None:
     if not path.is_file():
         return None
@@ -320,6 +332,7 @@ class BehavioralResponse:
     error_class: str | None = None
     retry_after_seconds: float | None = None
     request_id: str | None = None
+    error_message: str | None = None
 
 
 class OpenRouterBehavioralProvider:
@@ -340,6 +353,7 @@ class OpenRouterBehavioralProvider:
         self.output_tokens = 0
         self.consecutive_failures = 0
         self.last_model = config.model
+        self.last_error_message: str | None = None
         self.failure_classes: Counter[str] = Counter()
 
     def _reserve(self) -> None:
@@ -393,6 +407,7 @@ class OpenRouterBehavioralProvider:
             "cost_cap_usd": self.config.max_cost_usd,
             "consecutive_failures": self.consecutive_failures,
             "failure_classes": dict(self.failure_classes),
+            "last_error_message": self.last_error_message,
             "logprobs_requested": False,
         }
 
@@ -432,17 +447,25 @@ class OpenRouterBehavioralProvider:
                 status_code = int(exc.code)
                 error_class = classify_http_status(status_code)
                 retry_after = _retry_after_seconds(exc)
+                detail = ""
+                try:
+                    detail = sanitize_provider_message(exc.read().decode("utf-8", "replace"), self.api_key)
+                except Exception:
+                    detail = ""
+                self.last_error_message = detail or None
                 last = BehavioralResponse("", self.model, {}, 0.0, "unavailable",
                                           f"http_{status_code}_{error_class}", status_code=status_code,
-                                          error_class=error_class, retry_after_seconds=retry_after)
+                                          error_class=error_class, retry_after_seconds=retry_after,
+                                          error_message=detail or None)
                 self.failure_classes[error_class] += 1
                 self.consecutive_failures += 1
                 if not is_retryable_status(status_code) or attempt >= self.config.retries:
                     break
                 time.sleep(min(retry_after if retry_after is not None else 2 ** attempt, 30.0))
             except (OSError, ValueError, TypeError, KeyError, json.JSONDecodeError) as exc:
+                self.last_error_message = type(exc).__name__
                 last = BehavioralResponse("", self.model, {}, 0.0, "unavailable", type(exc).__name__,
-                                          error_class="transport_error")
+                                          error_class="transport_error", error_message=type(exc).__name__)
                 self.failure_classes["transport_error"] += 1
                 self.consecutive_failures += 1
                 if attempt >= self.config.retries:
@@ -943,6 +966,53 @@ ANALYSIS_PAIRS: tuple[tuple[str, str], ...] = (
 )
 
 
+def pair_attempt_state(records: Iterable[Mapping[str, Any]], instances: Sequence[FamilyInstance],
+                       conditions: Sequence[str] = ("ISO", "FULL", "COMM"), *,
+                       condition_requests: Mapping[str, int] | None = None) -> dict[str, Any]:
+    """Offline partial-attempt plan: which instance/condition pairs are still missing.
+
+    A plain rerun would append duplicate valid rows, which paired analysis
+    rejects; this planner lets a resume run only the missing conditions and
+    count the remaining request budget.
+    """
+
+    valid = set()
+    invalid_present = set()
+    for record in records:
+        instance_id = record.get("instance_id")
+        condition = record.get("condition")
+        if instance_id is None or condition is None:
+            continue
+        key = (str(instance_id), str(condition))
+        if record.get("valid_execution") is True:
+            valid.add(key)
+        else:
+            invalid_present.add(key)
+    rows: list[dict[str, Any]] = []
+    for instance in instances:
+        for condition in conditions:
+            key = (instance.instance_id, condition)
+            status = "valid" if key in valid else ("invalid_present" if key in invalid_present else "missing")
+            rows.append({"instance_id": instance.instance_id, "condition": condition, "status": status})
+    complete_instances = sum(1 for instance in instances
+                             if all((instance.instance_id, condition) in valid for condition in conditions))
+    resume_pairs = [(row["instance_id"], row["condition"]) for row in rows if row["status"] != "valid"]
+    resume_requests = None
+    if condition_requests is not None:
+        resume_requests = sum(int(condition_requests.get(condition, 0)) for _, condition in resume_pairs)
+    return {
+        "rows": rows,
+        "planned_pairs": len(rows),
+        "valid_pairs": sum(row["status"] == "valid" for row in rows),
+        "invalid_pairs": sum(row["status"] == "invalid_present" for row in rows),
+        "missing_pairs": sum(row["status"] == "missing" for row in rows),
+        "complete_instances": complete_instances,
+        "incomplete_instances": len(instances) - complete_instances,
+        "resume_pairs": resume_pairs,
+        "resume_requests": resume_requests,
+    }
+
+
 def paired_contrasts_by_protocol(records: Iterable[Mapping[str, Any]],
                                  pairs: Sequence[tuple[str, str]] = ANALYSIS_PAIRS) -> dict[str, Any]:
     """Segregate records by protocol boundary before computing paired contrasts.
@@ -1342,8 +1412,13 @@ def run_paired_screen(instances: Sequence[FamilyInstance], provider: Any,
                       artifact_store: BehavioralArtifactStore, *, max_runs: int = 8,
                       finalizing_agent: str = "A", turns: int | None = None,
                       condition_turns: Mapping[str, int] | None = None,
-                      conditions: Sequence[BatteryCondition] | None = None) -> dict[str, Any]:
-    """Run bounded paired ISO/FULL/COMM triplets with per-run validity classes."""
+                      conditions: Sequence[BatteryCondition] | None = None,
+                      resume_records: Sequence[Mapping[str, Any]] | None = None) -> dict[str, Any]:
+    """Run bounded paired ISO/FULL/COMM triplets with per-run validity classes.
+
+    ``resume_records`` skips any (instance, condition) that already has a valid
+    record, so a partial attempt can be completed without appending duplicates.
+    """
 
     if max_runs <= 0:
         raise ValueError("max_runs must be positive")
@@ -1355,21 +1430,33 @@ def run_paired_screen(instances: Sequence[FamilyInstance], provider: Any,
         turns=schedule[condition.value], token_budget=provider.config.max_tokens,
         finalizing_agent=finalizing_agent) for condition in selected_conditions}
     selected = list(instances)[:max_runs]
+    completed: set[tuple[str, str]] = {
+        (str(record.get("instance_id")), str(record.get("condition")))
+        for record in (resume_records or ()) if record.get("valid_execution") is True
+    }
     requests_per_instance = sum(request_budget(condition.value, schedule[condition.value])
                                 for condition in selected_conditions)
     rows: list[dict[str, Any]] = []
+    resumed_runs = 0
     stop_reason: str | None = None
     consecutive_http_failures = 0
     stop = False
     for instance in selected:
-        if provider.request_count + requests_per_instance > provider.config.max_requests:
+        pending_conditions = [condition for condition in selected_conditions
+                              if (instance.instance_id, condition.value) not in completed]
+        resumed_runs += len(selected_conditions) - len(pending_conditions)
+        if not pending_conditions:
+            continue
+        pending_requests = sum(request_budget(condition.value, schedule[condition.value])
+                               for condition in pending_conditions)
+        if provider.request_count + pending_requests > provider.config.max_requests:
             stop_reason = "request_cap"
             break
         if provider.cost_usd >= provider.config.max_cost_usd:
             stop_reason = "cost_cap"
             break
         pair = f"paired-{instance.instance_id}"
-        for condition in selected_conditions:
+        for condition in pending_conditions:
             condition_turn_count = schedule[condition.value]
             runner = runners[condition.value]
             recorder = _RecordingProvider(provider)
@@ -1539,6 +1626,7 @@ def run_paired_screen(instances: Sequence[FamilyInstance], provider: Any,
         "planned_instances": len(selected),
         "attempted_instances": len({row["instance_id"] for row in rows}),
         "attempted_runs": len(rows),
+        "resumed_runs": resumed_runs,
         "valid_runs": len(valid_rows),
         "invalid_runs": len(rows) - len(valid_rows),
         "successes": len(successful),
@@ -1584,7 +1672,7 @@ def next_decision_for(blocking_issue: str | None) -> str:
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="T1a FULL-only gate and paired ISO/FULL/COMM screen")
-    parser.add_argument("--mode", choices=["full-gate", "paired-screen", "oracle", "analyze", "audit-channels", "preregister", "treatment-schema"], default="full-gate")
+    parser.add_argument("--mode", choices=["full-gate", "paired-screen", "oracle", "analyze", "audit-channels", "preregister", "treatment-schema", "attempt-state"], default="full-gate")
     parser.add_argument("--live", action="store_true", help="run the bounded live path (requires credentials)")
     parser.add_argument("--model", default=DEFAULT_FREE_MODEL)
     parser.add_argument("--endpoint", default=ENDPOINT)
@@ -1601,6 +1689,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                         help="instance seed source; stage2 consumes the frozen preregistration manifest")
     parser.add_argument("--preregistration", type=Path,
                         help="locked preregistration to verify against before any live request")
+    parser.add_argument("--resume-artifact", type=Path,
+                        help="existing paired-screen artifact whose valid (instance, condition) pairs should be kept")
+    parser.add_argument("--request-budget", type=int,
+                        help="override the physical-request cap (e.g. remaining allowance on a resume)")
     parser.add_argument("--families", help="comma-separated family filter over the frozen manifest")
     parser.add_argument("--complexities", help="comma-separated complexity filter (low, medium, high)")
     parser.add_argument("--output", type=Path)
@@ -1629,6 +1721,31 @@ def main(argv: Sequence[str] | None = None) -> int:
             args.report.write_text(json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n",
                                    encoding="utf-8")
         print(json.dumps(report, indent=2, sort_keys=True, allow_nan=False))
+        return 0
+    if args.mode == "attempt-state":
+        attempt_records: list[dict[str, Any]] = []
+        for name in (args.inputs or "").split(","):
+            path = Path(name.strip())
+            if not path.is_file():
+                parser.error(f"input not found: {path}")
+            attempt_records.extend(BehavioralArtifactStore(path).records())
+        plan_instances = build_screen_instances(scheme=args.seed_scheme or "stage2",
+                                                seeds_per_cell=args.seeds_per_cell)
+        plan_schedule = resolve_condition_turns(tuple(BatteryCondition))
+        condition_requests = {condition: request_budget(condition, plan_schedule[condition])
+                              for condition in plan_schedule}
+        state = pair_attempt_state(attempt_records, plan_instances, condition_requests=condition_requests)
+        state["mode"] = "attempt-state"
+        state["inputs"] = (args.inputs or "").split(",")
+        state["condition_requests"] = condition_requests
+        if args.report:
+            args.report.parent.mkdir(parents=True, exist_ok=True)
+            args.report.write_text(json.dumps(state, indent=2, sort_keys=True, allow_nan=False) + "\n",
+                                   encoding="utf-8")
+        print(json.dumps({key: state[key] for key in (
+            "mode", "planned_pairs", "valid_pairs", "invalid_pairs", "missing_pairs",
+            "complete_instances", "incomplete_instances", "resume_requests")},
+            indent=2, sort_keys=True, allow_nan=False))
         return 0
     if args.mode == "audit-channels":
         audit_families = (tuple(name.strip() for name in args.families.split(",") if name.strip())
@@ -1719,11 +1836,18 @@ def main(argv: Sequence[str] | None = None) -> int:
                                                condition_turns=condition_turns)
             max_requests = max_runs * sum(request_budget(condition.value, schedule[condition.value])
                                           for condition in selected_conditions)
+        if args.request_budget:
+            max_requests = args.request_budget
         config = BehavioralProviderConfig(model=args.model, endpoint=args.endpoint,
                                           max_requests=max_requests, max_cost_usd=20.0,
                                           min_interval_seconds=0.25, max_tokens=args.max_tokens)
         provider = OpenRouterBehavioralProvider(config)
         store = BehavioralArtifactStore(output)
+        resume_records = None
+        if args.resume_artifact:
+            if not args.resume_artifact.is_file():
+                parser.error(f"resume artifact not found: {args.resume_artifact}")
+            resume_records = BehavioralArtifactStore(args.resume_artifact).records()
         if args.preregistration:
             from .preregistration import verify_against_preregistration
             document = json.loads(args.preregistration.read_text(encoding="utf-8"))
@@ -1745,7 +1869,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             report = run_oracle_probe(instances, provider, store, max_runs=max_runs)
         else:
             report = run_paired_screen(instances, provider, store, max_runs=max_runs, turns=args.turns,
-                                       condition_turns=condition_turns, conditions=selected_conditions)
+                                       condition_turns=condition_turns, conditions=selected_conditions,
+                                       resume_records=resume_records)
         diagnostic = {
             "mode": args.mode, "stage": f"T1a-{args.mode}-diagnostic",
             "provider_diagnostics": report["provider_diagnostics"],
@@ -1826,7 +1951,8 @@ __all__ = [
     "DiagnosticCondition", "provider_seed", "treatment_prompt", "treatment_prompt_hash",
     "request_budget", "treatment_schema", "current_protocol_key", "PROTOCOL_OUTPUT_STEM",
     "paired_contrasts_by_protocol", "ANALYSIS_PAIRS", "run_settings_hash",
-    "matched_replay_uptake", "INDUCED_SCHEMA_VERSION",
+    "matched_replay_uptake", "INDUCED_SCHEMA_VERSION", "pair_attempt_state",
+    "sanitize_provider_message",
     "BehavioralArtifactStore", "BehavioralProviderConfig", "BehavioralResponse",
     "OpenRouterBehavioralProvider", "audit_retained_pilot", "classify_http_status",
     "frozen_full_gate_instances", "is_retryable_status", "main", "pressure_catalog",
