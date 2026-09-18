@@ -37,6 +37,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix board IPC integration and CLI tool wiring (#58)
 
 ### Changed
+- Separate structural board need from communication behavior and causal uptake (#164)
 - Audit pooled/joint equality and peer necessity before new screens (#161)
 - Lock FULL, ORACLE and runner treatment schemas (#163)
 - Make clue-consistent feasible sets authoritative for D_idx, I_m and scoring (#166)
