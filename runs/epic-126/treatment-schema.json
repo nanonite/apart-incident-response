@@ -4,18 +4,27 @@
     "FULL",
     "ORACLE"
   ],
+  "comm_grammar": {
+    "inducement": "distinct INDUCED condition, never pooled with voluntary COMM",
+    "post_read_evidence": "correlation only (post_read_correlation); causal uptake requires matched replay",
+    "rejected_writes": "recorded as board_write_rejected with reason claim_not_owned_by_writer",
+    "silence": "optional in the primary COMM arm; no penalty",
+    "writer_may_submit": "only an exact claim from the writer's own private clues"
+  },
   "cue_estimands": {
     "c_need": "p_FULL - p_ISO",
     "oracle_gap": "p_ORACLE - p_FULL"
   },
   "diagnostic_conditions": [
-    "ORACLE"
+    "ORACLE",
+    "INDUCED"
   ],
   "finalizer_policy": "one_way_A_finalizer",
   "finalizing_agent": "A",
   "forbidden_model_visible_fields": [
     "joint_candidate_labels"
   ],
+  "induced_schema_version": "behavioral-induced-v1",
   "mode": "treatment-schema",
   "oracle_schema_version": "behavioral-oracle-v1",
   "oracle_separate_from_primary": true,

@@ -8,6 +8,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from apart_incident_response.behavioral_discovery import (
+    ANALYSIS_PAIRS,
     ENDPOINT,
     ORACLE_CONDITION,
     PROMPT_SCHEMA_VERSION,
@@ -26,6 +27,7 @@ from apart_incident_response.behavioral_discovery import (
     is_retryable_status,
     mcnemar_exact_p,
     mcnemar_midp,
+    matched_replay_uptake,
     paired_contrast,
     paired_contrasts_by_protocol,
     provider_seed,
@@ -745,10 +747,12 @@ class TreatmentSchemaTests(unittest.TestCase):
         self.assertEqual(schema["prompt_schema_version"], PROMPT_SCHEMA_VERSION)
         self.assertEqual(schema["prompt_fields"], list(TREATMENT_PROMPT_FIELDS))
         self.assertEqual(schema["primary_conditions"], ["ISO", "FULL", "COMM"])
-        self.assertEqual(schema["diagnostic_conditions"], ["ORACLE"])
+        self.assertEqual(schema["diagnostic_conditions"], ["ORACLE", "INDUCED"])
         self.assertEqual(schema["forbidden_model_visible_fields"], ["joint_candidate_labels"])
         self.assertEqual(schema["request_budget_turns_2"], {"ISO": 2, "FULL": 2, "ORACLE": 2, "COMM": 4})
         self.assertEqual(schema["finalizer_policy"], "one_way_A_finalizer")
+        self.assertIn("claim_not_owned_by_writer", schema["comm_grammar"]["rejected_writes"])
+        self.assertIn("correlation", schema["comm_grammar"]["post_read_evidence"])
         self.assertEqual(schema["cue_estimands"], {"c_need": "p_FULL - p_ISO", "oracle_gap": "p_ORACLE - p_FULL"})
 
     def test_provider_seed_is_reproducible_and_condition_specific(self):
@@ -878,6 +882,81 @@ class ProtocolBoundaryTests(unittest.TestCase):
         self.assertTrue(all(record["classification"] == "provider_execution_failure" for record in records))
         self.assertTrue(all(record["valid_execution"] is False for record in records))
         self.assertTrue(all(record["protocol_key"] for record in records))
+
+
+class CommunicationGrammarTests(unittest.TestCase):
+    def test_matched_replay_separates_causal_uptake_from_correlation(self):
+        instance = generate_instance("hypothesis", 16000, DependenceRegime.N, ReasoningComplexity.LOW)
+
+        class MessageDependent:
+            provider = "fixture"
+            version = "replay-dependent"
+            model = "fixture"
+
+            def __init__(self):
+                self.config = BehavioralProviderConfig(max_requests=8, min_interval_seconds=0)
+                self.request_count = 0
+
+            def respond(self, context):
+                self.request_count += 1
+                seen = any(row.get("text") == "bit1=0" for row in context.visible_messages)
+                return AgentResponse(answer=instance.target if seen else "candidate-99")
+
+        dependent = matched_replay_uptake(instance, MessageDependent(), real_message="bit1=0",
+                                          placebo_message=None)
+        self.assertTrue(dependent["real_accepted"])
+        self.assertFalse(dependent["placebo_accepted"])
+        self.assertTrue(dependent["causal_uptake"])
+        self.assertEqual(dependent["evidence_class"], "matched_replay_counterfactual")
+
+        class AlwaysCorrect:
+            provider = "fixture"
+            version = "replay-null"
+            model = "fixture"
+
+            def __init__(self):
+                self.config = BehavioralProviderConfig(max_requests=8, min_interval_seconds=0)
+                self.request_count = 0
+
+            def respond(self, context):
+                return AgentResponse(answer=instance.target)
+
+        null = matched_replay_uptake(instance, AlwaysCorrect(), real_message="bit1=0",
+                                     placebo_message=None)
+        self.assertTrue(null["real_accepted"])
+        self.assertTrue(null["placebo_accepted"])
+        self.assertFalse(null["causal_uptake"])
+
+    def test_paired_screen_reports_structural_and_voluntary_separately(self):
+        frozen = frozen_full_gate_instances()
+        instances = [frozen[0], frozen[2]]
+        responses = {}
+        for instance in instances:
+            for condition in BatteryCondition:
+                responses[(instance.instance_id, condition.value, "A")] = AgentResponse(
+                    answer=instance.target, output_text=f"ANSWER: {instance.target}")
+            owned = instance.private_clues["B"][0]
+            responses[(instance.instance_id, BatteryCondition.COMM.value, "B")] = AgentResponse(
+                answer=instance.target,
+                message=owned,
+                output_text=f"ANSWER: {instance.target}\nMESSAGE: {owned}")
+        config = BehavioralProviderConfig(max_requests=64, min_interval_seconds=0, max_cost_usd=20.0)
+        provider = PairedFakeProvider(config, responses)
+        with tempfile.TemporaryDirectory() as directory:
+            report = run_paired_screen(instances, provider,
+                                       BehavioralArtifactStore(Path(directory) / "screen.jsonl"), turns=2)
+        self.assertEqual(report["induced_arm"]["status"], "not_run")
+        self.assertEqual(report["structural_necessity"]["instances"], 2)
+        self.assertEqual(report["structural_necessity"]["finalizer_needs_peer_count"], 2)
+        self.assertEqual(report["voluntary_comm"]["used_board_count"], 2)
+        self.assertEqual(report["voluntary_comm"]["rejected_write_count"], 0)
+        self.assertIn("comm_recovery_eta", report)
+        self.assertIn("correlation", report["voluntary_comm"]["causal_claim"].lower())
+
+    def test_induced_condition_is_separate_from_primary_battery(self):
+        self.assertEqual(DiagnosticCondition.INDUCED.value, "INDUCED")
+        self.assertNotIn(DiagnosticCondition.INDUCED, list(BatteryCondition))
+        self.assertNotIn("INDUCED", [left for left, _ in ANALYSIS_PAIRS] + [right for _, right in ANALYSIS_PAIRS])
 
 
 if __name__ == "__main__":

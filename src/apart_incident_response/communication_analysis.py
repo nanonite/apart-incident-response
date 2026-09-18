@@ -169,7 +169,7 @@ def fit_communication_propensity(rows: Sequence[PairedOutcome], *, iterations: i
     latency = [row.latency_seconds for row in usable if row.latency_seconds is not None]
     return {
         "status": "fitted", "n": len(usable), "features": columns, "coefficients": beta,
-        "phi_definition": "P(post_read_success > 0 | experimental factors)",
+        "phi_definition": "P(post_read_correlation > 0 | experimental factors)",
         "causal_use_verified": False,
         "message_volume_is_not_a_predictor": True,
         "fitted_mean": sum(fitted) / len(fitted),

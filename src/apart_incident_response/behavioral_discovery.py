@@ -55,9 +55,15 @@ TREATMENT_PROMPT_FIELDS = (
 
 
 class DiagnosticCondition(str, Enum):
-    """Manipulation-check condition kept outside the primary ISO/FULL/COMM battery."""
+    """Manipulation-check conditions kept outside the primary ISO/FULL/COMM battery."""
 
     ORACLE = ORACLE_CONDITION
+    # Required-claim / silence-penalty inducement. Distinct condition identity so
+    # it is never pooled with voluntary COMM.
+    INDUCED = "INDUCED"
+
+
+INDUCED_SCHEMA_VERSION = "behavioral-induced-v1"
 
 
 def provider_seed(instance_id: str, condition: str, turn: int, agent_id: str) -> int:
@@ -156,7 +162,7 @@ def treatment_schema() -> dict[str, Any]:
         "prompt_schema_version": PROMPT_SCHEMA_VERSION,
         "prompt_fields": list(TREATMENT_PROMPT_FIELDS),
         "primary_conditions": [condition.value for condition in BatteryCondition],
-        "diagnostic_conditions": [DiagnosticCondition.ORACLE.value],
+        "diagnostic_conditions": [condition.value for condition in DiagnosticCondition],
         "board_free_conditions": list(BOARD_FREE_CONDITIONS),
         "forbidden_model_visible_fields": ["joint_candidate_labels"],
         "finalizer_policy": FINALIZER_POLICY,
@@ -166,6 +172,14 @@ def treatment_schema() -> dict[str, Any]:
                                    ("ISO", "FULL", ORACLE_CONDITION, "COMM")},
         "oracle_schema_version": ORACLE_SCHEMA_VERSION,
         "oracle_separate_from_primary": True,
+        "comm_grammar": {
+            "writer_may_submit": "only an exact claim from the writer's own private clues",
+            "rejected_writes": "recorded as board_write_rejected with reason claim_not_owned_by_writer",
+            "silence": "optional in the primary COMM arm; no penalty",
+            "post_read_evidence": "correlation only (post_read_correlation); causal uptake requires matched replay",
+            "inducement": "distinct INDUCED condition, never pooled with voluntary COMM",
+        },
+        "induced_schema_version": INDUCED_SCHEMA_VERSION,
         "cue_estimands": {"c_need": "p_FULL - p_ISO", "oracle_gap": "p_ORACLE - p_FULL"},
     }
 
@@ -1046,6 +1060,49 @@ def run_oracle_probe(instances: Sequence[FamilyInstance], provider: Any,
     }
 
 
+def _replay_finalizer_context(instance: FamilyInstance, provider: Any, *, visible_text: str | None,
+                              finalizing_agent: str, turn: int, run_id: str) -> AgentContext:
+    peer = "B" if finalizing_agent == "A" else "A"
+    view = {**instance.agent_view(finalizing_agent, "ISO"),
+            "is_finalizer": True, "finalizing_agent": finalizing_agent}
+    visible = () if visible_text is None else (
+        {"message_id": "m-replay", "author": peer, "text": visible_text},)
+    return AgentContext(run_id, instance.instance_id, finalizing_agent, BatteryCondition.COMM,
+                        turn, view, visible, PROMPT_SCHEMA_VERSION, provider.config.max_tokens)
+
+
+def matched_replay_uptake(instance: FamilyInstance, provider: Any, *, real_message: str,
+                          placebo_message: str | None = None, finalizing_agent: str = "A",
+                          turn: int = 0) -> dict[str, Any]:
+    """Counterfactual replay for causal uptake.
+
+    Runs the finalizer with the real peer message and again with a matched
+    placebo (or no message), and reports causal uptake only if the accepted
+    answer depends on the real message. Correlation alone is not causal.
+    """
+
+    real_response = provider.respond(_replay_finalizer_context(
+        instance, provider, visible_text=real_message, finalizing_agent=finalizing_agent,
+        turn=turn, run_id=f"replay-real-{instance.instance_id}"))
+    placebo_response = provider.respond(_replay_finalizer_context(
+        instance, provider, visible_text=placebo_message, finalizing_agent=finalizing_agent,
+        turn=turn, run_id=f"replay-placebo-{instance.instance_id}"))
+    real_accepted = bool(instance.validate(real_response.answer or "").get("accepted", False))
+    placebo_accepted = bool(instance.validate(placebo_response.answer or "").get("accepted", False))
+    return {
+        "instance_id": instance.instance_id,
+        "real_message": real_message,
+        "placebo_message": placebo_message,
+        "real_answer": real_response.answer,
+        "placebo_answer": placebo_response.answer,
+        "real_accepted": real_accepted,
+        "placebo_accepted": placebo_accepted,
+        "answer_changed": real_response.answer != placebo_response.answer,
+        "causal_uptake": bool(real_accepted and not placebo_accepted),
+        "evidence_class": "matched_replay_counterfactual",
+    }
+
+
 def run_full_gate(instances: Sequence[FamilyInstance], provider: Any,
                   artifact_store: BehavioralArtifactStore, *, max_runs: int = 8,
                   finalizing_agent: str = "A", resume: bool = True) -> dict[str, Any]:
@@ -1280,6 +1337,7 @@ def run_paired_screen(instances: Sequence[FamilyInstance], provider: Any,
             else:
                 failure_reason = classification
             summary = result.event_summary
+            structural = instance.channel_analysis()
             finalizer_failure = final_response.failure_reason if final_response else None
             if finalizer_failure and finalizer_failure.startswith("http_"):
                 consecutive_http_failures += 1
@@ -1298,8 +1356,13 @@ def run_paired_screen(instances: Sequence[FamilyInstance], provider: Any,
                 "message_count": int(summary.get("message_count", 0)),
                 "transmitted_bits": float(summary.get("transmitted_bits", 0.0)),
                 "communication_tokens": int(summary.get("communication_tokens", 0)),
-                "post_read_success_count": int(summary.get("post_read_success_count", 0)),
+                "post_read_correlation_count": int(summary.get("post_read_correlation_count", 0)),
                 "post_read_correlated_bits": float(summary.get("post_read_correlated_bits", 0.0)),
+                "rejected_write_count": int(summary.get("rejected_write_count", 0)),
+                "voluntary_board_use": bool(summary.get("message_count", 0)),
+                "finalizer_needs_peer": bool(structural["finalizer_needs_peer"]),
+                "both_agents_needed": bool(structural["both_agents_needed"]),
+                "channel_complete": bool(structural["channel_complete"]),
                 "provider": result.provider, "provider_version": result.provider_version,
                 "model_id": result.model_id,
                 "input_tokens": final_response.input_tokens if final_response else None,
@@ -1336,7 +1399,7 @@ def run_paired_screen(instances: Sequence[FamilyInstance], provider: Any,
             "messages": sum(row["message_count"] for row in condition_rows),
             "transmitted_bits": sum(row["transmitted_bits"] for row in condition_rows),
             "communication_tokens": sum(row["communication_tokens"] for row in condition_rows),
-            "post_read_success_count": sum(row["post_read_success_count"] for row in condition_rows),
+            "post_read_correlation_count": sum(row["post_read_correlation_count"] for row in condition_rows),
             "post_read_correlated_bits": sum(row["post_read_correlated_bits"] for row in condition_rows),
         }
     cell_keys = sorted({(row["family"], row["complexity"]) for row in rows})
@@ -1371,6 +1434,36 @@ def run_paired_screen(instances: Sequence[FamilyInstance], provider: Any,
         stop_reason = stop_reason or "no_instances_attempted"
     elif stop_reason is None:
         stop_reason = "completed_planned_runs"
+    by_instance: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        by_instance.setdefault(row["instance_id"], row)
+    structural_necessity = {
+        "definition": "A finalizer needs the peer when its own clue-consistent set is larger than the pooled/joint set",
+        "instances": len(by_instance),
+        "finalizer_needs_peer_count": sum(row["finalizer_needs_peer"] for row in by_instance.values()),
+        "both_agents_needed_count": sum(row["both_agents_needed"] for row in by_instance.values()),
+        "channel_complete_count": sum(row["channel_complete"] for row in by_instance.values()),
+    }
+    comm_rows = [row for row in rows if row["condition"] == BatteryCondition.COMM.value]
+    voluntary_comm = {
+        "condition": BatteryCondition.COMM.value,
+        "attempted": len(comm_rows),
+        "used_board_count": sum(row["voluntary_board_use"] for row in comm_rows),
+        "rejected_write_count": sum(row["rejected_write_count"] for row in comm_rows),
+        "post_read_correlation_count": sum(row["post_read_correlation_count"] for row in comm_rows),
+        "causal_claim": "none: post-read accepted answers are correlation evidence only, not causal uptake",
+    }
+    p_iso = by_condition.get("ISO", {}).get("valid_success_rate")
+    p_full = by_condition.get("FULL", {}).get("valid_success_rate")
+    p_comm = by_condition.get("COMM", {}).get("valid_success_rate")
+    comm_recovery = (None if not (p_iso is not None and p_full is not None and p_comm is not None
+                                  and p_full != p_iso)
+                     else (p_comm - p_iso) / (p_full - p_iso))
+    induced_arm = {
+        "status": "not_run",
+        "note": "required-claim or silence-penalty diagnostics must use a distinct INDUCED condition "
+                "and are never pooled with voluntary COMM",
+    }
     return {
         "screen_version": "paired-iso-full-comm-v1",
         "stage": "T1a-paired-screen",
@@ -1396,6 +1489,10 @@ def run_paired_screen(instances: Sequence[FamilyInstance], provider: Any,
         "cost_usd": sum(row["cost_usd"] for row in rows),
         "by_condition": by_condition,
         "cells": cells,
+        "structural_necessity": structural_necessity,
+        "voluntary_comm": voluntary_comm,
+        "comm_recovery_eta": comm_recovery,
+        "induced_arm": induced_arm,
         "paired_contrasts": _pairwise_contrasts(rows, selected_conditions),
         "failure_reasons": dict(failure_reasons),
         "classification_counts": dict(classifications),
@@ -1594,7 +1691,7 @@ def pressure_catalog(records: Iterable[Mapping[str, Any]], instances: Sequence[F
             transmitted_bits=float(summary.get("transmitted_bits", 0.0)),
             post_read_correlated_bits=float(summary.get("post_read_correlated_bits", 0.0)),
             communication_tokens=int(summary.get("communication_tokens", 0)),
-            latency_seconds=summary.get("first_post_read_success_latency_seconds"),
+            latency_seconds=summary.get("first_post_read_correlation_latency_seconds"),
         ))
     cells: dict[tuple[str, str, str], list[PairedOutcome]] = {}
     for item in instances:
@@ -1614,7 +1711,7 @@ def pressure_catalog(records: Iterable[Mapping[str, Any]], instances: Sequence[F
             "p_success": probabilities, "valid_denominators": denominators,
             "invalid_runs": {condition: sum(row.condition == condition and not row.valid for row in cell_rows) for condition in ("ISO", "FULL", "COMM")},
             "c_need_unclipped": probabilities["FULL"] - probabilities["ISO"] if probabilities["FULL"] is not None and probabilities["ISO"] is not None else None,
-            "post_read_success_count": sum(row.post_read_correlated_bits > 0 for row in cell_rows if row.valid),
+            "post_read_correlation_count": sum(row.post_read_correlated_bits > 0 for row in cell_rows if row.valid),
             "post_read_correlated_bits": sum(row.post_read_correlated_bits for row in cell_rows if row.valid),
             "transmitted_bits": sum(row.transmitted_bits for row in cell_rows if row.valid),
             "communication_tokens": sum(row.communication_tokens for row in cell_rows if row.valid),
@@ -1639,6 +1736,7 @@ __all__ = [
     "DiagnosticCondition", "provider_seed", "treatment_prompt", "treatment_prompt_hash",
     "request_budget", "treatment_schema", "current_protocol_key", "PROTOCOL_OUTPUT_STEM",
     "paired_contrasts_by_protocol", "ANALYSIS_PAIRS", "run_settings_hash",
+    "matched_replay_uptake", "INDUCED_SCHEMA_VERSION",
     "BehavioralArtifactStore", "BehavioralProviderConfig", "BehavioralResponse",
     "OpenRouterBehavioralProvider", "audit_retained_pilot", "classify_http_status",
     "frozen_full_gate_instances", "is_retryable_status", "main", "pressure_catalog",

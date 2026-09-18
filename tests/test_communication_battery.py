@@ -80,7 +80,7 @@ class CommunicationBatteryTests(unittest.TestCase):
         self.assertEqual(join["delta_i_bits"], 1.0)
         self.assertEqual(join["reader_agent"], "A")
 
-    def test_provenance_distinguishes_read_output_and_post_read_success(self):
+    def test_provenance_distinguishes_read_output_and_post_read_correlation(self):
         log = CommunicationEventLog("run")
         message = generate_instance("hypothesis", 1).information("A", "bit0=0", "m1")
         log.board_write("A", message, message_tokens=1)
@@ -88,7 +88,7 @@ class CommunicationBatteryTests(unittest.TestCase):
         log.peer_read("B", message)
         log.model_output("B", "o1", exposed_message_ids=("m1",), logprob_entropy_bits=1.2,
                          logprob_coverage=1.0, logprob_status="complete")
-        log.post_read_success("B", message, "o1", checker_evidence={"evidence_class": "post_read_correlation"})
+        log.post_read_correlation("B", message, "o1", checker_evidence={"evidence_class": "post_read_correlation"})
         self.assertEqual(len([event for event in log.events if event.kind == "peer_read_exposure"]), 1)
         self.assertEqual([row["status"] for row in log.replay_joins()], ["joined"])
 
@@ -109,6 +109,64 @@ class CommunicationBatteryTests(unittest.TestCase):
         self.assertEqual({result.instance_id for result in results}, {instance.instance_id})
         self.assertEqual(results[0].event_summary["message_count"], 0)
 
+    def test_comm_writer_ownership_positive_null_and_wrong_owner(self):
+        instance = generate_instance("hypothesis", 16000, DependenceRegime.N)
+        self.assertTrue(instance.holds_claim("B", "bit1=0"))
+        self.assertFalse(instance.holds_claim("B", "bit0=1"))
+        self.assertEqual(instance.claim_owner("bit0=1"), "A")
+
+        def run(message):
+            class Provider:
+                provider = "fixture"
+                version = "ownership-test"
+
+                def respond(self, context):
+                    if context.agent_id == "B" and context.turn == 0 and message is not None:
+                        return AgentResponse(answer=instance.target, message=message)
+                    return AgentResponse(answer=instance.target)
+            return TwoAgentBatteryRunner(turns=2).run_condition(
+                instance, BatteryCondition.COMM, Provider())
+
+        owned = run("bit1=0")
+        self.assertEqual(owned.event_summary["message_count"], 1)
+        self.assertEqual(owned.event_summary["rejected_write_count"], 0)
+        self.assertEqual(owned.artifact["rejected_writes"], [])
+
+        wrong_owner = run("bit0=1")
+        self.assertEqual(wrong_owner.event_summary["message_count"], 0)
+        self.assertEqual(wrong_owner.event_summary["rejected_write_count"], 1)
+        self.assertEqual(wrong_owner.artifact["rejected_writes"][0]["claim_owner"], "A")
+        self.assertEqual(wrong_owner.artifact["rejected_writes"][0]["reason"], "claim_not_owned_by_writer")
+
+        silent = run(None)
+        self.assertEqual(silent.status, "completed")
+        self.assertEqual(silent.event_summary["message_count"], 0)
+        self.assertEqual(silent.event_summary["rejected_write_count"], 0)
+
+    def test_post_read_evidence_is_labelled_correlation(self):
+        instance = generate_instance("hypothesis", 51, DependenceRegime.N)
+
+        class UptakeProvider:
+            provider = "fixture"
+            version = "correlation-label-test"
+
+            def respond(self, context):
+                if context.agent_id == "B" and context.turn == 0:
+                    return AgentResponse(answer=None, message=instance.claims[1].text)
+                if context.agent_id == "A" and context.turn == 1 and context.visible_messages:
+                    return AgentResponse(answer=instance.target)
+                return AgentResponse(answer=None)
+
+        result = TwoAgentBatteryRunner(turns=2, finalizing_agent="A").run_condition(
+            instance, BatteryCondition.COMM, UptakeProvider())
+        self.assertGreaterEqual(result.event_summary["post_read_correlation_count"], 1)
+        self.assertNotIn("post_read_success_count", result.event_summary)
+        self.assertNotIn("first_post_read_success_latency_seconds", result.event_summary)
+        # the correlation event carries explicit non-causal evidence labelling
+        import json as _json
+        blob = _json.dumps(result.artifact)
+        self.assertIn("post_read_correlation", blob)
+
     def test_comm_optional_message_is_read_and_machine_verified(self):
         instance = generate_instance("hypothesis", 51, DependenceRegime.N)
         class UptakeProvider:
@@ -126,7 +184,7 @@ class CommunicationBatteryTests(unittest.TestCase):
         )
         self.assertEqual(result.status, "completed")
         self.assertGreaterEqual(result.event_summary["message_count"], 1)
-        self.assertGreaterEqual(result.event_summary["post_read_success_count"], 1)
+        self.assertGreaterEqual(result.event_summary["post_read_correlation_count"], 1)
         self.assertEqual(result.artifact["model_id"], "fixture-model")
 
     def test_informative_message_does_not_pass_when_finalizer_already_knew_answer(self):
@@ -143,7 +201,7 @@ class CommunicationBatteryTests(unittest.TestCase):
             instance, BatteryCondition.COMM, AlreadyKnowsProvider(),
         )
         self.assertTrue(result.task_success)
-        self.assertEqual(result.event_summary["post_read_success_count"], 0)
+        self.assertEqual(result.event_summary["post_read_correlation_count"], 0)
 
     def test_self_reported_use_without_information_or_checker_does_not_pass(self):
         instance = generate_instance("hypothesis", 52, DependenceRegime.N)
@@ -152,7 +210,7 @@ class CommunicationBatteryTests(unittest.TestCase):
         messages = {(instance.instance_id, BatteryCondition.COMM, "A", 0): "ambiguous self report"}
         provider = ScriptedProvider(answers, messages)
         result = TwoAgentBatteryRunner(turns=2, finalizing_agent="A").run_condition(instance, BatteryCondition.COMM, provider)
-        self.assertEqual(result.event_summary["post_read_success_count"], 0)
+        self.assertEqual(result.event_summary["post_read_correlation_count"], 0)
 
     def test_finalizer_only_scoring_rejects_other_agent_answer(self):
         instance = generate_instance("hypothesis", 53, DependenceRegime.N)

@@ -55,7 +55,7 @@ def report_from_battery(instances: Iterable[FamilyInstance], results: Iterable[A
         "transmitted_bits": result.event_summary.get("transmitted_bits", 0.0),
         "post_read_correlated_bits": result.event_summary.get("post_read_correlated_bits", 0.0),
         "communication_tokens": result.event_summary.get("communication_tokens", 0),
-        "latency_seconds": result.event_summary.get("first_post_read_success_latency_seconds"),
+        "latency_seconds": result.event_summary.get("first_post_read_correlation_latency_seconds"),
     } for result in results]
     report = report_from_rows(rows)
     report["structural_coverage"] = {

@@ -126,6 +126,7 @@ class TwoAgentBatteryRunner:
                                                            "finalizer_only": finalizer_only})
         board: list[dict[str, Any]] = []
         message_info: dict[str, Any] = {}
+        rejected_writes: list[dict[str, Any]] = []
         received_information: dict[tuple[str, str], Any] = {}
         read_sequences: dict[tuple[str, str], int] = {}
         used_outputs: list[tuple[str, str, tuple[str, ...], str | None]] = []
@@ -175,6 +176,18 @@ class TwoAgentBatteryRunner:
                     answers[agent] = response.answer
                 if condition is BatteryCondition.COMM and response.message:
                     message_id = f"message-{agent}-{turn}"
+                    if not instance.holds_claim(agent, response.message):
+                        # Treatment grammar: a writer may submit only an exact claim
+                        # from its own private clues. Record the rejected write
+                        # explicitly instead of silently dropping or accepting it.
+                        owner = instance.claim_owner(response.message)
+                        log.record("board_write_rejected", agent, status="rejected",
+                                   payload={"reason": "claim_not_owned_by_writer",
+                                            "raw_text": response.message, "claim_owner": owner})
+                        rejected_writes.append({"agent": agent, "turn": turn,
+                                                "text": response.message, "claim_owner": owner,
+                                                "reason": "claim_not_owned_by_writer"})
+                        continue
                     receiver = "B" if agent == "A" else "A"
                     # Transmitted information is measured against the receiver's
                     # feasible set: the writer already knows its own claim, so a
@@ -215,12 +228,12 @@ class TwoAgentBatteryRunner:
                     if prior_sequence is not None and prior_answer is not None
                 )
                 if info.useful and not prior_finalizer_success and instance.validate(answer or "").get("accepted", False):
-                    log.post_read_success(agent, info, output_id,
-                                          checker_evidence={"evidence_class": "post_read_correlation",
-                                                            "task_checker": instance.checker_id,
-                                                            "answer_accepted": True,
-                                                            "uptake_rule": "first_checker_accepted_finalizer_output_after_peer_read",
-                                                            "prior_finalizer_success": False})
+                    log.post_read_correlation(agent, info, output_id,
+                                              checker_evidence={"evidence_class": "post_read_correlation",
+                                                                "task_checker": instance.checker_id,
+                                                                "answer_accepted": True,
+                                                                "uptake_rule": "first_checker_accepted_finalizer_output_after_peer_read",
+                                                                "prior_finalizer_success": False})
         status = "invalid" if invalid else "completed"
         task_success = task_success and status == "completed"
         artifact = {
@@ -232,7 +245,8 @@ class TwoAgentBatteryRunner:
             "prompt_version": self.prompt_version, "task_success": task_success,
             "finalizing_agent": self.finalizing_agent,
             "answers_present": sorted(agent for agent, answer in answers.items() if answer is not None),
-            "invalid_agents": invalid, "task": instance.public_manifest(),
+            "invalid_agents": invalid, "rejected_writes": rejected_writes,
+            "task": instance.public_manifest(),
             "events": log.summary(),
         }
         return BatteryRunResult(run, pair, instance.instance_id, condition, instance.family, instance.seed,

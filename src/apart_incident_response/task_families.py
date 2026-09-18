@@ -168,6 +168,21 @@ class FamilyInstance:
 
         return tuple(self.private_clues.get("A", ())) + tuple(self.private_clues.get("B", ()))
 
+    def claim_owner(self, raw_text: str) -> str | None:
+        """Agent that privately holds an exact claim, or None if nobody holds it."""
+
+        normalized = raw_text.strip().casefold()
+        for agent in ("A", "B"):
+            for text in self.private_clues.get(agent, ()):
+                if text.strip().casefold() == normalized:
+                    return agent
+        return None
+
+    def holds_claim(self, agent: str, raw_text: str) -> bool:
+        """A writer may submit only an exact claim from its own private clues."""
+
+        return self.claim_owner(raw_text) == agent
+
     def channel_analysis(self) -> dict[str, Any]:
         """Audit the distributed private clues against the joint feasible set.
 
