@@ -1,8 +1,12 @@
 {
   "approval": {
-    "approved": false
+    "approved": true,
+    "approved_by": "reviewer",
+    "cost_cap_usd": 20.0,
+    "request_cap": 600,
+    "scope": "confirmatory stage"
   },
-  "approval_required": true,
+  "approval_required": false,
   "approved_decisions": [],
   "caps": {
     "max_cost_usd": 20.0,
@@ -678,7 +682,7 @@
     "confirmatory sample size per cell (from observed discordant pairs)",
     "confirmatory spend cap"
   ],
-  "preregistration_hash": "243def11cf7df160593d613bf2f07d8bcaddc9b2cd42ba5f53a76f7232bbcccb",
+  "preregistration_hash": "0dea0d66eacabed8043f2d290b90b4fe2154cc79a8210973bc4963b6925cd080",
   "preregistration_version": "stage2-confirmatory-preregistration-v3",
   "proposed_decisions": [
     "confirmatory per-cell size 17 (85 ISO->FULL pairs)",
@@ -801,7 +805,7 @@
       "status": "frozen"
     }
   },
-  "status": "draft_pending_review",
+  "status": "locked_for_confirmatory",
   "superseded_artifacts": [
     {
       "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/cneed-fourfamilies-n9-diagnostic.json",
@@ -1104,7 +1108,7 @@
     "reason": "confirmatory stage sizing and caps",
     "version": "stage2-preregistration-v2"
   },
-  "treatment_file_sha256": "8e11259254b6b21bc0b8c048f37a9ed79cfcf9123d76a958c271afb8f8e15737",
+  "treatment_file_sha256": "13e0db2e72544e84ebbbbc9e293917c3e43c8082ba95402958cc46d0d0cbfa23",
   "treatment_schema": {
     "board_free_conditions": [
       "ISO",
