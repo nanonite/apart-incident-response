@@ -69,6 +69,17 @@ RETRY_PREFLIGHT_RESERVE = 10
 NEW_REQUEST_ALLOWANCE = APPROVED_CUMULATIVE_CAP - sum(CONSUMED_REQUESTS.values())
 SEED_BASIS_DESCRIPTION = (
     "sha256(instance_id|condition|turn|agent_id)[:8] masked to 0..2^31-1 (signed 31-bit)")
+# Confirmatory stage (draft pending reviewer approval).
+CONFIRMATORY_VERSION = "stage2-confirmatory-preregistration-v3"
+CONFIRMATORY_PSI = 0.80
+CONFIRMATORY_D_RATE = 0.40
+CONFIRMATORY_PER_CELL = 17
+CONFIRMATORY_INSTANCES = CONFIRMATORY_PER_CELL * len(PROPOSED_REPRESENTATIVE_CELLS)
+CONFIRMATORY_REQUESTS_PER_INSTANCE = 6
+CONFIRMATORY_PLANNED_REQUESTS = CONFIRMATORY_INSTANCES * CONFIRMATORY_REQUESTS_PER_INSTANCE
+CONFIRMATORY_RETRY_RESERVE = 90
+CONFIRMATORY_REQUEST_CAP = CONFIRMATORY_PLANNED_REQUESTS + CONFIRMATORY_RETRY_RESERVE
+CONFIRMATORY_COST_CAP_USD = 20.0
 APPROVED_DECISIONS = (
     "five representative cells: hypothesis low/medium, reference low, planning low/high",
     "exclude unstable reference-high",
@@ -517,6 +528,104 @@ def build_successor_preregistration(*, repo_root: Path, generator_commit: str | 
     return document
 
 
+def build_confirmatory_preregistration(*, repo_root: Path, generator_commit: str | None = None,
+                                       approved: bool = False) -> dict[str, Any]:
+    """Draft the confirmatory-stage parameters for reviewer approval.
+
+    Sample size is chosen from expected discordant pairs (psi=0.80 with a
+    conservative d_rate=0.40), not a default n. Not locked until approved.
+    """
+
+    base = build_preregistration(repo_root=repo_root, generator_commit=generator_commit,
+                                 seeds_per_cell=MECHANICS_SMOKE_SEEDS_PER_GROUP, approved=False)
+    v2_path = repo_root / "runs" / "epic-126" / "preregistration-v2.json"
+    supersedes_hash = None
+    if v2_path.is_file():
+        try:
+            supersedes_hash = json.loads(v2_path.read_text(encoding="utf-8")).get("preregistration_hash")
+        except ValueError:
+            supersedes_hash = None
+    required = mcnemar_required_pairs(CONFIRMATORY_PSI, CONFIRMATORY_D_RATE)
+    instances = stage2_instances(CONFIRMATORY_PER_CELL, seed_base=STAGE2_CONFIRMATORY_SEED_BASE)
+    instance_ids = assert_unique_instance_ids(instances)
+    provider_settings = dict(base["provider_settings"])
+    provider_settings["seed_basis"] = SEED_BASIS_DESCRIPTION
+    provider_settings["provider_seed_algorithm"] = bd.PROVIDER_SEED_ALGORITHM
+    provider_settings["provider_seed_max"] = bd.PROVIDER_SEED_MAX
+    provider_settings["expected_protocol_key"] = bd.current_protocol_key(
+        SMOKE_MODEL, bd.BEHAVIORAL_VERSION, turns=dict(SMOKE_CONDITION_TURNS),
+        max_tokens=SMOKE_MAX_TOKENS, finalizing_agent=bd.FINALIZER_AGENT)
+    cells = [{"family": family, "complexity": complexity.value, "instances": CONFIRMATORY_PER_CELL}
+             for family, complexity in PROPOSED_REPRESENTATIVE_CELLS]
+    confirmatory = {
+        "status": "proposed",
+        "representative_cells": [f"{family}:{complexity.value}"
+                                 for family, complexity in PROPOSED_REPRESENTATIVE_CELLS],
+        "cells": cells,
+        "per_cell_instances": CONFIRMATORY_PER_CELL,
+        "total_instances": CONFIRMATORY_INSTANCES,
+        "target_iso_full_pairs": required["required_total_pairs"],
+        "allocated_iso_full_pairs": CONFIRMATORY_INSTANCES,
+        "psi": CONFIRMATORY_PSI,
+        "d_rate": CONFIRMATORY_D_RATE,
+        "required_discordant_pairs": required["required_discordant_pairs"],
+        "expected_discordant_pairs": round(CONFIRMATORY_D_RATE * CONFIRMATORY_INSTANCES, 1),
+        "requests_per_instance": CONFIRMATORY_REQUESTS_PER_INSTANCE,
+        "planned_requests": CONFIRMATORY_PLANNED_REQUESTS,
+        "retry_preflight_reserve": CONFIRMATORY_RETRY_RESERVE,
+        "request_cap": CONFIRMATORY_REQUEST_CAP,
+        "cost_cap_usd": CONFIRMATORY_COST_CAP_USD,
+        "seed_base": STAGE2_CONFIRMATORY_SEED_BASE,
+        "seed_layout_collision_free": True,
+        "instance_ids": instance_ids,
+        "manifest_hash": hashlib.sha256(json.dumps(instance_ids, sort_keys=True).encode()).hexdigest(),
+        "primary_contrast": "matched ISO -> FULL C_need on complete pairs",
+        "secondary_contrast": "voluntary COMM -> ISO",
+        "multiplicity": "Holm only if making five confirmatory group-specific claims",
+        "conditions_run": list(SMOKE_CONDITIONS),
+        "diagnostics_not_run": list(SMOKE_DIAGNOSTICS_NOT_RUN),
+        "note": "psi estimated from only 5 discordant smoke pairs, so plan conservatively",
+    }
+    document: dict[str, Any] = dict(base)
+    document.update({
+        "preregistration_version": CONFIRMATORY_VERSION,
+        "stage": "confirmatory",
+        "status": "locked_for_confirmatory" if approved else "draft_pending_review",
+        "approval_required": not approved,
+        "approval": ({"approved": True, "approved_by": "reviewer",
+                      "scope": "confirmatory stage", "request_cap": CONFIRMATORY_REQUEST_CAP,
+                      "cost_cap_usd": CONFIRMATORY_COST_CAP_USD} if approved else {"approved": False}),
+        "supersedes": {"version": "stage2-preregistration-v2", "hash": supersedes_hash,
+                       "reason": "confirmatory stage sizing and caps"},
+        "provider_settings": provider_settings,
+        "confirmatory": confirmatory,
+        "request_cap_accounting": {
+            "confirmatory_request_cap": CONFIRMATORY_REQUEST_CAP,
+            "confirmatory_cost_cap_usd": CONFIRMATORY_COST_CAP_USD,
+            "planned_requests": CONFIRMATORY_PLANNED_REQUESTS,
+            "retry_preflight_reserve": CONFIRMATORY_RETRY_RESERVE,
+            "mechanics_smoke_consumed": sum(CONSUMED_REQUESTS.values()),
+            "note": "confirmatory cap is separate from the 87-request mechanics-smoke cumulative cap",
+        },
+        "confirmatory_plan": [
+            "reviewer approves per-cell size (17) and the request/cost caps",
+            "lock this registration before any confirmatory provider call",
+            "preflight-verify the frozen confirmatory manifest and protocol key",
+            "start a fresh confirmatory artifact, not the mechanics-smoke files",
+            "stop under the same failure, request and cost rules",
+        ],
+        "proposed_decisions": [
+            "confirmatory per-cell size 17 (85 ISO->FULL pairs)",
+            "confirmatory request cap 600 (510 planned + 90 retries/preflight)",
+            "confirmatory cost cap 20 USD",
+        ],
+    })
+    payload = json.dumps({key: value for key, value in document.items()
+                          if key != "preregistration_hash"}, sort_keys=True)
+    document["preregistration_hash"] = hashlib.sha256(payload.encode()).hexdigest()
+    return document
+
+
 def verify_against_preregistration(document: Mapping[str, Any], *, instance_ids: Sequence[str],
                                    model: str, provider_version: str,
                                    condition_turns: Mapping[str, int], max_tokens: int,
@@ -585,9 +694,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--smoke-cost-cap", type=float, default=SMOKE_MAX_COST_USD)
     parser.add_argument("--successor", action="store_true",
                         help="build the successor/amendment registration (does not modify v1)")
+    parser.add_argument("--confirmatory", action="store_true",
+                        help="build the confirmatory-stage draft registration")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args(argv)
-    if args.successor:
+    if args.confirmatory:
+        document = build_confirmatory_preregistration(repo_root=args.repo_root.resolve(),
+                                                      generator_commit=args.generator_commit)
+    elif args.successor:
         document = build_successor_preregistration(repo_root=args.repo_root.resolve(),
                                                    generator_commit=args.generator_commit)
     else:
@@ -631,8 +745,11 @@ __all__ = [
     "SUCCESSOR_VERSION", "ORIGINAL_SMOKE_CAP", "CONSUMED_REQUESTS",
     "APPROVED_CUMULATIVE_CAP", "COST_CAP_USD", "NEW_REQUEST_ALLOWANCE",
     "PLANNED_SMOKE_REQUESTS", "RETRY_PREFLIGHT_RESERVE", "SEED_BASIS_DESCRIPTION",
+    "CONFIRMATORY_VERSION", "CONFIRMATORY_PSI", "CONFIRMATORY_D_RATE", "CONFIRMATORY_PER_CELL",
+    "CONFIRMATORY_INSTANCES", "CONFIRMATORY_REQUESTS_PER_INSTANCE", "CONFIRMATORY_PLANNED_REQUESTS",
+    "CONFIRMATORY_RETRY_RESERVE", "CONFIRMATORY_REQUEST_CAP", "CONFIRMATORY_COST_CAP_USD",
     "audit_cells", "assert_unique_instance_ids", "build_preregistration",
-    "build_successor_preregistration", "cell_fingerprint",
+    "build_successor_preregistration", "build_confirmatory_preregistration", "cell_fingerprint",
     "file_sha256", "holm_adjust", "main", "mcnemar_required_pairs", "mechanics_smoke_instances",
     "missingness_report", "stage2_cell_seed", "stage2_instances", "superseded_artifacts",
     "verify_against_preregistration",

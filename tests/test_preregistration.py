@@ -5,6 +5,13 @@ from pathlib import Path
 
 from apart_incident_response.preregistration import (
     APPROVED_CUMULATIVE_CAP,
+    CONFIRMATORY_COST_CAP_USD,
+    CONFIRMATORY_INSTANCES,
+    CONFIRMATORY_PER_CELL,
+    CONFIRMATORY_PLANNED_REQUESTS,
+    CONFIRMATORY_REQUEST_CAP,
+    CONFIRMATORY_RETRY_RESERVE,
+    CONFIRMATORY_VERSION,
     CONSUMED_REQUESTS,
     COST_CAP_USD,
     MINIMUM_EFFECTIVE_C_NEED,
@@ -20,11 +27,13 @@ from apart_incident_response.preregistration import (
     SMOKE_MAX_PHYSICAL_REQUESTS,
     SMOKE_MAX_TOKENS,
     SMOKE_MODEL,
+    STAGE2_CONFIRMATORY_SEED_BASE,
     STAGE2_MAX_SEEDS_PER_CELL,
     STAGE2_SEED_BASE,
     SUCCESSOR_VERSION,
     assert_unique_instance_ids,
     audit_cells,
+    build_confirmatory_preregistration,
     build_preregistration,
     build_successor_preregistration,
     holm_adjust,
@@ -306,6 +315,61 @@ class PreregistrationDocumentTests(unittest.TestCase):
         self.assertEqual(written["status"], "locked_for_mechanics_smoke")
         self.assertEqual(written["request_cap_accounting"]["new_request_allowance"], 70)
         self.assertTrue(written["amendment"])
+
+
+    def test_confirmatory_draft_discordant_pair_sizing(self):
+        root = Path(__file__).resolve().parents[1]
+        v2 = json.loads((root / "runs" / "epic-126" / "preregistration-v2.json").read_text(encoding="utf-8"))
+        document = build_confirmatory_preregistration(repo_root=root, generator_commit="deadbeef")
+        self.assertEqual(document["preregistration_version"], CONFIRMATORY_VERSION)
+        self.assertEqual(document["stage"], "confirmatory")
+        self.assertEqual(document["status"], "draft_pending_review")
+        self.assertTrue(document["approval_required"])
+        self.assertEqual(document["supersedes"]["hash"], v2["preregistration_hash"])
+        confirmatory = document["confirmatory"]
+        self.assertEqual(confirmatory["per_cell_instances"], CONFIRMATORY_PER_CELL)
+        self.assertEqual(confirmatory["total_instances"], CONFIRMATORY_INSTANCES)
+        self.assertEqual(confirmatory["target_iso_full_pairs"], 83)
+        self.assertEqual(confirmatory["required_discordant_pairs"], 33)
+        self.assertEqual(confirmatory["expected_discordant_pairs"], 34.0)
+        self.assertEqual(confirmatory["planned_requests"], CONFIRMATORY_PLANNED_REQUESTS)
+        self.assertEqual(confirmatory["retry_preflight_reserve"], CONFIRMATORY_RETRY_RESERVE)
+        self.assertEqual(confirmatory["request_cap"], CONFIRMATORY_REQUEST_CAP)
+        self.assertEqual(confirmatory["cost_cap_usd"], CONFIRMATORY_COST_CAP_USD)
+        self.assertEqual(len(confirmatory["instance_ids"]), 85)
+        self.assertEqual(len(set(confirmatory["instance_ids"])), 85)
+        self.assertEqual(confirmatory["conditions_run"], ["ISO", "FULL", "COMM"])
+        self.assertEqual(confirmatory["diagnostics_not_run"], ["ORACLE", "INDUCED"])
+        self.assertEqual([cell["instances"] for cell in confirmatory["cells"]], [17] * 5)
+        # confirmatory reuses the same treatment protocol as locked v2
+        self.assertEqual(document["provider_settings"]["expected_protocol_key"],
+                         v2["provider_settings"]["expected_protocol_key"])
+
+    def test_confirmatory_manifest_matches_fresh_reserved_seed_block(self):
+        root = Path(__file__).resolve().parents[1]
+        document = build_confirmatory_preregistration(repo_root=root, generator_commit="deadbeef")
+        instances = stage2_instances(CONFIRMATORY_PER_CELL, seed_base=STAGE2_CONFIRMATORY_SEED_BASE)
+        self.assertEqual(sorted(instance.instance_id for instance in instances),
+                         sorted(document["confirmatory"]["instance_ids"]))
+        self.assertGreaterEqual(min(instance.seed for instance in instances), STAGE2_CONFIRMATORY_SEED_BASE)
+
+    def test_confirmatory_registration_hash_is_reproducible(self):
+        root = Path(__file__).resolve().parents[1]
+        first = build_confirmatory_preregistration(repo_root=root, generator_commit="deadbeef")
+        second = build_confirmatory_preregistration(repo_root=root, generator_commit="deadbeef")
+        self.assertEqual(first["preregistration_hash"], second["preregistration_hash"])
+
+    def test_confirmatory_cli_writes_draft(self):
+        from apart_incident_response import preregistration
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "prereg-v3.json"
+            code = preregistration.main(["--repo-root", str(Path(__file__).resolve().parents[1]),
+                                         "--confirmatory", "--output", str(output)])
+            self.assertEqual(code, 0)
+            written = json.loads(output.read_text(encoding="utf-8"))
+        self.assertEqual(written["preregistration_version"], CONFIRMATORY_VERSION)
+        self.assertEqual(written["status"], "draft_pending_review")
+        self.assertEqual(written["confirmatory"]["request_cap"], CONFIRMATORY_REQUEST_CAP)
 
 
 if __name__ == "__main__":
