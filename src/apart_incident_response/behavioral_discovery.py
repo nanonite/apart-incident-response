@@ -793,6 +793,16 @@ def build_screen_instances(*, scheme: str | None = None, seeds_per_cell: int | N
             wanted = {name.strip() for name in complexities.split(",") if name.strip()}
             instances = [instance for instance in instances if instance.complexity.value in wanted]
         return instances
+    if scheme == "stage2-confirmatory":
+        from .preregistration import STAGE2_CONFIRMATORY_SEED_BASE, stage2_instances
+        instances = stage2_instances(seeds_per_cell or 17, seed_base=STAGE2_CONFIRMATORY_SEED_BASE)
+        if families:
+            wanted = {name.strip() for name in families.split(",") if name.strip()}
+            instances = [instance for instance in instances if instance.family in wanted]
+        if complexities:
+            wanted = {name.strip() for name in complexities.split(",") if name.strip()}
+            instances = [instance for instance in instances if instance.complexity.value in wanted]
+        return instances
     if scheme == "frozen" or (scheme is None and not seeds_per_cell):
         return select_frozen_instances(families=families, complexities=complexities)
     extended_families = (tuple(name.strip() for name in families.split(",") if name.strip())
@@ -1701,7 +1711,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--conditions", help="comma-separated condition subset for the paired screen (default ISO,FULL,COMM)")
     parser.add_argument("--seeds-per-cell", type=int,
                         help="build an equal-n paired screen with this many seeds per family x complexity cell")
-    parser.add_argument("--seed-scheme", choices=["frozen", "extended", "stage2"],
+    parser.add_argument("--seed-scheme", choices=["frozen", "extended", "stage2", "stage2-confirmatory"],
                         help="instance seed source; stage2 consumes the frozen preregistration manifest")
     parser.add_argument("--preregistration", type=Path,
                         help="locked preregistration to verify against before any live request")
@@ -1865,19 +1875,26 @@ def main(argv: Sequence[str] | None = None) -> int:
                 parser.error(f"resume artifact not found: {args.resume_artifact}")
             resume_records = BehavioralArtifactStore(args.resume_artifact).records()
         if args.preregistration:
-            from .preregistration import verify_against_preregistration
+            from .preregistration import (verify_against_preregistration,
+                                          verify_against_confirmatory_preregistration)
             document = json.loads(args.preregistration.read_text(encoding="utf-8"))
-            verification = verify_against_preregistration(
+            version = str(document.get("preregistration_version", ""))
+            verifier = (verify_against_confirmatory_preregistration
+                        if version.startswith("stage2-confirmatory")
+                        else verify_against_preregistration)
+            verification = verifier(
                 document,
                 instance_ids=[instance.instance_id for instance in instances],
                 model=provider.model, provider_version=getattr(provider, "version", "unknown"),
                 condition_turns=schedule, max_tokens=provider.config.max_tokens,
                 finalizing_agent=FINALIZER_AGENT, planned_requests=max_requests)
-            print(json.dumps({"mode": args.mode, "preregistration_verified": verification["ok"],
+            print(json.dumps({"mode": args.mode, "preregistration_version": version,
+                              "preregistration_verified": verification["ok"],
                               "expected_protocol_key": verification["expected_protocol_key"],
                               "actual_protocol_key": verification["actual_protocol_key"],
                               "planned_requests": verification["planned_requests"],
-                              "new_request_allowance": verification["new_request_allowance"],
+                              "request_allowance": verification.get("new_request_allowance",
+                                                                    verification.get("request_cap")),
                               "errors": verification["errors"]}, indent=2, sort_keys=True))
             if not verification["ok"]:
                 return 2

@@ -41,6 +41,7 @@ from apart_incident_response.preregistration import (
     mcnemar_required_pairs,
     missingness_report,
     stage2_instances,
+    verify_against_confirmatory_preregistration,
     verify_against_preregistration,
 )
 from apart_incident_response.communication_protocol import ReasoningComplexity
@@ -358,6 +359,35 @@ class PreregistrationDocumentTests(unittest.TestCase):
         first = build_confirmatory_preregistration(repo_root=root, generator_commit="deadbeef")
         second = build_confirmatory_preregistration(repo_root=root, generator_commit="deadbeef")
         self.assertEqual(first["preregistration_hash"], second["preregistration_hash"])
+
+    def test_confirmatory_scheme_generates_fresh_85_ids(self):
+        from apart_incident_response.behavioral_discovery import build_screen_instances
+        confirmatory = build_screen_instances(scheme="stage2-confirmatory", seeds_per_cell=17)
+        smoke_ids = {instance.instance_id for instance in mechanics_smoke_instances()}
+        ids = [instance.instance_id for instance in confirmatory]
+        self.assertEqual(len(ids), 85)
+        self.assertEqual(len(set(ids)), 85)
+        self.assertEqual(set(ids) & smoke_ids, set())
+        self.assertGreaterEqual(min(instance.seed for instance in confirmatory),
+                                STAGE2_CONFIRMATORY_SEED_BASE)
+
+    def test_confirmatory_preflight_accepts_locked_rejects_draft_and_over_budget(self):
+        root = Path(__file__).resolve().parents[1]
+        document = json.loads((root / "runs" / "epic-126" / "preregistration-v3.json").read_text(encoding="utf-8"))
+        instance_ids = document["confirmatory"]["instance_ids"]
+        kwargs = dict(instance_ids=instance_ids, model=SMOKE_MODEL,
+                      provider_version="behavioral-discovery-v1",
+                      condition_turns=SMOKE_CONDITION_TURNS, max_tokens=SMOKE_MAX_TOKENS)
+        good = verify_against_confirmatory_preregistration(document, planned_requests=600, **kwargs)
+        self.assertTrue(good["ok"], good["errors"])
+        over = verify_against_confirmatory_preregistration(document, planned_requests=601, **kwargs)
+        self.assertFalse(over["ok"])
+        self.assertTrue(any("exceed" in error for error in over["errors"]))
+        draft = build_confirmatory_preregistration(repo_root=root, generator_commit="deadbeef",
+                                                   approved=False)
+        rejected = verify_against_confirmatory_preregistration(draft, planned_requests=600, **kwargs)
+        self.assertFalse(rejected["ok"])
+        self.assertTrue(any("not locked" in error for error in rejected["errors"]))
 
     def test_confirmatory_cli_writes_draft(self):
         from apart_incident_response import preregistration

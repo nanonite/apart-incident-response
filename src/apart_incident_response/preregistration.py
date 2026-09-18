@@ -683,6 +683,62 @@ def verify_against_preregistration(document: Mapping[str, Any], *, instance_ids:
     }
 
 
+def verify_against_confirmatory_preregistration(document: Mapping[str, Any], *,
+                                                instance_ids: Sequence[str], model: str,
+                                                provider_version: str,
+                                                condition_turns: Mapping[str, int], max_tokens: int,
+                                                finalizing_agent: str = bd.FINALIZER_AGENT,
+                                                planned_requests: int | None = None) -> dict[str, Any]:
+    """Verify a planned confirmatory run against the locked v3 preregistration."""
+
+    errors: list[str] = []
+    version = str(document.get("preregistration_version", ""))
+    if not version.startswith("stage2-confirmatory"):
+        errors.append(f"preregistration version {version!r} is not a confirmatory registration")
+    if document.get("status") != "locked_for_confirmatory":
+        errors.append("preregistration is not locked for the confirmatory stage")
+    confirmatory = document.get("confirmatory", {})
+    frozen_ids = list(confirmatory.get("instance_ids", []))
+    if sorted(instance_ids) != sorted(frozen_ids):
+        errors.append(f"selected instance ids differ from the frozen confirmatory manifest "
+                      f"({len(instance_ids)} selected vs {len(frozen_ids)} expected)")
+    manifest_hash = confirmatory.get("manifest_hash")
+    recomputed = hashlib.sha256(json.dumps(frozen_ids, sort_keys=True).encode()).hexdigest()
+    if manifest_hash != recomputed:
+        errors.append("frozen confirmatory manifest hash mismatch")
+    selected_hash = hashlib.sha256(json.dumps(list(instance_ids), sort_keys=True).encode()).hexdigest()
+    if manifest_hash is not None and selected_hash != manifest_hash:
+        errors.append("selected manifest hash differs from the frozen manifest")
+    provider_settings = document.get("provider_settings", {})
+    locked_model = provider_settings.get("model")
+    if model != locked_model:
+        errors.append(f"model {model!r} != locked {locked_model!r}")
+    if dict(condition_turns) != dict(SMOKE_CONDITION_TURNS):
+        errors.append(f"condition turns {dict(condition_turns)!r} != approved "
+                      f"{dict(SMOKE_CONDITION_TURNS)!r}")
+    if max_tokens != SMOKE_MAX_TOKENS:
+        errors.append(f"max tokens {max_tokens} != approved {SMOKE_MAX_TOKENS}")
+    actual_key = bd.current_protocol_key(model, provider_version, turns=dict(condition_turns),
+                                         max_tokens=max_tokens, finalizing_agent=finalizing_agent)
+    expected_key = provider_settings.get("expected_protocol_key")
+    if actual_key != expected_key:
+        errors.append("protocol key differs from the locked confirmatory preregistration")
+    request_cap = confirmatory.get("request_cap")
+    if planned_requests is not None and request_cap is not None and planned_requests > request_cap:
+        errors.append(f"planned requests {planned_requests} exceed the confirmatory request cap {request_cap}")
+    return {
+        "ok": not errors,
+        "errors": errors,
+        "expected_protocol_key": expected_key,
+        "actual_protocol_key": actual_key,
+        "expected_instance_ids": frozen_ids,
+        "selected_instance_ids": list(instance_ids),
+        "manifest_hash": manifest_hash,
+        "planned_requests": planned_requests,
+        "request_cap": request_cap,
+    }
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Build the stage-2 preregistration document")
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
@@ -700,7 +756,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.confirmatory:
         document = build_confirmatory_preregistration(repo_root=args.repo_root.resolve(),
-                                                      generator_commit=args.generator_commit)
+                                                      generator_commit=args.generator_commit,
+                                                      approved=args.approve)
     elif args.successor:
         document = build_successor_preregistration(repo_root=args.repo_root.resolve(),
                                                    generator_commit=args.generator_commit)
@@ -752,5 +809,5 @@ __all__ = [
     "build_successor_preregistration", "build_confirmatory_preregistration", "cell_fingerprint",
     "file_sha256", "holm_adjust", "main", "mcnemar_required_pairs", "mechanics_smoke_instances",
     "missingness_report", "stage2_cell_seed", "stage2_instances", "superseded_artifacts",
-    "verify_against_preregistration",
+    "verify_against_preregistration", "verify_against_confirmatory_preregistration",
 ]

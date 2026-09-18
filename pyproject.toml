@@ -12,6 +12,7 @@ dev = [
     "marimo>=0.24.0",
     "matplotlib>=3.11.1",
     "numpy>=2.5.3",
+    "pytest>=9.1.1",
 ]
 
 [tool.uv]
