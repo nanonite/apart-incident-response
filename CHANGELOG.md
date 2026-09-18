@@ -37,6 +37,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix board IPC integration and CLI tool wiring (#58)
 
 ### Changed
+- J2 — Implement offline Jev Choice receiver adapter (#155)
+- J1 — Freeze finite-task and communication invariants (#154)
+- Run preregistered Ling board-necessity screen on corrected generator (#162)
 - Fix provider seed range and re-register the smoke protocol (#167)
 - Preregister distinct cells, paired inference and missingness before fresh Ling screen (#165)
 - Separate structural board need from communication behavior and causal uptake (#164)
