@@ -5,12 +5,18 @@
     "inference": "the Novita signed-range limit is an empirically supported inference, not a documented guarantee",
     "provider_seed_algorithm": "sha256-truncated-signed31-v1",
     "provider_seed_max": 2147483647,
-    "reason": "provider HTTP 400 traced to provider_seed exceeding the provider signed 32-bit seed range"
+    "reason": "provider HTTP 400 traced to provider_seed exceeding the provider signed 32-bit seed range",
+    "seed_basis": "sha256(instance_id|condition|turn|agent_id)[:8] masked to 0..2^31-1 (signed 31-bit)"
   },
   "approval": {
-    "approved": false
+    "approved": true,
+    "approved_by": "reviewer",
+    "cost_cap_usd": 20.0,
+    "cumulative_cap": 87,
+    "new_request_allowance": 70,
+    "scope": "clean-restart mechanics smoke for the repaired signed-31-bit seed protocol"
   },
-  "approval_required": true,
+  "approval_required": false,
   "approved_decisions": [],
   "caps": {
     "max_cost_usd": 20.0,
@@ -431,10 +437,11 @@
   },
   "checker_version": "oracle-v2",
   "clean_restart_plan": [
-    "review and approve this successor registration and a new cumulative cap",
+    "this reviewer-approved registration is locked for the mechanics smoke",
     "rebuild the frozen smoke instances and confirm the new expected_protocol_key",
     "run preflight verification against preregistration-v2.json before any provider call",
     "start a fresh artifact instead of appending to the failed stage2-smoke.jsonl",
+    "stay within the 70 new physical requests (60 planned + 10 retries/preflight)",
     "stop under the same failure, request and cost rules"
   ],
   "contrasts": {
@@ -533,7 +540,7 @@
     "confirmatory sample size per cell (from observed discordant pairs)",
     "confirmatory spend cap"
   ],
-  "preregistration_hash": "95706bc8f85534eaccc0d4a95e2f5c22249e8f37cffe13b9753d1edb38a0d91b",
+  "preregistration_hash": "f7cae07b3ec106a8dec2f275d6ae38c35786fdea557f13a6c31ff9adf8b95073",
   "preregistration_version": "stage2-preregistration-v2",
   "proposed_decisions": [
     "confirmatory sample size per cell on the separate seed block",
@@ -561,21 +568,28 @@
     "provider_seed_algorithm": "sha256-truncated-signed31-v1",
     "provider_seed_max": 2147483647,
     "require_parameters": true,
-    "seed_basis": "sha256(instance_id|condition|turn|agent_id)[:8]",
+    "seed_basis": "sha256(instance_id|condition|turn|agent_id)[:8] masked to 0..2^31-1 (signed 31-bit)",
     "stream": false,
     "temperature": 0.0
   },
   "request_cap_accounting": {
-    "clean_restart_cap": "pending review",
+    "clean_restart_cap": 70,
     "consumed": {
       "diagnostics_outside_artifact": 6,
       "smoke_prior": 6,
       "smoke_resume": 5,
       "total": 17
     },
-    "note": "diagnostics_outside_artifact are free-model calls made during the seed investigation and count cumulatively",
-    "original_cap": 60,
-    "remaining_under_original_cap": 43
+    "cost_cap_usd": 20.0,
+    "historical": {
+      "note": "the original 60-request cap is retained for historical accounting only and is not the current cap",
+      "original_smoke_cap": 60
+    },
+    "new_request_allowance": 70,
+    "note": "every physical call, including retries and preflight, counts toward the cumulative cap",
+    "planned_smoke_requests": 60,
+    "retry_preflight_reserve": 10,
+    "reviewer_approved_cumulative_cap": 87
   },
   "sample_size": {
     "basis": "expected discordant pairs via mcnemar_required_pairs, not a default n=20",
@@ -658,7 +672,7 @@
       "status": "frozen"
     }
   },
-  "status": "draft_pending_review",
+  "status": "locked_for_mechanics_smoke",
   "superseded_artifacts": [
     {
       "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/cneed-fourfamilies-n9-diagnostic.json",
@@ -946,7 +960,7 @@
     "reason": "seed-range protocol fix",
     "version": "stage2-preregistration-v1"
   },
-  "treatment_file_sha256": "fb713e8565217b4906a60f13d3f5dc5c71b7c8f2a881ed8ceeb5d1adee5525c6",
+  "treatment_file_sha256": "8e11259254b6b21bc0b8c048f37a9ed79cfcf9123d76a958c271afb8f8e15737",
   "treatment_schema": {
     "board_free_conditions": [
       "ISO",

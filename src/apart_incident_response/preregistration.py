@@ -56,10 +56,19 @@ SMOKE_CONDITIONS = ("ISO", "FULL", "COMM")
 SMOKE_DIAGNOSTICS_NOT_RUN = ("ORACLE", "INDUCED")
 # Successor/amendment registration for the seed-range protocol fix.
 SUCCESSOR_VERSION = "stage2-preregistration-v2"
+# Historical only: the original smoke cap is NOT the current cap.
 ORIGINAL_SMOKE_CAP = 60
+# Reviewer-approved cumulative cap for the repaired (signed-31-bit seed) protocol.
+APPROVED_CUMULATIVE_CAP = 87
+COST_CAP_USD = 20.0
 CONSUMED_REQUESTS: dict[str, int] = {
     "smoke_prior": 6, "smoke_resume": 5, "diagnostics_outside_artifact": 6,
 }
+PLANNED_SMOKE_REQUESTS = 60
+RETRY_PREFLIGHT_RESERVE = 10
+NEW_REQUEST_ALLOWANCE = APPROVED_CUMULATIVE_CAP - sum(CONSUMED_REQUESTS.values())
+SEED_BASIS_DESCRIPTION = (
+    "sha256(instance_id|condition|turn|agent_id)[:8] masked to 0..2^31-1 (signed 31-bit)")
 APPROVED_DECISIONS = (
     "five representative cells: hypothesis low/medium, reference low, planning low/high",
     "exclude unstable reference-high",
@@ -321,7 +330,7 @@ def build_preregistration(*, repo_root: Path, generator_commit: str | None = Non
             "temperature": 0.0,
             "stream": False,
             "require_parameters": True,
-            "seed_basis": "sha256(instance_id|condition|turn|agent_id)[:8]",
+            "seed_basis": SEED_BASIS_DESCRIPTION,
             "max_tokens": SMOKE_MAX_TOKENS,
             "condition_turns": dict(SMOKE_CONDITION_TURNS),
             "conditions_run": list(SMOKE_CONDITIONS),
@@ -425,13 +434,13 @@ def build_preregistration(*, repo_root: Path, generator_commit: str | None = Non
     return document
 
 
-def build_successor_preregistration(*, repo_root: Path,
-                                    generator_commit: str | None = None) -> dict[str, Any]:
-    """Explicit amendment/successor registration for the seed-range protocol fix.
+def build_successor_preregistration(*, repo_root: Path, generator_commit: str | None = None,
+                                    approved: bool = True) -> dict[str, Any]:
+    """Amendment/successor registration for the seed-range protocol fix.
 
-    Does not modify the locked v1 registration; records the new protocol key and
-    cumulative request-cap accounting for a clean restart that still needs
-    review.
+    Does not modify the locked v1 registration. With ``approved=True`` (default,
+    reviewer-approved) it is locked for the clean-restart mechanics smoke and
+    records the cumulative request-cap accounting.
     """
 
     base = build_preregistration(repo_root=repo_root, generator_commit=generator_commit,
@@ -446,20 +455,44 @@ def build_successor_preregistration(*, repo_root: Path,
     consumed = dict(CONSUMED_REQUESTS)
     consumed["total"] = sum(CONSUMED_REQUESTS.values())
     provider_settings = dict(base["provider_settings"])
+    provider_settings["seed_basis"] = SEED_BASIS_DESCRIPTION
     provider_settings["provider_seed_algorithm"] = bd.PROVIDER_SEED_ALGORITHM
     provider_settings["provider_seed_max"] = bd.PROVIDER_SEED_MAX
     provider_settings["expected_protocol_key"] = bd.current_protocol_key(
         SMOKE_MODEL, bd.BEHAVIORAL_VERSION, turns=dict(SMOKE_CONDITION_TURNS),
         max_tokens=SMOKE_MAX_TOKENS, finalizing_agent=bd.FINALIZER_AGENT)
+    request_cap_accounting = {
+        "reviewer_approved_cumulative_cap": APPROVED_CUMULATIVE_CAP,
+        "cost_cap_usd": COST_CAP_USD,
+        "consumed": consumed,
+        "new_request_allowance": NEW_REQUEST_ALLOWANCE,
+        "planned_smoke_requests": PLANNED_SMOKE_REQUESTS,
+        "retry_preflight_reserve": RETRY_PREFLIGHT_RESERVE,
+        "clean_restart_cap": NEW_REQUEST_ALLOWANCE,
+        "historical": {
+            "original_smoke_cap": ORIGINAL_SMOKE_CAP,
+            "note": "the original 60-request cap is retained for historical accounting only and is "
+                    "not the current cap",
+        },
+        "note": "every physical call, including retries and preflight, counts toward the cumulative cap",
+    }
     document: dict[str, Any] = dict(base)
     document.update({
         "preregistration_version": SUCCESSOR_VERSION,
-        "status": "draft_pending_review",
+        "status": "locked_for_mechanics_smoke" if approved else "draft_pending_review",
+        "approval_required": not approved,
+        "approval": ({
+            "approved": True, "approved_by": "reviewer",
+            "scope": "clean-restart mechanics smoke for the repaired signed-31-bit seed protocol",
+            "cumulative_cap": APPROVED_CUMULATIVE_CAP, "cost_cap_usd": COST_CAP_USD,
+            "new_request_allowance": NEW_REQUEST_ALLOWANCE,
+        } if approved else {"approved": False}),
         "supersedes": {"version": base["preregistration_version"], "hash": supersedes_hash,
                        "reason": "seed-range protocol fix"},
         "amendment": {
             "reason": "provider HTTP 400 traced to provider_seed exceeding the provider signed 32-bit seed range",
             "change": "provider_seed is deterministic and bounded to 0..2^31-1",
+            "seed_basis": SEED_BASIS_DESCRIPTION,
             "provider_seed_algorithm": bd.PROVIDER_SEED_ALGORITHM,
             "provider_seed_max": bd.PROVIDER_SEED_MAX,
             "evidence": "identical FULL prompt returned HTTP 400 with seed 3705292798 and succeeded with "
@@ -468,22 +501,15 @@ def build_successor_preregistration(*, repo_root: Path,
                          "documented guarantee",
         },
         "provider_settings": provider_settings,
-        "request_cap_accounting": {
-            "original_cap": ORIGINAL_SMOKE_CAP,
-            "consumed": consumed,
-            "remaining_under_original_cap": ORIGINAL_SMOKE_CAP - consumed["total"],
-            "clean_restart_cap": "pending review",
-            "note": "diagnostics_outside_artifact are free-model calls made during the seed "
-                    "investigation and count cumulatively",
-        },
+        "request_cap_accounting": request_cap_accounting,
         "clean_restart_plan": [
-            "review and approve this successor registration and a new cumulative cap",
+            "this reviewer-approved registration is locked for the mechanics smoke",
             "rebuild the frozen smoke instances and confirm the new expected_protocol_key",
             "run preflight verification against preregistration-v2.json before any provider call",
             "start a fresh artifact instead of appending to the failed stage2-smoke.jsonl",
+            "stay within the 70 new physical requests (60 planned + 10 retries/preflight)",
             "stop under the same failure, request and cost rules",
         ],
-        "approval_required": True,
     })
     payload = json.dumps({key: value for key, value in document.items()
                           if key != "preregistration_hash"}, sort_keys=True)
@@ -494,8 +520,13 @@ def build_successor_preregistration(*, repo_root: Path,
 def verify_against_preregistration(document: Mapping[str, Any], *, instance_ids: Sequence[str],
                                    model: str, provider_version: str,
                                    condition_turns: Mapping[str, int], max_tokens: int,
-                                   finalizing_agent: str = bd.FINALIZER_AGENT) -> dict[str, Any]:
-    """Verify a planned smoke against the locked preregistration before any request."""
+                                   finalizing_agent: str = bd.FINALIZER_AGENT,
+                                   planned_requests: int | None = None) -> dict[str, Any]:
+    """Verify a planned smoke against the locked preregistration before any request.
+
+    Checks approved/locked status, frozen manifest, model and treatment settings,
+    the expected protocol key, and the applicable request allowance.
+    """
 
     errors: list[str] = []
     if document.get("status") != "locked_for_mechanics_smoke":
@@ -504,7 +535,8 @@ def verify_against_preregistration(document: Mapping[str, Any], *, instance_ids:
     if sorted(instance_ids) != sorted(expected_ids):
         errors.append(f"selected instance ids differ from the locked manifest "
                       f"({len(instance_ids)} selected vs {len(expected_ids)} expected)")
-    locked_model = document["provider_settings"].get("model")
+    provider_settings = document.get("provider_settings", {})
+    locked_model = provider_settings.get("model")
     if model != locked_model:
         errors.append(f"model {model!r} != locked {locked_model!r}")
     if dict(condition_turns) != dict(SMOKE_CONDITION_TURNS):
@@ -512,11 +544,22 @@ def verify_against_preregistration(document: Mapping[str, Any], *, instance_ids:
                       f"{dict(SMOKE_CONDITION_TURNS)!r}")
     if max_tokens != SMOKE_MAX_TOKENS:
         errors.append(f"max tokens {max_tokens} != approved {SMOKE_MAX_TOKENS}")
+    locked_algorithm = provider_settings.get("provider_seed_algorithm")
+    if locked_algorithm is not None and locked_algorithm != bd.PROVIDER_SEED_ALGORITHM:
+        errors.append(f"provider seed algorithm {bd.PROVIDER_SEED_ALGORITHM!r} != locked "
+                      f"{locked_algorithm!r}")
+    seed_basis = str(provider_settings.get("seed_basis", ""))
+    if seed_basis and not ("2^31" in seed_basis or "31-bit" in seed_basis):
+        errors.append("seed_basis does not describe the signed-31-bit mask")
     actual_key = bd.current_protocol_key(model, provider_version, turns=dict(condition_turns),
                                          max_tokens=max_tokens, finalizing_agent=finalizing_agent)
-    expected_key = document["provider_settings"].get("expected_protocol_key")
+    expected_key = provider_settings.get("expected_protocol_key")
     if actual_key != expected_key:
         errors.append("protocol key differs from the locked preregistration")
+    accounting = document.get("request_cap_accounting", {})
+    allowance = accounting.get("new_request_allowance")
+    if allowance is not None and planned_requests is not None and planned_requests > allowance:
+        errors.append(f"planned requests {planned_requests} exceed the approved new allowance {allowance}")
     return {
         "ok": not errors,
         "errors": errors,
@@ -524,6 +567,10 @@ def verify_against_preregistration(document: Mapping[str, Any], *, instance_ids:
         "actual_protocol_key": actual_key,
         "expected_instance_ids": expected_ids,
         "selected_instance_ids": list(instance_ids),
+        "planned_requests": planned_requests,
+        "new_request_allowance": allowance,
+        "cumulative_cap": accounting.get("reviewer_approved_cumulative_cap"),
+        "consumed_requests": accounting.get("consumed", {}).get("total"),
     }
 
 
@@ -582,6 +629,8 @@ __all__ = [
     "SMOKE_MAX_PHYSICAL_REQUESTS", "SMOKE_MAX_COST_USD", "SMOKE_MAX_TOKENS",
     "SMOKE_CONDITION_TURNS", "SMOKE_CONDITIONS", "SMOKE_DIAGNOSTICS_NOT_RUN", "SMOKE_MODEL",
     "SUCCESSOR_VERSION", "ORIGINAL_SMOKE_CAP", "CONSUMED_REQUESTS",
+    "APPROVED_CUMULATIVE_CAP", "COST_CAP_USD", "NEW_REQUEST_ALLOWANCE",
+    "PLANNED_SMOKE_REQUESTS", "RETRY_PREFLIGHT_RESERVE", "SEED_BASIS_DESCRIPTION",
     "audit_cells", "assert_unique_instance_ids", "build_preregistration",
     "build_successor_preregistration", "cell_fingerprint",
     "file_sha256", "holm_adjust", "main", "mcnemar_required_pairs", "mechanics_smoke_instances",

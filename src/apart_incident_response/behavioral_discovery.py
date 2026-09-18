@@ -1872,10 +1872,12 @@ def main(argv: Sequence[str] | None = None) -> int:
                 instance_ids=[instance.instance_id for instance in instances],
                 model=provider.model, provider_version=getattr(provider, "version", "unknown"),
                 condition_turns=schedule, max_tokens=provider.config.max_tokens,
-                finalizing_agent=FINALIZER_AGENT)
+                finalizing_agent=FINALIZER_AGENT, planned_requests=max_requests)
             print(json.dumps({"mode": args.mode, "preregistration_verified": verification["ok"],
                               "expected_protocol_key": verification["expected_protocol_key"],
                               "actual_protocol_key": verification["actual_protocol_key"],
+                              "planned_requests": verification["planned_requests"],
+                              "new_request_allowance": verification["new_request_allowance"],
                               "errors": verification["errors"]}, indent=2, sort_keys=True))
             if not verification["ok"]:
                 return 2
