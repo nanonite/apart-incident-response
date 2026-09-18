@@ -48,6 +48,12 @@ ORACLE_CONDITION = "ORACLE"
 FINALIZER_POLICY = "one_way_A_finalizer"
 FINALIZER_AGENT = "A"
 BOARD_FREE_CONDITIONS = ("ISO", "FULL", ORACLE_CONDITION)
+# Frozen per-condition turn schedule: board-free conditions are single-shot, COMM
+# needs two turns so the finalizer can read a peer message. Bound into the
+# protocol key so mixed schedules cannot be pooled.
+DEFAULT_CONDITION_TURNS: dict[str, int] = {"ISO": 1, "FULL": 1, "COMM": 2}
+# Proposed floor below which eta_comm is reported as undefined.
+MINIMUM_EFFECTIVE_C_NEED = 0.10
 TREATMENT_PROMPT_FIELDS = (
     "instruction", "family", "complexity", "condition", "turn", "is_finalizer",
     "finalizing_agent", "candidate_labels", "joint_clues", "private_clues", "visible_messages",
@@ -102,12 +108,12 @@ def _treatment_schema_hash() -> str:
     return hashlib.sha256(json.dumps(treatment_schema(), sort_keys=True).encode()).hexdigest()[:16]
 
 
-def run_settings_hash(*, turns: int | None, max_tokens: int | None,
+def run_settings_hash(*, turns: int | Mapping[str, int] | None, max_tokens: int | None,
                       finalizing_agent: str = FINALIZER_AGENT) -> str:
     """Hash of the frozen run settings that must match across a protocol boundary."""
 
     settings = {
-        "turns": turns,
+        "turns": dict(turns) if isinstance(turns, Mapping) else turns,
         "max_tokens": max_tokens,
         "finalizing_agent": finalizing_agent,
         "finalizer_policy": FINALIZER_POLICY,
@@ -119,7 +125,8 @@ def run_settings_hash(*, turns: int | None, max_tokens: int | None,
     return hashlib.sha256(json.dumps(settings, sort_keys=True).encode()).hexdigest()[:16]
 
 
-def current_protocol_key(model_id: str, provider_version: str, *, turns: int | None = None,
+def current_protocol_key(model_id: str, provider_version: str, *,
+                         turns: int | Mapping[str, int] | None = None,
                          max_tokens: int | None = None,
                          finalizing_agent: str = FINALIZER_AGENT) -> str:
     """Boundary that prevents mixing runs from different protocols, models or settings."""
@@ -134,7 +141,7 @@ def current_protocol_key(model_id: str, provider_version: str, *, turns: int | N
     ])
 
 
-def _protocol_extra(provider: Any, *, turns: int, max_tokens: int,
+def _protocol_extra(provider: Any, *, turns: int | Mapping[str, int], max_tokens: int,
                     finalizing_agent: str = FINALIZER_AGENT) -> dict[str, Any]:
     return {
         "generator_version": GENERATOR_VERSION,
@@ -144,6 +151,26 @@ def _protocol_extra(provider: Any, *, turns: int, max_tokens: int,
                                              turns=turns, max_tokens=max_tokens,
                                              finalizing_agent=finalizing_agent),
     }
+
+
+def resolve_condition_turns(conditions: Sequence[BatteryCondition], *,
+                            turns: int | None = None,
+                            condition_turns: Mapping[str, int] | None = None) -> dict[str, int]:
+    """Resolve the per-condition turn schedule (explicit > uniform > frozen default)."""
+
+    names = [condition.value for condition in conditions]
+    if condition_turns is not None:
+        schedule = {name: int(condition_turns[name]) for name in names if name in condition_turns}
+        missing = [name for name in names if name not in schedule]
+        for name in missing:
+            schedule[name] = int(turns) if turns is not None else DEFAULT_CONDITION_TURNS.get(name, 2)
+    elif turns is not None:
+        schedule = {name: int(turns) for name in names}
+    else:
+        schedule = {name: DEFAULT_CONDITION_TURNS.get(name, 2) for name in names}
+    if any(value <= 0 for value in schedule.values()):
+        raise ValueError("condition turns must be positive")
+    return schedule
 
 
 def request_budget(condition: str, turns: int, *, finalizer_only_board_free: bool = True) -> int:
@@ -168,8 +195,10 @@ def treatment_schema() -> dict[str, Any]:
         "finalizer_policy": FINALIZER_POLICY,
         "finalizing_agent": FINALIZER_AGENT,
         "provider_seed_basis": "sha256(instance_id|condition|turn|agent_id)[:8]",
-        "request_budget_turns_2": {condition: request_budget(condition, 2) for condition in
-                                   ("ISO", "FULL", ORACLE_CONDITION, "COMM")},
+        "condition_turns": {**DEFAULT_CONDITION_TURNS, ORACLE_CONDITION: 1},
+        "minimum_effective_c_need": MINIMUM_EFFECTIVE_C_NEED,
+        "request_budget": {condition: request_budget(condition, DEFAULT_CONDITION_TURNS.get(condition, 1))
+                           for condition in ("ISO", "FULL", ORACLE_CONDITION, "COMM")},
         "oracle_schema_version": ORACLE_SCHEMA_VERSION,
         "oracle_separate_from_primary": True,
         "comm_grammar": {
@@ -708,6 +737,28 @@ def channel_audit_manifest(seeds_per_cell: int = 3,
                 instances.append(generate_instance(family, base + index * 100 + replicate,
                                                    DependenceRegime.N, complexity))
     return instances
+
+
+def build_screen_instances(*, scheme: str | None = None, seeds_per_cell: int | None = None,
+                           families: str | None = None, complexities: str | None = None,
+                           ) -> list[FamilyInstance]:
+    """Select live-screen instances; ``stage2`` consumes the frozen preregistration block."""
+
+    if scheme == "stage2":
+        from .preregistration import stage2_instances  # lazy import avoids a cycle
+        instances = stage2_instances(seeds_per_cell or 2)
+        if families:
+            wanted = {name.strip() for name in families.split(",") if name.strip()}
+            instances = [instance for instance in instances if instance.family in wanted]
+        if complexities:
+            wanted = {name.strip() for name in complexities.split(",") if name.strip()}
+            instances = [instance for instance in instances if instance.complexity.value in wanted]
+        return instances
+    if scheme == "frozen" or (scheme is None and not seeds_per_cell):
+        return select_frozen_instances(families=families, complexities=complexities)
+    extended_families = (tuple(name.strip() for name in families.split(",") if name.strip())
+                         if families else None)
+    return extended_paired_instances(seeds_per_cell or 5, families=extended_families)
 
 
 class _RecordingProvider:
@@ -1289,19 +1340,23 @@ def run_full_gate(instances: Sequence[FamilyInstance], provider: Any,
 
 def run_paired_screen(instances: Sequence[FamilyInstance], provider: Any,
                       artifact_store: BehavioralArtifactStore, *, max_runs: int = 8,
-                      finalizing_agent: str = "A", turns: int = 2,
+                      finalizing_agent: str = "A", turns: int | None = None,
+                      condition_turns: Mapping[str, int] | None = None,
                       conditions: Sequence[BatteryCondition] | None = None) -> dict[str, Any]:
     """Run bounded paired ISO/FULL/COMM triplets with per-run validity classes."""
 
-    if max_runs <= 0 or turns <= 0:
-        raise ValueError("max_runs and turns must be positive")
+    if max_runs <= 0:
+        raise ValueError("max_runs must be positive")
     selected_conditions = tuple(conditions) if conditions else tuple(BatteryCondition)
     if not selected_conditions:
         raise ValueError("at least one condition is required")
-    runner = TwoAgentBatteryRunner(turns=turns, token_budget=provider.config.max_tokens,
-                                   finalizing_agent=finalizing_agent)
+    schedule = resolve_condition_turns(selected_conditions, turns=turns, condition_turns=condition_turns)
+    runners = {condition.value: TwoAgentBatteryRunner(
+        turns=schedule[condition.value], token_budget=provider.config.max_tokens,
+        finalizing_agent=finalizing_agent) for condition in selected_conditions}
     selected = list(instances)[:max_runs]
-    requests_per_instance = sum(request_budget(condition.value, turns) for condition in selected_conditions)
+    requests_per_instance = sum(request_budget(condition.value, schedule[condition.value])
+                                for condition in selected_conditions)
     rows: list[dict[str, Any]] = []
     stop_reason: str | None = None
     consecutive_http_failures = 0
@@ -1315,11 +1370,13 @@ def run_paired_screen(instances: Sequence[FamilyInstance], provider: Any,
             break
         pair = f"paired-{instance.instance_id}"
         for condition in selected_conditions:
+            condition_turn_count = schedule[condition.value]
+            runner = runners[condition.value]
             recorder = _RecordingProvider(provider)
             run_id = f"paired-{condition.value}-{instance.instance_id}"
             result = runner.run_condition(instance, condition, recorder, pair_id=pair, run_id=run_id,
                                           finalizer_only=condition.value in BOARD_FREE_CONDITIONS)
-            final_response = recorder.responses.get((run_id, finalizing_agent, turns - 1))
+            final_response = recorder.responses.get((run_id, finalizing_agent, condition_turn_count - 1))
             output_present = bool(final_response is not None and final_response.output_text.strip())
             answer = result.submitted_answers.get(finalizing_agent)
             answer_parsed = answer is not None and str(answer).strip() != ""
@@ -1373,7 +1430,7 @@ def run_paired_screen(instances: Sequence[FamilyInstance], provider: Any,
             artifact_store.append(result, extra={"classification": classification,
                                                  "valid_execution": valid_execution,
                                                  "failure_reason": failure_reason,
-                                                 **_protocol_extra(provider, turns=turns,
+                                                 **_protocol_extra(provider, turns=schedule,
                                                                    max_tokens=provider.config.max_tokens,
                                                                    finalizing_agent=finalizing_agent)})
             rows.append(row)
@@ -1456,9 +1513,9 @@ def run_paired_screen(instances: Sequence[FamilyInstance], provider: Any,
     p_iso = by_condition.get("ISO", {}).get("valid_success_rate")
     p_full = by_condition.get("FULL", {}).get("valid_success_rate")
     p_comm = by_condition.get("COMM", {}).get("valid_success_rate")
-    comm_recovery = (None if not (p_iso is not None and p_full is not None and p_comm is not None
-                                  and p_full != p_iso)
-                     else (p_comm - p_iso) / (p_full - p_iso))
+    c_need = (p_full - p_iso) if (p_full is not None and p_iso is not None) else None
+    comm_recovery = (None if c_need is None or c_need < MINIMUM_EFFECTIVE_C_NEED or p_comm is None
+                     else (p_comm - p_iso) / c_need)
     induced_arm = {
         "status": "not_run",
         "note": "required-claim or silence-penalty diagnostics must use a distinct INDUCED condition "
@@ -1472,6 +1529,8 @@ def run_paired_screen(instances: Sequence[FamilyInstance], provider: Any,
         "provider": getattr(provider, "provider", "unknown"),
         "provider_version": getattr(provider, "version", "unknown"),
         "finalizing_agent": finalizing_agent, "turns": turns,
+        "condition_turns": schedule,
+        "minimum_effective_c_need": MINIMUM_EFFECTIVE_C_NEED,
         "finalizer_policy": FINALIZER_POLICY,
         "requests_per_instance": requests_per_instance,
         "request_cap": provider.config.max_requests,
@@ -1532,10 +1591,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--max-runs", type=int)
     parser.add_argument("--max-tokens", type=int, default=96,
                         help="per-agent completion token budget; raise for reasoning models")
-    parser.add_argument("--turns", type=int, default=2, help="dialogue turns per agent for the paired screen")
+    parser.add_argument("--turns", type=int, help="uniform dialogue turns per agent for the paired screen")
+    parser.add_argument("--condition-turns",
+                        help="per-condition turns, e.g. 'ISO=1,FULL=1,COMM=2'; default is the frozen schedule")
     parser.add_argument("--conditions", help="comma-separated condition subset for the paired screen (default ISO,FULL,COMM)")
     parser.add_argument("--seeds-per-cell", type=int,
                         help="build an equal-n paired screen with this many seeds per family x complexity cell")
+    parser.add_argument("--seed-scheme", choices=["frozen", "extended", "stage2"],
+                        help="instance seed source; stage2 consumes the frozen preregistration manifest")
     parser.add_argument("--families", help="comma-separated family filter over the frozen manifest")
     parser.add_argument("--complexities", help="comma-separated complexity filter (low, medium, high)")
     parser.add_argument("--output", type=Path)
@@ -1606,12 +1669,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                                    encoding="utf-8")
         print(json.dumps(report, indent=2, sort_keys=True, allow_nan=False))
         return 0
-    if args.seeds_per_cell:
-        extended_families = (tuple(name.strip() for name in args.families.split(",") if name.strip())
-                             if args.families else None)
-        instances = extended_paired_instances(args.seeds_per_cell, families=extended_families)
-    else:
-        instances = select_frozen_instances(families=args.families, complexities=args.complexities)
+    instances = build_screen_instances(scheme=args.seed_scheme, seeds_per_cell=args.seeds_per_cell,
+                                       families=args.families, complexities=args.complexities)
     max_runs = args.max_runs or len(instances)
     mode_stem = {"full-gate": "full-gate-repair", "paired-screen": "paired-screen",
                  "oracle": "oracle"}.get(args.mode, args.mode)
@@ -1637,12 +1696,25 @@ def main(argv: Sequence[str] | None = None) -> int:
                 parser.error("--conditions must be a comma-separated subset of ISO,FULL,COMM")
             if not selected_conditions:
                 parser.error("--conditions must not be empty")
+        condition_turns = None
+        if args.mode == "paired-screen" and args.condition_turns:
+            try:
+                condition_turns = {name.strip().upper(): int(value)
+                                   for name, _, value in
+                                   (item.partition("=") for item in args.condition_turns.split(","))
+                                   if name.strip()}
+            except ValueError:
+                parser.error("--condition-turns must look like 'ISO=1,FULL=1,COMM=2'")
+            if any(value <= 0 for value in condition_turns.values()):
+                parser.error("--condition-turns values must be positive")
         if args.mode == "full-gate":
             max_requests = max_runs * 2
         elif args.mode == "oracle":
             max_requests = max_runs
         else:
-            max_requests = max_runs * sum(request_budget(condition.value, args.turns)
+            schedule = resolve_condition_turns(selected_conditions, turns=args.turns,
+                                               condition_turns=condition_turns)
+            max_requests = max_runs * sum(request_budget(condition.value, schedule[condition.value])
                                           for condition in selected_conditions)
         config = BehavioralProviderConfig(model=args.model, endpoint=args.endpoint,
                                           max_requests=max_requests, max_cost_usd=20.0,
@@ -1655,7 +1727,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             report = run_oracle_probe(instances, provider, store, max_runs=max_runs)
         else:
             report = run_paired_screen(instances, provider, store, max_runs=max_runs, turns=args.turns,
-                                       conditions=selected_conditions)
+                                       condition_turns=condition_turns, conditions=selected_conditions)
         diagnostic = {
             "mode": args.mode, "stage": f"T1a-{args.mode}-diagnostic",
             "provider_diagnostics": report["provider_diagnostics"],
@@ -1743,6 +1815,7 @@ __all__ = [
     "run_behavioral_screen", "run_full_gate", "run_paired_screen", "select_frozen_instances",
     "PAIRED_CELLS", "extended_paired_instances", "wilson_interval", "mcnemar_exact_p",
     "mcnemar_midp", "paired_contrast", "paired_difference_ci", "run_oracle_probe",
+    "build_screen_instances",
 ]
 
 

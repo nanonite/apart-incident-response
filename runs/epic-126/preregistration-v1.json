@@ -2,7 +2,7 @@
   "approval_required": true,
   "caps": {
     "max_cost_usd": 20.0,
-    "max_requests": "per-run explicit cap; stage-2 request cap proposed below",
+    "max_requests": "per-run explicit cap",
     "min_interval_seconds": 0.25,
     "stop_rules": [
       "request_cap",
@@ -406,7 +406,10 @@
         "hypothesis:medium",
         "hypothesis:high"
       ]
-    }
+    },
+    "unstable_cells": [
+      "reference:high"
+    ]
   },
   "checker_version": "oracle-v2",
   "contrasts": {
@@ -414,10 +417,14 @@
       "ORACLE - FULL manipulation check",
       "INDUCED inducement (separate)"
     ],
+    "holm_scope": "only if making five confirmatory group-specific claims",
     "primary": "matched ISO -> FULL C_need on preregistered complete pairs",
     "secondary": "voluntary COMM - ISO (never pooled with inducement)"
   },
   "declared_distinct_cells": {
+    "excluded_unstable": [
+      "reference:high"
+    ],
     "groups": {
       "(16, 4, 4, 4, 1)": [
         "reference:low",
@@ -448,6 +455,13 @@
       ]
     },
     "note": "cells sharing a fingerprint are generator-identical decision problems; domain labels are cosmetic and must not count as independent families",
+    "representatives": [
+      "hypothesis:low",
+      "hypothesis:medium",
+      "reference:low",
+      "planning:low",
+      "planning:high"
+    ],
     "status": "proposed"
   },
   "feasible_set_definitions": {
@@ -462,9 +476,10 @@
   "generator_version": "six-family-clue-consistent-v2",
   "inference": {
     "denominators": "report planned/attempted/valid/complete-pair n and invalidity by condition",
-    "eta_comm": "undefined when C_need is zero or below the preregistered minimum effect",
+    "eta_comm": "undefined when C_need is zero or below the minimum effective C_need",
     "marginals": "Wilson intervals per condition",
-    "missingness": "condition-specific invalidity and complete-pair sensitivity",
+    "minimum_effective_c_need": 0.1,
+    "missingness": "condition-specific invalidity plus extreme-imputation difference bounds",
     "paired": "complete-pair McNemar exact plus Newcombe paired-difference interval"
   },
   "invalidity_classes": [
@@ -480,27 +495,33 @@
     "helper": "holm_adjust",
     "method": "Holm step-down over preregistered family claims"
   },
-  "preregistration_hash": "653245e474d59a5da0ed365133c83a56e8488bc0fed657f11188343a245480b3",
+  "preregistration_hash": "bba82e4b1c2d65c20ff1ef1d172bd050749052b83bfd9d1b132bb359ab3150e5",
   "preregistration_version": "stage2-preregistration-v1",
   "proposed_decisions": [
-    "declared distinct cell set (cosmetic wrappers collapsed)",
-    "sample size / expected discordant pairs per cell",
-    "stage-2 seed block and seeds per cell",
-    "family-level Holm claim set",
-    "max_tokens and turns per condition",
-    "stage-2 request and spend caps"
+    "one representative per audited structural group; exclude unstable reference-high",
+    "first two fresh seeds per group are a mechanics smoke, not a powered result",
+    "max_tokens 1024; ISO/FULL 1 turn, COMM 2, ORACLE 1",
+    "leave INDUCED out of this screen",
+    "overall matched ISO->FULL is primary; Holm only for five confirmatory group claims",
+    "confirmatory sample size and spend cap chosen after the smoke, on a separate seed block"
   ],
   "provider_settings": {
+    "condition_turns": {
+      "COMM": 2,
+      "FULL": 1,
+      "ISO": 1,
+      "ORACLE": 1
+    },
     "endpoint": "https://openrouter.ai/api/v1/chat/completions",
-    "max_tokens": "frozen per run (proposed 1024)",
+    "max_tokens": 1024,
     "require_parameters": true,
     "seed_basis": "sha256(instance_id|condition|turn|agent_id)[:8]",
     "stream": false,
-    "temperature": 0.0,
-    "turns": "frozen per run (proposed acute COMM 2, board-free 1)"
+    "temperature": 0.0
   },
   "sample_size": {
     "basis": "expected discordant pairs via mcnemar_required_pairs, not a default n=20",
+    "confirmatory_after_smoke": true,
     "illustration": [
       {
         "alpha": 0.05,
@@ -535,58 +556,49 @@
     "criterion": "unique_joint_target"
   },
   "stage2": {
-    "complexity_offsets": {
-      "low": 0,
-      "medium": 100
+    "confirmatory": {
+      "note": "choose per-cell size and spend cap after the smoke discordance and invalidity rates",
+      "seed_base": 50000,
+      "size_pending": true,
+      "status": "proposed"
     },
-    "family_offsets": {
-      "hypothesis": 0,
-      "legal": 800,
-      "lexicon": 1000,
-      "planning": 400,
-      "poetry": 600,
-      "reference": 200
+    "layout": {
+      "collision_free": true,
+      "complexity_order": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "complexity_stride": 1000,
+      "family_order": [
+        "hypothesis",
+        "reference",
+        "planning",
+        "poetry",
+        "legal",
+        "lexicon"
+      ],
+      "family_stride": 10000,
+      "max_seeds_per_cell": 999,
+      "seed_base": 19000
     },
-    "manifest_hash": "9273c8f72560c8ccb5d562acf9952cd11849e792ed4d59a670a727ce86a7451e",
-    "sample_instance_ids": [
-      "hypothesis-00004a38",
-      "hypothesis-00004a39",
-      "hypothesis-00004a3a",
-      "hypothesis-00004a9c",
-      "hypothesis-00004a9d",
-      "hypothesis-00004a9e",
-      "reference-00004b00",
-      "reference-00004b01",
-      "reference-00004b02",
-      "reference-00004b64",
-      "reference-00004b65",
-      "reference-00004b66",
-      "planning-00004bc8",
-      "planning-00004bc9",
-      "planning-00004bca",
-      "planning-00004c2c",
-      "planning-00004c2d",
-      "planning-00004c2e",
-      "poetry-00004c90",
-      "poetry-00004c91",
-      "poetry-00004c92",
-      "poetry-00004cf4",
-      "poetry-00004cf5",
-      "poetry-00004cf6",
-      "legal-00004d58",
-      "legal-00004d59",
-      "legal-00004d5a",
-      "legal-00004dbc",
-      "legal-00004dbd",
-      "legal-00004dbe",
-      "lexicon-00004e20",
-      "lexicon-00004e21",
-      "lexicon-00004e22",
-      "lexicon-00004e84",
-      "lexicon-00004e85",
-      "lexicon-00004e86"
-    ],
-    "seed_base": 19000
+    "mechanics_smoke": {
+      "instance_ids": [
+        "hypothesis-00004a38",
+        "hypothesis-00004a39",
+        "hypothesis-00004e20",
+        "hypothesis-00004e21",
+        "reference-00007148",
+        "reference-00007149",
+        "planning-00009858",
+        "planning-00009859",
+        "planning-0000a028",
+        "planning-0000a029"
+      ],
+      "manifest_hash": "768256481a983b5ec538797b1da4cc5d26baf4ee056a2ca8acb98f137d9d30b2",
+      "seeds_per_group": 2,
+      "status": "frozen"
+    }
   },
   "status": "draft_for_review",
   "superseded_artifacts": [
@@ -836,7 +848,7 @@
       "superseded": true
     }
   ],
-  "treatment_file_sha256": "ef4dd155f615cce9781fad04caafcc2ed12c2557e89055fd63bde2aa530c001c",
+  "treatment_file_sha256": "4ecbc54b118dfea164aab89c60af771ba8650f723ec83925e68599213a93604c",
   "treatment_schema": {
     "board_free_conditions": [
       "ISO",
@@ -849,6 +861,12 @@
       "rejected_writes": "recorded as board_write_rejected with reason claim_not_owned_by_writer",
       "silence": "optional in the primary COMM arm; no penalty",
       "writer_may_submit": "only an exact claim from the writer's own private clues"
+    },
+    "condition_turns": {
+      "COMM": 2,
+      "FULL": 1,
+      "ISO": 1,
+      "ORACLE": 1
     },
     "cue_estimands": {
       "c_need": "p_FULL - p_ISO",
@@ -864,6 +882,7 @@
       "joint_candidate_labels"
     ],
     "induced_schema_version": "behavioral-induced-v1",
+    "minimum_effective_c_need": 0.1,
     "oracle_schema_version": "behavioral-oracle-v1",
     "oracle_separate_from_primary": true,
     "primary_conditions": [
@@ -886,11 +905,11 @@
     ],
     "prompt_schema_version": "treatment-prompt-v2",
     "provider_seed_basis": "sha256(instance_id|condition|turn|agent_id)[:8]",
-    "request_budget_turns_2": {
+    "request_budget": {
       "COMM": 4,
-      "FULL": 2,
-      "ISO": 2,
-      "ORACLE": 2
+      "FULL": 1,
+      "ISO": 1,
+      "ORACLE": 1
     }
   }
 }

@@ -22,14 +22,30 @@ from .communication_protocol import BatteryCondition, ReasoningComplexity
 
 
 PREREGISTRATION_VERSION = "stage2-preregistration-v1"
+# Collision-free stage-2 layout: family stride 10000, complexity stride 1000, so
+# the layout supports up to 999 seeds per family x complexity cell.
 STAGE2_SEED_BASE = 19000
-STAGE2_FAMILY_OFFSETS: dict[str, int] = {
-    "hypothesis": 0, "reference": 200, "planning": 400,
-    "poetry": 600, "legal": 800, "lexicon": 1000,
-}
-STAGE2_COMPLEXITY_OFFSETS: dict[ReasoningComplexity, int] = {
-    ReasoningComplexity.LOW: 0, ReasoningComplexity.MEDIUM: 100,
-}
+STAGE2_FAMILY_STRIDE = 10000
+STAGE2_COMPLEXITY_STRIDE = 1000
+STAGE2_MAX_SEEDS_PER_CELL = 999
+# A separate, reserved block for the confirmatory stage (size chosen after smoke).
+STAGE2_CONFIRMATORY_SEED_BASE = 50000
+STAGE2_FAMILY_ORDER = ("hypothesis", "reference", "planning", "poetry", "legal", "lexicon")
+STAGE2_COMPLEXITY_ORDER = (ReasoningComplexity.LOW, ReasoningComplexity.MEDIUM,
+                           ReasoningComplexity.HIGH)
+# Proposed: one representative per audited structural group; reference-high is
+# excluded as unstable (singleton agent).
+PROPOSED_REPRESENTATIVE_CELLS: tuple[tuple[str, ReasoningComplexity], ...] = (
+    ("hypothesis", ReasoningComplexity.LOW),
+    ("hypothesis", ReasoningComplexity.MEDIUM),
+    ("reference", ReasoningComplexity.LOW),
+    ("planning", ReasoningComplexity.LOW),
+    ("planning", ReasoningComplexity.HIGH),
+)
+EXCLUDED_UNSTABLE_CELLS = ("reference:high",)
+MECHANICS_SMOKE_SEEDS_PER_GROUP = 2
+# Proposed numeric floor below which eta_comm is reported as undefined.
+MINIMUM_EFFECTIVE_C_NEED = 0.10
 SUPERSEDED_CURRENT = {"preregistration-v1.json", "treatment-schema.json",
                       "channel-audit.json", "preregistered-manifest.json"}
 
@@ -73,34 +89,64 @@ def audit_cells(families: Sequence[str] = tuple(tf.FAMILY_GENERATORS),
             continue
         groups.setdefault(str(row["fingerprint"]), []).append(f"{row['family']}:{row['complexity']}")
     cosmetic = {key: members for key, members in groups.items() if len(members) > 1}
+    unstable = [f"{row['family']}:{row['complexity']}" for row in rows if not row["stable"]]
     return {
         "cells": rows,
         "groups": groups,
         "cosmetic_wrapper_groups": cosmetic,
+        "unstable_cells": unstable,
         "distinct_cell_count": len(groups),
         "cell_count": len(rows),
     }
 
 
+def stage2_cell_seed(family: str, complexity: ReasoningComplexity, replicate: int, *,
+                     seed_base: int = STAGE2_SEED_BASE) -> int:
+    """Deterministic collision-free seed for one stage-2 instance."""
+
+    if family not in STAGE2_FAMILY_ORDER:
+        raise ValueError(f"unknown task family: {family}")
+    if complexity not in STAGE2_COMPLEXITY_ORDER:
+        raise ValueError(f"unsupported stage-2 complexity: {complexity}")
+    if not 0 <= replicate < STAGE2_MAX_SEEDS_PER_CELL:
+        raise ValueError(f"replicate must be in [0, {STAGE2_MAX_SEEDS_PER_CELL})")
+    family_index = STAGE2_FAMILY_ORDER.index(family)
+    complexity_index = STAGE2_COMPLEXITY_ORDER.index(complexity)
+    return (seed_base + family_index * STAGE2_FAMILY_STRIDE
+            + complexity_index * STAGE2_COMPLEXITY_STRIDE + replicate)
+
+
+def assert_unique_instance_ids(instances: Sequence[tf.FamilyInstance]) -> list[str]:
+    instance_ids = [instance.instance_id for instance in instances]
+    duplicates = sorted({value for value in instance_ids if instance_ids.count(value) > 1})
+    if duplicates:
+        raise ValueError(f"stage-2 seed layout produced duplicate instance ids: {duplicates[:5]}")
+    return instance_ids
+
+
 def stage2_instances(seeds_per_cell: int, *,
-                     families: Sequence[str] = tuple(tf.FAMILY_GENERATORS),
-                     complexities: Sequence[ReasoningComplexity] = (
-                         ReasoningComplexity.LOW, ReasoningComplexity.MEDIUM),
-                     ) -> list[tf.FamilyInstance]:
-    """Fresh stage-2 instances on a seed block disjoint from stage-1."""
+                     cells: Sequence[tuple[str, ReasoningComplexity]] = PROPOSED_REPRESENTATIVE_CELLS,
+                     seed_base: int = STAGE2_SEED_BASE) -> list[tf.FamilyInstance]:
+    """Fresh stage-2 instances on a collision-free seed block disjoint from stage-1."""
 
     if seeds_per_cell <= 0:
         raise ValueError("seeds_per_cell must be positive")
+    if seeds_per_cell > STAGE2_MAX_SEEDS_PER_CELL:
+        raise ValueError(f"seeds_per_cell exceeds the collision-free layout ({STAGE2_MAX_SEEDS_PER_CELL})")
     instances: list[tf.FamilyInstance] = []
-    for family in families:
-        if family not in STAGE2_FAMILY_OFFSETS:
-            raise ValueError(f"unknown task family: {family}")
-        for complexity in complexities:
-            seed0 = STAGE2_SEED_BASE + STAGE2_FAMILY_OFFSETS[family] + STAGE2_COMPLEXITY_OFFSETS[complexity]
-            for replicate in range(seeds_per_cell):
-                instances.append(tf.generate_instance(family, seed0 + replicate,
-                                                      tf.DependenceRegime.N, complexity))
+    for family, complexity in cells:
+        for replicate in range(seeds_per_cell):
+            instances.append(tf.generate_instance(
+                family, stage2_cell_seed(family, complexity, replicate, seed_base=seed_base),
+                tf.DependenceRegime.N, complexity))
+    assert_unique_instance_ids(instances)
     return instances
+
+
+def mechanics_smoke_instances() -> list[tf.FamilyInstance]:
+    """The frozen two-seed-per-group mechanics smoke consumed by #162."""
+
+    return stage2_instances(MECHANICS_SMOKE_SEEDS_PER_GROUP)
 
 
 def holm_adjust(pvalues: Mapping[str, float]) -> dict[str, float]:
@@ -144,24 +190,49 @@ def mcnemar_required_pairs(psi: float, discordant_rate: float, *, alpha: float =
 
 def missingness_report(records: Sequence[Mapping[str, Any]], left: str,
                        right: str) -> dict[str, Any]:
-    """Condition-specific attempted/valid counts and complete-pair sensitivity input."""
+    """Condition-specific missingness with an extreme-imputation sensitivity analysis."""
 
     attempted: dict[str, int] = {left: 0, right: 0}
     valid: dict[str, int] = {left: 0, right: 0}
+    per_instance: dict[str, dict[str, set[str]]] = {}
     for record in records:
         condition = record.get("condition")
         if condition not in {left, right}:
             continue
+        instance_id = str(record.get("instance_id"))
         attempted[condition] += 1
+        per_instance.setdefault(instance_id, {"attempted": set(), "valid": set()})["attempted"].add(condition)
         if record.get("valid_execution") is True:
             valid[condition] += 1
+            per_instance[instance_id]["valid"].add(condition)
+    complete_pairs = sum(1 for entry in per_instance.values() if {left, right} <= entry["valid"])
+    attempted_pairs = sum(1 for entry in per_instance.values() if entry["attempted"])
+    incomplete_pairs = attempted_pairs - complete_pairs
+
     contrast = bd.paired_contrast(records, left, right)
-    complete_pairs = contrast["n_pairs"] if contrast else 0
+    left_only = contrast["left_only"] if contrast else 0
+    right_only = contrast["right_only"] if contrast else 0
+    complete_difference = contrast["difference"] if contrast else None
+
+    total = complete_pairs + incomplete_pairs
+    difference_bounds = None
+    if total:
+        # extreme-case bounds: every incomplete pair imputed to favour the
+        # right condition, then the left condition
+        difference_bounds = [
+            (right_only - (left_only + incomplete_pairs)) / total,
+            ((right_only + incomplete_pairs) - left_only) / total,
+        ]
     return {
-        "attempted": attempted, "valid": valid, "complete_pairs": complete_pairs,
-        "incomplete_pairs": max(0, min(attempted.values()) - complete_pairs),
+        "attempted": attempted,
+        "valid": valid,
         "invalidity_by_condition": {condition: attempted[condition] - valid[condition]
                                     for condition in (left, right)},
+        "complete_pairs": complete_pairs,
+        "attempted_pairs": attempted_pairs,
+        "incomplete_pairs": incomplete_pairs,
+        "complete_case_difference": complete_difference,
+        "difference_bounds_extreme_imputation": difference_bounds,
     }
 
 
@@ -181,10 +252,11 @@ def superseded_artifacts(root: Path) -> list[dict[str, Any]]:
 
 
 def build_preregistration(*, repo_root: Path, generator_commit: str | None = None,
-                          seeds_per_cell: int = 20) -> dict[str, Any]:
+                          seeds_per_cell: int = MECHANICS_SMOKE_SEEDS_PER_GROUP) -> dict[str, Any]:
     src = repo_root / "src" / "apart_incident_response"
     cell_audit = audit_cells()
-    stage2 = stage2_instances(seeds_per_cell=3)
+    smoke = stage2_instances(seeds_per_cell)
+    smoke_ids = assert_unique_instance_ids(smoke)
     document: dict[str, Any] = {
         "preregistration_version": PREREGISTRATION_VERSION,
         "status": "draft_for_review",
@@ -212,13 +284,13 @@ def build_preregistration(*, repo_root: Path, generator_commit: str | None = Non
             "stream": False,
             "require_parameters": True,
             "seed_basis": "sha256(instance_id|condition|turn|agent_id)[:8]",
-            "max_tokens": "frozen per run (proposed 1024)",
-            "turns": "frozen per run (proposed acute COMM 2, board-free 1)",
+            "max_tokens": 1024,
+            "condition_turns": {"ISO": 1, "FULL": 1, "COMM": 2, "ORACLE": 1},
         },
         "caps": {
             "min_interval_seconds": 0.25,
             "max_cost_usd": 20.0,
-            "max_requests": "per-run explicit cap; stage-2 request cap proposed below",
+            "max_requests": "per-run explicit cap",
             "stop_rules": ["request_cap", "cost_cap", "repeated_http_failure",
                            "missing_checker_evidence"],
         },
@@ -231,6 +303,9 @@ def build_preregistration(*, repo_root: Path, generator_commit: str | None = Non
         "cell_audit": cell_audit,
         "declared_distinct_cells": {
             "status": "proposed",
+            "representatives": [f"{family}:{complexity.value}"
+                                for family, complexity in PROPOSED_REPRESENTATIVE_CELLS],
+            "excluded_unstable": list(EXCLUDED_UNSTABLE_CELLS),
             "groups": cell_audit["groups"],
             "note": "cells sharing a fingerprint are generator-identical decision problems; "
                     "domain labels are cosmetic and must not count as independent families",
@@ -239,13 +314,15 @@ def build_preregistration(*, repo_root: Path, generator_commit: str | None = Non
             "primary": "matched ISO -> FULL C_need on preregistered complete pairs",
             "secondary": "voluntary COMM - ISO (never pooled with inducement)",
             "diagnostics": ["ORACLE - FULL manipulation check", "INDUCED inducement (separate)"],
+            "holm_scope": "only if making five confirmatory group-specific claims",
         },
         "inference": {
             "paired": "complete-pair McNemar exact plus Newcombe paired-difference interval",
             "marginals": "Wilson intervals per condition",
             "denominators": "report planned/attempted/valid/complete-pair n and invalidity by condition",
-            "missingness": "condition-specific invalidity and complete-pair sensitivity",
-            "eta_comm": "undefined when C_need is zero or below the preregistered minimum effect",
+            "missingness": "condition-specific invalidity plus extreme-imputation difference bounds",
+            "eta_comm": "undefined when C_need is zero or below the minimum effective C_need",
+            "minimum_effective_c_need": MINIMUM_EFFECTIVE_C_NEED,
         },
         "multiplicity": {
             "method": "Holm step-down over preregistered family claims",
@@ -254,26 +331,42 @@ def build_preregistration(*, repo_root: Path, generator_commit: str | None = Non
         "sample_size": {
             "status": "proposed",
             "basis": "expected discordant pairs via mcnemar_required_pairs, not a default n=20",
+            "confirmatory_after_smoke": True,
             "illustration": [
                 mcnemar_required_pairs(psi, rate)
                 for psi, rate in ((0.75, 0.40), (0.70, 0.35), (0.80, 0.30))
             ],
         },
         "stage2": {
-            "seed_base": STAGE2_SEED_BASE,
-            "family_offsets": STAGE2_FAMILY_OFFSETS,
-            "complexity_offsets": {key.value: value for key, value in STAGE2_COMPLEXITY_OFFSETS.items()},
-            "sample_instance_ids": [instance.instance_id for instance in stage2],
-            "manifest_hash": hashlib.sha256(json.dumps(
-                [instance.instance_id for instance in stage2], sort_keys=True).encode()).hexdigest(),
+            "layout": {
+                "seed_base": STAGE2_SEED_BASE,
+                "family_stride": STAGE2_FAMILY_STRIDE,
+                "complexity_stride": STAGE2_COMPLEXITY_STRIDE,
+                "max_seeds_per_cell": STAGE2_MAX_SEEDS_PER_CELL,
+                "family_order": list(STAGE2_FAMILY_ORDER),
+                "complexity_order": [value.value for value in STAGE2_COMPLEXITY_ORDER],
+                "collision_free": True,
+            },
+            "mechanics_smoke": {
+                "status": "frozen",
+                "seeds_per_group": seeds_per_cell,
+                "instance_ids": smoke_ids,
+                "manifest_hash": hashlib.sha256(json.dumps(smoke_ids, sort_keys=True).encode()).hexdigest(),
+            },
+            "confirmatory": {
+                "status": "proposed",
+                "seed_base": STAGE2_CONFIRMATORY_SEED_BASE,
+                "size_pending": True,
+                "note": "choose per-cell size and spend cap after the smoke discordance and invalidity rates",
+            },
         },
         "proposed_decisions": [
-            "declared distinct cell set (cosmetic wrappers collapsed)",
-            "sample size / expected discordant pairs per cell",
-            "stage-2 seed block and seeds per cell",
-            "family-level Holm claim set",
-            "max_tokens and turns per condition",
-            "stage-2 request and spend caps",
+            "one representative per audited structural group; exclude unstable reference-high",
+            "first two fresh seeds per group are a mechanics smoke, not a powered result",
+            "max_tokens 1024; ISO/FULL 1 turn, COMM 2, ORACLE 1",
+            "leave INDUCED out of this screen",
+            "overall matched ISO->FULL is primary; Holm only for five confirmatory group claims",
+            "confirmatory sample size and spend cap chosen after the smoke, on a separate seed block",
         ],
         "approval_required": True,
     }
@@ -287,7 +380,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Build the stage-2 preregistration document")
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--generator-commit", default=None)
-    parser.add_argument("--seeds-per-cell", type=int, default=20)
+    parser.add_argument("--seeds-per-cell", type=int, default=MECHANICS_SMOKE_SEEDS_PER_GROUP)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args(argv)
     document = build_preregistration(repo_root=args.repo_root.resolve(),
@@ -305,6 +398,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "checker_version": document["checker_version"],
         "distinct_cell_count": document["cell_audit"]["distinct_cell_count"],
         "cell_count": document["cell_audit"]["cell_count"],
+        "smoke_instance_count": len(document["stage2"]["mechanics_smoke"]["instance_ids"]),
         "preregistration_hash": document["preregistration_hash"],
         "approval_required": document["approval_required"],
     }, indent=2, sort_keys=True, allow_nan=False))
@@ -316,8 +410,10 @@ if __name__ == "__main__":
 
 
 __all__ = [
-    "PREREGISTRATION_VERSION", "STAGE2_SEED_BASE", "STAGE2_FAMILY_OFFSETS",
-    "audit_cells", "build_preregistration", "cell_fingerprint", "file_sha256",
-    "holm_adjust", "main", "mcnemar_required_pairs", "missingness_report",
-    "stage2_instances", "superseded_artifacts",
+    "PREREGISTRATION_VERSION", "STAGE2_SEED_BASE", "STAGE2_CONFIRMATORY_SEED_BASE",
+    "STAGE2_FAMILY_STRIDE", "STAGE2_COMPLEXITY_STRIDE", "STAGE2_MAX_SEEDS_PER_CELL",
+    "PROPOSED_REPRESENTATIVE_CELLS", "EXCLUDED_UNSTABLE_CELLS", "MINIMUM_EFFECTIVE_C_NEED",
+    "audit_cells", "assert_unique_instance_ids", "build_preregistration", "cell_fingerprint",
+    "file_sha256", "holm_adjust", "main", "mcnemar_required_pairs", "mechanics_smoke_instances",
+    "missingness_report", "stage2_cell_seed", "stage2_instances", "superseded_artifacts",
 ]

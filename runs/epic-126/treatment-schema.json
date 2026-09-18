@@ -11,6 +11,12 @@
     "silence": "optional in the primary COMM arm; no penalty",
     "writer_may_submit": "only an exact claim from the writer's own private clues"
   },
+  "condition_turns": {
+    "COMM": 2,
+    "FULL": 1,
+    "ISO": 1,
+    "ORACLE": 1
+  },
   "cue_estimands": {
     "c_need": "p_FULL - p_ISO",
     "oracle_gap": "p_ORACLE - p_FULL"
@@ -25,6 +31,7 @@
     "joint_candidate_labels"
   ],
   "induced_schema_version": "behavioral-induced-v1",
+  "minimum_effective_c_need": 0.1,
   "mode": "treatment-schema",
   "oracle_schema_version": "behavioral-oracle-v1",
   "oracle_separate_from_primary": true,
@@ -48,10 +55,10 @@
   ],
   "prompt_schema_version": "treatment-prompt-v2",
   "provider_seed_basis": "sha256(instance_id|condition|turn|agent_id)[:8]",
-  "request_budget_turns_2": {
+  "request_budget": {
     "COMM": 4,
-    "FULL": 2,
-    "ISO": 2,
-    "ORACLE": 2
+    "FULL": 1,
+    "ISO": 1,
+    "ORACLE": 1
   }
 }

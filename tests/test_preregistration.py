@@ -4,11 +4,16 @@ import unittest
 from pathlib import Path
 
 from apart_incident_response.preregistration import (
+    MINIMUM_EFFECTIVE_C_NEED,
     PREREGISTRATION_VERSION,
+    PROPOSED_REPRESENTATIVE_CELLS,
+    STAGE2_MAX_SEEDS_PER_CELL,
     STAGE2_SEED_BASE,
+    assert_unique_instance_ids,
     audit_cells,
     build_preregistration,
     holm_adjust,
+    mechanics_smoke_instances,
     mcnemar_required_pairs,
     missingness_report,
     stage2_instances,
@@ -21,24 +26,47 @@ class CellAuditTests(unittest.TestCase):
         audit = audit_cells(seeds=(1, 2, 3))
         self.assertTrue(all(cell["stable"] for cell in audit["cells"]
                             if cell["complexity"] in {"low", "medium"}))
-        # reference-high is the known singleton exception and is flagged unstable
-        unstable = {(cell["family"], cell["complexity"]) for cell in audit["cells"] if not cell["stable"]}
-        self.assertEqual(unstable, {("reference", "high")})
+        self.assertEqual(audit["unstable_cells"], ["reference:high"])
         self.assertLess(audit["distinct_cell_count"], audit["cell_count"])
         self.assertTrue(audit["cosmetic_wrapper_groups"])
-        # hypothesis/poetry/legal/lexicon low share one decision-problem fingerprint
         low_bit = [members for members in audit["groups"].values()
                    if {"hypothesis:low", "poetry:low", "legal:low", "lexicon:low"} <= set(members)]
         self.assertTrue(low_bit, audit["groups"])
 
-    def test_stage2_seeds_are_fresh_and_deterministic(self):
-        first = [instance.instance_id for instance in stage2_instances(2)]
-        second = [instance.instance_id for instance in stage2_instances(2)]
+
+class Stage2ManifestTests(unittest.TestCase):
+    def test_stage2_seeds_are_fresh_collision_free_and_deterministic(self):
+        first = assert_unique_instance_ids(stage2_instances(2))
+        second = assert_unique_instance_ids(stage2_instances(2))
         self.assertEqual(first, second)
-        self.assertEqual(len(first), len(set(first)))
         seeds = [instance.seed for instance in stage2_instances(2)]
         self.assertGreaterEqual(min(seeds), STAGE2_SEED_BASE)
         self.assertNotIn("hypothesis-00003e80", first)
+        # the previous 100-seed complexity spacing collided at 110 seeds; the
+        # frozen layout must stay unique for large per-cell counts
+        large = assert_unique_instance_ids(stage2_instances(110))
+        self.assertEqual(len(large), len(set(large)))
+        self.assertEqual(len(large), len(PROPOSED_REPRESENTATIVE_CELLS) * 110)
+
+    def test_stage2_manifest_is_frozen_to_requested_seed_count(self):
+        one = build_preregistration(repo_root=Path(__file__).resolve().parents[1],
+                                    generator_commit="deadbeef", seeds_per_cell=1)
+        three = build_preregistration(repo_root=Path(__file__).resolve().parents[1],
+                                      generator_commit="deadbeef", seeds_per_cell=3)
+        one_ids = one["stage2"]["mechanics_smoke"]["instance_ids"]
+        three_ids = three["stage2"]["mechanics_smoke"]["instance_ids"]
+        self.assertEqual(len(one_ids), len(PROPOSED_REPRESENTATIVE_CELLS))
+        self.assertEqual(len(three_ids), len(PROPOSED_REPRESENTATIVE_CELLS) * 3)
+        self.assertNotEqual(one["stage2"]["mechanics_smoke"]["manifest_hash"],
+                            three["stage2"]["mechanics_smoke"]["manifest_hash"])
+        self.assertNotEqual(one["preregistration_hash"], three["preregistration_hash"])
+
+    def test_frozen_smoke_is_two_seeds_per_group(self):
+        self.assertEqual(len(mechanics_smoke_instances()), 2 * len(PROPOSED_REPRESENTATIVE_CELLS))
+
+    def test_seed_count_above_layout_is_rejected(self):
+        with self.assertRaises(ValueError):
+            stage2_instances(STAGE2_MAX_SEEDS_PER_CELL + 1)
 
 
 class InferenceHelperTests(unittest.TestCase):
@@ -59,19 +87,35 @@ class InferenceHelperTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             mcnemar_required_pairs(0.8, 0.0)
 
-    def test_missingness_report_tracks_invalidity_and_complete_pairs(self):
+    def test_missingness_counts_unpaired_attempts_and_bounds(self):
+        # two ISO attempts, one FULL attempt (the reviewer's counterexample)
+        records = [
+            {"instance_id": "a", "condition": "ISO", "valid_execution": True, "checker_accepted": True},
+            {"instance_id": "b", "condition": "ISO", "valid_execution": True, "checker_accepted": False},
+            {"instance_id": "a", "condition": "FULL", "valid_execution": False, "checker_accepted": False},
+        ]
+        report = missingness_report(records, "ISO", "FULL")
+        self.assertEqual(report["attempted"], {"ISO": 2, "FULL": 1})
+        self.assertEqual(report["valid"], {"ISO": 2, "FULL": 0})
+        self.assertEqual(report["attempted_pairs"], 2)
+        self.assertEqual(report["complete_pairs"], 0)
+        self.assertEqual(report["incomplete_pairs"], 2)
+        self.assertEqual(report["invalidity_by_condition"], {"ISO": 0, "FULL": 1})
+        low, high = report["difference_bounds_extreme_imputation"]
+        self.assertLessEqual(low, high)
+        self.assertLessEqual(low, 0.0)
+        self.assertGreaterEqual(high, 0.0)
+
+    def test_missingness_complete_pair_difference(self):
         records = [
             {"instance_id": "a", "condition": "ISO", "valid_execution": True, "checker_accepted": False},
             {"instance_id": "a", "condition": "FULL", "valid_execution": True, "checker_accepted": True},
-            {"instance_id": "b", "condition": "ISO", "valid_execution": True, "checker_accepted": True},
-            {"instance_id": "b", "condition": "FULL", "valid_execution": False, "checker_accepted": False},
         ]
         report = missingness_report(records, "ISO", "FULL")
-        self.assertEqual(report["attempted"], {"ISO": 2, "FULL": 2})
-        self.assertEqual(report["valid"], {"ISO": 2, "FULL": 1})
         self.assertEqual(report["complete_pairs"], 1)
-        self.assertEqual(report["incomplete_pairs"], 1)
-        self.assertEqual(report["invalidity_by_condition"], {"ISO": 0, "FULL": 1})
+        self.assertEqual(report["incomplete_pairs"], 0)
+        self.assertEqual(report["complete_case_difference"], 1.0)
+        self.assertEqual(report["difference_bounds_extreme_imputation"], [1.0, 1.0])
 
 
 class PreregistrationDocumentTests(unittest.TestCase):
@@ -90,7 +134,14 @@ class PreregistrationDocumentTests(unittest.TestCase):
         self.assertEqual(document["treatment_schema"]["primary_conditions"], ["ISO", "FULL", "COMM"])
         self.assertEqual(document["treatment_schema"]["diagnostic_conditions"], ["ORACLE", "INDUCED"])
         self.assertTrue(document["proposed_decisions"])
-        self.assertEqual(document["stage2"]["seed_base"], STAGE2_SEED_BASE)
+        self.assertEqual(document["inference"]["minimum_effective_c_need"], MINIMUM_EFFECTIVE_C_NEED)
+        self.assertEqual(document["provider_settings"]["condition_turns"],
+                         {"ISO": 1, "FULL": 1, "COMM": 2, "ORACLE": 1})
+        self.assertTrue(document["stage2"]["layout"]["collision_free"])
+        self.assertEqual(document["declared_distinct_cells"]["excluded_unstable"], ["reference:high"])
+        smoke_ids = document["stage2"]["mechanics_smoke"]["instance_ids"]
+        self.assertEqual(len(smoke_ids), 2 * len(PROPOSED_REPRESENTATIVE_CELLS))
+        self.assertEqual(len(smoke_ids), len(set(smoke_ids)))
         self.assertIn("ISO", document["contrasts"]["primary"])
         self.assertTrue(document["superseded_artifacts"])
 
@@ -112,8 +163,8 @@ class PreregistrationDocumentTests(unittest.TestCase):
             self.assertEqual(code, 0)
             written = json.loads(output.read_text(encoding="utf-8"))
         self.assertEqual(written["preregistration_version"], PREREGISTRATION_VERSION)
-        self.assertEqual(written["cell_audit"]["distinct_cell_count"],
-                         written["cell_audit"]["distinct_cell_count"])
+        self.assertEqual(len(written["stage2"]["mechanics_smoke"]["instance_ids"]),
+                         2 * len(PROPOSED_REPRESENTATIVE_CELLS))
 
 
 if __name__ == "__main__":

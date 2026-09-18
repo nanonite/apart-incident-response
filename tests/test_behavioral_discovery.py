@@ -19,6 +19,7 @@ from apart_incident_response.behavioral_discovery import (
     DiagnosticCondition,
     OpenRouterBehavioralProvider,
     audit_retained_pilot,
+    build_screen_instances,
     channel_audit_manifest,
     classify_http_status,
     current_protocol_key,
@@ -32,6 +33,7 @@ from apart_incident_response.behavioral_discovery import (
     paired_contrasts_by_protocol,
     provider_seed,
     request_budget,
+    resolve_condition_turns,
     run_behavioral_screen,
     run_full_gate,
     run_oracle_probe,
@@ -487,15 +489,43 @@ class PairedScreenTests(unittest.TestCase):
             self.assertNotIn("COMM", cell["p_success"])
 
     def test_paired_screen_stops_at_request_cap(self):
-        instances = frozen_full_gate_instances()[:2]
+        instances = frozen_full_gate_instances()[:4]
         config = BehavioralProviderConfig(max_requests=12, min_interval_seconds=0, max_cost_usd=20.0)
         provider = PairedFakeProvider(config, {})
         with tempfile.TemporaryDirectory() as directory:
             report = run_paired_screen(instances, provider, BehavioralArtifactStore(Path(directory) / "screen.jsonl"))
+        # default frozen schedule: ISO 1 + FULL 1 + COMM (2 turns x 2 agents) = 6 per instance
+        self.assertEqual(report["condition_turns"], {"ISO": 1, "FULL": 1, "COMM": 2})
+        self.assertEqual(report["requests_per_instance"], 6)
         self.assertEqual(report["stop_reason"], "request_cap")
-        self.assertEqual(report["attempted_instances"], 1)
-        self.assertEqual(report["requests_made"], 8)
+        self.assertEqual(report["attempted_instances"], 2)
+        self.assertEqual(report["requests_made"], 12)
         self.assertFalse(report["all_condition_denominators_present"])
+
+    def test_condition_turns_resolution_and_key_binding(self):
+        conditions = (BatteryCondition.ISO, BatteryCondition.FULL, BatteryCondition.COMM)
+        self.assertEqual(resolve_condition_turns(conditions), {"ISO": 1, "FULL": 1, "COMM": 2})
+        self.assertEqual(resolve_condition_turns(conditions, turns=2), {"ISO": 2, "FULL": 2, "COMM": 2})
+        self.assertEqual(resolve_condition_turns(conditions, condition_turns={"COMM": 3}),
+                         {"ISO": 1, "FULL": 1, "COMM": 3})
+        with self.assertRaises(ValueError):
+            resolve_condition_turns(conditions, condition_turns={"COMM": 0})
+        self.assertNotEqual(current_protocol_key("m", "v1", turns={"ISO": 1, "FULL": 1, "COMM": 2}),
+                            current_protocol_key("m", "v1", turns=2))
+
+    def test_comm_recovery_undefined_below_minimum_c_need(self):
+        frozen = frozen_full_gate_instances()
+        instances = [frozen[0]]
+        responses = {(instance.instance_id, condition.value, "A"): AgentResponse(
+            answer=instance.target, output_text=f"ANSWER: {instance.target}")
+            for instance in instances for condition in BatteryCondition}
+        config = BehavioralProviderConfig(max_requests=16, min_interval_seconds=0, max_cost_usd=20.0)
+        provider = PairedFakeProvider(config, responses)
+        with tempfile.TemporaryDirectory() as directory:
+            report = run_paired_screen(instances, provider, BehavioralArtifactStore(Path(directory) / "screen.jsonl"))
+        # ISO == FULL == 1.0 here, so C_need is zero and eta_comm must be undefined
+        self.assertEqual(report["minimum_effective_c_need"], 0.10)
+        self.assertIsNone(report["comm_recovery_eta"])
 
 
 class PairedInferenceTests(unittest.TestCase):
@@ -749,7 +779,9 @@ class TreatmentSchemaTests(unittest.TestCase):
         self.assertEqual(schema["primary_conditions"], ["ISO", "FULL", "COMM"])
         self.assertEqual(schema["diagnostic_conditions"], ["ORACLE", "INDUCED"])
         self.assertEqual(schema["forbidden_model_visible_fields"], ["joint_candidate_labels"])
-        self.assertEqual(schema["request_budget_turns_2"], {"ISO": 2, "FULL": 2, "ORACLE": 2, "COMM": 4})
+        self.assertEqual(schema["condition_turns"], {"ISO": 1, "FULL": 1, "COMM": 2, "ORACLE": 1})
+        self.assertEqual(schema["minimum_effective_c_need"], 0.10)
+        self.assertEqual(schema["request_budget"], {"ISO": 1, "FULL": 1, "ORACLE": 1, "COMM": 4})
         self.assertEqual(schema["finalizer_policy"], "one_way_A_finalizer")
         self.assertIn("claim_not_owned_by_writer", schema["comm_grammar"]["rejected_writes"])
         self.assertIn("correlation", schema["comm_grammar"]["post_read_evidence"])
@@ -957,6 +989,14 @@ class CommunicationGrammarTests(unittest.TestCase):
         self.assertEqual(DiagnosticCondition.INDUCED.value, "INDUCED")
         self.assertNotIn(DiagnosticCondition.INDUCED, list(BatteryCondition))
         self.assertNotIn("INDUCED", [left for left, _ in ANALYSIS_PAIRS] + [right for _, right in ANALYSIS_PAIRS])
+
+    def test_live_screen_consumes_frozen_stage2_manifest(self):
+        from apart_incident_response.preregistration import mechanics_smoke_instances
+        instances = build_screen_instances(scheme="stage2", seeds_per_cell=2)
+        self.assertEqual([instance.instance_id for instance in instances],
+                         [instance.instance_id for instance in mechanics_smoke_instances()])
+        self.assertEqual(len({instance.instance_id for instance in instances}), len(instances))
+        self.assertGreaterEqual(min(instance.seed for instance in instances), 19000)
 
 
 if __name__ == "__main__":
