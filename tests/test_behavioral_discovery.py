@@ -1006,10 +1006,13 @@ class ProviderDiagnosticsTests(unittest.TestCase):
     def test_sanitize_provider_message_redacts_credentials_and_tokens(self):
         key = "sk-secret-abcdefghijklmnopqrstuvwxyz0123456789"
         raw = ('{"error":{"message":"bad request for ' + key +
-               ' token abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMN0123456789"}}')
+               ' user_3CAdTGDNDbieDntM5WOeHKMxiXH token '
+               'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMN0123456789"}}')
         clean = sanitize_provider_message(raw, key)
         self.assertNotIn(key, clean)
         self.assertIn("<redacted-key>", clean)
+        self.assertIn("<redacted-user>", clean)
+        self.assertNotIn("user_3CAdTGDNDbieDntM5WOeHKMxiXH", clean)
         self.assertLessEqual(len(clean), 300)
 
     def test_provider_captures_sanitized_http_error_message(self):

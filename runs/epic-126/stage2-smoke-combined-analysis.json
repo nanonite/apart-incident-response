@@ -1,0 +1,17 @@
+{
+  "by_protocol": {
+    "six-family-clue-consistent-v2|treatment-prompt-v2|4bf8982bdc6428f5|2e4a93c27d3224c2|inclusionai/ling-3.0-flash-vl:free|behavioral-discovery-v1": {
+      "paired_contrasts": {},
+      "record_count": 5
+    }
+  },
+  "credentials_retained": false,
+  "mixed_protocols": false,
+  "mode": "analyze",
+  "paired_contrasts": {},
+  "protocol_groups": [
+    "six-family-clue-consistent-v2|treatment-prompt-v2|4bf8982bdc6428f5|2e4a93c27d3224c2|inclusionai/ling-3.0-flash-vl:free|behavioral-discovery-v1"
+  ],
+  "raw_responses_retained": false,
+  "record_count": 5
+}

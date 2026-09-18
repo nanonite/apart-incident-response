@@ -264,13 +264,15 @@ def _retry_after_seconds(exc: urllib.error.HTTPError) -> float | None:
 
 
 def sanitize_provider_message(raw: str | None, api_key: str | None = None, *, limit: int = 300) -> str:
-    """Redact credentials and token-like strings from a provider error message."""
+    """Redact credentials, account ids and token-like strings from a provider error message."""
 
     if not raw:
         return ""
     text = str(raw)
     if api_key:
         text = text.replace(api_key, "<redacted-key>")
+    text = re.sub(r"\bsk-[A-Za-z0-9_\-]{6,}", "<redacted-key>", text)
+    text = re.sub(r"\buser_[A-Za-z0-9]{6,}", "<redacted-user>", text)
     text = re.sub(r"[A-Za-z0-9_\-\.]{40,}", "<redacted-token>", text)
     return text[:limit]
 
