@@ -54,7 +54,9 @@
     "visible_messages"
   ],
   "prompt_schema_version": "treatment-prompt-v2",
-  "provider_seed_basis": "sha256(instance_id|condition|turn|agent_id)[:8]",
+  "provider_seed_algorithm": "sha256-truncated-signed31-v1",
+  "provider_seed_basis": "sha256(instance_id|condition|turn|agent_id)[:8] masked to 0..2^31-1",
+  "provider_seed_max": 2147483647,
   "request_budget": {
     "COMM": 4,
     "FULL": 1,

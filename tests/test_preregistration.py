@@ -4,7 +4,9 @@ import unittest
 from pathlib import Path
 
 from apart_incident_response.preregistration import (
+    CONSUMED_REQUESTS,
     MINIMUM_EFFECTIVE_C_NEED,
+    ORIGINAL_SMOKE_CAP,
     PREREGISTRATION_VERSION,
     PROPOSED_REPRESENTATIVE_CELLS,
     SMOKE_CONDITION_TURNS,
@@ -13,9 +15,11 @@ from apart_incident_response.preregistration import (
     SMOKE_MAX_TOKENS,
     STAGE2_MAX_SEEDS_PER_CELL,
     STAGE2_SEED_BASE,
+    SUCCESSOR_VERSION,
     assert_unique_instance_ids,
     audit_cells,
     build_preregistration,
+    build_successor_preregistration,
     holm_adjust,
     mechanics_smoke_instances,
     mcnemar_required_pairs,
@@ -215,6 +219,45 @@ class PreregistrationDocumentTests(unittest.TestCase):
         self.assertEqual(written["preregistration_version"], PREREGISTRATION_VERSION)
         self.assertEqual(len(written["stage2"]["mechanics_smoke"]["instance_ids"]),
                          2 * len(PROPOSED_REPRESENTATIVE_CELLS))
+
+
+    def test_successor_registration_records_seed_amendment_and_accounting(self):
+        root = Path(__file__).resolve().parents[1]
+        v1_path = root / "runs" / "epic-126" / "preregistration-v1.json"
+        v1 = json.loads(v1_path.read_text(encoding="utf-8"))
+        v1_hash_before = v1["preregistration_hash"]
+        document = build_successor_preregistration(repo_root=root, generator_commit="deadbeef")
+        self.assertEqual(document["preregistration_version"], SUCCESSOR_VERSION)
+        self.assertEqual(document["status"], "draft_pending_review")
+        self.assertTrue(document["approval_required"])
+        self.assertEqual(document["supersedes"]["version"], "stage2-preregistration-v1")
+        self.assertEqual(document["supersedes"]["hash"], v1_hash_before)
+        self.assertEqual(document["amendment"]["provider_seed_algorithm"],
+                         "sha256-truncated-signed31-v1")
+        self.assertEqual(document["amendment"]["provider_seed_max"], 2 ** 31 - 1)
+        consumed = document["request_cap_accounting"]["consumed"]
+        self.assertEqual(consumed["total"], 17)
+        self.assertEqual(sum(CONSUMED_REQUESTS.values()), 17)
+        self.assertEqual(document["request_cap_accounting"]["original_cap"], ORIGINAL_SMOKE_CAP)
+        self.assertEqual(document["request_cap_accounting"]["remaining_under_original_cap"], 43)
+        self.assertTrue(document["clean_restart_plan"])
+        # the locked v1 file must be preserved byte-for-byte at the hash level
+        self.assertEqual(json.loads(v1_path.read_text(encoding="utf-8"))["preregistration_hash"],
+                         v1_hash_before)
+        # the new key must differ from the locked v1 key so runs cannot be pooled
+        self.assertNotEqual(document["provider_settings"]["expected_protocol_key"],
+                            v1["provider_settings"]["expected_protocol_key"])
+
+    def test_successor_cli_writes_document(self):
+        from apart_incident_response import preregistration
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "prereg-v2.json"
+            code = preregistration.main(["--repo-root", str(Path(__file__).resolve().parents[1]),
+                                         "--successor", "--output", str(output)])
+            self.assertEqual(code, 0)
+            written = json.loads(output.read_text(encoding="utf-8"))
+        self.assertEqual(written["preregistration_version"], SUCCESSOR_VERSION)
+        self.assertTrue(written["amendment"])
 
 
 if __name__ == "__main__":

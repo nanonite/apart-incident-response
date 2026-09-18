@@ -797,6 +797,28 @@ class TreatmentSchemaTests(unittest.TestCase):
         self.assertNotEqual(seed, provider_seed("hypothesis-1", "FULL", 1, "A"))
         self.assertNotEqual(seed, provider_seed("hypothesis-1", "FULL", 0, "B"))
 
+    def test_provider_seed_is_bounded_to_signed_31_bits(self):
+        from apart_incident_response.behavioral_discovery import (
+            PROVIDER_SEED_ALGORITHM, PROVIDER_SEED_MAX,
+        )
+        self.assertEqual(PROVIDER_SEED_MAX, 2 ** 31 - 1)
+        self.assertEqual(PROVIDER_SEED_ALGORITHM, "sha256-truncated-signed31-v1")
+        seeds = [provider_seed(f"inst-{index}", condition, turn, agent)
+                 for index in range(50)
+                 for condition in ("ISO", "FULL", "COMM")
+                 for turn in range(2)
+                 for agent in ("A", "B")]
+        self.assertTrue(all(0 <= seed <= PROVIDER_SEED_MAX for seed in seeds))
+        # a known failing unsigned value would have exceeded the signed maximum
+        self.assertGreater(3705292798, PROVIDER_SEED_MAX)
+
+    def test_protocol_key_binds_seed_algorithm(self):
+        baseline = run_settings_hash(turns=1, max_tokens=1024)
+        with patch("apart_incident_response.behavioral_discovery.PROVIDER_SEED_ALGORITHM",
+                   "sha256-truncated-unsigned32-v0"):
+            mutated = run_settings_hash(turns=1, max_tokens=1024)
+        self.assertNotEqual(baseline, mutated)
+
     def test_paired_screen_requests_match_frozen_budget(self):
         frozen = frozen_full_gate_instances()
         instances = [frozen[0], frozen[2]]

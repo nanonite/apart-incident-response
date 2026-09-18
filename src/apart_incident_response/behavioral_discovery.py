@@ -41,6 +41,11 @@ ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
 BEHAVIORAL_VERSION = "behavioral-discovery-v1"
 FULL_GATE_VERSION = "t1a-full-only-gate-v1"
 PROMPT_SCHEMA_VERSION = "treatment-prompt-v2"
+# Provider seed algorithm. Some upstream providers reject seeds outside the
+# signed 32-bit range, so the hash output is masked to 0..2^31-1. The algorithm
+# name is bound into the protocol identity; changing it changes every key.
+PROVIDER_SEED_ALGORITHM = "sha256-truncated-signed31-v1"
+PROVIDER_SEED_MAX = 2 ** 31 - 1
 ORACLE_SCHEMA_VERSION = "behavioral-oracle-v1"
 ORACLE_CONDITION = "ORACLE"
 # One-way finalizer policy, preregistered: A is always the scored finalizer and B
@@ -73,10 +78,15 @@ INDUCED_SCHEMA_VERSION = "behavioral-induced-v1"
 
 
 def provider_seed(instance_id: str, condition: str, turn: int, agent_id: str) -> int:
-    """Reproducible provider seed derived from instance, condition, turn and agent."""
+    """Reproducible provider seed in 0..2^31-1 (signed 32-bit safe).
+
+    Some upstream providers reject seeds above the signed 32-bit maximum, so the
+    unsigned 32-bit hash truncation is masked down; the result is deterministic
+    for a given instance, condition, turn and agent.
+    """
 
     payload = f"{instance_id}|{condition}|{turn}|{agent_id}"
-    return int(hashlib.sha256(payload.encode()).hexdigest()[:8], 16)
+    return int(hashlib.sha256(payload.encode()).hexdigest()[:8], 16) & PROVIDER_SEED_MAX
 
 
 def treatment_prompt(context: AgentContext) -> dict[str, Any]:
@@ -118,6 +128,8 @@ def run_settings_hash(*, turns: int | Mapping[str, int] | None, max_tokens: int 
         "finalizing_agent": finalizing_agent,
         "finalizer_policy": FINALIZER_POLICY,
         "prompt_schema_version": PROMPT_SCHEMA_VERSION,
+        "provider_seed_algorithm": PROVIDER_SEED_ALGORITHM,
+        "provider_seed_max": PROVIDER_SEED_MAX,
         "temperature": 0.0,
         "stream": False,
         "require_parameters": True,
@@ -194,7 +206,9 @@ def treatment_schema() -> dict[str, Any]:
         "forbidden_model_visible_fields": ["joint_candidate_labels"],
         "finalizer_policy": FINALIZER_POLICY,
         "finalizing_agent": FINALIZER_AGENT,
-        "provider_seed_basis": "sha256(instance_id|condition|turn|agent_id)[:8]",
+        "provider_seed_basis": "sha256(instance_id|condition|turn|agent_id)[:8] masked to 0..2^31-1",
+        "provider_seed_algorithm": PROVIDER_SEED_ALGORITHM,
+        "provider_seed_max": PROVIDER_SEED_MAX,
         "condition_turns": {**DEFAULT_CONDITION_TURNS, ORACLE_CONDITION: 1},
         "minimum_effective_c_need": MINIMUM_EFFECTIVE_C_NEED,
         "request_budget": {condition: request_budget(condition, DEFAULT_CONDITION_TURNS.get(condition, 1))
@@ -1949,6 +1963,7 @@ def pressure_catalog(records: Iterable[Mapping[str, Any]], instances: Sequence[F
 __all__ = [
     "BEHAVIORAL_VERSION", "FULL_GATE_VERSION", "FROZEN_FULL_GATE_MANIFEST",
     "PROMPT_SCHEMA_VERSION", "ORACLE_SCHEMA_VERSION", "ORACLE_CONDITION",
+    "PROVIDER_SEED_ALGORITHM", "PROVIDER_SEED_MAX",
     "FINALIZER_POLICY", "FINALIZER_AGENT", "BOARD_FREE_CONDITIONS", "TREATMENT_PROMPT_FIELDS",
     "DiagnosticCondition", "provider_seed", "treatment_prompt", "treatment_prompt_hash",
     "request_budget", "treatment_schema", "current_protocol_key", "PROTOCOL_OUTPUT_STEM",

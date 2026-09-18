@@ -54,6 +54,12 @@ SMOKE_CONDITION_TURNS: dict[str, int] = {"ISO": 1, "FULL": 1, "COMM": 2}
 SMOKE_MODEL = bd.DEFAULT_FREE_MODEL
 SMOKE_CONDITIONS = ("ISO", "FULL", "COMM")
 SMOKE_DIAGNOSTICS_NOT_RUN = ("ORACLE", "INDUCED")
+# Successor/amendment registration for the seed-range protocol fix.
+SUCCESSOR_VERSION = "stage2-preregistration-v2"
+ORIGINAL_SMOKE_CAP = 60
+CONSUMED_REQUESTS: dict[str, int] = {
+    "smoke_prior": 6, "smoke_resume": 5, "diagnostics_outside_artifact": 6,
+}
 APPROVED_DECISIONS = (
     "five representative cells: hypothesis low/medium, reference low, planning low/high",
     "exclude unstable reference-high",
@@ -419,6 +425,72 @@ def build_preregistration(*, repo_root: Path, generator_commit: str | None = Non
     return document
 
 
+def build_successor_preregistration(*, repo_root: Path,
+                                    generator_commit: str | None = None) -> dict[str, Any]:
+    """Explicit amendment/successor registration for the seed-range protocol fix.
+
+    Does not modify the locked v1 registration; records the new protocol key and
+    cumulative request-cap accounting for a clean restart that still needs
+    review.
+    """
+
+    base = build_preregistration(repo_root=repo_root, generator_commit=generator_commit,
+                                 seeds_per_cell=MECHANICS_SMOKE_SEEDS_PER_GROUP, approved=False)
+    v1_path = repo_root / "runs" / "epic-126" / "preregistration-v1.json"
+    supersedes_hash = None
+    if v1_path.is_file():
+        try:
+            supersedes_hash = json.loads(v1_path.read_text(encoding="utf-8")).get("preregistration_hash")
+        except ValueError:
+            supersedes_hash = None
+    consumed = dict(CONSUMED_REQUESTS)
+    consumed["total"] = sum(CONSUMED_REQUESTS.values())
+    provider_settings = dict(base["provider_settings"])
+    provider_settings["provider_seed_algorithm"] = bd.PROVIDER_SEED_ALGORITHM
+    provider_settings["provider_seed_max"] = bd.PROVIDER_SEED_MAX
+    provider_settings["expected_protocol_key"] = bd.current_protocol_key(
+        SMOKE_MODEL, bd.BEHAVIORAL_VERSION, turns=dict(SMOKE_CONDITION_TURNS),
+        max_tokens=SMOKE_MAX_TOKENS, finalizing_agent=bd.FINALIZER_AGENT)
+    document: dict[str, Any] = dict(base)
+    document.update({
+        "preregistration_version": SUCCESSOR_VERSION,
+        "status": "draft_pending_review",
+        "supersedes": {"version": base["preregistration_version"], "hash": supersedes_hash,
+                       "reason": "seed-range protocol fix"},
+        "amendment": {
+            "reason": "provider HTTP 400 traced to provider_seed exceeding the provider signed 32-bit seed range",
+            "change": "provider_seed is deterministic and bounded to 0..2^31-1",
+            "provider_seed_algorithm": bd.PROVIDER_SEED_ALGORITHM,
+            "provider_seed_max": bd.PROVIDER_SEED_MAX,
+            "evidence": "identical FULL prompt returned HTTP 400 with seed 3705292798 and succeeded with "
+                        "seed 1; a simple prompt showed the same pattern",
+            "inference": "the Novita signed-range limit is an empirically supported inference, not a "
+                         "documented guarantee",
+        },
+        "provider_settings": provider_settings,
+        "request_cap_accounting": {
+            "original_cap": ORIGINAL_SMOKE_CAP,
+            "consumed": consumed,
+            "remaining_under_original_cap": ORIGINAL_SMOKE_CAP - consumed["total"],
+            "clean_restart_cap": "pending review",
+            "note": "diagnostics_outside_artifact are free-model calls made during the seed "
+                    "investigation and count cumulatively",
+        },
+        "clean_restart_plan": [
+            "review and approve this successor registration and a new cumulative cap",
+            "rebuild the frozen smoke instances and confirm the new expected_protocol_key",
+            "run preflight verification against preregistration-v2.json before any provider call",
+            "start a fresh artifact instead of appending to the failed stage2-smoke.jsonl",
+            "stop under the same failure, request and cost rules",
+        ],
+        "approval_required": True,
+    })
+    payload = json.dumps({key: value for key, value in document.items()
+                          if key != "preregistration_hash"}, sort_keys=True)
+    document["preregistration_hash"] = hashlib.sha256(payload.encode()).hexdigest()
+    return document
+
+
 def verify_against_preregistration(document: Mapping[str, Any], *, instance_ids: Sequence[str],
                                    model: str, provider_version: str,
                                    condition_turns: Mapping[str, int], max_tokens: int,
@@ -464,14 +536,20 @@ def main(argv: Sequence[str] | None = None) -> int:
                         help="record the reviewer approval and lock the mechanics smoke")
     parser.add_argument("--smoke-request-cap", type=int, default=SMOKE_MAX_PHYSICAL_REQUESTS)
     parser.add_argument("--smoke-cost-cap", type=float, default=SMOKE_MAX_COST_USD)
+    parser.add_argument("--successor", action="store_true",
+                        help="build the successor/amendment registration (does not modify v1)")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args(argv)
-    document = build_preregistration(repo_root=args.repo_root.resolve(),
-                                     generator_commit=args.generator_commit,
-                                     seeds_per_cell=args.seeds_per_cell,
-                                     approved=args.approve,
-                                     smoke_request_cap=args.smoke_request_cap,
-                                     smoke_cost_cap_usd=args.smoke_cost_cap)
+    if args.successor:
+        document = build_successor_preregistration(repo_root=args.repo_root.resolve(),
+                                                   generator_commit=args.generator_commit)
+    else:
+        document = build_preregistration(repo_root=args.repo_root.resolve(),
+                                         generator_commit=args.generator_commit,
+                                         seeds_per_cell=args.seeds_per_cell,
+                                         approved=args.approve,
+                                         smoke_request_cap=args.smoke_request_cap,
+                                         smoke_cost_cap_usd=args.smoke_cost_cap)
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps(document, indent=2, sort_keys=True, allow_nan=False) + "\n",
@@ -503,7 +581,9 @@ __all__ = [
     "PROPOSED_REPRESENTATIVE_CELLS", "EXCLUDED_UNSTABLE_CELLS", "MINIMUM_EFFECTIVE_C_NEED",
     "SMOKE_MAX_PHYSICAL_REQUESTS", "SMOKE_MAX_COST_USD", "SMOKE_MAX_TOKENS",
     "SMOKE_CONDITION_TURNS", "SMOKE_CONDITIONS", "SMOKE_DIAGNOSTICS_NOT_RUN", "SMOKE_MODEL",
-    "audit_cells", "assert_unique_instance_ids", "build_preregistration", "cell_fingerprint",
+    "SUCCESSOR_VERSION", "ORIGINAL_SMOKE_CAP", "CONSUMED_REQUESTS",
+    "audit_cells", "assert_unique_instance_ids", "build_preregistration",
+    "build_successor_preregistration", "cell_fingerprint",
     "file_sha256", "holm_adjust", "main", "mcnemar_required_pairs", "mechanics_smoke_instances",
     "missingness_report", "stage2_cell_seed", "stage2_instances", "superseded_artifacts",
     "verify_against_preregistration",
