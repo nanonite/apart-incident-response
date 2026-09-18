@@ -1599,6 +1599,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                         help="build an equal-n paired screen with this many seeds per family x complexity cell")
     parser.add_argument("--seed-scheme", choices=["frozen", "extended", "stage2"],
                         help="instance seed source; stage2 consumes the frozen preregistration manifest")
+    parser.add_argument("--preregistration", type=Path,
+                        help="locked preregistration to verify against before any live request")
     parser.add_argument("--families", help="comma-separated family filter over the frozen manifest")
     parser.add_argument("--complexities", help="comma-separated complexity filter (low, medium, high)")
     parser.add_argument("--output", type=Path)
@@ -1707,6 +1709,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 parser.error("--condition-turns must look like 'ISO=1,FULL=1,COMM=2'")
             if any(value <= 0 for value in condition_turns.values()):
                 parser.error("--condition-turns values must be positive")
+        schedule: dict[str, int] = {}
         if args.mode == "full-gate":
             max_requests = max_runs * 2
         elif args.mode == "oracle":
@@ -1721,6 +1724,21 @@ def main(argv: Sequence[str] | None = None) -> int:
                                           min_interval_seconds=0.25, max_tokens=args.max_tokens)
         provider = OpenRouterBehavioralProvider(config)
         store = BehavioralArtifactStore(output)
+        if args.preregistration:
+            from .preregistration import verify_against_preregistration
+            document = json.loads(args.preregistration.read_text(encoding="utf-8"))
+            verification = verify_against_preregistration(
+                document,
+                instance_ids=[instance.instance_id for instance in instances],
+                model=provider.model, provider_version=getattr(provider, "version", "unknown"),
+                condition_turns=schedule, max_tokens=provider.config.max_tokens,
+                finalizing_agent=FINALIZER_AGENT)
+            print(json.dumps({"mode": args.mode, "preregistration_verified": verification["ok"],
+                              "expected_protocol_key": verification["expected_protocol_key"],
+                              "actual_protocol_key": verification["actual_protocol_key"],
+                              "errors": verification["errors"]}, indent=2, sort_keys=True))
+            if not verification["ok"]:
+                return 2
         if args.mode == "full-gate":
             report = run_full_gate(instances, provider, store, max_runs=max_runs)
         elif args.mode == "oracle":
