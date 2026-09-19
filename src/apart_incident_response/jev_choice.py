@@ -10,15 +10,27 @@ from __future__ import annotations
 import hashlib
 import json
 import math
-from dataclasses import dataclass
+import os
+from dataclasses import dataclass, field
+from pathlib import Path
+import urllib.error
+import urllib.request
 from typing import Any, Mapping, Protocol, Sequence
 
+from .behavioral_discovery import classify_http_status, sanitize_provider_message
+from .reasoning_baseline import OPENROUTER_ENV_FILE, PROJECT_ENV_FILE
 from .task_families import FamilyInstance
 
 
 JEV_ADAPTER_VERSION = "jev-choice-receiver-v1"
 MAX_CHOICE_OPTIONS = 255
 NORMALIZATION_TOLERANCE = 1e-6
+# Real endpoint/model are pinned at J3; this placeholder is never contacted by
+# offline tests.
+JEV_ENDPOINT = "https://example.invalid/jev/v1/choice"
+JEV_CREDENTIAL_ENV_NAMES = frozenset({
+    "TYPESAFE", "TYPESAFE_API_KEY", "JEV_API_KEY", "JEV_CHOICE_API_KEY",
+})
 
 INVALID_RESPONSE_CLASSES = frozenset({
     "malformed_response",
@@ -30,8 +42,117 @@ INVALID_RESPONSE_CLASSES = frozenset({
     "non_finite_probability",
     "oversized_option_set",
     "duplicate_option_ids",
+    "missing_credentials",
     "transport_error",
 })
+
+
+class JevCredentialError(Exception):
+    """Raised when the Jev credential is missing or malformed; never carries the key."""
+
+
+class JevTransportError(Exception):
+    """Sanitized transport failure (no bodies, no credentials)."""
+
+
+def _secret_from_env_file(path: Path) -> str | None:
+    if not path.is_file():
+        return None
+    for line in path.read_text(encoding="utf-8").splitlines():
+        name, separator, value = line.partition("=")
+        normalized = name.strip().removeprefix("export ").upper().replace("-", "_")
+        if separator and normalized in JEV_CREDENTIAL_ENV_NAMES and value.strip():
+            return value.strip().strip('"').strip("'")
+    return None
+
+
+@dataclass(frozen=True)
+class JevCredentials:
+    api_key: str | None = field(default=None, repr=False)
+    source: str | None = None
+
+    @property
+    def present(self) -> bool:
+        return bool(self.api_key)
+
+    @property
+    def shape_ok(self) -> bool:
+        key = self.api_key or ""
+        return len(key) >= 16 and not any(character.isspace() for character in key)
+
+    @property
+    def fingerprint(self) -> str | None:
+        return hashlib.sha256(self.api_key.encode()).hexdigest()[:12] if self.api_key else None
+
+    def redacted(self) -> dict[str, Any]:
+        return {"present": self.present, "shape_ok": self.shape_ok, "source": self.source,
+                "fingerprint": self.fingerprint}
+
+
+def load_jev_credentials() -> JevCredentials:
+    """Load the Jev/TypeSafe credential without exposing it."""
+
+    for name in sorted(JEV_CREDENTIAL_ENV_NAMES):
+        value = os.environ.get(name, "").strip()
+        if value:
+            return JevCredentials(value, f"env:{name}")
+    configured = os.environ.get("APART_JEV_ENV_FILE", "").strip()
+    for path in ([Path(configured)] if configured else []) + [PROJECT_ENV_FILE, OPENROUTER_ENV_FILE]:
+        value = _secret_from_env_file(path)
+        if value:
+            return JevCredentials(value, f"file:{path.name}")
+    return JevCredentials(None, None)
+
+
+class JevChoiceClient:
+    """Minimal OpenRouter-style transport; offline tests inject a fake transport.
+
+    The credential travels only in the Authorization header and never in the
+    request body, diagnostics or artifacts.
+    """
+
+    provider = "jev"
+
+    def __init__(self, *, api_key: str | None = None, endpoint: str = JEV_ENDPOINT,
+                 model: str = "jev-choice", timeout: float = 120.0) -> None:
+        self.credentials = load_jev_credentials() if api_key is None else JevCredentials(api_key, "explicit")
+        self.endpoint = endpoint
+        self.model = model
+        self.timeout = timeout
+
+    def build_request(self, request: Mapping[str, Any]) -> urllib.request.Request:
+        payload = dict(request)
+        payload["model"] = payload.get("model") or self.model
+        key = self.credentials.api_key or ""
+        return urllib.request.Request(
+            self.endpoint,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+            method="POST",
+        )
+
+    def diagnostics(self) -> dict[str, Any]:
+        return {"provider": self.provider, "endpoint": self.endpoint, "model": self.model,
+                "credentials": self.credentials.redacted(), "raw_response_retained": False}
+
+    def complete(self, request: Mapping[str, Any]) -> Mapping[str, Any]:
+        if not self.credentials.present or not self.credentials.shape_ok:
+            raise JevCredentialError("missing_or_malformed_credentials")
+        http_request = self.build_request(request)
+        try:
+            with urllib.request.urlopen(http_request, timeout=self.timeout) as response:
+                return json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            status = int(exc.code)
+            detail = ""
+            try:
+                detail = sanitize_provider_message(exc.read().decode("utf-8", "replace"),
+                                                    self.credentials.api_key)
+            except Exception:
+                detail = ""
+            raise JevTransportError(f"http_{status}_{classify_http_status(status)}{(':' + detail) if detail else ''}")
+        except (OSError, ValueError, TypeError, KeyError, json.JSONDecodeError) as exc:
+            raise JevTransportError(type(exc).__name__)
 
 
 @dataclass(frozen=True)
@@ -127,6 +248,8 @@ class JevChoiceAdapter:
             return _invalid(self.model, state.prompt_hash, "empty_distribution")
         try:
             raw = self.client.complete(self.build_request(state))
+        except JevCredentialError:
+            return _invalid(self.model, state.prompt_hash, "missing_credentials")
         except Exception:
             return _invalid(self.model, state.prompt_hash, "transport_error")
         return self.parse(state, raw)
@@ -248,6 +371,8 @@ if __name__ == "__main__":
 
 __all__ = [
     "INVALID_RESPONSE_CLASSES", "JEV_ADAPTER_VERSION", "MAX_CHOICE_OPTIONS",
-    "NORMALIZATION_TOLERANCE", "ChoiceClient", "ChoiceOption", "ChoiceResponse",
-    "ChoiceState", "JevChoiceAdapter", "main",
+    "NORMALIZATION_TOLERANCE", "JEV_ENDPOINT", "JEV_CREDENTIAL_ENV_NAMES",
+    "ChoiceClient", "ChoiceOption", "ChoiceResponse", "ChoiceState", "JevChoiceAdapter",
+    "JevChoiceClient", "JevCredentialError", "JevCredentials", "JevTransportError",
+    "load_jev_credentials", "main",
 ]

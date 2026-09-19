@@ -1,10 +1,32 @@
+import json
+import os
+import tempfile
 import unittest
+import urllib.error
+from pathlib import Path
+from unittest.mock import patch
 
 from apart_incident_response.jev_choice import (
     INVALID_RESPONSE_CLASSES,
     JevChoiceAdapter,
+    JevChoiceClient,
+    load_jev_credentials,
 )
 from apart_incident_response.jev_protocol import planning_low_instances
+
+
+class FakeResponse:
+    def __init__(self, body):
+        self.body = json.dumps(body).encode()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        return False
+
+    def read(self):
+        return self.body
 
 
 class ScriptedChoiceClient:
@@ -107,6 +129,61 @@ class JevChoiceAdapterTests(unittest.TestCase):
         response = adapter.complete(state)
         self.assertEqual(response.status, "complete")
         self.assertEqual(response.prompt_hash, state.prompt_hash)
+
+
+class JevCredentialTests(unittest.TestCase):
+    KEY = "typesafe-test-key-0123456789abcdef"
+
+    def instance(self):
+        return planning_low_instances(1)[0]
+
+    def test_credentials_load_from_file_without_leaking(self):
+        with tempfile.TemporaryDirectory() as directory:
+            env_file = Path(directory) / "jev.env"
+            env_file.write_text(f"typesafe={self.KEY}\n", encoding="utf-8")
+            with patch.dict(os.environ, {"APART_JEV_ENV_FILE": str(env_file)}, clear=True):
+                credentials = load_jev_credentials()
+        self.assertTrue(credentials.present)
+        self.assertTrue(credentials.shape_ok)
+        self.assertNotIn(self.KEY, repr(credentials))
+        self.assertNotIn(self.KEY, json.dumps(credentials.redacted()))
+        self.assertEqual(len(credentials.fingerprint), 12)
+        client = JevChoiceClient(api_key=self.KEY)
+        self.assertNotIn(self.KEY, json.dumps(client.diagnostics()))
+
+    def test_missing_credentials_reports_missing_credentials(self):
+        adapter = JevChoiceAdapter(JevChoiceClient(api_key=""))
+        state = adapter.build_state(self.instance(), "A", "ISO")
+        response = adapter.complete(state)
+        self.assertEqual(response.status, "invalid")
+        self.assertEqual(response.error_class, "missing_credentials")
+        self.assertIn("missing_credentials", INVALID_RESPONSE_CLASSES)
+
+    def test_request_is_credential_safe_and_parses(self):
+        instance = self.instance()
+        client = JevChoiceClient(api_key=self.KEY, endpoint="https://example.invalid/jev/v1/choice",
+                                 model="jev-choice-1")
+        adapter = JevChoiceAdapter(client)
+        state = adapter.build_state(instance, "A", "ISO")
+        labels = [option.option_id for option in state.options]
+        body = {"probabilities": {label: 1.0 / len(labels) for label in labels},
+                "model": "jev-choice-1", "request_id": "req-1", "usage": {"cost": 0.0}}
+        with patch("apart_incident_response.jev_choice.urllib.request.urlopen",
+                   return_value=FakeResponse(body)) as opener:
+            response = adapter.complete(state)
+        self.assertEqual(response.status, "complete")
+        request = opener.call_args.args[0]
+        self.assertEqual(request.get_header("Authorization"), f"Bearer {self.KEY}")
+        self.assertNotIn(self.KEY, request.data.decode())
+        self.assertEqual(request.full_url, "https://example.invalid/jev/v1/choice")
+
+    def test_http_error_is_transport_error(self):
+        adapter = JevChoiceAdapter(JevChoiceClient(api_key=self.KEY))
+        state = adapter.build_state(self.instance(), "A", "ISO")
+        error = urllib.error.HTTPError("https://example.invalid", 429, "rate", {}, None)
+        with patch("apart_incident_response.jev_choice.urllib.request.urlopen", side_effect=error):
+            response = adapter.complete(state)
+        self.assertEqual(response.error_class, "transport_error")
 
 
 if __name__ == "__main__":
