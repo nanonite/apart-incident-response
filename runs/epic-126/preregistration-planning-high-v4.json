@@ -5,15 +5,13 @@
   "approval_required": true,
   "approved_decisions": [],
   "caps": {
-    "max_cost_usd": 20.0,
-    "max_requests": "per-run explicit cap",
-    "min_interval_seconds": 0.25,
-    "smoke": {
-      "counts_preflight": true,
-      "counts_retries": true,
-      "max_cost_usd": 20.0,
-      "max_physical_requests": 60
+    "historical": {
+      "mechanics_smoke_cap": 60,
+      "note": "the mechanics-smoke cap is historical and is not the active cap for this stage"
     },
+    "max_cost_usd": 20.0,
+    "max_requests": 120,
+    "min_interval_seconds": 0.25,
     "stop_rules": [
       "request_cap",
       "cost_cap",
@@ -558,7 +556,7 @@
     "seed_base": 80000,
     "status": "proposed"
   },
-  "preregistration_hash": "353b30143d9cddf8d39a83ac2e4e749442e8047ad33385561c2dae1357df8c93",
+  "preregistration_hash": "992fa4d9869ea7d0a5a9affbd26e5f7d44d6a75e66dff125f1bba41629e94c18",
   "preregistration_version": "stage2-planning-high-validity-v4",
   "proposed_decisions": [
     "confirmatory sample size per cell on the separate seed block",

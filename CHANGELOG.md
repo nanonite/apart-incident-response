@@ -37,6 +37,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix board IPC integration and CLI tool wiring (#58)
 
 ### Changed
+- Fix planning-high empty outputs (token-budget truncation) before further collection (#168)
 - J2 — Implement offline Jev Choice receiver adapter (#155)
 - J1 — Freeze finite-task and communication invariants (#154)
 - Run preregistered Ling board-necessity screen on corrected generator (#162)

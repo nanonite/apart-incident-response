@@ -677,6 +677,17 @@ def build_planning_high_preregistration(*, repo_root: Path, generator_commit: st
         "supersedes": {"version": "stage2-confirmatory-preregistration-v3", "hash": supersedes_hash,
                        "reason": "planning-high token-budget validity fix"},
         "provider_settings": provider_settings,
+        "caps": {
+            "min_interval_seconds": 0.25,
+            "max_cost_usd": PLANNING_HIGH_COST_CAP_USD,
+            "max_requests": PLANNING_HIGH_REQUEST_CAP,
+            "stop_rules": ["request_cap", "cost_cap", "repeated_http_failure",
+                           "missing_checker_evidence"],
+            "historical": {
+                "mechanics_smoke_cap": ORIGINAL_SMOKE_CAP,
+                "note": "the mechanics-smoke cap is historical and is not the active cap for this stage",
+            },
+        },
         "planning_high": {
             "status": "proposed",
             "seed_base": PLANNING_HIGH_SEED_BASE,
@@ -921,8 +932,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         "distinct_cell_count": document["cell_audit"]["distinct_cell_count"],
         "cell_count": document["cell_audit"]["cell_count"],
         "smoke_instance_count": len(document["stage2"]["mechanics_smoke"]["instance_ids"]),
-        "smoke_request_cap": document["caps"]["smoke"]["max_physical_requests"],
-        "smoke_cost_cap_usd": document["caps"]["smoke"]["max_cost_usd"],
+        "active_request_cap": document["caps"].get(
+            "max_requests", (document["caps"].get("smoke") or {}).get("max_physical_requests")),
+        "active_cost_cap_usd": document["caps"].get(
+            "max_cost_usd", (document["caps"].get("smoke") or {}).get("max_cost_usd")),
         "preregistration_hash": document["preregistration_hash"],
         "approval_required": document["approval_required"],
     }, indent=2, sort_keys=True, allow_nan=False))

@@ -413,6 +413,18 @@ class PreregistrationDocumentTests(unittest.TestCase):
         self.assertNotEqual(document["provider_settings"]["expected_protocol_key"],
                             v3["provider_settings"]["expected_protocol_key"])
 
+    def test_planning_high_caps_have_one_active_limit(self):
+        root = Path(__file__).resolve().parents[1]
+        document = build_planning_high_preregistration(repo_root=root, generator_commit="deadbeef")
+        caps = document["caps"]
+        self.assertEqual(caps["max_requests"], PLANNING_HIGH_REQUEST_CAP)
+        self.assertEqual(caps["max_cost_usd"], 20.0)
+        self.assertEqual(document["planning_high"]["request_cap"], caps["max_requests"])
+        # the inherited mechanics-smoke cap must not appear as an active cap
+        self.assertNotIn("smoke", caps)
+        self.assertEqual(caps["historical"]["mechanics_smoke_cap"], ORIGINAL_SMOKE_CAP)
+        self.assertIn("not the active cap", caps["historical"]["note"])
+
     def test_planning_high_preflight_accepts_locked_rejects_draft_and_drift(self):
         root = Path(__file__).resolve().parents[1]
         locked = build_planning_high_preregistration(repo_root=root, generator_commit="deadbeef",
