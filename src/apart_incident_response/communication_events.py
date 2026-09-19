@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, asdict
+from collections import Counter
 import hashlib
 import json
 import time
@@ -87,7 +88,8 @@ class CommunicationEventLog:
                      logprob_coverage: float | None = None,
                      logprob_mass_coverage: float | None = None,
                      logprob_status: str = "not_requested", input_tokens: int | None = None,
-                     output_tokens: int | None = None, cost_usd: float = 0.0) -> CommunicationEvent:
+                     output_tokens: int | None = None, cost_usd: float = 0.0,
+                     finish_reason: str | None = None) -> CommunicationEvent:
         """Record output-time probability data, never read-time entropy."""
 
         return self.record("model_output", agent_id, output_id=output_id,
@@ -97,7 +99,7 @@ class CommunicationEventLog:
                                     "logprob_mass_coverage": logprob_mass_coverage,
                                     "logprob_status": logprob_status,
                                     "input_tokens": input_tokens, "output_tokens": output_tokens,
-                                    "cost_usd": cost_usd})
+                                    "cost_usd": cost_usd, "finish_reason": finish_reason})
 
     def post_read_correlation(self, agent_id: str, message: MessageInformation, output_id: str,
                               *, checker_evidence: Mapping[str, Any]) -> CommunicationEvent:
@@ -167,6 +169,16 @@ class CommunicationEventLog:
             "provider_failure_types": sorted({(event.payload or {}).get("error_type", "unknown") for event in provider_failures}),
             "rejected_write_count": len(rejected_writes),
             "rejected_write_reasons": sorted({(event.payload or {}).get("reason", "unknown") for event in rejected_writes}),
+            "finish_reason_counts": dict(Counter(str((event.payload or {}).get("finish_reason") or "unknown")
+                                                  for event in outputs)),
+            "truncated_output_count": sum((event.payload or {}).get("finish_reason") == "length" for event in outputs),
+            "outputs": [{
+                "agent_id": event.agent_id,
+                "output_id": event.output_id,
+                "finish_reason": (event.payload or {}).get("finish_reason"),
+                "input_tokens": (event.payload or {}).get("input_tokens"),
+                "output_tokens": (event.payload or {}).get("output_tokens"),
+            } for event in outputs],
             "bits_per_communication_token": sum(transmitted) / sum(tokens) if sum(tokens) else None,
             "post_read_correlation_count": len(useful),
             "logprob_output_count": len(logprob_rows),

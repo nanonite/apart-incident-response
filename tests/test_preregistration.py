@@ -17,6 +17,9 @@ from apart_incident_response.preregistration import (
     MINIMUM_EFFECTIVE_C_NEED,
     NEW_REQUEST_ALLOWANCE,
     ORIGINAL_SMOKE_CAP,
+    PLANNING_HIGH_MAX_TOKENS,
+    PLANNING_HIGH_REQUEST_CAP,
+    PLANNING_HIGH_VERSION,
     PLANNED_SMOKE_REQUESTS,
     PREREGISTRATION_VERSION,
     PROPOSED_REPRESENTATIVE_CELLS,
@@ -34,6 +37,7 @@ from apart_incident_response.preregistration import (
     assert_unique_instance_ids,
     audit_cells,
     build_confirmatory_preregistration,
+    build_planning_high_preregistration,
     build_preregistration,
     build_successor_preregistration,
     holm_adjust,
@@ -388,6 +392,25 @@ class PreregistrationDocumentTests(unittest.TestCase):
         rejected = verify_against_confirmatory_preregistration(draft, planned_requests=600, **kwargs)
         self.assertFalse(rejected["ok"])
         self.assertTrue(any("not locked" in error for error in rejected["errors"]))
+
+    def test_planning_high_draft_registration_raises_token_budget(self):
+        root = Path(__file__).resolve().parents[1]
+        v3 = json.loads((root / "runs" / "epic-126" / "preregistration-v3.json").read_text(encoding="utf-8"))
+        document = build_planning_high_preregistration(repo_root=root, generator_commit="deadbeef")
+        self.assertEqual(document["preregistration_version"], PLANNING_HIGH_VERSION)
+        self.assertEqual(document["status"], "draft_pending_review")
+        self.assertTrue(document["approval_required"])
+        self.assertEqual(document["supersedes"]["hash"], v3["preregistration_hash"])
+        planning = document["planning_high"]
+        self.assertEqual(planning["max_tokens"], PLANNING_HIGH_MAX_TOKENS)
+        self.assertEqual(planning["per_cell_instances"], 17)
+        self.assertEqual(len(planning["instance_ids"]), 17)
+        self.assertEqual(len(set(planning["instance_ids"])), 17)
+        self.assertEqual(planning["request_cap"], PLANNING_HIGH_REQUEST_CAP)
+        self.assertEqual(document["provider_settings"]["max_tokens"], PLANNING_HIGH_MAX_TOKENS)
+        # higher token budget changes the protocol key (fresh boundary)
+        self.assertNotEqual(document["provider_settings"]["expected_protocol_key"],
+                            v3["provider_settings"]["expected_protocol_key"])
 
     def test_confirmatory_cli_writes_draft(self):
         from apart_incident_response import preregistration

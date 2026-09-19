@@ -273,6 +273,37 @@ class FullGateProviderTests(unittest.TestCase):
         self.assertEqual(diagnostics["output_tokens"], 5)
         self.assertFalse(diagnostics["logprobs_requested"])
 
+    def test_provider_records_finish_reason(self):
+        provider = self.provider()
+        body = {"id": "req-len", "model": "served", "choices": [
+            {"message": {"content": ""}, "finish_reason": "length"}], "usage": {}}
+        with patch("apart_incident_response.behavioral_discovery.urllib.request.urlopen",
+                   return_value=FakeResponse(body)):
+            response = provider.complete("prompt", seed=1)
+        self.assertEqual(response.finish_reason, "length")
+
+    def test_empty_output_with_length_finish_reason_is_invalid_output_empty(self):
+        instances = frozen_full_gate_instances()[:2]
+
+        class LengthProvider(FakeGateProvider):
+            def respond(self, context):
+                self.request_count += 1
+                return AgentResponse(output_text="", answer=None, finish_reason="length")
+
+        config = BehavioralProviderConfig(max_requests=8, min_interval_seconds=0, max_cost_usd=20.0)
+        provider = LengthProvider(config)
+        with tempfile.TemporaryDirectory() as directory:
+            store = BehavioralArtifactStore(Path(directory) / "gate.jsonl")
+            report = run_full_gate(instances, provider, store)
+            records = store.records()
+        self.assertEqual(report["classification_counts"], {"invalid_output_empty": 2})
+        self.assertEqual(len(records), 2)
+        for record in records:
+            summary = record["event_summary"]
+            self.assertEqual(summary["finish_reason_counts"].get("length"), 1)
+            self.assertEqual(summary["truncated_output_count"], 1)
+            self.assertEqual(summary["outputs"][0]["finish_reason"], "length")
+
     def test_rate_floor_is_enforced_between_requests(self):
         provider = self.provider(max_requests=4)
         provider.config = BehavioralProviderConfig(max_requests=4, min_interval_seconds=0.25)

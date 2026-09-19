@@ -349,6 +349,7 @@ class BehavioralResponse:
     retry_after_seconds: float | None = None
     request_id: str | None = None
     error_message: str | None = None
+    finish_reason: str | None = None
 
 
 class OpenRouterBehavioralProvider:
@@ -454,11 +455,13 @@ class OpenRouterBehavioralProvider:
                 self.last_model = str(body.get("model") or self.model)
                 self.consecutive_failures = 0
                 request_id = str(body.get("id") or "") or None
+                finish_reason = str(choice.get("finish_reason") or "") or None
                 if self.cost_usd > self.config.max_cost_usd:
                     return BehavioralResponse("", self.last_model, usage, cost, "invalid", "cost_cap_exceeded",
-                                              error_class="cost_cap", request_id=request_id)
+                                              error_class="cost_cap", request_id=request_id,
+                                              finish_reason=finish_reason)
                 return BehavioralResponse(str(message.get("content") or ""), self.last_model, usage, cost,
-                                          "complete", request_id=request_id)
+                                          "complete", request_id=request_id, finish_reason=finish_reason)
             except urllib.error.HTTPError as exc:
                 status_code = int(exc.code)
                 error_class = classify_http_status(status_code)
@@ -507,6 +510,7 @@ class OpenRouterBehavioralProvider:
             cost_usd=result.cost_usd,
             prompt_hash=treatment_prompt_hash(context),
             prompt_schema_version=PROMPT_SCHEMA_VERSION,
+            finish_reason=result.finish_reason,
         )
 
 
@@ -1537,6 +1541,7 @@ def run_paired_screen(instances: Sequence[FamilyInstance], provider: Any,
                 "model_id": result.model_id,
                 "input_tokens": final_response.input_tokens if final_response else None,
                 "output_tokens": final_response.output_tokens if final_response else None,
+                "finish_reason": final_response.finish_reason if final_response else None,
                 "cost_usd": float(final_response.cost_usd) if final_response else 0.0,
                 "artifact_hash": hashlib.sha256(json.dumps(result.artifact, sort_keys=True).encode()).hexdigest(),
             }

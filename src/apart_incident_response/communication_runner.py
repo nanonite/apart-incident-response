@@ -40,6 +40,7 @@ class AgentResponse:
     cost_usd: float = 0.0
     prompt_hash: str | None = None
     prompt_schema_version: str | None = None
+    finish_reason: str | None = None
 
 
 class BatteryProvider(Protocol):
@@ -170,7 +171,8 @@ class TwoAgentBatteryRunner:
                                  logprob_status=response.logprob_status,
                                  input_tokens=response.input_tokens,
                                  output_tokens=response.output_tokens,
-                                 cost_usd=response.cost_usd)
+                                 cost_usd=response.cost_usd,
+                                 finish_reason=response.finish_reason)
                 used_outputs.append((agent, output_id, response.used_message_ids, response.answer))
                 if response.answer is not None:
                     answers[agent] = response.answer

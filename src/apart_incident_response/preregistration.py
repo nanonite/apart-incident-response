@@ -80,6 +80,16 @@ CONFIRMATORY_PLANNED_REQUESTS = CONFIRMATORY_INSTANCES * CONFIRMATORY_REQUESTS_P
 CONFIRMATORY_RETRY_RESERVE = 90
 CONFIRMATORY_REQUEST_CAP = CONFIRMATORY_PLANNED_REQUESTS + CONFIRMATORY_RETRY_RESERVE
 CONFIRMATORY_COST_CAP_USD = 20.0
+# Planning-high validity re-registration (draft pending reviewer approval).
+PLANNING_HIGH_VERSION = "stage2-planning-high-validity-v4"
+PLANNING_HIGH_SEED_BASE = 80000
+PLANNING_HIGH_MAX_TOKENS = 2048
+PLANNING_HIGH_PER_CELL = 17
+PLANNING_HIGH_REQUESTS_PER_INSTANCE = 6
+PLANNING_HIGH_PLANNED_REQUESTS = PLANNING_HIGH_PER_CELL * PLANNING_HIGH_REQUESTS_PER_INSTANCE
+PLANNING_HIGH_RETRY_RESERVE = 18
+PLANNING_HIGH_REQUEST_CAP = PLANNING_HIGH_PLANNED_REQUESTS + PLANNING_HIGH_RETRY_RESERVE
+PLANNING_HIGH_COST_CAP_USD = 20.0
 APPROVED_DECISIONS = (
     "five representative cells: hypothesis low/medium, reference low, planning low/high",
     "exclude unstable reference-high",
@@ -626,6 +636,70 @@ def build_confirmatory_preregistration(*, repo_root: Path, generator_commit: str
     return document
 
 
+def planning_high_instances(seeds_per_cell: int) -> list[tf.FamilyInstance]:
+    from .communication_protocol import DependenceRegime
+    if seeds_per_cell <= 0 or seeds_per_cell > STAGE2_MAX_SEEDS_PER_CELL:
+        raise ValueError("invalid planning-high seeds_per_cell")
+    instances = [tf.generate_instance("planning", PLANNING_HIGH_SEED_BASE + replicate,
+                                      DependenceRegime.N, ReasoningComplexity.HIGH)
+                 for replicate in range(seeds_per_cell)]
+    assert_unique_instance_ids(instances)
+    return instances
+
+
+def build_planning_high_preregistration(*, repo_root: Path, generator_commit: str | None = None,
+                                        approved: bool = False) -> dict[str, Any]:
+    """Draft the planning-high validity re-registration (higher token budget)."""
+
+    base = build_preregistration(repo_root=repo_root, generator_commit=generator_commit,
+                                 seeds_per_cell=MECHANICS_SMOKE_SEEDS_PER_GROUP, approved=False)
+    v3_path = repo_root / "runs" / "epic-126" / "preregistration-v3.json"
+    supersedes_hash = None
+    if v3_path.is_file():
+        try:
+            supersedes_hash = json.loads(v3_path.read_text(encoding="utf-8")).get("preregistration_hash")
+        except ValueError:
+            supersedes_hash = None
+    instances = planning_high_instances(PLANNING_HIGH_PER_CELL)
+    instance_ids = assert_unique_instance_ids(instances)
+    provider_settings = dict(base["provider_settings"])
+    provider_settings["max_tokens"] = PLANNING_HIGH_MAX_TOKENS
+    provider_settings["expected_protocol_key"] = bd.current_protocol_key(
+        SMOKE_MODEL, bd.BEHAVIORAL_VERSION, turns=dict(SMOKE_CONDITION_TURNS),
+        max_tokens=PLANNING_HIGH_MAX_TOKENS, finalizing_agent=bd.FINALIZER_AGENT)
+    document: dict[str, Any] = dict(base)
+    document.update({
+        "preregistration_version": PLANNING_HIGH_VERSION,
+        "stage": "planning-high-validity",
+        "status": "locked_for_planning_high" if approved else "draft_pending_review",
+        "approval_required": not approved,
+        "approval": ({"approved": True, "approved_by": "reviewer"} if approved else {"approved": False}),
+        "supersedes": {"version": "stage2-confirmatory-preregistration-v3", "hash": supersedes_hash,
+                       "reason": "planning-high token-budget validity fix"},
+        "provider_settings": provider_settings,
+        "planning_high": {
+            "status": "proposed",
+            "seed_base": PLANNING_HIGH_SEED_BASE,
+            "per_cell_instances": PLANNING_HIGH_PER_CELL,
+            "max_tokens": PLANNING_HIGH_MAX_TOKENS,
+            "instance_ids": instance_ids,
+            "manifest_hash": hashlib.sha256(json.dumps(instance_ids, sort_keys=True).encode()).hexdigest(),
+            "planned_requests": PLANNING_HIGH_PLANNED_REQUESTS,
+            "retry_preflight_reserve": PLANNING_HIGH_RETRY_RESERVE,
+            "request_cap": PLANNING_HIGH_REQUEST_CAP,
+            "cost_cap_usd": PLANNING_HIGH_COST_CAP_USD,
+            "conditions_run": list(SMOKE_CONDITIONS),
+            "diagnostics_not_run": list(SMOKE_DIAGNOSTICS_NOT_RUN),
+            "reason": "confirmatory-v3 planning-high invalid_output_empty traced to empty content at the "
+                      "1024-token cap; rerun at 2048 with finish_reason provenance before further collection",
+        },
+    })
+    payload = json.dumps({key: value for key, value in document.items()
+                          if key != "preregistration_hash"}, sort_keys=True)
+    document["preregistration_hash"] = hashlib.sha256(payload.encode()).hexdigest()
+    return document
+
+
 def verify_against_preregistration(document: Mapping[str, Any], *, instance_ids: Sequence[str],
                                    model: str, provider_version: str,
                                    condition_turns: Mapping[str, int], max_tokens: int,
@@ -752,9 +826,15 @@ def main(argv: Sequence[str] | None = None) -> int:
                         help="build the successor/amendment registration (does not modify v1)")
     parser.add_argument("--confirmatory", action="store_true",
                         help="build the confirmatory-stage draft registration")
+    parser.add_argument("--planning-high", action="store_true",
+                        help="build the planning-high validity re-registration")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args(argv)
-    if args.confirmatory:
+    if args.planning_high:
+        document = build_planning_high_preregistration(repo_root=args.repo_root.resolve(),
+                                                       generator_commit=args.generator_commit,
+                                                       approved=args.approve)
+    elif args.confirmatory:
         document = build_confirmatory_preregistration(repo_root=args.repo_root.resolve(),
                                                       generator_commit=args.generator_commit,
                                                       approved=args.approve)
@@ -805,8 +885,11 @@ __all__ = [
     "CONFIRMATORY_VERSION", "CONFIRMATORY_PSI", "CONFIRMATORY_D_RATE", "CONFIRMATORY_PER_CELL",
     "CONFIRMATORY_INSTANCES", "CONFIRMATORY_REQUESTS_PER_INSTANCE", "CONFIRMATORY_PLANNED_REQUESTS",
     "CONFIRMATORY_RETRY_RESERVE", "CONFIRMATORY_REQUEST_CAP", "CONFIRMATORY_COST_CAP_USD",
+    "PLANNING_HIGH_VERSION", "PLANNING_HIGH_SEED_BASE", "PLANNING_HIGH_MAX_TOKENS",
+    "PLANNING_HIGH_PER_CELL", "PLANNING_HIGH_REQUEST_CAP", "PLANNING_HIGH_COST_CAP_USD",
     "audit_cells", "assert_unique_instance_ids", "build_preregistration",
     "build_successor_preregistration", "build_confirmatory_preregistration", "cell_fingerprint",
+    "build_planning_high_preregistration", "planning_high_instances",
     "file_sha256", "holm_adjust", "main", "mcnemar_required_pairs", "mechanics_smoke_instances",
     "missingness_report", "stage2_cell_seed", "stage2_instances", "superseded_artifacts",
     "verify_against_preregistration", "verify_against_confirmatory_preregistration",
