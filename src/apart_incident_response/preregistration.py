@@ -673,9 +673,24 @@ def build_planning_high_preregistration(*, repo_root: Path, generator_commit: st
         "stage": "planning-high-validity",
         "status": "locked_for_planning_high" if approved else "draft_pending_review",
         "approval_required": not approved,
-        "approval": ({"approved": True, "approved_by": "reviewer"} if approved else {"approved": False}),
+        "approval": ({"approved": True, "approved_by": "reviewer",
+                      "request_cap": PLANNING_HIGH_REQUEST_CAP,
+                      "cost_cap_usd": PLANNING_HIGH_COST_CAP_USD} if approved
+                     else {"approved": False}),
+        "approved_decisions": (["planning-high validity run: 17 fresh instances at 2048 tokens",
+                                "120 physical requests maximum, including retries and preflight; $20 cost cap",
+                                "ISO/FULL one turn, COMM two; pinned free Ling model"] if approved else []),
+        "pending_decisions": ([] if approved else ["review planning-high validity design and live caps"]),
+        "proposed_decisions": ([] if approved else ["planning-high 17-instance validity run at 2048 tokens",
+                                                    "120-request and $20 live caps"]),
         "supersedes": {"version": "stage2-confirmatory-preregistration-v3", "hash": supersedes_hash,
                        "reason": "planning-high token-budget validity fix"},
+        "superseded_artifacts": [
+            {"path": f"runs/epic-126/confirmatory-v3{suffix}",
+             "reason": "different 1024-token protocol; exclude from planning-high-v4 analysis",
+             "superseded": True}
+            for suffix in (".jsonl", "-report.json", "-diagnostic.json")
+        ],
         "provider_settings": provider_settings,
         "caps": {
             "min_interval_seconds": 0.25,
@@ -689,7 +704,7 @@ def build_planning_high_preregistration(*, repo_root: Path, generator_commit: st
             },
         },
         "planning_high": {
-            "status": "proposed",
+            "status": "locked" if approved else "proposed",
             "seed_base": PLANNING_HIGH_SEED_BASE,
             "per_cell_instances": PLANNING_HIGH_PER_CELL,
             "max_tokens": PLANNING_HIGH_MAX_TOKENS,
@@ -842,7 +857,11 @@ def verify_against_planning_high_preregistration(document: Mapping[str, Any], *,
         errors.append(f"preregistration version {version!r} is not a planning-high registration")
     if document.get("status") != "locked_for_planning_high":
         errors.append("preregistration is not locked for planning-high")
+    if document.get("approval_required") or not document.get("approval", {}).get("approved"):
+        errors.append("planning-high reviewer approval is missing")
     block = document.get("planning_high", {})
+    if block.get("status") != "locked":
+        errors.append("planning-high block is not locked")
     frozen_ids = list(block.get("instance_ids", []))
     if sorted(instance_ids) != sorted(frozen_ids):
         errors.append(f"selected instance ids differ from the frozen planning-high manifest "
@@ -869,6 +888,9 @@ def verify_against_planning_high_preregistration(document: Mapping[str, Any], *,
     if actual_key != expected_key:
         errors.append("protocol key differs from the locked planning-high preregistration")
     request_cap = block.get("request_cap")
+    caps = document.get("caps", {})
+    if caps.get("max_requests") != request_cap or caps.get("max_cost_usd") != block.get("cost_cap_usd"):
+        errors.append("planning-high active caps disagree with the registered block")
     if planned_requests is not None and request_cap is not None and planned_requests > request_cap:
         errors.append(f"planned requests {planned_requests} exceed the planning-high request cap {request_cap}")
     return {

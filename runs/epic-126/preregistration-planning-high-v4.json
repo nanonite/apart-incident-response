@@ -1,9 +1,16 @@
 {
   "approval": {
-    "approved": false
+    "approved": true,
+    "approved_by": "reviewer",
+    "cost_cap_usd": 20.0,
+    "request_cap": 120
   },
-  "approval_required": true,
-  "approved_decisions": [],
+  "approval_required": false,
+  "approved_decisions": [
+    "planning-high validity run: 17 fresh instances at 2048 tokens",
+    "120 physical requests maximum, including retries and preflight; $20 cost cap",
+    "ISO/FULL one turn, COMM two; pinned free Ling model"
+  ],
   "caps": {
     "historical": {
       "mechanics_smoke_cap": 60,
@@ -488,8 +495,8 @@
     "private_solutions": "clue-consistent candidates for the agent's own exact private clues",
     "solutions": "public candidate option set"
   },
-  "generator_commit": "7d88938",
-  "generator_file_sha256": "fc5f4fb20f3616b09fc1142623b0807c8e22f87cc41bc2f2900b8f938792a5ff",
+  "generator_commit": "1593c349e8073742cda61703436889ef06827b55",
+  "generator_file_sha256": "b399bb15c96be98d2c4c7e00012448d9a3df9f1cd7deac0ff1375ecb3e1ea6c4",
   "generator_version": "six-family-clue-consistent-v2",
   "inference": {
     "denominators": "report planned/attempted/valid/complete-pair n and invalidity by condition",
@@ -512,10 +519,7 @@
     "helper": "holm_adjust",
     "method": "Holm step-down over preregistered family claims"
   },
-  "pending_decisions": [
-    "confirmatory sample size per cell (from observed discordant pairs)",
-    "confirmatory spend cap"
-  ],
+  "pending_decisions": [],
   "planning_high": {
     "conditions_run": [
       "ISO",
@@ -554,14 +558,11 @@
     "request_cap": 120,
     "retry_preflight_reserve": 18,
     "seed_base": 80000,
-    "status": "proposed"
+    "status": "locked"
   },
-  "preregistration_hash": "992fa4d9869ea7d0a5a9affbd26e5f7d44d6a75e66dff125f1bba41629e94c18",
+  "preregistration_hash": "41f4f3e0610ef004b2c937e0de7f64df93aedad9cfc25bd1ee7cd68cbd17161e",
   "preregistration_version": "stage2-planning-high-validity-v4",
-  "proposed_decisions": [
-    "confirmatory sample size per cell on the separate seed block",
-    "confirmatory spend cap"
-  ],
+  "proposed_decisions": [],
   "provider_settings": {
     "condition_turns": {
       "COMM": 2,
@@ -668,331 +669,21 @@
       "status": "frozen"
     }
   },
-  "status": "draft_pending_review",
+  "status": "locked_for_planning_high",
   "superseded_artifacts": [
     {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/cneed-fourfamilies-n9-diagnostic.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "path": "runs/epic-126/confirmatory-v3.jsonl",
+      "reason": "different 1024-token protocol; exclude from planning-high-v4 analysis",
       "superseded": true
     },
     {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/cneed-fourfamilies-n9-report.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "path": "runs/epic-126/confirmatory-v3-report.json",
+      "reason": "different 1024-token protocol; exclude from planning-high-v4 analysis",
       "superseded": true
     },
     {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/cneed-fourfamilies-n9.jsonl",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/cneed-n20-diagnostic.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/cneed-n20-report.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/cneed-n20.jsonl",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/cneed-n9-diagnostic.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/cneed-n9-report.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/cneed-n9.jsonl",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/comm-n20-diagnostic.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/comm-n20-report.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/comm-n20.jsonl",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/comm-planning-n9-diagnostic.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/comm-planning-n9-report.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/comm-planning-n9.jsonl",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/confirmatory-v3-diagnostic.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/confirmatory-v3-report.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/confirmatory-v3.jsonl",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/full-gate-1024-diagnostic.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/full-gate-1024-report.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/full-gate-1024.jsonl",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/full-gate-budget512-diagnostic.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/full-gate-budget512-report.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/full-gate-budget512.jsonl",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/full-gate-diagnostic.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/full-gate-hypmed-1024-diagnostic.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/full-gate-hypmed-1024-report.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/full-gate-hypmed-1024.jsonl",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/full-gate-repair-diagnostic.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/full-gate-repair-preflight.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/full-gate-repair-report.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/full-gate-repair.jsonl",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/full-gate-report.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/full-gate.jsonl",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/jev-cell-selection-v1.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/jev-choice-adapter-fixture.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/jev-planning-low-manifest.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/paired-analysis-n20.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/paired-analysis-planning.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/paired-screen-diagnostic.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/paired-screen-n5-diagnostic.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/paired-screen-n5-leakfree-diagnostic.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/paired-screen-n5-leakfree-report.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/paired-screen-n5-leakfree.jsonl",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/paired-screen-n5-report.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/paired-screen-n5.jsonl",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/paired-screen-report.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/paired-screen.jsonl",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/stage2-attempt-state.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/stage2-smoke-combined-analysis.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/stage2-smoke-diagnostic.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/stage2-smoke-report.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/stage2-smoke-resume1-diagnostic.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/stage2-smoke-resume1-report.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/stage2-smoke-v2-diagnostic.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/stage2-smoke-v2-report.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/stage2-smoke-v2.jsonl",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/stage2-smoke.jsonl",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/t1-pressure-catalog.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/t1-retained-pilot-audit.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/t1-screen-report.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/t1-screen-retry-report.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/t1-screen-retry.jsonl",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/t1-screen.jsonl",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
-      "superseded": true
-    },
-    {
-      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/t2-capability-report.json",
-      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "path": "runs/epic-126/confirmatory-v3-diagnostic.json",
+      "reason": "different 1024-token protocol; exclude from planning-high-v4 analysis",
       "superseded": true
     }
   ],

@@ -437,6 +437,17 @@ class PreregistrationDocumentTests(unittest.TestCase):
         good = verify_against_planning_high_preregistration(locked, planned_requests=120, **kwargs)
         self.assertTrue(good["ok"], good["errors"])
         self.assertEqual(good["request_cap"], PLANNING_HIGH_REQUEST_CAP)
+        self.assertEqual(locked["planning_high"]["status"], "locked")
+        self.assertTrue(locked["approval"]["approved"])
+        self.assertFalse(locked["approval_required"])
+        self.assertEqual(
+            {item["path"] for item in locked["superseded_artifacts"]},
+            {"runs/epic-126/confirmatory-v3.jsonl",
+             "runs/epic-126/confirmatory-v3-report.json",
+             "runs/epic-126/confirmatory-v3-diagnostic.json"},
+        )
+        self.assertTrue(all("1024-token protocol" in item["reason"]
+                            for item in locked["superseded_artifacts"]))
         over_budget = verify_against_planning_high_preregistration(locked, planned_requests=121, **kwargs)
         self.assertFalse(over_budget["ok"])
         wrong_tokens = verify_against_planning_high_preregistration(
@@ -450,17 +461,24 @@ class PreregistrationDocumentTests(unittest.TestCase):
         rejected = verify_against_planning_high_preregistration(draft, planned_requests=120, **kwargs)
         self.assertFalse(rejected["ok"])
         self.assertTrue(any("not locked" in error for error in rejected["errors"]))
+        for changed in (
+            {**locked, "approval": {"approved": False}},
+            {**locked, "planning_high": {**locked["planning_high"], "status": "proposed"}},
+            {**locked, "caps": {**locked["caps"], "max_requests": 60}},
+        ):
+            self.assertFalse(verify_against_planning_high_preregistration(
+                changed, planned_requests=120, **kwargs)["ok"])
 
-    def test_committed_v4_draft_is_not_yet_runnable(self):
+    def test_committed_v4_is_approved_and_runnable(self):
         root = Path(__file__).resolve().parents[1]
         document = json.loads((root / "runs" / "epic-126"
                                / "preregistration-planning-high-v4.json").read_text(encoding="utf-8"))
-        self.assertEqual(document["status"], "draft_pending_review")
+        self.assertEqual(document["status"], "locked_for_planning_high")
         verification = verify_against_planning_high_preregistration(
             document, instance_ids=document["planning_high"]["instance_ids"], model=SMOKE_MODEL,
             provider_version="behavioral-discovery-v1", condition_turns=SMOKE_CONDITION_TURNS,
             max_tokens=PLANNING_HIGH_MAX_TOKENS, planned_requests=120)
-        self.assertFalse(verification["ok"])
+        self.assertTrue(verification["ok"], verification["errors"])
 
     def test_active_limits_are_stage_appropriate(self):
         root = Path(__file__).resolve().parents[1]
