@@ -884,6 +884,34 @@ def verify_against_planning_high_preregistration(document: Mapping[str, Any], *,
     }
 
 
+def active_limits(document: Mapping[str, Any]) -> dict[str, Any]:
+    """Stage-appropriate numeric instance/request/cost limits for the CLI summary."""
+
+    confirmatory = document.get("confirmatory") or {}
+    planning = document.get("planning_high") or {}
+    mechanics = ((document.get("stage2") or {}).get("mechanics_smoke")) or {}
+    caps = document.get("caps") or {}
+    if planning:
+        return {
+            "active_instance_count": planning.get("per_cell_instances")
+            or len(planning.get("instance_ids", [])),
+            "active_request_cap": planning.get("request_cap"),
+            "active_cost_cap_usd": caps.get("max_cost_usd"),
+        }
+    if confirmatory:
+        return {
+            "active_instance_count": confirmatory.get("total_instances"),
+            "active_request_cap": confirmatory.get("request_cap"),
+            "active_cost_cap_usd": confirmatory.get("cost_cap_usd"),
+        }
+    smoke = caps.get("smoke") or {}
+    return {
+        "active_instance_count": len(mechanics.get("instance_ids", [])),
+        "active_request_cap": smoke.get("max_physical_requests"),
+        "active_cost_cap_usd": smoke.get("max_cost_usd"),
+    }
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Build the stage-2 preregistration document")
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
@@ -931,11 +959,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "checker_version": document["checker_version"],
         "distinct_cell_count": document["cell_audit"]["distinct_cell_count"],
         "cell_count": document["cell_audit"]["cell_count"],
-        "smoke_instance_count": len(document["stage2"]["mechanics_smoke"]["instance_ids"]),
-        "active_request_cap": document["caps"].get(
-            "max_requests", (document["caps"].get("smoke") or {}).get("max_physical_requests")),
-        "active_cost_cap_usd": document["caps"].get(
-            "max_cost_usd", (document["caps"].get("smoke") or {}).get("max_cost_usd")),
+        **active_limits(document),
         "preregistration_hash": document["preregistration_hash"],
         "approval_required": document["approval_required"],
     }, indent=2, sort_keys=True, allow_nan=False))
@@ -962,7 +986,7 @@ __all__ = [
     "PLANNING_HIGH_PER_CELL", "PLANNING_HIGH_REQUEST_CAP", "PLANNING_HIGH_COST_CAP_USD",
     "audit_cells", "assert_unique_instance_ids", "build_preregistration",
     "build_successor_preregistration", "build_confirmatory_preregistration", "cell_fingerprint",
-    "build_planning_high_preregistration", "planning_high_instances",
+    "build_planning_high_preregistration", "planning_high_instances", "active_limits",
     "file_sha256", "holm_adjust", "main", "mcnemar_required_pairs", "mechanics_smoke_instances",
     "missingness_report", "stage2_cell_seed", "stage2_instances", "superseded_artifacts",
     "verify_against_preregistration", "verify_against_confirmatory_preregistration",

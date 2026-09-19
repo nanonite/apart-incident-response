@@ -34,6 +34,7 @@ from apart_incident_response.preregistration import (
     STAGE2_MAX_SEEDS_PER_CELL,
     STAGE2_SEED_BASE,
     SUCCESSOR_VERSION,
+    active_limits,
     assert_unique_instance_ids,
     audit_cells,
     build_confirmatory_preregistration,
@@ -460,6 +461,38 @@ class PreregistrationDocumentTests(unittest.TestCase):
             provider_version="behavioral-discovery-v1", condition_turns=SMOKE_CONDITION_TURNS,
             max_tokens=PLANNING_HIGH_MAX_TOKENS, planned_requests=120)
         self.assertFalse(verification["ok"])
+
+    def test_active_limits_are_stage_appropriate(self):
+        root = Path(__file__).resolve().parents[1]
+        v1 = build_preregistration(repo_root=root, generator_commit="deadbeef", approved=True)
+        self.assertEqual(active_limits(v1), {"active_instance_count": 10, "active_request_cap": 60,
+                                             "active_cost_cap_usd": 20.0})
+        v3 = build_confirmatory_preregistration(repo_root=root, generator_commit="deadbeef", approved=True)
+        self.assertEqual(active_limits(v3)["active_request_cap"], 600)
+        self.assertEqual(active_limits(v3)["active_instance_count"], 85)
+        v4 = build_planning_high_preregistration(repo_root=root, generator_commit="deadbeef")
+        self.assertEqual(active_limits(v4)["active_request_cap"], 120)
+        self.assertEqual(active_limits(v4)["active_instance_count"], 17)
+        self.assertEqual(active_limits(v4)["active_cost_cap_usd"], 20.0)
+
+    def test_cli_summary_reports_numeric_active_caps(self):
+        import contextlib
+        import io
+
+        from apart_incident_response import preregistration
+        root = Path(__file__).resolve().parents[1]
+        with contextlib.redirect_stdout(io.StringIO()) as buffer:
+            preregistration.main(["--repo-root", str(root), "--generator-commit", "deadbeef",
+                                  "--approve", "--seeds-per-cell", "2"])
+        v1_summary = json.loads(buffer.getvalue())
+        self.assertEqual(v1_summary["active_request_cap"], 60)
+        self.assertEqual(v1_summary["active_instance_count"], 10)
+        with contextlib.redirect_stdout(io.StringIO()) as buffer:
+            preregistration.main(["--repo-root", str(root), "--planning-high"])
+        v4_summary = json.loads(buffer.getvalue())
+        self.assertEqual(v4_summary["active_request_cap"], 120)
+        self.assertEqual(v4_summary["active_instance_count"], 17)
+        self.assertNotIn("smoke_instance_count", v4_summary)
 
     def test_confirmatory_cli_writes_draft(self):
         from apart_incident_response import preregistration
