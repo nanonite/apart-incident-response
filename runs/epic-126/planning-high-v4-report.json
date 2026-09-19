@@ -1,0 +1,348 @@
+{
+  "all_condition_denominators_present": true,
+  "attempted_instances": 17,
+  "attempted_runs": 51,
+  "by_condition": {
+    "COMM": {
+      "attempted": 17,
+      "communication_tokens": 8,
+      "invalid": 3,
+      "messages": 8,
+      "post_read_correlated_bits": 5.169925001442312,
+      "post_read_correlation_count": 2,
+      "successes": 4,
+      "transmitted_bits": 20.67970000576925,
+      "valid": 14,
+      "valid_success_rate": 0.2857142857142857
+    },
+    "FULL": {
+      "attempted": 17,
+      "communication_tokens": 0,
+      "invalid": 0,
+      "messages": 0,
+      "post_read_correlated_bits": 0.0,
+      "post_read_correlation_count": 0,
+      "successes": 17,
+      "transmitted_bits": 0.0,
+      "valid": 17,
+      "valid_success_rate": 1.0
+    },
+    "ISO": {
+      "attempted": 17,
+      "communication_tokens": 0,
+      "invalid": 3,
+      "messages": 0,
+      "post_read_correlated_bits": 0.0,
+      "post_read_correlation_count": 0,
+      "successes": 3,
+      "transmitted_bits": 0.0,
+      "valid": 14,
+      "valid_success_rate": 0.21428571428571427
+    }
+  },
+  "cells": [
+    {
+      "c_need_unclipped": 0.7857142857142857,
+      "complexity": "high",
+      "family": "planning",
+      "p_success": {
+        "COMM": 0.2857142857142857,
+        "FULL": 1.0,
+        "ISO": 0.21428571428571427
+      },
+      "paired_contrasts": {
+        "FULL->COMM": {
+          "both_fail": 0,
+          "both_success": 4,
+          "difference": -0.7142857142857143,
+          "left_condition": "FULL",
+          "left_only": 10,
+          "mcnemar_exact_p": 0.001953125,
+          "mcnemar_midp_p": 0.0009765625,
+          "n_pairs": 14,
+          "newcombe_ci": [
+            -0.882788120898909,
+            -0.3761020196631252
+          ],
+          "p_left": 1.0,
+          "p_right": 0.2857142857142857,
+          "paired_wald_ci": [
+            -0.950928905609699,
+            -0.47764252296172965
+          ],
+          "right_condition": "COMM",
+          "right_only": 0,
+          "wilson_left": [
+            0.7846829880728186,
+            1.0
+          ],
+          "wilson_right": [
+            0.11721187910109096,
+            0.5464954117248438
+          ]
+        },
+        "ISO->COMM": {
+          "both_fail": 8,
+          "both_success": 2,
+          "difference": -0.09090909090909088,
+          "left_condition": "ISO",
+          "left_only": 1,
+          "mcnemar_exact_p": 1.0,
+          "mcnemar_midp_p": 0.5,
+          "n_pairs": 11,
+          "newcombe_ci": [
+            -0.3006467144824618,
+            0.10452380262738917
+          ],
+          "p_left": 0.2727272727272727,
+          "p_right": 0.18181818181818182,
+          "paired_wald_ci": [
+            -0.26079878862921463,
+            0.07898060681103286
+          ],
+          "right_condition": "COMM",
+          "right_only": 0,
+          "wilson_left": [
+            0.09745880573921467,
+            0.5656502930102463
+          ],
+          "wilson_right": [
+            0.051366600671000656,
+            0.4769861375782448
+          ]
+        },
+        "ISO->FULL": {
+          "both_fail": 0,
+          "both_success": 3,
+          "difference": 0.7857142857142857,
+          "left_condition": "ISO",
+          "left_only": 0,
+          "mcnemar_exact_p": 0.0009765625,
+          "mcnemar_midp_p": 0.00048828125,
+          "n_pairs": 14,
+          "newcombe_ci": [
+            0.44688984027803946,
+            0.9242875166308363
+          ],
+          "p_left": 0.21428571428571427,
+          "p_right": 1.0,
+          "paired_wald_ci": [
+            0.5707724331122389,
+            1.0006561383163326
+          ],
+          "right_condition": "FULL",
+          "right_only": 11,
+          "wilson_left": [
+            0.07571248336916367,
+            0.4758972377320828
+          ],
+          "wilson_right": [
+            0.7846829880728186,
+            1.0
+          ]
+        }
+      },
+      "successes": {
+        "COMM": 4,
+        "FULL": 17,
+        "ISO": 3
+      },
+      "valid_denominators": {
+        "COMM": 14,
+        "FULL": 17,
+        "ISO": 14
+      }
+    }
+  ],
+  "classification_counts": {
+    "invalid_output_empty": 6,
+    "success": 24,
+    "valid_wrong_answer": 21
+  },
+  "comm_recovery_eta": 0.09090909090909091,
+  "condition_turns": {
+    "COMM": 2,
+    "FULL": 1,
+    "ISO": 1
+  },
+  "cost_cap_usd": 20.0,
+  "cost_usd": 0.0,
+  "credentials_retained": false,
+  "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+  "failure_reasons": {
+    "invalid_output_empty": 6
+  },
+  "finalizer_policy": "one_way_A_finalizer",
+  "finalizing_agent": "A",
+  "frozen_instance_ids": [
+    "planning-00013880",
+    "planning-00013881",
+    "planning-00013882",
+    "planning-00013883",
+    "planning-00013884",
+    "planning-00013885",
+    "planning-00013886",
+    "planning-00013887",
+    "planning-00013888",
+    "planning-00013889",
+    "planning-0001388a",
+    "planning-0001388b",
+    "planning-0001388c",
+    "planning-0001388d",
+    "planning-0001388e",
+    "planning-0001388f",
+    "planning-00013890"
+  ],
+  "frozen_manifest_hash": "b7a1a481a0c4b6d654d2c4e00ebb66a0a2170cd220d885818a48a32dae932209",
+  "induced_arm": {
+    "note": "required-claim or silence-penalty diagnostics must use a distinct INDUCED condition and are never pooled with voluntary COMM",
+    "status": "not_run"
+  },
+  "input_tokens": 20294,
+  "invalid_runs": 6,
+  "minimum_effective_c_need": 0.1,
+  "model": "inclusionai/ling-3.0-flash-vl:free",
+  "next_decision": "review by_condition/cells before any T3 entropy work",
+  "output_tokens": 50838,
+  "paired_contrasts": {
+    "FULL->COMM": {
+      "both_fail": 0,
+      "both_success": 4,
+      "difference": -0.7142857142857143,
+      "left_condition": "FULL",
+      "left_only": 10,
+      "mcnemar_exact_p": 0.001953125,
+      "mcnemar_midp_p": 0.0009765625,
+      "n_pairs": 14,
+      "newcombe_ci": [
+        -0.882788120898909,
+        -0.3761020196631252
+      ],
+      "p_left": 1.0,
+      "p_right": 0.2857142857142857,
+      "paired_wald_ci": [
+        -0.950928905609699,
+        -0.47764252296172965
+      ],
+      "right_condition": "COMM",
+      "right_only": 0,
+      "wilson_left": [
+        0.7846829880728186,
+        1.0
+      ],
+      "wilson_right": [
+        0.11721187910109096,
+        0.5464954117248438
+      ]
+    },
+    "ISO->COMM": {
+      "both_fail": 8,
+      "both_success": 2,
+      "difference": -0.09090909090909088,
+      "left_condition": "ISO",
+      "left_only": 1,
+      "mcnemar_exact_p": 1.0,
+      "mcnemar_midp_p": 0.5,
+      "n_pairs": 11,
+      "newcombe_ci": [
+        -0.3006467144824618,
+        0.10452380262738917
+      ],
+      "p_left": 0.2727272727272727,
+      "p_right": 0.18181818181818182,
+      "paired_wald_ci": [
+        -0.26079878862921463,
+        0.07898060681103286
+      ],
+      "right_condition": "COMM",
+      "right_only": 0,
+      "wilson_left": [
+        0.09745880573921467,
+        0.5656502930102463
+      ],
+      "wilson_right": [
+        0.051366600671000656,
+        0.4769861375782448
+      ]
+    },
+    "ISO->FULL": {
+      "both_fail": 0,
+      "both_success": 3,
+      "difference": 0.7857142857142857,
+      "left_condition": "ISO",
+      "left_only": 0,
+      "mcnemar_exact_p": 0.0009765625,
+      "mcnemar_midp_p": 0.00048828125,
+      "n_pairs": 14,
+      "newcombe_ci": [
+        0.44688984027803946,
+        0.9242875166308363
+      ],
+      "p_left": 0.21428571428571427,
+      "p_right": 1.0,
+      "paired_wald_ci": [
+        0.5707724331122389,
+        1.0006561383163326
+      ],
+      "right_condition": "FULL",
+      "right_only": 11,
+      "wilson_left": [
+        0.07571248336916367,
+        0.4758972377320828
+      ],
+      "wilson_right": [
+        0.7846829880728186,
+        1.0
+      ]
+    }
+  },
+  "paired_screen_ready": true,
+  "planned_instances": 17,
+  "provider": "openrouter",
+  "provider_credential_blocked": false,
+  "provider_diagnostics": {
+    "consecutive_failures": 0,
+    "cost_cap_usd": 20.0,
+    "cost_usd": 0.0,
+    "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+    "failure_classes": {},
+    "input_tokens": 39845,
+    "last_error_message": null,
+    "last_served_model": "inclusionai/ling-3.0-flash-vl:free",
+    "logprobs_requested": false,
+    "model": "inclusionai/ling-3.0-flash-vl:free",
+    "output_tokens": 99706,
+    "provider": "openrouter",
+    "provider_version": "behavioral-discovery-v1",
+    "request_cap": 120,
+    "requests": 102
+  },
+  "provider_version": "behavioral-discovery-v1",
+  "rate_floor_seconds": 0.25,
+  "raw_responses_retained": false,
+  "request_cap": 120,
+  "requests_made": 102,
+  "requests_per_instance": 6,
+  "resumed_runs": 0,
+  "screen_version": "paired-iso-full-comm-v1",
+  "stage": "T1a-paired-screen",
+  "stop_reason": "completed_planned_runs",
+  "structural_necessity": {
+    "both_agents_needed_count": 17,
+    "channel_complete_count": 17,
+    "definition": "A finalizer needs the peer when its own clue-consistent set is larger than the pooled/joint set",
+    "finalizer_needs_peer_count": 17,
+    "instances": 17
+  },
+  "successes": 24,
+  "turns": null,
+  "valid_runs": 45,
+  "voluntary_comm": {
+    "attempted": 17,
+    "causal_claim": "none: post-read accepted answers are correlation evidence only, not causal uptake",
+    "condition": "COMM",
+    "post_read_correlation_count": 2,
+    "rejected_write_count": 0,
+    "used_board_count": 7
+  }
+}
