@@ -46,6 +46,7 @@ from apart_incident_response.preregistration import (
     missingness_report,
     stage2_instances,
     verify_against_confirmatory_preregistration,
+    verify_against_planning_high_preregistration,
     verify_against_preregistration,
 )
 from apart_incident_response.communication_protocol import ReasoningComplexity
@@ -411,6 +412,42 @@ class PreregistrationDocumentTests(unittest.TestCase):
         # higher token budget changes the protocol key (fresh boundary)
         self.assertNotEqual(document["provider_settings"]["expected_protocol_key"],
                             v3["provider_settings"]["expected_protocol_key"])
+
+    def test_planning_high_preflight_accepts_locked_rejects_draft_and_drift(self):
+        root = Path(__file__).resolve().parents[1]
+        locked = build_planning_high_preregistration(repo_root=root, generator_commit="deadbeef",
+                                                     approved=True)
+        instance_ids = locked["planning_high"]["instance_ids"]
+        kwargs = dict(instance_ids=instance_ids, model=SMOKE_MODEL,
+                      provider_version="behavioral-discovery-v1",
+                      condition_turns=SMOKE_CONDITION_TURNS, max_tokens=PLANNING_HIGH_MAX_TOKENS)
+        good = verify_against_planning_high_preregistration(locked, planned_requests=120, **kwargs)
+        self.assertTrue(good["ok"], good["errors"])
+        self.assertEqual(good["request_cap"], PLANNING_HIGH_REQUEST_CAP)
+        over_budget = verify_against_planning_high_preregistration(locked, planned_requests=121, **kwargs)
+        self.assertFalse(over_budget["ok"])
+        wrong_tokens = verify_against_planning_high_preregistration(
+            locked, planned_requests=120, **{**kwargs, "max_tokens": 1024})
+        self.assertFalse(wrong_tokens["ok"])
+        wrong_ids = verify_against_planning_high_preregistration(
+            locked, planned_requests=120, **{**kwargs, "instance_ids": instance_ids[:-1]})
+        self.assertFalse(wrong_ids["ok"])
+        draft = build_planning_high_preregistration(repo_root=root, generator_commit="deadbeef",
+                                                    approved=False)
+        rejected = verify_against_planning_high_preregistration(draft, planned_requests=120, **kwargs)
+        self.assertFalse(rejected["ok"])
+        self.assertTrue(any("not locked" in error for error in rejected["errors"]))
+
+    def test_committed_v4_draft_is_not_yet_runnable(self):
+        root = Path(__file__).resolve().parents[1]
+        document = json.loads((root / "runs" / "epic-126"
+                               / "preregistration-planning-high-v4.json").read_text(encoding="utf-8"))
+        self.assertEqual(document["status"], "draft_pending_review")
+        verification = verify_against_planning_high_preregistration(
+            document, instance_ids=document["planning_high"]["instance_ids"], model=SMOKE_MODEL,
+            provider_version="behavioral-discovery-v1", condition_turns=SMOKE_CONDITION_TURNS,
+            max_tokens=PLANNING_HIGH_MAX_TOKENS, planned_requests=120)
+        self.assertFalse(verification["ok"])
 
     def test_confirmatory_cli_writes_draft(self):
         from apart_incident_response import preregistration

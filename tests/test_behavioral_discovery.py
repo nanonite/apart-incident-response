@@ -1054,6 +1054,16 @@ class CommunicationGrammarTests(unittest.TestCase):
         self.assertEqual(len({instance.instance_id for instance in instances}), len(instances))
         self.assertGreaterEqual(min(instance.seed for instance in instances), 19000)
 
+    def test_planning_high_v4_scheme_matches_registered_manifest(self):
+        from apart_incident_response.preregistration import build_planning_high_preregistration
+        document = build_planning_high_preregistration(repo_root=Path(__file__).resolve().parents[1],
+                                                       generator_commit="deadbeef")
+        instances = build_screen_instances(scheme="planning-high-v4", seeds_per_cell=17)
+        self.assertEqual([instance.instance_id for instance in instances],
+                         document["planning_high"]["instance_ids"])
+        self.assertEqual(len(instances), 17)
+        self.assertEqual(len({instance.instance_id for instance in instances}), 17)
+
 
 class ProviderDiagnosticsTests(unittest.TestCase):
     def test_sanitize_provider_message_redacts_credentials_and_tokens(self):

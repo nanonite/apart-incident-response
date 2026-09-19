@@ -807,6 +807,9 @@ def build_screen_instances(*, scheme: str | None = None, seeds_per_cell: int | N
             wanted = {name.strip() for name in complexities.split(",") if name.strip()}
             instances = [instance for instance in instances if instance.complexity.value in wanted]
         return instances
+    if scheme == "planning-high-v4":
+        from .preregistration import PLANNING_HIGH_PER_CELL, planning_high_instances
+        return planning_high_instances(seeds_per_cell or PLANNING_HIGH_PER_CELL)
     if scheme == "frozen" or (scheme is None and not seeds_per_cell):
         return select_frozen_instances(families=families, complexities=complexities)
     extended_families = (tuple(name.strip() for name in families.split(",") if name.strip())
@@ -1716,7 +1719,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--conditions", help="comma-separated condition subset for the paired screen (default ISO,FULL,COMM)")
     parser.add_argument("--seeds-per-cell", type=int,
                         help="build an equal-n paired screen with this many seeds per family x complexity cell")
-    parser.add_argument("--seed-scheme", choices=["frozen", "extended", "stage2", "stage2-confirmatory"],
+    parser.add_argument("--seed-scheme", choices=["frozen", "extended", "stage2", "stage2-confirmatory", "planning-high-v4"],
                         help="instance seed source; stage2 consumes the frozen preregistration manifest")
     parser.add_argument("--preregistration", type=Path,
                         help="locked preregistration to verify against before any live request")
@@ -1881,12 +1884,16 @@ def main(argv: Sequence[str] | None = None) -> int:
             resume_records = BehavioralArtifactStore(args.resume_artifact).records()
         if args.preregistration:
             from .preregistration import (verify_against_preregistration,
-                                          verify_against_confirmatory_preregistration)
+                                          verify_against_confirmatory_preregistration,
+                                          verify_against_planning_high_preregistration)
             document = json.loads(args.preregistration.read_text(encoding="utf-8"))
             version = str(document.get("preregistration_version", ""))
-            verifier = (verify_against_confirmatory_preregistration
-                        if version.startswith("stage2-confirmatory")
-                        else verify_against_preregistration)
+            if version.startswith("stage2-confirmatory"):
+                verifier = verify_against_confirmatory_preregistration
+            elif version.startswith("stage2-planning-high"):
+                verifier = verify_against_planning_high_preregistration
+            else:
+                verifier = verify_against_preregistration
             verification = verifier(
                 document,
                 instance_ids=[instance.instance_id for instance in instances],

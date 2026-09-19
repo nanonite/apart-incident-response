@@ -552,13 +552,13 @@
     "max_tokens": 2048,
     "per_cell_instances": 17,
     "planned_requests": 102,
-    "reason": "confirmatory-v3 planning-high invalid_output_empty traced to empty content at the 1024-token cap; rerun at 2048 with finish_reason provenance before further collection",
+    "reason": "confirmatory-v3 planning-high invalid_output_empty is strongly consistent with length truncation (ISO runs consumed exactly the 1024-token cap with empty content and no provider failures), but the retained confirmatory-v3 records lack finish_reason, so truncation is not retroactively established; the offline fixture validates future attribution only. Rerun at 2048 with finish_reason provenance before further collection",
     "request_cap": 120,
     "retry_preflight_reserve": 18,
     "seed_base": 80000,
     "status": "proposed"
   },
-  "preregistration_hash": "f9e70621c693562f780ac5a857403cf2c77c88350022be294e94720e03018f59",
+  "preregistration_hash": "353b30143d9cddf8d39a83ac2e4e749442e8047ad33385561c2dae1357df8c93",
   "preregistration_version": "stage2-planning-high-validity-v4",
   "proposed_decisions": [
     "confirmatory sample size per cell on the separate seed block",
@@ -1003,7 +1003,7 @@
     "reason": "planning-high token-budget validity fix",
     "version": "stage2-confirmatory-preregistration-v3"
   },
-  "treatment_file_sha256": "58f2adddddf5628d9d07ab0a88c079a9985081816a588e5cd9fbbc8f05dd66d7",
+  "treatment_file_sha256": "0ac1d9f3ce2954d8a0540972a6ee1ad9cdf006056619fbf67070a5ae9a3ef88e",
   "treatment_schema": {
     "board_free_conditions": [
       "ISO",
