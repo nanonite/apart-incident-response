@@ -1,0 +1,198 @@
+{
+  "all_condition_denominators_present": true,
+  "attempted_instances": 20,
+  "attempted_runs": 60,
+  "by_condition": {
+    "COMM": {
+      "attempted": 20,
+      "communication_tokens": 39,
+      "invalid": 2,
+      "messages": 39,
+      "post_read_correlated_bits": 0.0,
+      "post_read_success_count": 0,
+      "successes": 4,
+      "transmitted_bits": 39.0,
+      "valid": 18,
+      "valid_success_rate": 0.2222222222222222
+    },
+    "FULL": {
+      "attempted": 20,
+      "communication_tokens": 0,
+      "invalid": 1,
+      "messages": 0,
+      "post_read_correlated_bits": 0.0,
+      "post_read_success_count": 0,
+      "successes": 15,
+      "transmitted_bits": 0.0,
+      "valid": 19,
+      "valid_success_rate": 0.7894736842105263
+    },
+    "ISO": {
+      "attempted": 20,
+      "communication_tokens": 0,
+      "invalid": 0,
+      "messages": 0,
+      "post_read_correlated_bits": 0.0,
+      "post_read_success_count": 0,
+      "successes": 4,
+      "transmitted_bits": 0.0,
+      "valid": 20,
+      "valid_success_rate": 0.2
+    }
+  },
+  "cells": [
+    {
+      "c_need_unclipped": 0.6,
+      "complexity": "low",
+      "family": "hypothesis",
+      "p_success": {
+        "COMM": 0.4,
+        "FULL": 1.0,
+        "ISO": 0.4
+      },
+      "successes": {
+        "COMM": 2,
+        "FULL": 5,
+        "ISO": 2
+      },
+      "valid_denominators": {
+        "COMM": 5,
+        "FULL": 5,
+        "ISO": 5
+      }
+    },
+    {
+      "c_need_unclipped": 0.8,
+      "complexity": "medium",
+      "family": "hypothesis",
+      "p_success": {
+        "COMM": 0.3333333333333333,
+        "FULL": 1.0,
+        "ISO": 0.2
+      },
+      "successes": {
+        "COMM": 1,
+        "FULL": 4,
+        "ISO": 1
+      },
+      "valid_denominators": {
+        "COMM": 3,
+        "FULL": 4,
+        "ISO": 5
+      }
+    },
+    {
+      "c_need_unclipped": 0.39999999999999997,
+      "complexity": "low",
+      "family": "reference",
+      "p_success": {
+        "COMM": 0.2,
+        "FULL": 0.6,
+        "ISO": 0.2
+      },
+      "successes": {
+        "COMM": 1,
+        "FULL": 3,
+        "ISO": 1
+      },
+      "valid_denominators": {
+        "COMM": 5,
+        "FULL": 5,
+        "ISO": 5
+      }
+    },
+    {
+      "c_need_unclipped": 0.6,
+      "complexity": "medium",
+      "family": "reference",
+      "p_success": {
+        "COMM": 0.0,
+        "FULL": 0.6,
+        "ISO": 0.0
+      },
+      "successes": {
+        "COMM": 0,
+        "FULL": 3,
+        "ISO": 0
+      },
+      "valid_denominators": {
+        "COMM": 5,
+        "FULL": 5,
+        "ISO": 5
+      }
+    }
+  ],
+  "classification_counts": {
+    "invalid_output_empty": 3,
+    "success": 23,
+    "valid_wrong_answer": 34
+  },
+  "cost_cap_usd": 20.0,
+  "cost_usd": 0.0,
+  "credentials_retained": false,
+  "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+  "failure_reasons": {
+    "invalid_output_empty": 3
+  },
+  "finalizing_agent": "A",
+  "frozen_instance_ids": [
+    "hypothesis-00003e80",
+    "hypothesis-00003e81",
+    "hypothesis-00003e82",
+    "hypothesis-00003e83",
+    "hypothesis-00003e84",
+    "hypothesis-00003ee4",
+    "hypothesis-00003ee5",
+    "hypothesis-00003ee6",
+    "hypothesis-00003ee7",
+    "hypothesis-00003ee8",
+    "reference-00003f48",
+    "reference-00003f49",
+    "reference-00003f4a",
+    "reference-00003f4b",
+    "reference-00003f4c",
+    "reference-00003fac",
+    "reference-00003fad",
+    "reference-00003fae",
+    "reference-00003faf",
+    "reference-00003fb0"
+  ],
+  "frozen_manifest_hash": "166a73c3eda5eaaaa00a9398a18b2737092b9d71ffad15541e0a6b99187a237c",
+  "input_tokens": 12796,
+  "invalid_runs": 3,
+  "model": "inclusionai/ling-3.0-flash-vl:free",
+  "next_decision": "review by_condition/cells before any T3 entropy work",
+  "output_tokens": 32446,
+  "paired_screen_ready": true,
+  "planned_instances": 20,
+  "provider": "openrouter",
+  "provider_credential_blocked": false,
+  "provider_diagnostics": {
+    "consecutive_failures": 0,
+    "cost_cap_usd": 20.0,
+    "cost_usd": 0.0,
+    "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+    "failure_classes": {},
+    "input_tokens": 50800,
+    "last_served_model": "inclusionai/ling-3.0-flash-vl:free",
+    "logprobs_requested": false,
+    "model": "inclusionai/ling-3.0-flash-vl:free",
+    "output_tokens": 118172,
+    "provider": "openrouter",
+    "provider_version": "behavioral-discovery-v1",
+    "request_cap": 240,
+    "requests": 240
+  },
+  "provider_version": "behavioral-discovery-v1",
+  "rate_floor_seconds": 0.25,
+  "raw_responses_retained": false,
+  "request_cap": 240,
+  "requests_made": 240,
+  "requests_per_instance": 12,
+  "screen_version": "paired-iso-full-comm-v1",
+  "stage": "T1a-paired-screen",
+  "stop_reason": "completed_planned_runs",
+  "successes": 23,
+  "turns": 2,
+  "valid_runs": 57
+}

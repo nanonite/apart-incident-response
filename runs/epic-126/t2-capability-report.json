@@ -1,0 +1,98 @@
+{
+  "capability_version": "entropy-capability-matrix-v1",
+  "cost_usd": 0.0,
+  "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+  "model": "inclusionai/ling-3.0-flash-vl:free",
+  "raw_responses_retained": false,
+  "request_cap": 3,
+  "requests": 3,
+  "results": [
+    {
+      "cost_usd": 0.0,
+      "exact_entropy_eligible": false,
+      "finish_reason": "stop",
+      "full_vocabulary_logits_present": false,
+      "observed_token_partial_entropy_eligible": true,
+      "output_kind": "ordinary_text",
+      "provider": "Novita",
+      "provider_model": "inclusionai/ling-3.0-flash-vl:free",
+      "raw_response_retained": false,
+      "status": "records_present",
+      "token_record_count": 5,
+      "tool_call_present": false,
+      "top_k_mass": {
+        "mean": 0.9999986115960766,
+        "minimum": 0.9999953655594315,
+        "token_count": 5
+      },
+      "usage": {
+        "completion_tokens": 26,
+        "cost": 0,
+        "is_byok": false,
+        "prompt_tokens": 30,
+        "total_tokens": 56
+      },
+      "visible_span_alignment": "mismatch",
+      "visible_text_chars": 14,
+      "visible_text_sha256": "f9b8ce78e7b64e6c279b487a72fb9e639165c88892351813d31fbd474a9e96a7"
+    },
+    {
+      "cost_usd": 0.0,
+      "exact_entropy_eligible": false,
+      "finish_reason": "tool_calls",
+      "full_vocabulary_logits_present": false,
+      "observed_token_partial_entropy_eligible": false,
+      "output_kind": "tool_call_arguments",
+      "provider": "Novita",
+      "provider_model": "inclusionai/ling-3.0-flash-vl:free",
+      "raw_response_retained": false,
+      "status": "records_missing",
+      "token_record_count": 0,
+      "tool_call_present": true,
+      "top_k_mass": {
+        "mean": null,
+        "minimum": null,
+        "token_count": 0
+      },
+      "usage": {
+        "completion_tokens": 65,
+        "cost": 0,
+        "is_byok": false,
+        "prompt_tokens": 254,
+        "total_tokens": 319
+      },
+      "visible_span_alignment": "unknown",
+      "visible_text_chars": 1,
+      "visible_text_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "cost_usd": 0.0,
+      "exact_entropy_eligible": false,
+      "finish_reason": "length",
+      "full_vocabulary_logits_present": false,
+      "observed_token_partial_entropy_eligible": false,
+      "output_kind": "reasoning_bearing_text",
+      "provider": "Novita",
+      "provider_model": "inclusionai/ling-3.0-flash-vl:free",
+      "raw_response_retained": false,
+      "status": "records_missing",
+      "token_record_count": 0,
+      "tool_call_present": false,
+      "top_k_mass": {
+        "mean": null,
+        "minimum": null,
+        "token_count": 0
+      },
+      "usage": {
+        "completion_tokens": 96,
+        "cost": 0,
+        "is_byok": false,
+        "prompt_tokens": 34,
+        "total_tokens": 130
+      },
+      "visible_span_alignment": "unknown",
+      "visible_text_chars": null,
+      "visible_text_sha256": null
+    }
+  ]
+}

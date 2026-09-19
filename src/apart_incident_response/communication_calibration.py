@@ -32,7 +32,7 @@ def calibration_report(families: Sequence[str], *, seed: int = 1) -> dict[str, A
         "status": "offline_calibration_complete",
         "families": list(families),
         "instance_count": len(instances),
-        "cell_count": len(families) * 9,
+        "cell_count": len(instances),
         "assignments": [assignment.to_dict() for assignment in assignments],
         "realized_regime_counts": dict(Counter(assignment.regime.value if assignment.regime else "undefined" for assignment in assignments)),
         "threshold_sensitivity": threshold_sensitivity,
@@ -58,10 +58,9 @@ def run_fixture_pilot(families: Sequence[str], *, seed: int = 1) -> dict[str, An
     rows = [PairedOutcome(
         pair_id=result.pair_id, family=result.family, model="fixture",
         condition=result.condition.value, success=result.task_success,
-        valid=result.status == "completed", useful_bits=float(result.event_summary.get(
-            "post_read_correlated_bits",
-            result.event_summary.get("verified_useful_bits", 0.0),
-        )),
+        valid=result.status == "completed",
+        transmitted_bits=float(result.event_summary["transmitted_bits"]),
+        post_read_correlated_bits=float(result.event_summary["post_read_correlated_bits"]),
         communication_tokens=int(result.event_summary["communication_tokens"]),
     ) for result in results]
     return {
@@ -81,8 +80,8 @@ def selected_fixture_instances(families: Sequence[str], *, seed: int = 1) -> lis
     selected: list[FamilyInstance] = []
     for family_index, family in enumerate(families):
         grid = generate_grid(family, seed + family_index * 100)
-        selected.extend(instance for instance in grid if instance.generator_hint in
-                        {DependenceRegime.R, DependenceRegime.N} and instance.complexity is ReasoningComplexity.MEDIUM)
+        selected.extend(instance for instance in grid if instance.generator_hint is
+                        DependenceRegime.N and instance.complexity is ReasoningComplexity.MEDIUM)
     return selected
 
 

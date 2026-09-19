@@ -1,0 +1,92 @@
+{
+  "adapter_version": "jev-choice-receiver-v1",
+  "mode": "offline_fixture",
+  "raw_response_retained": false,
+  "records": [
+    {
+      "adapter_version": "jev-choice-receiver-v1",
+      "agent_id": "A",
+      "condition": "ISO",
+      "cost_usd": 0.0,
+      "error_class": null,
+      "instance_id": "planning-00011170",
+      "model": "jev-choice-fixture",
+      "option_count": 6,
+      "probabilities": {
+        "deploy>inspect>stage": 0.16666666666666666,
+        "deploy>stage>inspect": 0.16666666666666666,
+        "inspect>deploy>stage": 0.16666666666666666,
+        "inspect>stage>deploy": 0.16666666666666666,
+        "stage>deploy>inspect": 0.16666666666666666,
+        "stage>inspect>deploy": 0.16666666666666666
+      },
+      "probability_sum": 1.0,
+      "prompt_hash": "ad747f1c82fae179893d803768b099b27ae8b0ff01effba8ab4f8d9a1cefbbdb",
+      "raw_response_retained": false,
+      "request_id": "fixture-ad747f1c",
+      "selected_option_id": "deploy>inspect>stage",
+      "status": "complete",
+      "usage": {
+        "cost": 0.0
+      },
+      "version": "offline-fixture"
+    },
+    {
+      "adapter_version": "jev-choice-receiver-v1",
+      "agent_id": "A",
+      "condition": "FULL",
+      "cost_usd": 0.0,
+      "error_class": null,
+      "instance_id": "planning-00011170",
+      "model": "jev-choice-fixture",
+      "option_count": 6,
+      "probabilities": {
+        "deploy>inspect>stage": 0.16666666666666666,
+        "deploy>stage>inspect": 0.16666666666666666,
+        "inspect>deploy>stage": 0.16666666666666666,
+        "inspect>stage>deploy": 0.16666666666666666,
+        "stage>deploy>inspect": 0.16666666666666666,
+        "stage>inspect>deploy": 0.16666666666666666
+      },
+      "probability_sum": 1.0,
+      "prompt_hash": "667c56e4cb706d2df9612fbe4d2240dd30c070025fbfee5da88a05261fce78c8",
+      "raw_response_retained": false,
+      "request_id": "fixture-667c56e4",
+      "selected_option_id": "deploy>inspect>stage",
+      "status": "complete",
+      "usage": {
+        "cost": 0.0
+      },
+      "version": "offline-fixture"
+    },
+    {
+      "adapter_version": "jev-choice-receiver-v1",
+      "agent_id": "A",
+      "condition": "COMM",
+      "cost_usd": 0.0,
+      "error_class": null,
+      "instance_id": "planning-00011170",
+      "model": "jev-choice-fixture",
+      "option_count": 6,
+      "probabilities": {
+        "deploy>inspect>stage": 0.16666666666666666,
+        "deploy>stage>inspect": 0.16666666666666666,
+        "inspect>deploy>stage": 0.16666666666666666,
+        "inspect>stage>deploy": 0.16666666666666666,
+        "stage>deploy>inspect": 0.16666666666666666,
+        "stage>inspect>deploy": 0.16666666666666666
+      },
+      "probability_sum": 1.0,
+      "prompt_hash": "68439594dd7e0a960b791b12f73203abc54b0f7155ad9a427bd13ae4a7843aa9",
+      "raw_response_retained": false,
+      "request_id": "fixture-68439594",
+      "selected_option_id": "deploy>inspect>stage",
+      "status": "complete",
+      "usage": {
+        "cost": 0.0
+      },
+      "version": "offline-fixture"
+    }
+  ],
+  "selected_cell": "planning:low"
+}

@@ -1,0 +1,150 @@
+{
+  "all_condition_denominators_present": false,
+  "attempted_instances": 1,
+  "attempted_runs": 2,
+  "by_condition": {
+    "COMM": {
+      "attempted": 1,
+      "communication_tokens": 0,
+      "invalid": 1,
+      "messages": 0,
+      "post_read_correlated_bits": 0.0,
+      "post_read_correlation_count": 0,
+      "successes": 0,
+      "transmitted_bits": 0.0,
+      "valid": 0,
+      "valid_success_rate": null
+    },
+    "FULL": {
+      "attempted": 1,
+      "communication_tokens": 0,
+      "invalid": 1,
+      "messages": 0,
+      "post_read_correlated_bits": 0.0,
+      "post_read_correlation_count": 0,
+      "successes": 0,
+      "transmitted_bits": 0.0,
+      "valid": 0,
+      "valid_success_rate": null
+    },
+    "ISO": {
+      "attempted": 0,
+      "communication_tokens": 0,
+      "invalid": 0,
+      "messages": 0,
+      "post_read_correlated_bits": 0,
+      "post_read_correlation_count": 0,
+      "successes": 0,
+      "transmitted_bits": 0,
+      "valid": 0,
+      "valid_success_rate": null
+    }
+  },
+  "cells": [
+    {
+      "c_need_unclipped": null,
+      "complexity": "low",
+      "family": "hypothesis",
+      "p_success": {
+        "COMM": null,
+        "FULL": null,
+        "ISO": null
+      },
+      "paired_contrasts": {},
+      "successes": {
+        "COMM": 0,
+        "FULL": 0,
+        "ISO": 0
+      },
+      "valid_denominators": {
+        "COMM": 0,
+        "FULL": 0,
+        "ISO": 0
+      }
+    }
+  ],
+  "classification_counts": {
+    "provider_execution_failure": 2
+  },
+  "comm_recovery_eta": null,
+  "condition_turns": {
+    "COMM": 2,
+    "FULL": 1,
+    "ISO": 1
+  },
+  "cost_cap_usd": 20.0,
+  "cost_usd": 0.0,
+  "credentials_retained": false,
+  "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+  "failure_reasons": {
+    "http_400_client_error": 2
+  },
+  "finalizer_policy": "one_way_A_finalizer",
+  "finalizing_agent": "A",
+  "frozen_instance_ids": [
+    "hypothesis-00004a38"
+  ],
+  "frozen_manifest_hash": "8147cb2c3983941c9f0c22769d909d48eba7b338f1f53a97177018acd8d07e4f",
+  "induced_arm": {
+    "note": "required-claim or silence-penalty diagnostics must use a distinct INDUCED condition and are never pooled with voluntary COMM",
+    "status": "not_run"
+  },
+  "input_tokens": 0,
+  "invalid_runs": 2,
+  "minimum_effective_c_need": 0.1,
+  "model": "inclusionai/ling-3.0-flash-vl:free",
+  "next_decision": "denominators incomplete; do not advance",
+  "output_tokens": 0,
+  "paired_contrasts": {},
+  "paired_screen_ready": false,
+  "planned_instances": 1,
+  "provider": "openrouter",
+  "provider_credential_blocked": false,
+  "provider_diagnostics": {
+    "consecutive_failures": 0,
+    "cost_cap_usd": 20.0,
+    "cost_usd": 0.0,
+    "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+    "failure_classes": {
+      "client_error": 4
+    },
+    "input_tokens": 174,
+    "last_error_message": "{\"error\":{\"message\":\"Provider returned error\",\"code\":400,\"metadata\":{\"raw\":\"{\\\"message\\\":\\\"invalid request error trace_id: 695556dec3314340eb3c3ca2b5a01c35\\\",\\\"type\\\":\\\"invalid_request_error\\\"}\\n\",\"provider_name\":\"Novita\",\"is_byok\":false}},\"user_id\":\"<redacted-user>\"}",
+    "last_served_model": "inclusionai/ling-3.0-flash-vl:free",
+    "logprobs_requested": false,
+    "model": "inclusionai/ling-3.0-flash-vl:free",
+    "output_tokens": 452,
+    "provider": "openrouter",
+    "provider_version": "behavioral-discovery-v1",
+    "request_cap": 5,
+    "requests": 5
+  },
+  "provider_version": "behavioral-discovery-v1",
+  "rate_floor_seconds": 0.25,
+  "raw_responses_retained": false,
+  "request_cap": 5,
+  "requests_made": 5,
+  "requests_per_instance": 6,
+  "resumed_runs": 1,
+  "screen_version": "paired-iso-full-comm-v1",
+  "stage": "T1a-paired-screen",
+  "stop_reason": "repeated_http_failure",
+  "structural_necessity": {
+    "both_agents_needed_count": 1,
+    "channel_complete_count": 1,
+    "definition": "A finalizer needs the peer when its own clue-consistent set is larger than the pooled/joint set",
+    "finalizer_needs_peer_count": 1,
+    "instances": 1
+  },
+  "successes": 0,
+  "turns": null,
+  "valid_runs": 0,
+  "voluntary_comm": {
+    "attempted": 1,
+    "causal_claim": "none: post-read accepted answers are correlation evidence only, not causal uptake",
+    "condition": "COMM",
+    "post_read_correlation_count": 0,
+    "rejected_write_count": 0,
+    "used_board_count": 0
+  }
+}

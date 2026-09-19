@@ -1,0 +1,789 @@
+{
+  "all_condition_denominators_present": true,
+  "attempted_instances": 10,
+  "attempted_runs": 30,
+  "by_condition": {
+    "COMM": {
+      "attempted": 10,
+      "communication_tokens": 5,
+      "invalid": 1,
+      "messages": 5,
+      "post_read_correlated_bits": 1.584962500721156,
+      "post_read_correlation_count": 1,
+      "successes": 5,
+      "transmitted_bits": 6.169925001442312,
+      "valid": 9,
+      "valid_success_rate": 0.5555555555555556
+    },
+    "FULL": {
+      "attempted": 10,
+      "communication_tokens": 0,
+      "invalid": 0,
+      "messages": 0,
+      "post_read_correlated_bits": 0.0,
+      "post_read_correlation_count": 0,
+      "successes": 7,
+      "transmitted_bits": 0.0,
+      "valid": 10,
+      "valid_success_rate": 0.7
+    },
+    "ISO": {
+      "attempted": 10,
+      "communication_tokens": 0,
+      "invalid": 1,
+      "messages": 0,
+      "post_read_correlated_bits": 0.0,
+      "post_read_correlation_count": 0,
+      "successes": 3,
+      "transmitted_bits": 0.0,
+      "valid": 9,
+      "valid_success_rate": 0.3333333333333333
+    }
+  },
+  "cells": [
+    {
+      "c_need_unclipped": 0.0,
+      "complexity": "low",
+      "family": "hypothesis",
+      "p_success": {
+        "COMM": 0.5,
+        "FULL": 0.5,
+        "ISO": 0.5
+      },
+      "paired_contrasts": {
+        "FULL->COMM": {
+          "both_fail": 0,
+          "both_success": 0,
+          "difference": 0.0,
+          "left_condition": "FULL",
+          "left_only": 1,
+          "mcnemar_exact_p": 1.0,
+          "mcnemar_midp_p": 1.0,
+          "n_pairs": 2,
+          "newcombe_ci": [
+            -0.8109426903982677,
+            0.8109426903982677
+          ],
+          "p_left": 0.5,
+          "p_right": 0.5,
+          "paired_wald_ci": [
+            -1.3859292911256331,
+            1.3859292911256331
+          ],
+          "right_condition": "COMM",
+          "right_only": 1,
+          "wilson_left": [
+            0.09452865480086614,
+            0.9054713451991339
+          ],
+          "wilson_right": [
+            0.09452865480086614,
+            0.9054713451991339
+          ]
+        },
+        "ISO->COMM": {
+          "both_fail": 1,
+          "both_success": 1,
+          "difference": 0.0,
+          "left_condition": "ISO",
+          "left_only": 0,
+          "mcnemar_exact_p": 1.0,
+          "mcnemar_midp_p": 1.0,
+          "n_pairs": 2,
+          "newcombe_ci": [
+            0.0,
+            0.0
+          ],
+          "p_left": 0.5,
+          "p_right": 0.5,
+          "paired_wald_ci": [
+            0.0,
+            0.0
+          ],
+          "right_condition": "COMM",
+          "right_only": 0,
+          "wilson_left": [
+            0.09452865480086614,
+            0.9054713451991339
+          ],
+          "wilson_right": [
+            0.09452865480086614,
+            0.9054713451991339
+          ]
+        },
+        "ISO->FULL": {
+          "both_fail": 0,
+          "both_success": 0,
+          "difference": 0.0,
+          "left_condition": "ISO",
+          "left_only": 1,
+          "mcnemar_exact_p": 1.0,
+          "mcnemar_midp_p": 1.0,
+          "n_pairs": 2,
+          "newcombe_ci": [
+            -0.8109426903982677,
+            0.8109426903982677
+          ],
+          "p_left": 0.5,
+          "p_right": 0.5,
+          "paired_wald_ci": [
+            -1.3859292911256331,
+            1.3859292911256331
+          ],
+          "right_condition": "FULL",
+          "right_only": 1,
+          "wilson_left": [
+            0.09452865480086614,
+            0.9054713451991339
+          ],
+          "wilson_right": [
+            0.09452865480086614,
+            0.9054713451991339
+          ]
+        }
+      },
+      "successes": {
+        "COMM": 1,
+        "FULL": 1,
+        "ISO": 1
+      },
+      "valid_denominators": {
+        "COMM": 2,
+        "FULL": 2,
+        "ISO": 2
+      }
+    },
+    {
+      "c_need_unclipped": 0.0,
+      "complexity": "medium",
+      "family": "hypothesis",
+      "p_success": {
+        "COMM": 0.5,
+        "FULL": 1.0,
+        "ISO": 1.0
+      },
+      "paired_contrasts": {
+        "FULL->COMM": {
+          "both_fail": 0,
+          "both_success": 1,
+          "difference": -0.5,
+          "left_condition": "FULL",
+          "left_only": 1,
+          "mcnemar_exact_p": 1.0,
+          "mcnemar_midp_p": 0.5,
+          "n_pairs": 2,
+          "newcombe_ci": [
+            -0.9054713451991339,
+            0.27258116733700444
+          ],
+          "p_left": 1.0,
+          "p_right": 0.5,
+          "paired_wald_ci": [
+            -1.1929646455628165,
+            0.19296464556281656
+          ],
+          "right_condition": "COMM",
+          "right_only": 0,
+          "wilson_left": [
+            0.34237195288961925,
+            1.0
+          ],
+          "wilson_right": [
+            0.09452865480086614,
+            0.9054713451991339
+          ]
+        },
+        "ISO->COMM": {
+          "both_fail": 0,
+          "both_success": 1,
+          "difference": 0.0,
+          "left_condition": "ISO",
+          "left_only": 0,
+          "mcnemar_exact_p": 1.0,
+          "mcnemar_midp_p": 1.0,
+          "n_pairs": 1,
+          "newcombe_ci": [
+            -0.7934567085261071,
+            0.7934567085261071
+          ],
+          "p_left": 1.0,
+          "p_right": 1.0,
+          "paired_wald_ci": [
+            0.0,
+            0.0
+          ],
+          "right_condition": "COMM",
+          "right_only": 0,
+          "wilson_left": [
+            0.2065432914738929,
+            1.0
+          ],
+          "wilson_right": [
+            0.2065432914738929,
+            1.0
+          ]
+        },
+        "ISO->FULL": {
+          "both_fail": 0,
+          "both_success": 1,
+          "difference": 0.0,
+          "left_condition": "ISO",
+          "left_only": 0,
+          "mcnemar_exact_p": 1.0,
+          "mcnemar_midp_p": 1.0,
+          "n_pairs": 1,
+          "newcombe_ci": [
+            -0.7934567085261071,
+            0.7934567085261071
+          ],
+          "p_left": 1.0,
+          "p_right": 1.0,
+          "paired_wald_ci": [
+            0.0,
+            0.0
+          ],
+          "right_condition": "FULL",
+          "right_only": 0,
+          "wilson_left": [
+            0.2065432914738929,
+            1.0
+          ],
+          "wilson_right": [
+            0.2065432914738929,
+            1.0
+          ]
+        }
+      },
+      "successes": {
+        "COMM": 1,
+        "FULL": 2,
+        "ISO": 1
+      },
+      "valid_denominators": {
+        "COMM": 2,
+        "FULL": 2,
+        "ISO": 1
+      }
+    },
+    {
+      "c_need_unclipped": 1.0,
+      "complexity": "high",
+      "family": "planning",
+      "p_success": {
+        "COMM": 1.0,
+        "FULL": 1.0,
+        "ISO": 0.0
+      },
+      "paired_contrasts": {
+        "FULL->COMM": {
+          "both_fail": 0,
+          "both_success": 1,
+          "difference": 0.0,
+          "left_condition": "FULL",
+          "left_only": 0,
+          "mcnemar_exact_p": 1.0,
+          "mcnemar_midp_p": 1.0,
+          "n_pairs": 1,
+          "newcombe_ci": [
+            -0.7934567085261071,
+            0.7934567085261071
+          ],
+          "p_left": 1.0,
+          "p_right": 1.0,
+          "paired_wald_ci": [
+            0.0,
+            0.0
+          ],
+          "right_condition": "COMM",
+          "right_only": 0,
+          "wilson_left": [
+            0.2065432914738929,
+            1.0
+          ],
+          "wilson_right": [
+            0.2065432914738929,
+            1.0
+          ]
+        },
+        "ISO->COMM": {
+          "both_fail": 0,
+          "both_success": 0,
+          "difference": 1.0,
+          "left_condition": "ISO",
+          "left_only": 0,
+          "mcnemar_exact_p": 1.0,
+          "mcnemar_midp_p": 0.5,
+          "n_pairs": 1,
+          "newcombe_ci": [
+            -0.1221172383535365,
+            1.0
+          ],
+          "p_left": 0.0,
+          "p_right": 1.0,
+          "paired_wald_ci": [
+            1.0,
+            1.0
+          ],
+          "right_condition": "COMM",
+          "right_only": 1,
+          "wilson_left": [
+            0.0,
+            0.7934567085261071
+          ],
+          "wilson_right": [
+            0.2065432914738929,
+            1.0
+          ]
+        },
+        "ISO->FULL": {
+          "both_fail": 0,
+          "both_success": 0,
+          "difference": 1.0,
+          "left_condition": "ISO",
+          "left_only": 0,
+          "mcnemar_exact_p": 0.5,
+          "mcnemar_midp_p": 0.25,
+          "n_pairs": 2,
+          "newcombe_ci": [
+            0.06997349677956688,
+            1.0
+          ],
+          "p_left": 0.0,
+          "p_right": 1.0,
+          "paired_wald_ci": [
+            1.0,
+            1.0
+          ],
+          "right_condition": "FULL",
+          "right_only": 2,
+          "wilson_left": [
+            0.0,
+            0.6576280471103807
+          ],
+          "wilson_right": [
+            0.34237195288961925,
+            1.0
+          ]
+        }
+      },
+      "successes": {
+        "COMM": 1,
+        "FULL": 2,
+        "ISO": 0
+      },
+      "valid_denominators": {
+        "COMM": 1,
+        "FULL": 2,
+        "ISO": 2
+      }
+    },
+    {
+      "c_need_unclipped": 0.5,
+      "complexity": "low",
+      "family": "planning",
+      "p_success": {
+        "COMM": 1.0,
+        "FULL": 1.0,
+        "ISO": 0.5
+      },
+      "paired_contrasts": {
+        "FULL->COMM": {
+          "both_fail": 0,
+          "both_success": 2,
+          "difference": 0.0,
+          "left_condition": "FULL",
+          "left_only": 0,
+          "mcnemar_exact_p": 1.0,
+          "mcnemar_midp_p": 1.0,
+          "n_pairs": 2,
+          "newcombe_ci": [
+            -0.6576280471103808,
+            0.6576280471103808
+          ],
+          "p_left": 1.0,
+          "p_right": 1.0,
+          "paired_wald_ci": [
+            0.0,
+            0.0
+          ],
+          "right_condition": "COMM",
+          "right_only": 0,
+          "wilson_left": [
+            0.34237195288961925,
+            1.0
+          ],
+          "wilson_right": [
+            0.34237195288961925,
+            1.0
+          ]
+        },
+        "ISO->COMM": {
+          "both_fail": 0,
+          "both_success": 1,
+          "difference": 0.5,
+          "left_condition": "ISO",
+          "left_only": 0,
+          "mcnemar_exact_p": 1.0,
+          "mcnemar_midp_p": 0.5,
+          "n_pairs": 2,
+          "newcombe_ci": [
+            -0.27258116733700444,
+            0.9054713451991339
+          ],
+          "p_left": 0.5,
+          "p_right": 1.0,
+          "paired_wald_ci": [
+            -0.19296464556281656,
+            1.1929646455628165
+          ],
+          "right_condition": "COMM",
+          "right_only": 1,
+          "wilson_left": [
+            0.09452865480086614,
+            0.9054713451991339
+          ],
+          "wilson_right": [
+            0.34237195288961925,
+            1.0
+          ]
+        },
+        "ISO->FULL": {
+          "both_fail": 0,
+          "both_success": 1,
+          "difference": 0.5,
+          "left_condition": "ISO",
+          "left_only": 0,
+          "mcnemar_exact_p": 1.0,
+          "mcnemar_midp_p": 0.5,
+          "n_pairs": 2,
+          "newcombe_ci": [
+            -0.27258116733700444,
+            0.9054713451991339
+          ],
+          "p_left": 0.5,
+          "p_right": 1.0,
+          "paired_wald_ci": [
+            -0.19296464556281656,
+            1.1929646455628165
+          ],
+          "right_condition": "FULL",
+          "right_only": 1,
+          "wilson_left": [
+            0.09452865480086614,
+            0.9054713451991339
+          ],
+          "wilson_right": [
+            0.34237195288961925,
+            1.0
+          ]
+        }
+      },
+      "successes": {
+        "COMM": 2,
+        "FULL": 2,
+        "ISO": 1
+      },
+      "valid_denominators": {
+        "COMM": 2,
+        "FULL": 2,
+        "ISO": 2
+      }
+    },
+    {
+      "c_need_unclipped": 0.0,
+      "complexity": "low",
+      "family": "reference",
+      "p_success": {
+        "COMM": 0.0,
+        "FULL": 0.0,
+        "ISO": 0.0
+      },
+      "paired_contrasts": {
+        "FULL->COMM": {
+          "both_fail": 2,
+          "both_success": 0,
+          "difference": 0.0,
+          "left_condition": "FULL",
+          "left_only": 0,
+          "mcnemar_exact_p": 1.0,
+          "mcnemar_midp_p": 1.0,
+          "n_pairs": 2,
+          "newcombe_ci": [
+            -0.6576280471103807,
+            0.6576280471103807
+          ],
+          "p_left": 0.0,
+          "p_right": 0.0,
+          "paired_wald_ci": [
+            0.0,
+            0.0
+          ],
+          "right_condition": "COMM",
+          "right_only": 0,
+          "wilson_left": [
+            0.0,
+            0.6576280471103807
+          ],
+          "wilson_right": [
+            0.0,
+            0.6576280471103807
+          ]
+        },
+        "ISO->COMM": {
+          "both_fail": 2,
+          "both_success": 0,
+          "difference": 0.0,
+          "left_condition": "ISO",
+          "left_only": 0,
+          "mcnemar_exact_p": 1.0,
+          "mcnemar_midp_p": 1.0,
+          "n_pairs": 2,
+          "newcombe_ci": [
+            -0.6576280471103807,
+            0.6576280471103807
+          ],
+          "p_left": 0.0,
+          "p_right": 0.0,
+          "paired_wald_ci": [
+            0.0,
+            0.0
+          ],
+          "right_condition": "COMM",
+          "right_only": 0,
+          "wilson_left": [
+            0.0,
+            0.6576280471103807
+          ],
+          "wilson_right": [
+            0.0,
+            0.6576280471103807
+          ]
+        },
+        "ISO->FULL": {
+          "both_fail": 2,
+          "both_success": 0,
+          "difference": 0.0,
+          "left_condition": "ISO",
+          "left_only": 0,
+          "mcnemar_exact_p": 1.0,
+          "mcnemar_midp_p": 1.0,
+          "n_pairs": 2,
+          "newcombe_ci": [
+            -0.6576280471103807,
+            0.6576280471103807
+          ],
+          "p_left": 0.0,
+          "p_right": 0.0,
+          "paired_wald_ci": [
+            0.0,
+            0.0
+          ],
+          "right_condition": "FULL",
+          "right_only": 0,
+          "wilson_left": [
+            0.0,
+            0.6576280471103807
+          ],
+          "wilson_right": [
+            0.0,
+            0.6576280471103807
+          ]
+        }
+      },
+      "successes": {
+        "COMM": 0,
+        "FULL": 0,
+        "ISO": 0
+      },
+      "valid_denominators": {
+        "COMM": 2,
+        "FULL": 2,
+        "ISO": 2
+      }
+    }
+  ],
+  "classification_counts": {
+    "invalid_output_empty": 2,
+    "success": 15,
+    "valid_wrong_answer": 13
+  },
+  "comm_recovery_eta": 0.6060606060606062,
+  "condition_turns": {
+    "COMM": 2,
+    "FULL": 1,
+    "ISO": 1
+  },
+  "cost_cap_usd": 20.0,
+  "cost_usd": 0.0,
+  "credentials_retained": false,
+  "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+  "failure_reasons": {
+    "invalid_output_empty": 2
+  },
+  "finalizer_policy": "one_way_A_finalizer",
+  "finalizing_agent": "A",
+  "frozen_instance_ids": [
+    "hypothesis-00004a38",
+    "hypothesis-00004a39",
+    "hypothesis-00004e20",
+    "hypothesis-00004e21",
+    "reference-00007148",
+    "reference-00007149",
+    "planning-00009858",
+    "planning-00009859",
+    "planning-0000a028",
+    "planning-0000a029"
+  ],
+  "frozen_manifest_hash": "768256481a983b5ec538797b1da4cc5d26baf4ee056a2ca8acb98f137d9d30b2",
+  "induced_arm": {
+    "note": "required-claim or silence-penalty diagnostics must use a distinct INDUCED condition and are never pooled with voluntary COMM",
+    "status": "not_run"
+  },
+  "input_tokens": 7293,
+  "invalid_runs": 2,
+  "minimum_effective_c_need": 0.1,
+  "model": "inclusionai/ling-3.0-flash-vl:free",
+  "next_decision": "review by_condition/cells before any T3 entropy work",
+  "output_tokens": 18867,
+  "paired_contrasts": {
+    "FULL->COMM": {
+      "both_fail": 2,
+      "both_success": 4,
+      "difference": -0.11111111111111105,
+      "left_condition": "FULL",
+      "left_only": 2,
+      "mcnemar_exact_p": 1.0,
+      "mcnemar_midp_p": 0.625,
+      "n_pairs": 9,
+      "newcombe_ci": [
+        -0.4108725460605744,
+        0.22426577509881962
+      ],
+      "p_left": 0.6666666666666666,
+      "p_right": 0.5555555555555556,
+      "paired_wald_ci": [
+        -0.48126215728303173,
+        0.25903993506080963
+      ],
+      "right_condition": "COMM",
+      "right_only": 1,
+      "wilson_left": [
+        0.3541973474990897,
+        0.8794184013172571
+      ],
+      "wilson_right": [
+        0.2666473457440297,
+        0.811224570528086
+      ]
+    },
+    "ISO->COMM": {
+      "both_fail": 3,
+      "both_success": 3,
+      "difference": 0.25,
+      "left_condition": "ISO",
+      "left_only": 0,
+      "mcnemar_exact_p": 0.5,
+      "mcnemar_midp_p": 0.25,
+      "n_pairs": 8,
+      "newcombe_ci": [
+        -0.03555674391721675,
+        0.46301520609831404
+      ],
+      "p_left": 0.375,
+      "p_right": 0.625,
+      "paired_wald_ci": [
+        -0.050062493490939275,
+        0.5500624934909393
+      ],
+      "right_condition": "COMM",
+      "right_only": 2,
+      "wilson_left": [
+        0.13684175946152105,
+        0.6942621454161981
+      ],
+      "wilson_right": [
+        0.30573785458380187,
+        0.863158240538479
+      ]
+    },
+    "ISO->FULL": {
+      "both_fail": 2,
+      "both_success": 2,
+      "difference": 0.3333333333333333,
+      "left_condition": "ISO",
+      "left_only": 1,
+      "mcnemar_exact_p": 0.375,
+      "mcnemar_midp_p": 0.21875,
+      "n_pairs": 9,
+      "newcombe_ci": [
+        -0.10856501565894133,
+        0.6342097218946003
+      ],
+      "p_left": 0.3333333333333333,
+      "p_right": 0.6666666666666666,
+      "paired_wald_ci": [
+        -0.10222222222222221,
+        0.7688888888888888
+      ],
+      "right_condition": "FULL",
+      "right_only": 4,
+      "wilson_left": [
+        0.12058159868274287,
+        0.6458026525009103
+      ],
+      "wilson_right": [
+        0.3541973474990897,
+        0.8794184013172571
+      ]
+    }
+  },
+  "paired_screen_ready": true,
+  "planned_instances": 10,
+  "provider": "openrouter",
+  "provider_credential_blocked": false,
+  "provider_diagnostics": {
+    "consecutive_failures": 0,
+    "cost_cap_usd": 20.0,
+    "cost_usd": 0.0,
+    "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+    "failure_classes": {},
+    "input_tokens": 14321,
+    "last_error_message": null,
+    "last_served_model": "inclusionai/ling-3.0-flash-vl:free",
+    "logprobs_requested": false,
+    "model": "inclusionai/ling-3.0-flash-vl:free",
+    "output_tokens": 41643,
+    "provider": "openrouter",
+    "provider_version": "behavioral-discovery-v1",
+    "request_cap": 70,
+    "requests": 60
+  },
+  "provider_version": "behavioral-discovery-v1",
+  "rate_floor_seconds": 0.25,
+  "raw_responses_retained": false,
+  "request_cap": 70,
+  "requests_made": 60,
+  "requests_per_instance": 6,
+  "resumed_runs": 0,
+  "screen_version": "paired-iso-full-comm-v1",
+  "stage": "T1a-paired-screen",
+  "stop_reason": "completed_planned_runs",
+  "structural_necessity": {
+    "both_agents_needed_count": 10,
+    "channel_complete_count": 10,
+    "definition": "A finalizer needs the peer when its own clue-consistent set is larger than the pooled/joint set",
+    "finalizer_needs_peer_count": 10,
+    "instances": 10
+  },
+  "successes": 15,
+  "turns": null,
+  "valid_runs": 28,
+  "voluntary_comm": {
+    "attempted": 10,
+    "causal_claim": "none: post-read accepted answers are correlation evidence only, not causal uptake",
+    "condition": "COMM",
+    "post_read_correlation_count": 1,
+    "rejected_write_count": 2,
+    "used_board_count": 5
+  }
+}

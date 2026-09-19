@@ -1,0 +1,944 @@
+{
+  "cell_audit": {
+    "audit_version": "jev-cell-selection-v1",
+    "cell_count": 5,
+    "cells": [
+      {
+        "attempted_by_condition": {
+          "COMM": 17,
+          "FULL": 17,
+          "ISO": 17
+        },
+        "comm": {
+          "attempted": 17,
+          "messages": 16,
+          "post_read_correlation_count": 2,
+          "rejected_write_count": 4,
+          "successes": 7,
+          "transmitted_bits": 16.0,
+          "used_board": 11,
+          "valid": 11
+        },
+        "complexity": "low",
+        "family": "hypothesis",
+        "holm_adjusted_p": 0.453125,
+        "instances": 17,
+        "iso_to_full": {
+          "both_fail": 0,
+          "both_success": 3,
+          "difference": 0.35714285714285715,
+          "left_condition": "ISO",
+          "left_only": 3,
+          "mcnemar_exact_p": 0.2265625,
+          "mcnemar_midp_p": 0.14599609375,
+          "n_pairs": 14,
+          "newcombe_ci": [
+            -0.09693946313217944,
+            0.6752938734270215
+          ],
+          "p_left": 0.42857142857142855,
+          "p_right": 0.7857142857142857,
+          "paired_wald_ci": [
+            -0.06782773007465837,
+            0.7821134443603727
+          ],
+          "right_condition": "FULL",
+          "right_only": 8,
+          "wilson_left": [
+            0.21380509930400526,
+            0.6740973309713064
+          ],
+          "wilson_right": [
+            0.5241027622679172,
+            0.9242875166308363
+          ]
+        },
+        "mcnemar_exact_p": 0.2265625,
+        "significant_fwer_0_05": false,
+        "valid_by_condition": {
+          "COMM": 11,
+          "FULL": 17,
+          "ISO": 14
+        }
+      },
+      {
+        "attempted_by_condition": {
+          "COMM": 17,
+          "FULL": 17,
+          "ISO": 17
+        },
+        "comm": {
+          "attempted": 17,
+          "messages": 13,
+          "post_read_correlation_count": 2,
+          "rejected_write_count": 12,
+          "successes": 7,
+          "transmitted_bits": 9.0,
+          "used_board": 9,
+          "valid": 14
+        },
+        "complexity": "medium",
+        "family": "hypothesis",
+        "holm_adjusted_p": 0.0625,
+        "instances": 17,
+        "iso_to_full": {
+          "both_fail": 0,
+          "both_success": 5,
+          "difference": 0.5833333333333333,
+          "left_condition": "ISO",
+          "left_only": 0,
+          "mcnemar_exact_p": 0.015625,
+          "mcnemar_midp_p": 0.0078125,
+          "n_pairs": 12,
+          "newcombe_ci": [
+            0.22498884204251168,
+            0.8067425380947534
+          ],
+          "p_left": 0.4166666666666667,
+          "p_right": 1.0,
+          "paired_wald_ci": [
+            0.30438856248221086,
+            0.8622781041844556
+          ],
+          "right_condition": "FULL",
+          "right_only": 7,
+          "wilson_left": [
+            0.19325746190524654,
+            0.6804926643446272
+          ],
+          "wilson_right": [
+            0.7574992425007574,
+            1.0
+          ]
+        },
+        "mcnemar_exact_p": 0.015625,
+        "significant_fwer_0_05": false,
+        "valid_by_condition": {
+          "COMM": 14,
+          "FULL": 12,
+          "ISO": 14
+        }
+      },
+      {
+        "attempted_by_condition": {
+          "COMM": 17,
+          "FULL": 17,
+          "ISO": 17
+        },
+        "comm": {
+          "attempted": 17,
+          "messages": 5,
+          "post_read_correlation_count": 1,
+          "rejected_write_count": 0,
+          "successes": 1,
+          "transmitted_bits": 7.7549,
+          "used_board": 5,
+          "valid": 5
+        },
+        "complexity": "high",
+        "family": "planning",
+        "holm_adjusted_p": 0.1875,
+        "instances": 17,
+        "iso_to_full": {
+          "both_fail": 0,
+          "both_success": 2,
+          "difference": 0.7142857142857143,
+          "left_condition": "ISO",
+          "left_only": 0,
+          "mcnemar_exact_p": 0.0625,
+          "mcnemar_midp_p": 0.03125,
+          "n_pairs": 7,
+          "newcombe_ci": [
+            0.21245472086321782,
+            0.9177828342909845
+          ],
+          "p_left": 0.2857142857142857,
+          "p_right": 1.0,
+          "paired_wald_ci": [
+            0.3796217036720841,
+            1.0489497248993445
+          ],
+          "right_condition": "FULL",
+          "right_only": 5,
+          "wilson_left": [
+            0.0822171657090155,
+            0.6410709098517873
+          ],
+          "wilson_right": [
+            0.6456611570247934,
+            1.0
+          ]
+        },
+        "mcnemar_exact_p": 0.0625,
+        "significant_fwer_0_05": false,
+        "valid_by_condition": {
+          "COMM": 5,
+          "FULL": 17,
+          "ISO": 7
+        }
+      },
+      {
+        "attempted_by_condition": {
+          "COMM": 17,
+          "FULL": 17,
+          "ISO": 17
+        },
+        "comm": {
+          "attempted": 17,
+          "messages": 20,
+          "post_read_correlation_count": 2,
+          "rejected_write_count": 0,
+          "successes": 13,
+          "transmitted_bits": 31.6993,
+          "used_board": 14,
+          "valid": 17
+        },
+        "complexity": "low",
+        "family": "planning",
+        "holm_adjusted_p": 0.009765625,
+        "instances": 17,
+        "iso_to_full": {
+          "both_fail": 0,
+          "both_success": 7,
+          "difference": 0.5882352941176471,
+          "left_condition": "ISO",
+          "left_only": 0,
+          "mcnemar_exact_p": 0.001953125,
+          "mcnemar_midp_p": 0.0009765625,
+          "n_pairs": 17,
+          "newcombe_ci": [
+            0.29490373981216933,
+            0.7838921396086862
+          ],
+          "p_left": 0.4117647058823529,
+          "p_right": 1.0,
+          "paired_wald_ci": [
+            0.3542806291426003,
+            0.8221899590926939
+          ],
+          "right_condition": "FULL",
+          "right_only": 10,
+          "wilson_left": [
+            0.21610786039131386,
+            0.6399492561448445
+          ],
+          "wilson_right": [
+            0.8156763396284354,
+            1.0
+          ]
+        },
+        "mcnemar_exact_p": 0.001953125,
+        "significant_fwer_0_05": true,
+        "valid_by_condition": {
+          "COMM": 17,
+          "FULL": 17,
+          "ISO": 17
+        }
+      },
+      {
+        "attempted_by_condition": {
+          "COMM": 17,
+          "FULL": 17,
+          "ISO": 17
+        },
+        "comm": {
+          "attempted": 17,
+          "messages": 6,
+          "post_read_correlation_count": 0,
+          "rejected_write_count": 6,
+          "successes": 1,
+          "transmitted_bits": 6.0,
+          "used_board": 5,
+          "valid": 17
+        },
+        "complexity": "low",
+        "family": "reference",
+        "holm_adjusted_p": 0.5,
+        "instances": 17,
+        "iso_to_full": {
+          "both_fail": 12,
+          "both_success": 1,
+          "difference": 0.13333333333333336,
+          "left_condition": "ISO",
+          "left_only": 0,
+          "mcnemar_exact_p": 0.5,
+          "mcnemar_midp_p": 0.25,
+          "n_pairs": 15,
+          "newcombe_ci": [
+            -0.06240875419221259,
+            0.36066858712587435
+          ],
+          "p_left": 0.06666666666666667,
+          "p_right": 0.2,
+          "paired_wald_ci": [
+            -0.03869732715527882,
+            0.30536399382194557
+          ],
+          "right_condition": "FULL",
+          "right_only": 2,
+          "wilson_left": [
+            0.011866588606194828,
+            0.29817077552423993
+          ],
+          "wilson_right": [
+            0.07047420643610411,
+            0.4518593533465045
+          ]
+        },
+        "mcnemar_exact_p": 0.5,
+        "significant_fwer_0_05": false,
+        "valid_by_condition": {
+          "COMM": 17,
+          "FULL": 15,
+          "ISO": 17
+        }
+      }
+    ],
+    "duplicate_pairs": [],
+    "holm": {
+      "hypothesis:low": 0.453125,
+      "hypothesis:medium": 0.0625,
+      "planning:high": 0.1875,
+      "planning:low": 0.009765625,
+      "reference:low": 0.5
+    },
+    "holm_scope": "five cell-specific C_need claims",
+    "notes": {
+      "comm_confounds_board_use_with_extra_finalizer_turn": true,
+      "p_value_is_not_an_entropy_gate": true,
+      "planning_low_is_selection_data_not_fresh_confirmation": true,
+      "post_read_correlation_is_not_causal": true
+    },
+    "primary_iso_to_full": {
+      "both_fail": 12,
+      "both_success": 18,
+      "difference": 0.4461538461538462,
+      "left_condition": "ISO",
+      "left_only": 3,
+      "mcnemar_exact_p": 4.176981747150421e-07,
+      "mcnemar_midp_p": 2.2721360437572002e-07,
+      "n_pairs": 65,
+      "newcombe_ci": [
+        0.29141934945462117,
+        0.5688218143038327
+      ],
+      "p_left": 0.3230769230769231,
+      "p_right": 0.7692307692307693,
+      "paired_wald_ci": [
+        0.3045220991746127,
+        0.5877855931330797
+      ],
+      "right_condition": "FULL",
+      "right_only": 32,
+      "wilson_left": [
+        0.22203729362311725,
+        0.443862394937288
+      ],
+      "wilson_right": [
+        0.6535506019179673,
+        0.8548629154901115
+      ]
+    },
+    "record_count": 255
+  },
+  "planning_high_trace": {
+    "comm_invalid_output_tokens": [
+      3174,
+      3193,
+      3298,
+      3447,
+      3469,
+      3619,
+      3633,
+      3693,
+      3761,
+      3786,
+      3819,
+      3964
+    ],
+    "interpretation": "provider and parser paths are clean (no provider failures); ISO invalid runs consume exactly max_tokens, i.e. length truncation with empty content. COMM per-agent truncation cannot be proven from the retained totals because per-output finish_reason and per-agent output tokens are not recorded.",
+    "invalid_by_condition": {
+      "COMM": 12,
+      "ISO": 10
+    },
+    "invalid_classification": {
+      "invalid_output_empty": 22
+    },
+    "invalid_total": 22,
+    "iso_invalid_at_cap": 10,
+    "iso_invalid_total": 10,
+    "max_tokens": 1024,
+    "provider_failures_present": [],
+    "safe_next_diagnostics": [
+      "record provider finish_reason and per-agent output tokens in the event log",
+      "add an offline fixture asserting empty content with finish_reason=length yields invalid_output_empty",
+      "run a bounded higher-token-budget evidence pass only under a new registration"
+    ],
+    "trace": [
+      {
+        "classification": "invalid_output_empty",
+        "condition": "COMM",
+        "event_count": 5,
+        "input_tokens": 1536,
+        "instance_id": "planning-00011940",
+        "output_at_token_cap": false,
+        "output_tokens": 3298,
+        "provider_failure_types": [],
+        "valid_execution": false
+      },
+      {
+        "classification": "success",
+        "condition": "FULL",
+        "event_count": 2,
+        "input_tokens": 416,
+        "instance_id": "planning-00011940",
+        "output_at_token_cap": false,
+        "output_tokens": 344,
+        "provider_failure_types": [],
+        "valid_execution": true
+      },
+      {
+        "classification": "valid_wrong_answer",
+        "condition": "ISO",
+        "event_count": 2,
+        "input_tokens": 385,
+        "instance_id": "planning-00011940",
+        "output_at_token_cap": false,
+        "output_tokens": 770,
+        "provider_failure_types": [],
+        "valid_execution": true
+      },
+      {
+        "classification": "invalid_output_empty",
+        "condition": "COMM",
+        "event_count": 5,
+        "input_tokens": 1534,
+        "instance_id": "planning-00011941",
+        "output_at_token_cap": false,
+        "output_tokens": 3469,
+        "provider_failure_types": [],
+        "valid_execution": false
+      },
+      {
+        "classification": "success",
+        "condition": "FULL",
+        "event_count": 2,
+        "input_tokens": 415,
+        "instance_id": "planning-00011941",
+        "output_at_token_cap": false,
+        "output_tokens": 297,
+        "provider_failure_types": [],
+        "valid_execution": true
+      },
+      {
+        "classification": "invalid_output_empty",
+        "condition": "ISO",
+        "event_count": 2,
+        "input_tokens": 385,
+        "instance_id": "planning-00011941",
+        "output_at_token_cap": true,
+        "output_tokens": 1024,
+        "provider_failure_types": [],
+        "valid_execution": false
+      },
+      {
+        "classification": "invalid_output_empty",
+        "condition": "COMM",
+        "event_count": 7,
+        "input_tokens": 1588,
+        "instance_id": "planning-00011942",
+        "output_at_token_cap": false,
+        "output_tokens": 3819,
+        "provider_failure_types": [],
+        "valid_execution": false
+      },
+      {
+        "classification": "success",
+        "condition": "FULL",
+        "event_count": 2,
+        "input_tokens": 415,
+        "instance_id": "planning-00011942",
+        "output_at_token_cap": false,
+        "output_tokens": 295,
+        "provider_failure_types": [],
+        "valid_execution": true
+      },
+      {
+        "classification": "valid_wrong_answer",
+        "condition": "ISO",
+        "event_count": 2,
+        "input_tokens": 385,
+        "instance_id": "planning-00011942",
+        "output_at_token_cap": false,
+        "output_tokens": 971,
+        "provider_failure_types": [],
+        "valid_execution": true
+      },
+      {
+        "classification": "valid_wrong_answer",
+        "condition": "COMM",
+        "event_count": 5,
+        "input_tokens": 1534,
+        "instance_id": "planning-00011943",
+        "output_at_token_cap": false,
+        "output_tokens": 3823,
+        "provider_failure_types": [],
+        "valid_execution": true
+      },
+      {
+        "classification": "success",
+        "condition": "FULL",
+        "event_count": 2,
+        "input_tokens": 415,
+        "instance_id": "planning-00011943",
+        "output_at_token_cap": false,
+        "output_tokens": 420,
+        "provider_failure_types": [],
+        "valid_execution": true
+      },
+      {
+        "classification": "invalid_output_empty",
+        "condition": "ISO",
+        "event_count": 2,
+        "input_tokens": 385,
+        "instance_id": "planning-00011943",
+        "output_at_token_cap": true,
+        "output_tokens": 1024,
+        "provider_failure_types": [],
+        "valid_execution": false
+      },
+      {
+        "classification": "invalid_output_empty",
+        "condition": "COMM",
+        "event_count": 5,
+        "input_tokens": 1534,
+        "instance_id": "planning-00011944",
+        "output_at_token_cap": false,
+        "output_tokens": 3761,
+        "provider_failure_types": [],
+        "valid_execution": false
+      },
+      {
+        "classification": "success",
+        "condition": "FULL",
+        "event_count": 2,
+        "input_tokens": 415,
+        "instance_id": "planning-00011944",
+        "output_at_token_cap": false,
+        "output_tokens": 354,
+        "provider_failure_types": [],
+        "valid_execution": true
+      },
+      {
+        "classification": "invalid_output_empty",
+        "condition": "ISO",
+        "event_count": 2,
+        "input_tokens": 385,
+        "instance_id": "planning-00011944",
+        "output_at_token_cap": true,
+        "output_tokens": 1024,
+        "provider_failure_types": [],
+        "valid_execution": false
+      },
+      {
+        "classification": "invalid_output_empty",
+        "condition": "COMM",
+        "event_count": 6,
+        "input_tokens": 1534,
+        "instance_id": "planning-00011945",
+        "output_at_token_cap": false,
+        "output_tokens": 3447,
+        "provider_failure_types": [],
+        "valid_execution": false
+      },
+      {
+        "classification": "success",
+        "condition": "FULL",
+        "event_count": 2,
+        "input_tokens": 415,
+        "instance_id": "planning-00011945",
+        "output_at_token_cap": false,
+        "output_tokens": 288,
+        "provider_failure_types": [],
+        "valid_execution": true
+      },
+      {
+        "classification": "valid_wrong_answer",
+        "condition": "ISO",
+        "event_count": 2,
+        "input_tokens": 385,
+        "instance_id": "planning-00011945",
+        "output_at_token_cap": false,
+        "output_tokens": 969,
+        "provider_failure_types": [],
+        "valid_execution": true
+      },
+      {
+        "classification": "invalid_output_empty",
+        "condition": "COMM",
+        "event_count": 5,
+        "input_tokens": 1536,
+        "instance_id": "planning-00011946",
+        "output_at_token_cap": false,
+        "output_tokens": 3174,
+        "provider_failure_types": [],
+        "valid_execution": false
+      },
+      {
+        "classification": "success",
+        "condition": "FULL",
+        "event_count": 2,
+        "input_tokens": 416,
+        "instance_id": "planning-00011946",
+        "output_at_token_cap": false,
+        "output_tokens": 342,
+        "provider_failure_types": [],
+        "valid_execution": true
+      },
+      {
+        "classification": "invalid_output_empty",
+        "condition": "ISO",
+        "event_count": 2,
+        "input_tokens": 385,
+        "instance_id": "planning-00011946",
+        "output_at_token_cap": true,
+        "output_tokens": 1024,
+        "provider_failure_types": [],
+        "valid_execution": false
+      },
+      {
+        "classification": "success",
+        "condition": "COMM",
+        "event_count": 8,
+        "input_tokens": 1604,
+        "instance_id": "planning-00011947",
+        "output_at_token_cap": false,
+        "output_tokens": 3511,
+        "provider_failure_types": [],
+        "valid_execution": true
+      },
+      {
+        "classification": "success",
+        "condition": "FULL",
+        "event_count": 2,
+        "input_tokens": 415,
+        "instance_id": "planning-00011947",
+        "output_at_token_cap": false,
+        "output_tokens": 286,
+        "provider_failure_types": [],
+        "valid_execution": true
+      },
+      {
+        "classification": "invalid_output_empty",
+        "condition": "ISO",
+        "event_count": 2,
+        "input_tokens": 385,
+        "instance_id": "planning-00011947",
+        "output_at_token_cap": true,
+        "output_tokens": 1024,
+        "provider_failure_types": [],
+        "valid_execution": false
+      },
+      {
+        "classification": "invalid_output_empty",
+        "condition": "COMM",
+        "event_count": 5,
+        "input_tokens": 1534,
+        "instance_id": "planning-00011948",
+        "output_at_token_cap": false,
+        "output_tokens": 3693,
+        "provider_failure_types": [],
+        "valid_execution": false
+      },
+      {
+        "classification": "success",
+        "condition": "FULL",
+        "event_count": 2,
+        "input_tokens": 415,
+        "instance_id": "planning-00011948",
+        "output_at_token_cap": false,
+        "output_tokens": 330,
+        "provider_failure_types": [],
+        "valid_execution": true
+      },
+      {
+        "classification": "invalid_output_empty",
+        "condition": "ISO",
+        "event_count": 2,
+        "input_tokens": 385,
+        "instance_id": "planning-00011948",
+        "output_at_token_cap": true,
+        "output_tokens": 1024,
+        "provider_failure_types": [],
+        "valid_execution": false
+      },
+      {
+        "classification": "invalid_output_empty",
+        "condition": "COMM",
+        "event_count": 5,
+        "input_tokens": 1536,
+        "instance_id": "planning-00011949",
+        "output_at_token_cap": false,
+        "output_tokens": 3193,
+        "provider_failure_types": [],
+        "valid_execution": false
+      },
+      {
+        "classification": "success",
+        "condition": "FULL",
+        "event_count": 2,
+        "input_tokens": 416,
+        "instance_id": "planning-00011949",
+        "output_at_token_cap": false,
+        "output_tokens": 342,
+        "provider_failure_types": [],
+        "valid_execution": true
+      },
+      {
+        "classification": "invalid_output_empty",
+        "condition": "ISO",
+        "event_count": 2,
+        "input_tokens": 385,
+        "instance_id": "planning-00011949",
+        "output_at_token_cap": true,
+        "output_tokens": 1024,
+        "provider_failure_types": [],
+        "valid_execution": false
+      },
+      {
+        "classification": "valid_wrong_answer",
+        "condition": "COMM",
+        "event_count": 5,
+        "input_tokens": 1536,
+        "instance_id": "planning-0001194a",
+        "output_at_token_cap": false,
+        "output_tokens": 3722,
+        "provider_failure_types": [],
+        "valid_execution": true
+      },
+      {
+        "classification": "success",
+        "condition": "FULL",
+        "event_count": 2,
+        "input_tokens": 416,
+        "instance_id": "planning-0001194a",
+        "output_at_token_cap": false,
+        "output_tokens": 318,
+        "provider_failure_types": [],
+        "valid_execution": true
+      },
+      {
+        "classification": "valid_wrong_answer",
+        "condition": "ISO",
+        "event_count": 2,
+        "input_tokens": 385,
+        "instance_id": "planning-0001194a",
+        "output_at_token_cap": false,
+        "output_tokens": 818,
+        "provider_failure_types": [],
+        "valid_execution": true
+      },
+      {
+        "classification": "invalid_output_empty",
+        "condition": "COMM",
+        "event_count": 6,
+        "input_tokens": 1536,
+        "instance_id": "planning-0001194b",
+        "output_at_token_cap": false,
+        "output_tokens": 3786,
+        "provider_failure_types": [],
+        "valid_execution": false
+      },
+      {
+        "classification": "success",
+        "condition": "FULL",
+        "event_count": 2,
+        "input_tokens": 416,
+        "instance_id": "planning-0001194b",
+        "output_at_token_cap": false,
+        "output_tokens": 352,
+        "provider_failure_types": [],
+        "valid_execution": true
+      },
+      {
+        "classification": "valid_wrong_answer",
+        "condition": "ISO",
+        "event_count": 2,
+        "input_tokens": 385,
+        "instance_id": "planning-0001194b",
+        "output_at_token_cap": false,
+        "output_tokens": 926,
+        "provider_failure_types": [],
+        "valid_execution": true
+      },
+      {
+        "classification": "invalid_output_empty",
+        "condition": "COMM",
+        "event_count": 5,
+        "input_tokens": 1534,
+        "instance_id": "planning-0001194c",
+        "output_at_token_cap": false,
+        "output_tokens": 3619,
+        "provider_failure_types": [],
+        "valid_execution": false
+      },
+      {
+        "classification": "success",
+        "condition": "FULL",
+        "event_count": 2,
+        "input_tokens": 415,
+        "instance_id": "planning-0001194c",
+        "output_at_token_cap": false,
+        "output_tokens": 307,
+        "provider_failure_types": [],
+        "valid_execution": true
+      },
+      {
+        "classification": "invalid_output_empty",
+        "condition": "ISO",
+        "event_count": 2,
+        "input_tokens": 385,
+        "instance_id": "planning-0001194c",
+        "output_at_token_cap": true,
+        "output_tokens": 1024,
+        "provider_failure_types": [],
+        "valid_execution": false
+      },
+      {
+        "classification": "invalid_output_empty",
+        "condition": "COMM",
+        "event_count": 5,
+        "input_tokens": 1536,
+        "instance_id": "planning-0001194d",
+        "output_at_token_cap": false,
+        "output_tokens": 3964,
+        "provider_failure_types": [],
+        "valid_execution": false
+      },
+      {
+        "classification": "success",
+        "condition": "FULL",
+        "event_count": 2,
+        "input_tokens": 416,
+        "instance_id": "planning-0001194d",
+        "output_at_token_cap": false,
+        "output_tokens": 614,
+        "provider_failure_types": [],
+        "valid_execution": true
+      },
+      {
+        "classification": "success",
+        "condition": "ISO",
+        "event_count": 2,
+        "input_tokens": 385,
+        "instance_id": "planning-0001194d",
+        "output_at_token_cap": false,
+        "output_tokens": 927,
+        "provider_failure_types": [],
+        "valid_execution": true
+      },
+      {
+        "classification": "valid_wrong_answer",
+        "condition": "COMM",
+        "event_count": 5,
+        "input_tokens": 1534,
+        "instance_id": "planning-0001194e",
+        "output_at_token_cap": false,
+        "output_tokens": 3477,
+        "provider_failure_types": [],
+        "valid_execution": true
+      },
+      {
+        "classification": "success",
+        "condition": "FULL",
+        "event_count": 2,
+        "input_tokens": 415,
+        "instance_id": "planning-0001194e",
+        "output_at_token_cap": false,
+        "output_tokens": 274,
+        "provider_failure_types": [],
+        "valid_execution": true
+      },
+      {
+        "classification": "invalid_output_empty",
+        "condition": "ISO",
+        "event_count": 2,
+        "input_tokens": 385,
+        "instance_id": "planning-0001194e",
+        "output_at_token_cap": true,
+        "output_tokens": 1024,
+        "provider_failure_types": [],
+        "valid_execution": false
+      },
+      {
+        "classification": "valid_wrong_answer",
+        "condition": "COMM",
+        "event_count": 5,
+        "input_tokens": 1534,
+        "instance_id": "planning-0001194f",
+        "output_at_token_cap": false,
+        "output_tokens": 3899,
+        "provider_failure_types": [],
+        "valid_execution": true
+      },
+      {
+        "classification": "success",
+        "condition": "FULL",
+        "event_count": 2,
+        "input_tokens": 415,
+        "instance_id": "planning-0001194f",
+        "output_at_token_cap": false,
+        "output_tokens": 301,
+        "provider_failure_types": [],
+        "valid_execution": true
+      },
+      {
+        "classification": "success",
+        "condition": "ISO",
+        "event_count": 2,
+        "input_tokens": 385,
+        "instance_id": "planning-0001194f",
+        "output_at_token_cap": false,
+        "output_tokens": 950,
+        "provider_failure_types": [],
+        "valid_execution": true
+      },
+      {
+        "classification": "invalid_output_empty",
+        "condition": "COMM",
+        "event_count": 6,
+        "input_tokens": 1534,
+        "instance_id": "planning-00011950",
+        "output_at_token_cap": false,
+        "output_tokens": 3633,
+        "provider_failure_types": [],
+        "valid_execution": false
+      },
+      {
+        "classification": "success",
+        "condition": "FULL",
+        "event_count": 2,
+        "input_tokens": 415,
+        "instance_id": "planning-00011950",
+        "output_at_token_cap": false,
+        "output_tokens": 318,
+        "provider_failure_types": [],
+        "valid_execution": true
+      },
+      {
+        "classification": "invalid_output_empty",
+        "condition": "ISO",
+        "event_count": 2,
+        "input_tokens": 385,
+        "instance_id": "planning-00011950",
+        "output_at_token_cap": true,
+        "output_tokens": 1024,
+        "provider_failure_types": [],
+        "valid_execution": false
+      }
+    ]
+  },
+  "scheme": "stage2-confirmatory",
+  "seeds_per_cell": 17,
+  "version": "jev-cell-selection-v1"
+}

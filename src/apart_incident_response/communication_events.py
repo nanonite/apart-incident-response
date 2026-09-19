@@ -1,8 +1,9 @@
-"""Append-only provenance for board exposure, model outputs, and post-read correlation."""
+"""Append-only provenance for board exposure, model outputs, and checker use."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass, asdict
+from collections import Counter
 import hashlib
 import json
 import time
@@ -62,11 +63,14 @@ class CommunicationEventLog:
         self._events.append(event)
         return event
 
-    def board_write(self, agent_id: str, message: MessageInformation, *, message_tokens: int) -> CommunicationEvent:
+    def board_write(self, agent_id: str, message: MessageInformation, *, message_tokens: int,
+                    receiver_id: str | None = None) -> CommunicationEvent:
         return self.record("board_write", agent_id, message_id=message.message_id,
                            delta_i_bits=message.delta_i_bits, message_tokens=message_tokens,
                            status=message.status, useful=message.useful,
-                           payload={"raw_text": message.raw_text, "normalized_claim": message.normalized_claim})
+                           payload={"raw_text": message.raw_text, "normalized_claim": message.normalized_claim,
+                                    "information_perspective": "receiver",
+                                    "receiver_id": receiver_id})
 
     def peer_read(self, agent_id: str, message: MessageInformation, *, exposure_id: str | None = None) -> CommunicationEvent | None:
         # Re-reading an already exposed message is an idempotent read for
@@ -83,7 +87,9 @@ class CommunicationEventLog:
                      logprob_entropy_bits: float | None = None,
                      logprob_coverage: float | None = None,
                      logprob_mass_coverage: float | None = None,
-                     logprob_status: str = "not_requested") -> CommunicationEvent:
+                     logprob_status: str = "not_requested", input_tokens: int | None = None,
+                     output_tokens: int | None = None, cost_usd: float = 0.0,
+                     finish_reason: str | None = None) -> CommunicationEvent:
         """Record output-time probability data, never read-time entropy."""
 
         return self.record("model_output", agent_id, output_id=output_id,
@@ -91,40 +97,29 @@ class CommunicationEventLog:
                                     "logprob_entropy_bits": logprob_entropy_bits,
                                     "logprob_coverage": logprob_coverage,
                                     "logprob_mass_coverage": logprob_mass_coverage,
-                                    "logprob_status": logprob_status})
+                                    "logprob_status": logprob_status,
+                                    "input_tokens": input_tokens, "output_tokens": output_tokens,
+                                    "cost_usd": cost_usd, "finish_reason": finish_reason})
 
-    def post_read_correlated_use(self, agent_id: str, message: MessageInformation, output_id: str,
-                                 *, correlation_evidence: Mapping[str, Any]) -> CommunicationEvent:
-        """Record checker-supported post-read correlation, without causal language."""
+    def post_read_correlation(self, agent_id: str, message: MessageInformation, output_id: str,
+                              *, checker_evidence: Mapping[str, Any]) -> CommunicationEvent:
+        """Accepted finalizer answer after a peer read.
 
-        if not (correlation_evidence.get("correlated", False)
-                or correlation_evidence.get("verified", False)):
-            raise ValueError("post-read correlation requires checker evidence")
-        evidence = dict(correlation_evidence)
-        evidence.setdefault("correlated", True)
-        return self.record("post_read_correlated_use", agent_id, message_id=message.message_id,
+        This is a correlation signal, not causal uptake: it does not by itself
+        show the peer message caused the accepted answer. Causal claims require
+        a matched replay/intervention.
+        """
+
+        return self.record("post_read_correlation", agent_id, message_id=message.message_id,
                            delta_i_bits=message.delta_i_bits, output_id=output_id,
-                           useful=message.useful, payload={"correlation_evidence": evidence})
-
-    def verified_use(self, agent_id: str, message: MessageInformation, output_id: str,
-                     *, checker_evidence: Mapping[str, Any]) -> CommunicationEvent:
-        """Compatibility alias for pre-v2 callers; emits the canonical event kind."""
-
-        return self.post_read_correlated_use(
-            agent_id, message, output_id,
-            correlation_evidence={
-                **checker_evidence,
-                "correlated": bool(checker_evidence.get("correlated", False)
-                                    or checker_evidence.get("verified", False)),
-            },
-        )
+                           useful=message.useful, payload={"checker_evidence": dict(checker_evidence)})
 
     def replay_joins(self) -> list[dict[str, Any]]:
         writes = {event.message_id: event for event in self._events if event.kind == "board_write" and event.message_id}
         reads = [event for event in self._events if event.kind == "peer_read_exposure"]
         outputs = [event for event in self._events if event.kind == "model_output"]
-        uses = [event for event in self._events
-                if event.kind in {"post_read_correlated_use", "verified_use"}]
+        provider_failures = [event for event in self._events if event.kind == "provider_failure"]
+        uses = [event for event in self._events if event.kind == "post_read_correlation"]
         rows: list[dict[str, Any]] = []
         for read in reads:
             write = writes.get(read.message_id)
@@ -139,7 +134,7 @@ class CommunicationEventLog:
             rows.append({"message_id": read.message_id, "writer_agent": write.agent_id,
                          "reader_agent": read.agent_id, "write_sequence": write.sequence,
                          "read_sequence": read.sequence, "first_post_read_output_id": output.output_id if output else None,
-                         "post_read_correlated_use_sequence": use.sequence if use else None,
+                         "post_read_correlation_sequence": use.sequence if use else None,
                          "delta_i_bits": write.delta_i_bits, "useful": use.useful if use else False,
                          "status": "joined" if output else "read_without_post_exposure_output"})
         return rows
@@ -147,12 +142,13 @@ class CommunicationEventLog:
     def summary(self) -> dict[str, Any]:
         started = next((event for event in self._events if event.kind == "run_started"), None)
         writes = [event for event in self._events if event.kind == "board_write"]
+        rejected_writes = [event for event in self._events if event.kind == "board_write_rejected"]
         joins = self.replay_joins()
         transmitted = [event.delta_i_bits for event in writes if event.delta_i_bits is not None]
         tokens = [event.message_tokens for event in writes if event.message_tokens]
         useful = [row for row in joins if row["useful"] and row["delta_i_bits"] is not None]
-        post_read_correlated_bits = sum(row["delta_i_bits"] for row in useful)
         outputs = [event for event in self._events if event.kind == "model_output"]
+        provider_failures = [event for event in self._events if event.kind == "provider_failure"]
         logprob_rows = [event for event in outputs if (event.payload or {}).get("logprob_status") not in {None, "not_requested", "unavailable"}]
         def latency(kind: str) -> float | None:
             if started is None:
@@ -164,21 +160,34 @@ class CommunicationEventLog:
             "run_id": self.run_id,
             "message_count": len(writes),
             "transmitted_bits": sum(transmitted) if transmitted else 0.0,
-            "post_read_correlated_bits": post_read_correlated_bits,
-            # Deprecated alias for readers of pre-epic-126 artifacts. New
-            # consumers must use post_read_correlated_bits.
-            "verified_useful_bits": post_read_correlated_bits,
+            "post_read_correlated_bits": sum(row["delta_i_bits"] for row in useful),
             "communication_tokens": sum(tokens),
+            "input_tokens": sum((event.payload or {}).get("input_tokens") or 0 for event in outputs),
+            "output_tokens": sum((event.payload or {}).get("output_tokens") or 0 for event in outputs),
+            "provider_cost_usd": sum(float((event.payload or {}).get("cost_usd") or 0.0) for event in outputs),
+            "provider_failure_count": len(provider_failures),
+            "provider_failure_types": sorted({(event.payload or {}).get("error_type", "unknown") for event in provider_failures}),
+            "rejected_write_count": len(rejected_writes),
+            "rejected_write_reasons": sorted({(event.payload or {}).get("reason", "unknown") for event in rejected_writes}),
+            "finish_reason_counts": dict(Counter(str((event.payload or {}).get("finish_reason") or "unknown")
+                                                  for event in outputs)),
+            "truncated_output_count": sum((event.payload or {}).get("finish_reason") == "length" for event in outputs),
+            "outputs": [{
+                "agent_id": event.agent_id,
+                "output_id": event.output_id,
+                "finish_reason": (event.payload or {}).get("finish_reason"),
+                "input_tokens": (event.payload or {}).get("input_tokens"),
+                "output_tokens": (event.payload or {}).get("output_tokens"),
+            } for event in outputs],
             "bits_per_communication_token": sum(transmitted) / sum(tokens) if sum(tokens) else None,
-            "post_read_correlated_use_count": len(useful),
-            "post_read_success_count": len(useful),
+            "post_read_correlation_count": len(useful),
             "logprob_output_count": len(logprob_rows),
             "logprob_complete_output_count": sum((event.payload or {}).get("logprob_status") == "complete" for event in logprob_rows),
             "logprob_coverage": [(event.payload or {}).get("logprob_coverage") for event in logprob_rows],
             "logprob_mass_coverage": [(event.payload or {}).get("logprob_mass_coverage") for event in logprob_rows],
             "first_write_latency_seconds": latency("board_write"),
             "first_read_latency_seconds": latency("peer_read_exposure"),
-            "first_post_read_correlated_use_latency_seconds": latency("post_read_correlated_use"),
+            "first_post_read_correlation_latency_seconds": latency("post_read_correlation"),
             "event_count": len(self._events),
             "joins": joins,
             "event_hash": _json_hash({"events": [event.to_dict() for event in self._events]}),

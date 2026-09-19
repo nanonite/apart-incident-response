@@ -1,0 +1,1835 @@
+{
+  "audit_version": "channel-invariants-v1",
+  "both_agents_needed_count": 52,
+  "channel_complete_count": 54,
+  "channel_incomplete_ids": [],
+  "declared_mismatch_count": 0,
+  "declared_mismatch_ids": [],
+  "finalizer_needs_peer_count": 52,
+  "instance_count": 54,
+  "mode": "audit-channels",
+  "no_live_screen": true,
+  "rows": [
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "candidate-1",
+        "candidate-3"
+      ],
+      "clue_consistent_b": [
+        "candidate-0",
+        "candidate-1",
+        "candidate-4",
+        "candidate-5"
+      ],
+      "complexity": "low",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
+      "family": "hypothesis",
+      "finalizer_needs_peer": true,
+      "instance_id": "hypothesis-00003e80",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "candidate-1"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "candidate-5",
+        "candidate-7"
+      ],
+      "clue_consistent_b": [
+        "candidate-0",
+        "candidate-1",
+        "candidate-4",
+        "candidate-5"
+      ],
+      "complexity": "low",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
+      "family": "hypothesis",
+      "finalizer_needs_peer": true,
+      "instance_id": "hypothesis-00003e81",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "candidate-5"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "candidate-1",
+        "candidate-3"
+      ],
+      "clue_consistent_b": [
+        "candidate-0",
+        "candidate-1",
+        "candidate-4",
+        "candidate-5"
+      ],
+      "complexity": "low",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
+      "family": "hypothesis",
+      "finalizer_needs_peer": true,
+      "instance_id": "hypothesis-00003e82",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "candidate-1"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "candidate-1",
+        "candidate-3"
+      ],
+      "clue_consistent_b": [
+        "candidate-3",
+        "candidate-7"
+      ],
+      "complexity": "medium",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 2,
+      "family": "hypothesis",
+      "finalizer_needs_peer": true,
+      "instance_id": "hypothesis-00003ee4",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "candidate-3"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 2,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "candidate-0",
+        "candidate-2"
+      ],
+      "clue_consistent_b": [
+        "candidate-0",
+        "candidate-4"
+      ],
+      "complexity": "medium",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 2,
+      "family": "hypothesis",
+      "finalizer_needs_peer": true,
+      "instance_id": "hypothesis-00003ee5",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "candidate-0"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 2,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "candidate-1",
+        "candidate-3"
+      ],
+      "clue_consistent_b": [
+        "candidate-3",
+        "candidate-7"
+      ],
+      "complexity": "medium",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 2,
+      "family": "hypothesis",
+      "finalizer_needs_peer": true,
+      "instance_id": "hypothesis-00003ee6",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "candidate-3"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 2,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "candidate-0",
+        "candidate-2"
+      ],
+      "clue_consistent_b": [
+        "candidate-2",
+        "candidate-6"
+      ],
+      "complexity": "high",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 2,
+      "family": "hypothesis",
+      "finalizer_needs_peer": true,
+      "instance_id": "hypothesis-00003f48",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "candidate-2"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 2,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "candidate-0",
+        "candidate-2"
+      ],
+      "clue_consistent_b": [
+        "candidate-2",
+        "candidate-6"
+      ],
+      "complexity": "high",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 2,
+      "family": "hypothesis",
+      "finalizer_needs_peer": true,
+      "instance_id": "hypothesis-00003f49",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "candidate-2"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 2,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "candidate-4",
+        "candidate-6"
+      ],
+      "clue_consistent_b": [
+        "candidate-0",
+        "candidate-4"
+      ],
+      "complexity": "high",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 2,
+      "family": "hypothesis",
+      "finalizer_needs_peer": true,
+      "instance_id": "hypothesis-00003f4a",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "candidate-4"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 2,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "object-13",
+        "object-15",
+        "object-5",
+        "object-7"
+      ],
+      "clue_consistent_b": [
+        "object-12",
+        "object-13",
+        "object-8",
+        "object-9"
+      ],
+      "complexity": "low",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 4,
+      "declared_private_b_size": 4,
+      "family": "reference",
+      "finalizer_needs_peer": true,
+      "instance_id": "reference-00003f48",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "object-13"
+      ],
+      "private_a_size": 4,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "object-13",
+        "object-15",
+        "object-5",
+        "object-7"
+      ],
+      "clue_consistent_b": [
+        "object-0",
+        "object-1",
+        "object-4",
+        "object-5"
+      ],
+      "complexity": "low",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 4,
+      "declared_private_b_size": 4,
+      "family": "reference",
+      "finalizer_needs_peer": true,
+      "instance_id": "reference-00003f49",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "object-5"
+      ],
+      "private_a_size": 4,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "object-12",
+        "object-14",
+        "object-4",
+        "object-6"
+      ],
+      "clue_consistent_b": [
+        "object-2",
+        "object-3",
+        "object-6",
+        "object-7"
+      ],
+      "complexity": "low",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 4,
+      "declared_private_b_size": 4,
+      "family": "reference",
+      "finalizer_needs_peer": true,
+      "instance_id": "reference-00003f4a",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "object-6"
+      ],
+      "private_a_size": 4,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "object-13",
+        "object-15",
+        "object-5",
+        "object-7"
+      ],
+      "clue_consistent_b": [
+        "object-2",
+        "object-3",
+        "object-6",
+        "object-7"
+      ],
+      "complexity": "medium",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 4,
+      "declared_private_b_size": 4,
+      "family": "reference",
+      "finalizer_needs_peer": true,
+      "instance_id": "reference-00003fac",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "object-7"
+      ],
+      "private_a_size": 4,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "object-1",
+        "object-11",
+        "object-3",
+        "object-9"
+      ],
+      "clue_consistent_b": [
+        "object-2",
+        "object-3",
+        "object-6",
+        "object-7"
+      ],
+      "complexity": "medium",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 4,
+      "declared_private_b_size": 4,
+      "family": "reference",
+      "finalizer_needs_peer": true,
+      "instance_id": "reference-00003fad",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "object-3"
+      ],
+      "private_a_size": 4,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "object-1",
+        "object-11",
+        "object-3",
+        "object-9"
+      ],
+      "clue_consistent_b": [
+        "object-12",
+        "object-13",
+        "object-8",
+        "object-9"
+      ],
+      "complexity": "medium",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 4,
+      "declared_private_b_size": 4,
+      "family": "reference",
+      "finalizer_needs_peer": true,
+      "instance_id": "reference-00003fae",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "object-9"
+      ],
+      "private_a_size": 4,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "object-13",
+        "object-7"
+      ],
+      "clue_consistent_b": [
+        "object-2",
+        "object-3",
+        "object-6",
+        "object-7"
+      ],
+      "complexity": "high",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
+      "family": "reference",
+      "finalizer_needs_peer": true,
+      "instance_id": "reference-00004010",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "object-7"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": false,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "object-15"
+      ],
+      "clue_consistent_b": [
+        "object-10",
+        "object-11",
+        "object-14",
+        "object-15"
+      ],
+      "complexity": "high",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 1,
+      "declared_private_b_size": 4,
+      "family": "reference",
+      "finalizer_needs_peer": false,
+      "instance_id": "reference-00004011",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "object-15"
+      ],
+      "private_a_size": 1,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": false,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "object-14"
+      ],
+      "clue_consistent_b": [
+        "object-10",
+        "object-11",
+        "object-14",
+        "object-15"
+      ],
+      "complexity": "high",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 1,
+      "declared_private_b_size": 4,
+      "family": "reference",
+      "finalizer_needs_peer": false,
+      "instance_id": "reference-00004012",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "object-14"
+      ],
+      "private_a_size": 1,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>inspect>deploy"
+      ],
+      "clue_consistent_b": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage"
+      ],
+      "complexity": "low",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 3,
+      "declared_private_b_size": 3,
+      "family": "planning",
+      "finalizer_needs_peer": true,
+      "instance_id": "planning-00004010",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "inspect>deploy>stage"
+      ],
+      "private_a_size": 3,
+      "private_b_size": 3,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>inspect>deploy"
+      ],
+      "clue_consistent_b": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage"
+      ],
+      "complexity": "low",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 3,
+      "declared_private_b_size": 3,
+      "family": "planning",
+      "finalizer_needs_peer": true,
+      "instance_id": "planning-00004011",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "inspect>deploy>stage"
+      ],
+      "private_a_size": 3,
+      "private_b_size": 3,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "clue_consistent_b": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "stage>deploy>inspect"
+      ],
+      "complexity": "low",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 3,
+      "declared_private_b_size": 3,
+      "family": "planning",
+      "finalizer_needs_peer": true,
+      "instance_id": "planning-00004012",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "stage>deploy>inspect"
+      ],
+      "private_a_size": 3,
+      "private_b_size": 3,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "stage>deploy>inspect"
+      ],
+      "clue_consistent_b": [
+        "deploy>inspect>stage",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy"
+      ],
+      "complexity": "medium",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 3,
+      "declared_private_b_size": 3,
+      "family": "planning",
+      "finalizer_needs_peer": true,
+      "instance_id": "planning-00004074",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "deploy>inspect>stage"
+      ],
+      "private_a_size": 3,
+      "private_b_size": 3,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>inspect>deploy"
+      ],
+      "clue_consistent_b": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage"
+      ],
+      "complexity": "medium",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 3,
+      "declared_private_b_size": 3,
+      "family": "planning",
+      "finalizer_needs_peer": true,
+      "instance_id": "planning-00004075",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "inspect>deploy>stage"
+      ],
+      "private_a_size": 3,
+      "private_b_size": 3,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "stage>deploy>inspect"
+      ],
+      "clue_consistent_b": [
+        "deploy>inspect>stage",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy"
+      ],
+      "complexity": "medium",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 3,
+      "declared_private_b_size": 3,
+      "family": "planning",
+      "finalizer_needs_peer": true,
+      "instance_id": "planning-00004076",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "deploy>inspect>stage"
+      ],
+      "private_a_size": 3,
+      "private_b_size": 3,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "approve>inspect>stage>deploy",
+        "approve>stage>deploy>inspect",
+        "approve>stage>inspect>deploy",
+        "stage>approve>deploy>inspect",
+        "stage>approve>inspect>deploy",
+        "stage>deploy>approve>inspect"
+      ],
+      "clue_consistent_b": [
+        "deploy>approve>inspect>stage",
+        "deploy>approve>stage>inspect",
+        "deploy>inspect>approve>stage",
+        "deploy>inspect>stage>approve",
+        "deploy>stage>approve>inspect",
+        "deploy>stage>inspect>approve",
+        "inspect>deploy>approve>stage",
+        "inspect>deploy>stage>approve",
+        "inspect>stage>deploy>approve",
+        "stage>deploy>approve>inspect",
+        "stage>deploy>inspect>approve",
+        "stage>inspect>deploy>approve"
+      ],
+      "complexity": "high",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 6,
+      "declared_private_b_size": 12,
+      "family": "planning",
+      "finalizer_needs_peer": true,
+      "instance_id": "planning-000040d8",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "stage>deploy>approve>inspect"
+      ],
+      "private_a_size": 6,
+      "private_b_size": 12,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "approve>inspect>deploy>stage",
+        "approve>inspect>stage>deploy",
+        "approve>stage>inspect>deploy",
+        "inspect>approve>deploy>stage",
+        "inspect>approve>stage>deploy",
+        "inspect>deploy>approve>stage"
+      ],
+      "clue_consistent_b": [
+        "deploy>approve>inspect>stage",
+        "deploy>approve>stage>inspect",
+        "deploy>inspect>approve>stage",
+        "deploy>inspect>stage>approve",
+        "deploy>stage>approve>inspect",
+        "deploy>stage>inspect>approve",
+        "inspect>deploy>approve>stage",
+        "inspect>deploy>stage>approve",
+        "inspect>stage>deploy>approve",
+        "stage>deploy>approve>inspect",
+        "stage>deploy>inspect>approve",
+        "stage>inspect>deploy>approve"
+      ],
+      "complexity": "high",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 6,
+      "declared_private_b_size": 12,
+      "family": "planning",
+      "finalizer_needs_peer": true,
+      "instance_id": "planning-000040d9",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "inspect>deploy>approve>stage"
+      ],
+      "private_a_size": 6,
+      "private_b_size": 12,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "approve>deploy>inspect>stage",
+        "approve>inspect>deploy>stage",
+        "approve>inspect>stage>deploy",
+        "inspect>approve>deploy>stage",
+        "inspect>approve>stage>deploy",
+        "inspect>stage>approve>deploy"
+      ],
+      "clue_consistent_b": [
+        "approve>deploy>inspect>stage",
+        "approve>deploy>stage>inspect",
+        "approve>stage>deploy>inspect",
+        "deploy>approve>inspect>stage",
+        "deploy>approve>stage>inspect",
+        "deploy>inspect>approve>stage",
+        "deploy>inspect>stage>approve",
+        "deploy>stage>approve>inspect",
+        "deploy>stage>inspect>approve",
+        "stage>approve>deploy>inspect",
+        "stage>deploy>approve>inspect",
+        "stage>deploy>inspect>approve"
+      ],
+      "complexity": "high",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 6,
+      "declared_private_b_size": 12,
+      "family": "planning",
+      "finalizer_needs_peer": true,
+      "instance_id": "planning-000040da",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "approve>deploy>inspect>stage"
+      ],
+      "private_a_size": 6,
+      "private_b_size": 12,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "skeleton-0",
+        "skeleton-2"
+      ],
+      "clue_consistent_b": [
+        "skeleton-2",
+        "skeleton-3",
+        "skeleton-6",
+        "skeleton-7"
+      ],
+      "complexity": "low",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
+      "family": "poetry",
+      "finalizer_needs_peer": true,
+      "instance_id": "poetry-000040d8",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "skeleton-2"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "skeleton-4",
+        "skeleton-6"
+      ],
+      "clue_consistent_b": [
+        "skeleton-0",
+        "skeleton-1",
+        "skeleton-4",
+        "skeleton-5"
+      ],
+      "complexity": "low",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
+      "family": "poetry",
+      "finalizer_needs_peer": true,
+      "instance_id": "poetry-000040d9",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "skeleton-4"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "skeleton-4",
+        "skeleton-6"
+      ],
+      "clue_consistent_b": [
+        "skeleton-0",
+        "skeleton-1",
+        "skeleton-4",
+        "skeleton-5"
+      ],
+      "complexity": "low",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
+      "family": "poetry",
+      "finalizer_needs_peer": true,
+      "instance_id": "poetry-000040da",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "skeleton-4"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "skeleton-5",
+        "skeleton-7"
+      ],
+      "clue_consistent_b": [
+        "skeleton-0",
+        "skeleton-1",
+        "skeleton-4",
+        "skeleton-5"
+      ],
+      "complexity": "medium",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
+      "family": "poetry",
+      "finalizer_needs_peer": true,
+      "instance_id": "poetry-0000413c",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "skeleton-5"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "skeleton-1",
+        "skeleton-3"
+      ],
+      "clue_consistent_b": [
+        "skeleton-0",
+        "skeleton-1",
+        "skeleton-4",
+        "skeleton-5"
+      ],
+      "complexity": "medium",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
+      "family": "poetry",
+      "finalizer_needs_peer": true,
+      "instance_id": "poetry-0000413d",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "skeleton-1"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "skeleton-4",
+        "skeleton-6"
+      ],
+      "clue_consistent_b": [
+        "skeleton-2",
+        "skeleton-3",
+        "skeleton-6",
+        "skeleton-7"
+      ],
+      "complexity": "medium",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
+      "family": "poetry",
+      "finalizer_needs_peer": true,
+      "instance_id": "poetry-0000413e",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "skeleton-6"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "skeleton-1",
+        "skeleton-3"
+      ],
+      "clue_consistent_b": [
+        "skeleton-0",
+        "skeleton-1",
+        "skeleton-4",
+        "skeleton-5"
+      ],
+      "complexity": "high",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
+      "family": "poetry",
+      "finalizer_needs_peer": true,
+      "instance_id": "poetry-000041a0",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "skeleton-1"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "skeleton-0",
+        "skeleton-2"
+      ],
+      "clue_consistent_b": [
+        "skeleton-2",
+        "skeleton-3",
+        "skeleton-6",
+        "skeleton-7"
+      ],
+      "complexity": "high",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
+      "family": "poetry",
+      "finalizer_needs_peer": true,
+      "instance_id": "poetry-000041a1",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "skeleton-2"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "skeleton-0",
+        "skeleton-2"
+      ],
+      "clue_consistent_b": [
+        "skeleton-0",
+        "skeleton-1",
+        "skeleton-4",
+        "skeleton-5"
+      ],
+      "complexity": "high",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
+      "family": "poetry",
+      "finalizer_needs_peer": true,
+      "instance_id": "poetry-000041a2",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "skeleton-0"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "disposition-5",
+        "disposition-7"
+      ],
+      "clue_consistent_b": [
+        "disposition-2",
+        "disposition-3",
+        "disposition-6",
+        "disposition-7"
+      ],
+      "complexity": "low",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
+      "family": "legal",
+      "finalizer_needs_peer": true,
+      "instance_id": "legal-000041a0",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "disposition-7"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "disposition-5",
+        "disposition-7"
+      ],
+      "clue_consistent_b": [
+        "disposition-0",
+        "disposition-1",
+        "disposition-4",
+        "disposition-5"
+      ],
+      "complexity": "low",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
+      "family": "legal",
+      "finalizer_needs_peer": true,
+      "instance_id": "legal-000041a1",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "disposition-5"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "disposition-5",
+        "disposition-7"
+      ],
+      "clue_consistent_b": [
+        "disposition-0",
+        "disposition-1",
+        "disposition-4",
+        "disposition-5"
+      ],
+      "complexity": "low",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
+      "family": "legal",
+      "finalizer_needs_peer": true,
+      "instance_id": "legal-000041a2",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "disposition-5"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "disposition-0",
+        "disposition-2"
+      ],
+      "clue_consistent_b": [
+        "disposition-0",
+        "disposition-1",
+        "disposition-4",
+        "disposition-5"
+      ],
+      "complexity": "medium",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
+      "family": "legal",
+      "finalizer_needs_peer": true,
+      "instance_id": "legal-00004204",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "disposition-0"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "disposition-5",
+        "disposition-7"
+      ],
+      "clue_consistent_b": [
+        "disposition-2",
+        "disposition-3",
+        "disposition-6",
+        "disposition-7"
+      ],
+      "complexity": "medium",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
+      "family": "legal",
+      "finalizer_needs_peer": true,
+      "instance_id": "legal-00004205",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "disposition-7"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "disposition-1",
+        "disposition-3"
+      ],
+      "clue_consistent_b": [
+        "disposition-2",
+        "disposition-3",
+        "disposition-6",
+        "disposition-7"
+      ],
+      "complexity": "medium",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
+      "family": "legal",
+      "finalizer_needs_peer": true,
+      "instance_id": "legal-00004206",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "disposition-3"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "disposition-0",
+        "disposition-2"
+      ],
+      "clue_consistent_b": [
+        "disposition-2",
+        "disposition-3",
+        "disposition-6",
+        "disposition-7"
+      ],
+      "complexity": "high",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
+      "family": "legal",
+      "finalizer_needs_peer": true,
+      "instance_id": "legal-00004268",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "disposition-2"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "disposition-5",
+        "disposition-7"
+      ],
+      "clue_consistent_b": [
+        "disposition-0",
+        "disposition-1",
+        "disposition-4",
+        "disposition-5"
+      ],
+      "complexity": "high",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
+      "family": "legal",
+      "finalizer_needs_peer": true,
+      "instance_id": "legal-00004269",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "disposition-5"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "disposition-5",
+        "disposition-7"
+      ],
+      "clue_consistent_b": [
+        "disposition-2",
+        "disposition-3",
+        "disposition-6",
+        "disposition-7"
+      ],
+      "complexity": "high",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
+      "family": "legal",
+      "finalizer_needs_peer": true,
+      "instance_id": "legal-0000426a",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "disposition-7"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "relay-05",
+        "relay-07"
+      ],
+      "clue_consistent_b": [
+        "relay-00",
+        "relay-01",
+        "relay-04",
+        "relay-05"
+      ],
+      "complexity": "low",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
+      "family": "lexicon",
+      "finalizer_needs_peer": true,
+      "instance_id": "lexicon-00004268",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "relay-05"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "relay-00",
+        "relay-02"
+      ],
+      "clue_consistent_b": [
+        "relay-00",
+        "relay-01",
+        "relay-04",
+        "relay-05"
+      ],
+      "complexity": "low",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
+      "family": "lexicon",
+      "finalizer_needs_peer": true,
+      "instance_id": "lexicon-00004269",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "relay-00"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "relay-05",
+        "relay-07"
+      ],
+      "clue_consistent_b": [
+        "relay-00",
+        "relay-01",
+        "relay-04",
+        "relay-05"
+      ],
+      "complexity": "low",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
+      "family": "lexicon",
+      "finalizer_needs_peer": true,
+      "instance_id": "lexicon-0000426a",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "relay-05"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "relay-00",
+        "relay-02"
+      ],
+      "clue_consistent_b": [
+        "relay-00",
+        "relay-01",
+        "relay-04",
+        "relay-05"
+      ],
+      "complexity": "medium",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
+      "family": "lexicon",
+      "finalizer_needs_peer": true,
+      "instance_id": "lexicon-000042cc",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "relay-00"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "relay-04",
+        "relay-06"
+      ],
+      "clue_consistent_b": [
+        "relay-02",
+        "relay-03",
+        "relay-06",
+        "relay-07"
+      ],
+      "complexity": "medium",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
+      "family": "lexicon",
+      "finalizer_needs_peer": true,
+      "instance_id": "lexicon-000042cd",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "relay-06"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "relay-04",
+        "relay-06"
+      ],
+      "clue_consistent_b": [
+        "relay-00",
+        "relay-01",
+        "relay-04",
+        "relay-05"
+      ],
+      "complexity": "medium",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
+      "family": "lexicon",
+      "finalizer_needs_peer": true,
+      "instance_id": "lexicon-000042ce",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "relay-04"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "relay-01",
+        "relay-03"
+      ],
+      "clue_consistent_b": [
+        "relay-00",
+        "relay-01",
+        "relay-04",
+        "relay-05"
+      ],
+      "complexity": "high",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
+      "family": "lexicon",
+      "finalizer_needs_peer": true,
+      "instance_id": "lexicon-00004330",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "relay-01"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "relay-00",
+        "relay-02"
+      ],
+      "clue_consistent_b": [
+        "relay-00",
+        "relay-01",
+        "relay-04",
+        "relay-05"
+      ],
+      "complexity": "high",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
+      "family": "lexicon",
+      "finalizer_needs_peer": true,
+      "instance_id": "lexicon-00004331",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "relay-00"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 4,
+      "regime": "N"
+    },
+    {
+      "both_agents_needed": true,
+      "channel_complete": true,
+      "claims_partitioned": true,
+      "clue_consistent_a": [
+        "relay-00",
+        "relay-02"
+      ],
+      "clue_consistent_b": [
+        "relay-02",
+        "relay-03",
+        "relay-06",
+        "relay-07"
+      ],
+      "complexity": "high",
+      "covers_joint": true,
+      "declared_matches_clue_consistent_a": true,
+      "declared_matches_clue_consistent_b": true,
+      "declared_private_a_size": 2,
+      "declared_private_b_size": 4,
+      "family": "lexicon",
+      "finalizer_needs_peer": true,
+      "instance_id": "lexicon-00004332",
+      "joint_size": 1,
+      "pooled_equals_joint": true,
+      "pooled_size": 1,
+      "pooled_values": [
+        "relay-02"
+      ],
+      "private_a_size": 2,
+      "private_b_size": 4,
+      "regime": "N"
+    }
+  ],
+  "singleton_agent_ids": [
+    "reference-00004011",
+    "reference-00004012"
+  ],
+  "unpartitioned_claims_ids": []
+}

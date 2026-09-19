@@ -1,0 +1,22 @@
+{
+  "artifact_path": "runs/epic-126/t1-screen-retry.jsonl",
+  "complexities": [
+    "low",
+    "medium"
+  ],
+  "condition_runs_planned": 72,
+  "cost_usd": 0.0,
+  "design_cells": 12,
+  "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+  "finalizer_scoring_contract": "not_available_for_historical_run; do not use as model result",
+  "historical_protocol_debugging_evidence": true,
+  "http_requests_made": 144,
+  "instances": 24,
+  "invalid_run_count": 24,
+  "model": "inclusionai/ling-3.0-flash-vl:free",
+  "model_behavior_claim": false,
+  "raw_responses_retained": false,
+  "stage": "T1-smoke-retry",
+  "stop_rule": "stage-smoke-complete; no automatic expansion",
+  "valid_run_count": 48
+}

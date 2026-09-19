@@ -1,0 +1,1143 @@
+{
+  "catalog_version": "pressure-catalog-v1",
+  "cells": [
+    {
+      "c_need_unclipped": 0.0,
+      "communication_tokens": 0,
+      "complexity": "low",
+      "d_idx_basis": "instance.assignment measured feasible-set reduction",
+      "family": "hypothesis",
+      "invalid_runs": {
+        "COMM": 2,
+        "FULL": 0,
+        "ISO": 1
+      },
+      "p_success": {
+        "COMM": null,
+        "FULL": 0.0,
+        "ISO": 0.0
+      },
+      "regime": "H",
+      "status": "screening_only",
+      "transmitted_bits": 0.0,
+      "valid_denominators": {
+        "COMM": 0,
+        "FULL": 2,
+        "ISO": 1
+      },
+      "verified_use_count": 0
+    },
+    {
+      "c_need_unclipped": null,
+      "communication_tokens": 0,
+      "complexity": "medium",
+      "d_idx_basis": "instance.assignment measured feasible-set reduction",
+      "family": "hypothesis",
+      "invalid_runs": {
+        "COMM": 0,
+        "FULL": 1,
+        "ISO": 2
+      },
+      "p_success": {
+        "COMM": 0.0,
+        "FULL": 0.0,
+        "ISO": null
+      },
+      "regime": "H",
+      "status": "screening_only",
+      "transmitted_bits": 0.0,
+      "valid_denominators": {
+        "COMM": 2,
+        "FULL": 1,
+        "ISO": 0
+      },
+      "verified_use_count": 0
+    },
+    {
+      "c_need_unclipped": 1.0,
+      "communication_tokens": 0,
+      "complexity": "low",
+      "d_idx_basis": "instance.assignment measured feasible-set reduction",
+      "family": "hypothesis",
+      "invalid_runs": {
+        "COMM": 1,
+        "FULL": 1,
+        "ISO": 1
+      },
+      "p_success": {
+        "COMM": 0.0,
+        "FULL": 1.0,
+        "ISO": 0.0
+      },
+      "regime": "N",
+      "status": "screening_only",
+      "transmitted_bits": 0.0,
+      "valid_denominators": {
+        "COMM": 1,
+        "FULL": 1,
+        "ISO": 1
+      },
+      "verified_use_count": 0
+    },
+    {
+      "c_need_unclipped": 0.5,
+      "communication_tokens": 0,
+      "complexity": "medium",
+      "d_idx_basis": "instance.assignment measured feasible-set reduction",
+      "family": "hypothesis",
+      "invalid_runs": {
+        "COMM": 0,
+        "FULL": 0,
+        "ISO": 0
+      },
+      "p_success": {
+        "COMM": 0.0,
+        "FULL": 0.5,
+        "ISO": 0.0
+      },
+      "regime": "N",
+      "status": "screening_only",
+      "transmitted_bits": 0.0,
+      "valid_denominators": {
+        "COMM": 2,
+        "FULL": 2,
+        "ISO": 2
+      },
+      "verified_use_count": 0
+    },
+    {
+      "c_need_unclipped": 0.0,
+      "communication_tokens": 0,
+      "complexity": "low",
+      "d_idx_basis": "instance.assignment measured feasible-set reduction",
+      "family": "hypothesis",
+      "invalid_runs": {
+        "COMM": 0,
+        "FULL": 0,
+        "ISO": 0
+      },
+      "p_success": {
+        "COMM": 0.0,
+        "FULL": 0.0,
+        "ISO": 0.0
+      },
+      "regime": "R",
+      "status": "screening_only",
+      "transmitted_bits": 0.0,
+      "valid_denominators": {
+        "COMM": 2,
+        "FULL": 2,
+        "ISO": 2
+      },
+      "verified_use_count": 0
+    },
+    {
+      "c_need_unclipped": 0.0,
+      "communication_tokens": 0,
+      "complexity": "medium",
+      "d_idx_basis": "instance.assignment measured feasible-set reduction",
+      "family": "hypothesis",
+      "invalid_runs": {
+        "COMM": 0,
+        "FULL": 0,
+        "ISO": 0
+      },
+      "p_success": {
+        "COMM": 0.0,
+        "FULL": 0.0,
+        "ISO": 0.0
+      },
+      "regime": "R",
+      "status": "screening_only",
+      "transmitted_bits": 0.0,
+      "valid_denominators": {
+        "COMM": 2,
+        "FULL": 2,
+        "ISO": 2
+      },
+      "verified_use_count": 0
+    },
+    {
+      "c_need_unclipped": null,
+      "communication_tokens": 0,
+      "complexity": "low",
+      "d_idx_basis": "instance.assignment measured feasible-set reduction",
+      "family": "reference",
+      "invalid_runs": {
+        "COMM": 1,
+        "FULL": 2,
+        "ISO": 0
+      },
+      "p_success": {
+        "COMM": 0.0,
+        "FULL": null,
+        "ISO": 0.5
+      },
+      "regime": "H",
+      "status": "screening_only",
+      "transmitted_bits": 0.0,
+      "valid_denominators": {
+        "COMM": 1,
+        "FULL": 0,
+        "ISO": 2
+      },
+      "verified_use_count": 0
+    },
+    {
+      "c_need_unclipped": 0.0,
+      "communication_tokens": 0,
+      "complexity": "medium",
+      "d_idx_basis": "instance.assignment measured feasible-set reduction",
+      "family": "reference",
+      "invalid_runs": {
+        "COMM": 1,
+        "FULL": 1,
+        "ISO": 1
+      },
+      "p_success": {
+        "COMM": 0.0,
+        "FULL": 0.0,
+        "ISO": 0.0
+      },
+      "regime": "H",
+      "status": "screening_only",
+      "transmitted_bits": 0.0,
+      "valid_denominators": {
+        "COMM": 1,
+        "FULL": 1,
+        "ISO": 1
+      },
+      "verified_use_count": 0
+    },
+    {
+      "c_need_unclipped": null,
+      "communication_tokens": 0,
+      "complexity": "low",
+      "d_idx_basis": "instance.assignment measured feasible-set reduction",
+      "family": "reference",
+      "invalid_runs": {
+        "COMM": 2,
+        "FULL": 2,
+        "ISO": 1
+      },
+      "p_success": {
+        "COMM": null,
+        "FULL": null,
+        "ISO": 0.0
+      },
+      "regime": "N",
+      "status": "screening_only",
+      "transmitted_bits": 0.0,
+      "valid_denominators": {
+        "COMM": 0,
+        "FULL": 0,
+        "ISO": 1
+      },
+      "verified_use_count": 0
+    },
+    {
+      "c_need_unclipped": 1.0,
+      "communication_tokens": 0,
+      "complexity": "medium",
+      "d_idx_basis": "instance.assignment measured feasible-set reduction",
+      "family": "reference",
+      "invalid_runs": {
+        "COMM": 1,
+        "FULL": 0,
+        "ISO": 0
+      },
+      "p_success": {
+        "COMM": 0.0,
+        "FULL": 1.0,
+        "ISO": 0.0
+      },
+      "regime": "N",
+      "status": "screening_only",
+      "transmitted_bits": 0.0,
+      "valid_denominators": {
+        "COMM": 1,
+        "FULL": 2,
+        "ISO": 2
+      },
+      "verified_use_count": 0
+    },
+    {
+      "c_need_unclipped": 1.0,
+      "communication_tokens": 0,
+      "complexity": "low",
+      "d_idx_basis": "instance.assignment measured feasible-set reduction",
+      "family": "reference",
+      "invalid_runs": {
+        "COMM": 0,
+        "FULL": 0,
+        "ISO": 1
+      },
+      "p_success": {
+        "COMM": 0.0,
+        "FULL": 1.0,
+        "ISO": 0.0
+      },
+      "regime": "R",
+      "status": "screening_only",
+      "transmitted_bits": 0.0,
+      "valid_denominators": {
+        "COMM": 2,
+        "FULL": 2,
+        "ISO": 1
+      },
+      "verified_use_count": 0
+    },
+    {
+      "c_need_unclipped": 0.0,
+      "communication_tokens": 0,
+      "complexity": "medium",
+      "d_idx_basis": "instance.assignment measured feasible-set reduction",
+      "family": "reference",
+      "invalid_runs": {
+        "COMM": 2,
+        "FULL": 0,
+        "ISO": 0
+      },
+      "p_success": {
+        "COMM": null,
+        "FULL": 0.5,
+        "ISO": 0.5
+      },
+      "regime": "R",
+      "status": "screening_only",
+      "transmitted_bits": 0.0,
+      "valid_denominators": {
+        "COMM": 0,
+        "FULL": 2,
+        "ISO": 2
+      },
+      "verified_use_count": 0
+    }
+  ],
+  "finalizer_scoring_contract": "not_available_for_historical_run; do not use as model result",
+  "historical_protocol_debugging_evidence": true,
+  "matched_metrics": [
+    {
+      "c_need": 0.0,
+      "confidence_intervals": {
+        "COMM": [
+          0.0,
+          0.7934567085261071
+        ],
+        "FULL": [
+          0.0,
+          0.7934567085261071
+        ],
+        "ISO": [
+          0.0,
+          0.7934567085261071
+        ]
+      },
+      "denominators": {
+        "COMM": 1,
+        "FULL": 1,
+        "ISO": 1
+      },
+      "eta_comm": null,
+      "family": "hypothesis",
+      "invalid_runs": {
+        "COMM": 0,
+        "FULL": 0,
+        "ISO": 0
+      },
+      "model": "openrouter",
+      "p_success": {
+        "COMM": 0.0,
+        "FULL": 0.0,
+        "ISO": 0.0
+      },
+      "pair_id": "behavioral-hypothesis-000032c8",
+      "status": "valid"
+    },
+    {
+      "c_need": 0.0,
+      "confidence_intervals": {
+        "COMM": [
+          0.0,
+          0.7934567085261071
+        ],
+        "FULL": [
+          0.0,
+          0.7934567085261071
+        ],
+        "ISO": [
+          0.0,
+          0.7934567085261071
+        ]
+      },
+      "denominators": {
+        "COMM": 1,
+        "FULL": 1,
+        "ISO": 1
+      },
+      "eta_comm": null,
+      "family": "hypothesis",
+      "invalid_runs": {
+        "COMM": 0,
+        "FULL": 0,
+        "ISO": 0
+      },
+      "model": "openrouter",
+      "p_success": {
+        "COMM": 0.0,
+        "FULL": 0.0,
+        "ISO": 0.0
+      },
+      "pair_id": "behavioral-hypothesis-000032c9",
+      "status": "valid"
+    },
+    {
+      "c_need": 0.0,
+      "confidence_intervals": {
+        "COMM": [
+          0.0,
+          0.7934567085261071
+        ],
+        "FULL": [
+          0.0,
+          0.7934567085261071
+        ],
+        "ISO": [
+          0.0,
+          0.7934567085261071
+        ]
+      },
+      "denominators": {
+        "COMM": 1,
+        "FULL": 1,
+        "ISO": 1
+      },
+      "eta_comm": null,
+      "family": "hypothesis",
+      "invalid_runs": {
+        "COMM": 0,
+        "FULL": 0,
+        "ISO": 0
+      },
+      "model": "openrouter",
+      "p_success": {
+        "COMM": 0.0,
+        "FULL": 0.0,
+        "ISO": 0.0
+      },
+      "pair_id": "behavioral-hypothesis-000032d2",
+      "status": "valid"
+    },
+    {
+      "c_need": 0.0,
+      "confidence_intervals": {
+        "COMM": [
+          0.0,
+          0.7934567085261071
+        ],
+        "FULL": [
+          0.0,
+          0.7934567085261071
+        ],
+        "ISO": [
+          0.0,
+          0.7934567085261071
+        ]
+      },
+      "denominators": {
+        "COMM": 1,
+        "FULL": 1,
+        "ISO": 1
+      },
+      "eta_comm": null,
+      "family": "hypothesis",
+      "invalid_runs": {
+        "COMM": 0,
+        "FULL": 0,
+        "ISO": 0
+      },
+      "model": "openrouter",
+      "p_success": {
+        "COMM": 0.0,
+        "FULL": 0.0,
+        "ISO": 0.0
+      },
+      "pair_id": "behavioral-hypothesis-000032d3",
+      "status": "valid"
+    },
+    {
+      "c_need": 0.0,
+      "confidence_intervals": {
+        "COMM": null,
+        "FULL": [
+          0.0,
+          0.7934567085261071
+        ],
+        "ISO": [
+          0.0,
+          0.7934567085261071
+        ]
+      },
+      "denominators": {
+        "COMM": 0,
+        "FULL": 1,
+        "ISO": 1
+      },
+      "eta_comm": null,
+      "family": "hypothesis",
+      "invalid_runs": {
+        "COMM": 1,
+        "FULL": 0,
+        "ISO": 0
+      },
+      "model": "openrouter",
+      "p_success": {
+        "COMM": null,
+        "FULL": 0.0,
+        "ISO": 0.0
+      },
+      "pair_id": "behavioral-hypothesis-000032dc",
+      "status": "incomplete"
+    },
+    {
+      "c_need": null,
+      "confidence_intervals": {
+        "COMM": null,
+        "FULL": [
+          0.0,
+          0.7934567085261071
+        ],
+        "ISO": null
+      },
+      "denominators": {
+        "COMM": 0,
+        "FULL": 1,
+        "ISO": 0
+      },
+      "eta_comm": null,
+      "family": "hypothesis",
+      "invalid_runs": {
+        "COMM": 1,
+        "FULL": 0,
+        "ISO": 1
+      },
+      "model": "openrouter",
+      "p_success": {
+        "COMM": null,
+        "FULL": 0.0,
+        "ISO": null
+      },
+      "pair_id": "behavioral-hypothesis-000032dd",
+      "status": "incomplete"
+    },
+    {
+      "c_need": null,
+      "confidence_intervals": {
+        "COMM": [
+          0.0,
+          0.7934567085261071
+        ],
+        "FULL": [
+          0.0,
+          0.7934567085261071
+        ],
+        "ISO": null
+      },
+      "denominators": {
+        "COMM": 1,
+        "FULL": 1,
+        "ISO": 0
+      },
+      "eta_comm": null,
+      "family": "hypothesis",
+      "invalid_runs": {
+        "COMM": 0,
+        "FULL": 0,
+        "ISO": 1
+      },
+      "model": "openrouter",
+      "p_success": {
+        "COMM": 0.0,
+        "FULL": 0.0,
+        "ISO": null
+      },
+      "pair_id": "behavioral-hypothesis-000032e6",
+      "status": "incomplete"
+    },
+    {
+      "c_need": null,
+      "confidence_intervals": {
+        "COMM": [
+          0.0,
+          0.7934567085261071
+        ],
+        "FULL": null,
+        "ISO": null
+      },
+      "denominators": {
+        "COMM": 1,
+        "FULL": 0,
+        "ISO": 0
+      },
+      "eta_comm": null,
+      "family": "hypothesis",
+      "invalid_runs": {
+        "COMM": 0,
+        "FULL": 1,
+        "ISO": 1
+      },
+      "model": "openrouter",
+      "p_success": {
+        "COMM": 0.0,
+        "FULL": null,
+        "ISO": null
+      },
+      "pair_id": "behavioral-hypothesis-000032e7",
+      "status": "incomplete"
+    },
+    {
+      "c_need": null,
+      "confidence_intervals": {
+        "COMM": [
+          0.0,
+          0.7934567085261071
+        ],
+        "FULL": null,
+        "ISO": null
+      },
+      "denominators": {
+        "COMM": 1,
+        "FULL": 0,
+        "ISO": 0
+      },
+      "eta_comm": null,
+      "family": "hypothesis",
+      "invalid_runs": {
+        "COMM": 0,
+        "FULL": 1,
+        "ISO": 1
+      },
+      "model": "openrouter",
+      "p_success": {
+        "COMM": 0.0,
+        "FULL": null,
+        "ISO": null
+      },
+      "pair_id": "behavioral-hypothesis-000032f0",
+      "status": "incomplete"
+    },
+    {
+      "c_need": 1.0,
+      "confidence_intervals": {
+        "COMM": null,
+        "FULL": [
+          0.20654329147389294,
+          1.0
+        ],
+        "ISO": [
+          0.0,
+          0.7934567085261071
+        ]
+      },
+      "denominators": {
+        "COMM": 0,
+        "FULL": 1,
+        "ISO": 1
+      },
+      "eta_comm": null,
+      "family": "hypothesis",
+      "invalid_runs": {
+        "COMM": 1,
+        "FULL": 0,
+        "ISO": 0
+      },
+      "model": "openrouter",
+      "p_success": {
+        "COMM": null,
+        "FULL": 1.0,
+        "ISO": 0.0
+      },
+      "pair_id": "behavioral-hypothesis-000032f1",
+      "status": "incomplete"
+    },
+    {
+      "c_need": 1.0,
+      "confidence_intervals": {
+        "COMM": [
+          0.0,
+          0.7934567085261071
+        ],
+        "FULL": [
+          0.20654329147389294,
+          1.0
+        ],
+        "ISO": [
+          0.0,
+          0.7934567085261071
+        ]
+      },
+      "denominators": {
+        "COMM": 1,
+        "FULL": 1,
+        "ISO": 1
+      },
+      "eta_comm": 0.0,
+      "family": "hypothesis",
+      "invalid_runs": {
+        "COMM": 0,
+        "FULL": 0,
+        "ISO": 0
+      },
+      "model": "openrouter",
+      "p_success": {
+        "COMM": 0.0,
+        "FULL": 1.0,
+        "ISO": 0.0
+      },
+      "pair_id": "behavioral-hypothesis-000032fa",
+      "status": "valid"
+    },
+    {
+      "c_need": 0.0,
+      "confidence_intervals": {
+        "COMM": [
+          0.0,
+          0.7934567085261071
+        ],
+        "FULL": [
+          0.0,
+          0.7934567085261071
+        ],
+        "ISO": [
+          0.0,
+          0.7934567085261071
+        ]
+      },
+      "denominators": {
+        "COMM": 1,
+        "FULL": 1,
+        "ISO": 1
+      },
+      "eta_comm": null,
+      "family": "hypothesis",
+      "invalid_runs": {
+        "COMM": 0,
+        "FULL": 0,
+        "ISO": 0
+      },
+      "model": "openrouter",
+      "p_success": {
+        "COMM": 0.0,
+        "FULL": 0.0,
+        "ISO": 0.0
+      },
+      "pair_id": "behavioral-hypothesis-000032fb",
+      "status": "valid"
+    },
+    {
+      "c_need": null,
+      "confidence_intervals": {
+        "COMM": [
+          0.0,
+          0.7934567085261071
+        ],
+        "FULL": [
+          0.20654329147389294,
+          1.0
+        ],
+        "ISO": null
+      },
+      "denominators": {
+        "COMM": 1,
+        "FULL": 1,
+        "ISO": 0
+      },
+      "eta_comm": null,
+      "family": "reference",
+      "invalid_runs": {
+        "COMM": 0,
+        "FULL": 0,
+        "ISO": 1
+      },
+      "model": "openrouter",
+      "p_success": {
+        "COMM": 0.0,
+        "FULL": 1.0,
+        "ISO": null
+      },
+      "pair_id": "behavioral-reference-00003304",
+      "status": "incomplete"
+    },
+    {
+      "c_need": 1.0,
+      "confidence_intervals": {
+        "COMM": [
+          0.0,
+          0.7934567085261071
+        ],
+        "FULL": [
+          0.20654329147389294,
+          1.0
+        ],
+        "ISO": [
+          0.0,
+          0.7934567085261071
+        ]
+      },
+      "denominators": {
+        "COMM": 1,
+        "FULL": 1,
+        "ISO": 1
+      },
+      "eta_comm": 0.0,
+      "family": "reference",
+      "invalid_runs": {
+        "COMM": 0,
+        "FULL": 0,
+        "ISO": 0
+      },
+      "model": "openrouter",
+      "p_success": {
+        "COMM": 0.0,
+        "FULL": 1.0,
+        "ISO": 0.0
+      },
+      "pair_id": "behavioral-reference-00003305",
+      "status": "valid"
+    },
+    {
+      "c_need": 0.0,
+      "confidence_intervals": {
+        "COMM": null,
+        "FULL": [
+          0.20654329147389294,
+          1.0
+        ],
+        "ISO": [
+          0.20654329147389294,
+          1.0
+        ]
+      },
+      "denominators": {
+        "COMM": 0,
+        "FULL": 1,
+        "ISO": 1
+      },
+      "eta_comm": null,
+      "family": "reference",
+      "invalid_runs": {
+        "COMM": 1,
+        "FULL": 0,
+        "ISO": 0
+      },
+      "model": "openrouter",
+      "p_success": {
+        "COMM": null,
+        "FULL": 1.0,
+        "ISO": 1.0
+      },
+      "pair_id": "behavioral-reference-0000330e",
+      "status": "incomplete"
+    },
+    {
+      "c_need": 0.0,
+      "confidence_intervals": {
+        "COMM": null,
+        "FULL": [
+          0.0,
+          0.7934567085261071
+        ],
+        "ISO": [
+          0.0,
+          0.7934567085261071
+        ]
+      },
+      "denominators": {
+        "COMM": 0,
+        "FULL": 1,
+        "ISO": 1
+      },
+      "eta_comm": null,
+      "family": "reference",
+      "invalid_runs": {
+        "COMM": 1,
+        "FULL": 0,
+        "ISO": 0
+      },
+      "model": "openrouter",
+      "p_success": {
+        "COMM": null,
+        "FULL": 0.0,
+        "ISO": 0.0
+      },
+      "pair_id": "behavioral-reference-0000330f",
+      "status": "incomplete"
+    },
+    {
+      "c_need": null,
+      "confidence_intervals": {
+        "COMM": [
+          0.0,
+          0.7934567085261071
+        ],
+        "FULL": null,
+        "ISO": [
+          0.20654329147389294,
+          1.0
+        ]
+      },
+      "denominators": {
+        "COMM": 1,
+        "FULL": 0,
+        "ISO": 1
+      },
+      "eta_comm": null,
+      "family": "reference",
+      "invalid_runs": {
+        "COMM": 0,
+        "FULL": 1,
+        "ISO": 0
+      },
+      "model": "openrouter",
+      "p_success": {
+        "COMM": 0.0,
+        "FULL": null,
+        "ISO": 1.0
+      },
+      "pair_id": "behavioral-reference-00003318",
+      "status": "incomplete"
+    },
+    {
+      "c_need": null,
+      "confidence_intervals": {
+        "COMM": null,
+        "FULL": null,
+        "ISO": [
+          0.0,
+          0.7934567085261071
+        ]
+      },
+      "denominators": {
+        "COMM": 0,
+        "FULL": 0,
+        "ISO": 1
+      },
+      "eta_comm": null,
+      "family": "reference",
+      "invalid_runs": {
+        "COMM": 1,
+        "FULL": 1,
+        "ISO": 0
+      },
+      "model": "openrouter",
+      "p_success": {
+        "COMM": null,
+        "FULL": null,
+        "ISO": 0.0
+      },
+      "pair_id": "behavioral-reference-00003319",
+      "status": "incomplete"
+    },
+    {
+      "c_need": null,
+      "confidence_intervals": {
+        "COMM": null,
+        "FULL": null,
+        "ISO": null
+      },
+      "denominators": {
+        "COMM": 0,
+        "FULL": 0,
+        "ISO": 0
+      },
+      "eta_comm": null,
+      "family": "reference",
+      "invalid_runs": {
+        "COMM": 1,
+        "FULL": 1,
+        "ISO": 1
+      },
+      "model": "openrouter",
+      "p_success": {
+        "COMM": null,
+        "FULL": null,
+        "ISO": null
+      },
+      "pair_id": "behavioral-reference-00003322",
+      "status": "incomplete"
+    },
+    {
+      "c_need": 0.0,
+      "confidence_intervals": {
+        "COMM": [
+          0.0,
+          0.7934567085261071
+        ],
+        "FULL": [
+          0.0,
+          0.7934567085261071
+        ],
+        "ISO": [
+          0.0,
+          0.7934567085261071
+        ]
+      },
+      "denominators": {
+        "COMM": 1,
+        "FULL": 1,
+        "ISO": 1
+      },
+      "eta_comm": null,
+      "family": "reference",
+      "invalid_runs": {
+        "COMM": 0,
+        "FULL": 0,
+        "ISO": 0
+      },
+      "model": "openrouter",
+      "p_success": {
+        "COMM": 0.0,
+        "FULL": 0.0,
+        "ISO": 0.0
+      },
+      "pair_id": "behavioral-reference-00003323",
+      "status": "valid"
+    },
+    {
+      "c_need": null,
+      "confidence_intervals": {
+        "COMM": null,
+        "FULL": null,
+        "ISO": null
+      },
+      "denominators": {
+        "COMM": 0,
+        "FULL": 0,
+        "ISO": 0
+      },
+      "eta_comm": null,
+      "family": "reference",
+      "invalid_runs": {
+        "COMM": 1,
+        "FULL": 1,
+        "ISO": 1
+      },
+      "model": "openrouter",
+      "p_success": {
+        "COMM": null,
+        "FULL": null,
+        "ISO": null
+      },
+      "pair_id": "behavioral-reference-0000332c",
+      "status": "incomplete"
+    },
+    {
+      "c_need": null,
+      "confidence_intervals": {
+        "COMM": null,
+        "FULL": null,
+        "ISO": [
+          0.0,
+          0.7934567085261071
+        ]
+      },
+      "denominators": {
+        "COMM": 0,
+        "FULL": 0,
+        "ISO": 1
+      },
+      "eta_comm": null,
+      "family": "reference",
+      "invalid_runs": {
+        "COMM": 1,
+        "FULL": 1,
+        "ISO": 0
+      },
+      "model": "openrouter",
+      "p_success": {
+        "COMM": null,
+        "FULL": null,
+        "ISO": 0.0
+      },
+      "pair_id": "behavioral-reference-0000332d",
+      "status": "incomplete"
+    },
+    {
+      "c_need": 1.0,
+      "confidence_intervals": {
+        "COMM": [
+          0.0,
+          0.7934567085261071
+        ],
+        "FULL": [
+          0.20654329147389294,
+          1.0
+        ],
+        "ISO": [
+          0.0,
+          0.7934567085261071
+        ]
+      },
+      "denominators": {
+        "COMM": 1,
+        "FULL": 1,
+        "ISO": 1
+      },
+      "eta_comm": 0.0,
+      "family": "reference",
+      "invalid_runs": {
+        "COMM": 0,
+        "FULL": 0,
+        "ISO": 0
+      },
+      "model": "openrouter",
+      "p_success": {
+        "COMM": 0.0,
+        "FULL": 1.0,
+        "ISO": 0.0
+      },
+      "pair_id": "behavioral-reference-00003336",
+      "status": "valid"
+    },
+    {
+      "c_need": 1.0,
+      "confidence_intervals": {
+        "COMM": null,
+        "FULL": [
+          0.20654329147389294,
+          1.0
+        ],
+        "ISO": [
+          0.0,
+          0.7934567085261071
+        ]
+      },
+      "denominators": {
+        "COMM": 0,
+        "FULL": 1,
+        "ISO": 1
+      },
+      "eta_comm": null,
+      "family": "reference",
+      "invalid_runs": {
+        "COMM": 1,
+        "FULL": 0,
+        "ISO": 0
+      },
+      "model": "openrouter",
+      "p_success": {
+        "COMM": null,
+        "FULL": 1.0,
+        "ISO": 0.0
+      },
+      "pair_id": "behavioral-reference-00003337",
+      "status": "incomplete"
+    }
+  ],
+  "model_behavior_claim": false,
+  "model_relative": true,
+  "next_decision": "review uncertainty and validity before expanding any cell",
+  "outcome_count": 72,
+  "screening_only": true,
+  "strict_r_h_n_monotonicity_required": false
+}

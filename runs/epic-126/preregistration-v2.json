@@ -1,0 +1,1029 @@
+{
+  "amendment": {
+    "change": "provider_seed is deterministic and bounded to 0..2^31-1",
+    "evidence": "identical FULL prompt returned HTTP 400 with seed 3705292798 and succeeded with seed 1; a simple prompt showed the same pattern",
+    "inference": "the Novita signed-range limit is an empirically supported inference, not a documented guarantee",
+    "provider_seed_algorithm": "sha256-truncated-signed31-v1",
+    "provider_seed_max": 2147483647,
+    "reason": "provider HTTP 400 traced to provider_seed exceeding the provider signed 32-bit seed range",
+    "seed_basis": "sha256(instance_id|condition|turn|agent_id)[:8] masked to 0..2^31-1 (signed 31-bit)"
+  },
+  "approval": {
+    "approved": true,
+    "approved_by": "reviewer",
+    "cost_cap_usd": 20.0,
+    "cumulative_cap": 87,
+    "new_request_allowance": 70,
+    "scope": "clean-restart mechanics smoke for the repaired signed-31-bit seed protocol"
+  },
+  "approval_required": false,
+  "approved_decisions": [],
+  "caps": {
+    "max_cost_usd": 20.0,
+    "max_requests": "per-run explicit cap",
+    "min_interval_seconds": 0.25,
+    "smoke": {
+      "counts_preflight": true,
+      "counts_retries": true,
+      "max_cost_usd": 20.0,
+      "max_physical_requests": 60
+    },
+    "stop_rules": [
+      "request_cap",
+      "cost_cap",
+      "repeated_http_failure",
+      "missing_checker_evidence"
+    ]
+  },
+  "cell_audit": {
+    "cell_count": 18,
+    "cells": [
+      {
+        "complexity": "low",
+        "family": "hypothesis",
+        "fingerprint": [
+          8,
+          3,
+          2,
+          4,
+          1
+        ],
+        "fingerprint_dimensions": [
+          "candidate_count",
+          "claim_count",
+          "private_a_size",
+          "private_b_size",
+          "joint_size"
+        ],
+        "stable": true
+      },
+      {
+        "complexity": "medium",
+        "family": "hypothesis",
+        "fingerprint": [
+          8,
+          4,
+          2,
+          2,
+          1
+        ],
+        "fingerprint_dimensions": [
+          "candidate_count",
+          "claim_count",
+          "private_a_size",
+          "private_b_size",
+          "joint_size"
+        ],
+        "stable": true
+      },
+      {
+        "complexity": "high",
+        "family": "hypothesis",
+        "fingerprint": [
+          8,
+          4,
+          2,
+          2,
+          1
+        ],
+        "fingerprint_dimensions": [
+          "candidate_count",
+          "claim_count",
+          "private_a_size",
+          "private_b_size",
+          "joint_size"
+        ],
+        "stable": true
+      },
+      {
+        "complexity": "low",
+        "family": "reference",
+        "fingerprint": [
+          16,
+          4,
+          4,
+          4,
+          1
+        ],
+        "fingerprint_dimensions": [
+          "candidate_count",
+          "claim_count",
+          "private_a_size",
+          "private_b_size",
+          "joint_size"
+        ],
+        "stable": true
+      },
+      {
+        "complexity": "medium",
+        "family": "reference",
+        "fingerprint": [
+          16,
+          4,
+          4,
+          4,
+          1
+        ],
+        "fingerprint_dimensions": [
+          "candidate_count",
+          "claim_count",
+          "private_a_size",
+          "private_b_size",
+          "joint_size"
+        ],
+        "stable": true
+      },
+      {
+        "complexity": "high",
+        "family": "reference",
+        "fingerprint": null,
+        "fingerprint_dimensions": [
+          "candidate_count",
+          "claim_count",
+          "private_a_size",
+          "private_b_size",
+          "joint_size"
+        ],
+        "stable": false
+      },
+      {
+        "complexity": "low",
+        "family": "planning",
+        "fingerprint": [
+          6,
+          3,
+          3,
+          3,
+          1
+        ],
+        "fingerprint_dimensions": [
+          "candidate_count",
+          "claim_count",
+          "private_a_size",
+          "private_b_size",
+          "joint_size"
+        ],
+        "stable": true
+      },
+      {
+        "complexity": "medium",
+        "family": "planning",
+        "fingerprint": [
+          6,
+          3,
+          3,
+          3,
+          1
+        ],
+        "fingerprint_dimensions": [
+          "candidate_count",
+          "claim_count",
+          "private_a_size",
+          "private_b_size",
+          "joint_size"
+        ],
+        "stable": true
+      },
+      {
+        "complexity": "high",
+        "family": "planning",
+        "fingerprint": [
+          24,
+          4,
+          6,
+          12,
+          1
+        ],
+        "fingerprint_dimensions": [
+          "candidate_count",
+          "claim_count",
+          "private_a_size",
+          "private_b_size",
+          "joint_size"
+        ],
+        "stable": true
+      },
+      {
+        "complexity": "low",
+        "family": "poetry",
+        "fingerprint": [
+          8,
+          3,
+          2,
+          4,
+          1
+        ],
+        "fingerprint_dimensions": [
+          "candidate_count",
+          "claim_count",
+          "private_a_size",
+          "private_b_size",
+          "joint_size"
+        ],
+        "stable": true
+      },
+      {
+        "complexity": "medium",
+        "family": "poetry",
+        "fingerprint": [
+          8,
+          3,
+          2,
+          4,
+          1
+        ],
+        "fingerprint_dimensions": [
+          "candidate_count",
+          "claim_count",
+          "private_a_size",
+          "private_b_size",
+          "joint_size"
+        ],
+        "stable": true
+      },
+      {
+        "complexity": "high",
+        "family": "poetry",
+        "fingerprint": [
+          8,
+          3,
+          2,
+          4,
+          1
+        ],
+        "fingerprint_dimensions": [
+          "candidate_count",
+          "claim_count",
+          "private_a_size",
+          "private_b_size",
+          "joint_size"
+        ],
+        "stable": true
+      },
+      {
+        "complexity": "low",
+        "family": "legal",
+        "fingerprint": [
+          8,
+          3,
+          2,
+          4,
+          1
+        ],
+        "fingerprint_dimensions": [
+          "candidate_count",
+          "claim_count",
+          "private_a_size",
+          "private_b_size",
+          "joint_size"
+        ],
+        "stable": true
+      },
+      {
+        "complexity": "medium",
+        "family": "legal",
+        "fingerprint": [
+          8,
+          3,
+          2,
+          4,
+          1
+        ],
+        "fingerprint_dimensions": [
+          "candidate_count",
+          "claim_count",
+          "private_a_size",
+          "private_b_size",
+          "joint_size"
+        ],
+        "stable": true
+      },
+      {
+        "complexity": "high",
+        "family": "legal",
+        "fingerprint": [
+          8,
+          3,
+          2,
+          4,
+          1
+        ],
+        "fingerprint_dimensions": [
+          "candidate_count",
+          "claim_count",
+          "private_a_size",
+          "private_b_size",
+          "joint_size"
+        ],
+        "stable": true
+      },
+      {
+        "complexity": "low",
+        "family": "lexicon",
+        "fingerprint": [
+          8,
+          3,
+          2,
+          4,
+          1
+        ],
+        "fingerprint_dimensions": [
+          "candidate_count",
+          "claim_count",
+          "private_a_size",
+          "private_b_size",
+          "joint_size"
+        ],
+        "stable": true
+      },
+      {
+        "complexity": "medium",
+        "family": "lexicon",
+        "fingerprint": [
+          8,
+          3,
+          2,
+          4,
+          1
+        ],
+        "fingerprint_dimensions": [
+          "candidate_count",
+          "claim_count",
+          "private_a_size",
+          "private_b_size",
+          "joint_size"
+        ],
+        "stable": true
+      },
+      {
+        "complexity": "high",
+        "family": "lexicon",
+        "fingerprint": [
+          8,
+          3,
+          2,
+          4,
+          1
+        ],
+        "fingerprint_dimensions": [
+          "candidate_count",
+          "claim_count",
+          "private_a_size",
+          "private_b_size",
+          "joint_size"
+        ],
+        "stable": true
+      }
+    ],
+    "cosmetic_wrapper_groups": {
+      "(16, 4, 4, 4, 1)": [
+        "reference:low",
+        "reference:medium"
+      ],
+      "(6, 3, 3, 3, 1)": [
+        "planning:low",
+        "planning:medium"
+      ],
+      "(8, 3, 2, 4, 1)": [
+        "hypothesis:low",
+        "poetry:low",
+        "poetry:medium",
+        "poetry:high",
+        "legal:low",
+        "legal:medium",
+        "legal:high",
+        "lexicon:low",
+        "lexicon:medium",
+        "lexicon:high"
+      ],
+      "(8, 4, 2, 2, 1)": [
+        "hypothesis:medium",
+        "hypothesis:high"
+      ]
+    },
+    "distinct_cell_count": 5,
+    "groups": {
+      "(16, 4, 4, 4, 1)": [
+        "reference:low",
+        "reference:medium"
+      ],
+      "(24, 4, 6, 12, 1)": [
+        "planning:high"
+      ],
+      "(6, 3, 3, 3, 1)": [
+        "planning:low",
+        "planning:medium"
+      ],
+      "(8, 3, 2, 4, 1)": [
+        "hypothesis:low",
+        "poetry:low",
+        "poetry:medium",
+        "poetry:high",
+        "legal:low",
+        "legal:medium",
+        "legal:high",
+        "lexicon:low",
+        "lexicon:medium",
+        "lexicon:high"
+      ],
+      "(8, 4, 2, 2, 1)": [
+        "hypothesis:medium",
+        "hypothesis:high"
+      ]
+    },
+    "unstable_cells": [
+      "reference:high"
+    ]
+  },
+  "checker_version": "oracle-v2",
+  "clean_restart_plan": [
+    "this reviewer-approved registration is locked for the mechanics smoke",
+    "rebuild the frozen smoke instances and confirm the new expected_protocol_key",
+    "run preflight verification against preregistration-v2.json before any provider call",
+    "start a fresh artifact instead of appending to the failed stage2-smoke.jsonl",
+    "stay within the 70 new physical requests (60 planned + 10 retries/preflight)",
+    "stop under the same failure, request and cost rules"
+  ],
+  "contrasts": {
+    "diagnostics": [
+      "ORACLE - FULL manipulation check",
+      "INDUCED inducement (separate)"
+    ],
+    "holm_scope": "only if making five confirmatory group-specific claims",
+    "not_run_in_smoke": [
+      "ORACLE",
+      "INDUCED"
+    ],
+    "primary": "matched ISO -> FULL C_need on preregistered complete pairs",
+    "run_in_smoke": [
+      "ISO",
+      "FULL",
+      "COMM"
+    ],
+    "secondary": "voluntary COMM - ISO (never pooled with inducement)"
+  },
+  "declared_distinct_cells": {
+    "excluded_unstable": [
+      "reference:high"
+    ],
+    "groups": {
+      "(16, 4, 4, 4, 1)": [
+        "reference:low",
+        "reference:medium"
+      ],
+      "(24, 4, 6, 12, 1)": [
+        "planning:high"
+      ],
+      "(6, 3, 3, 3, 1)": [
+        "planning:low",
+        "planning:medium"
+      ],
+      "(8, 3, 2, 4, 1)": [
+        "hypothesis:low",
+        "poetry:low",
+        "poetry:medium",
+        "poetry:high",
+        "legal:low",
+        "legal:medium",
+        "legal:high",
+        "lexicon:low",
+        "lexicon:medium",
+        "lexicon:high"
+      ],
+      "(8, 4, 2, 2, 1)": [
+        "hypothesis:medium",
+        "hypothesis:high"
+      ]
+    },
+    "note": "cells sharing a fingerprint are generator-identical decision problems; domain labels are cosmetic and must not count as independent families",
+    "representatives": [
+      "hypothesis:low",
+      "hypothesis:medium",
+      "reference:low",
+      "planning:low",
+      "planning:high"
+    ],
+    "status": "proposed"
+  },
+  "feasible_set_definitions": {
+    "channel_complete": "S_pooled == S_joint",
+    "finalizer_needs_peer": "|S_A| > |S_joint|",
+    "joint_solutions": "clue-consistent candidates for the union of both agents' clues (unique target for N)",
+    "private_solutions": "clue-consistent candidates for the agent's own exact private clues",
+    "solutions": "public candidate option set"
+  },
+  "generator_commit": "7d88938",
+  "generator_file_sha256": "fc5f4fb20f3616b09fc1142623b0807c8e22f87cc41bc2f2900b8f938792a5ff",
+  "generator_version": "six-family-clue-consistent-v2",
+  "inference": {
+    "denominators": "report planned/attempted/valid/complete-pair n and invalidity by condition",
+    "eta_comm": "undefined when C_need is zero or below the minimum effective C_need",
+    "marginals": "Wilson intervals per condition",
+    "minimum_effective_c_need": 0.1,
+    "missingness": "condition-specific invalidity plus extreme-imputation difference bounds",
+    "paired": "complete-pair McNemar exact plus Newcombe paired-difference interval"
+  },
+  "invalidity_classes": [
+    "board_write_rejected",
+    "invalid_output_empty",
+    "invalid_output_unparsed",
+    "missing_checker_evidence",
+    "provider_execution_failure",
+    "success",
+    "valid_wrong_answer"
+  ],
+  "multiplicity": {
+    "helper": "holm_adjust",
+    "method": "Holm step-down over preregistered family claims"
+  },
+  "pending_decisions": [
+    "confirmatory sample size per cell (from observed discordant pairs)",
+    "confirmatory spend cap"
+  ],
+  "preregistration_hash": "f7cae07b3ec106a8dec2f275d6ae38c35786fdea557f13a6c31ff9adf8b95073",
+  "preregistration_version": "stage2-preregistration-v2",
+  "proposed_decisions": [
+    "confirmatory sample size per cell on the separate seed block",
+    "confirmatory spend cap"
+  ],
+  "provider_settings": {
+    "condition_turns": {
+      "COMM": 2,
+      "FULL": 1,
+      "ISO": 1
+    },
+    "conditions_run": [
+      "ISO",
+      "FULL",
+      "COMM"
+    ],
+    "diagnostics_not_run": [
+      "ORACLE",
+      "INDUCED"
+    ],
+    "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+    "expected_protocol_key": "six-family-clue-consistent-v2|treatment-prompt-v2|ba3da2fb4503aa06|f33dca6cffc709b4|inclusionai/ling-3.0-flash-vl:free|behavioral-discovery-v1",
+    "max_tokens": 1024,
+    "model": "inclusionai/ling-3.0-flash-vl:free",
+    "provider_seed_algorithm": "sha256-truncated-signed31-v1",
+    "provider_seed_max": 2147483647,
+    "require_parameters": true,
+    "seed_basis": "sha256(instance_id|condition|turn|agent_id)[:8] masked to 0..2^31-1 (signed 31-bit)",
+    "stream": false,
+    "temperature": 0.0
+  },
+  "request_cap_accounting": {
+    "clean_restart_cap": 70,
+    "consumed": {
+      "diagnostics_outside_artifact": 6,
+      "smoke_prior": 6,
+      "smoke_resume": 5,
+      "total": 17
+    },
+    "cost_cap_usd": 20.0,
+    "historical": {
+      "note": "the original 60-request cap is retained for historical accounting only and is not the current cap",
+      "original_smoke_cap": 60
+    },
+    "new_request_allowance": 70,
+    "note": "every physical call, including retries and preflight, counts toward the cumulative cap",
+    "planned_smoke_requests": 60,
+    "retry_preflight_reserve": 10,
+    "reviewer_approved_cumulative_cap": 87
+  },
+  "sample_size": {
+    "basis": "expected discordant pairs via mcnemar_required_pairs, not a default n=20",
+    "confirmatory_after_smoke": true,
+    "illustration": [
+      {
+        "alpha": 0.05,
+        "expected_discordant_rate": 0.4,
+        "power": 0.8,
+        "psi": 0.75,
+        "required_discordant_pairs": 50,
+        "required_total_pairs": 123
+      },
+      {
+        "alpha": 0.05,
+        "expected_discordant_rate": 0.35,
+        "power": 0.8,
+        "psi": 0.7,
+        "required_discordant_pairs": 79,
+        "required_total_pairs": 225
+      },
+      {
+        "alpha": 0.05,
+        "expected_discordant_rate": 0.3,
+        "power": 0.8,
+        "psi": 0.8,
+        "required_discordant_pairs": 33,
+        "required_total_pairs": 110
+      }
+    ],
+    "status": "proposed"
+  },
+  "scorer": {
+    "accepts": "submission in joint_solutions",
+    "checker": "<family>-oracle-v2",
+    "criterion": "unique_joint_target"
+  },
+  "stage2": {
+    "confirmatory": {
+      "note": "choose per-cell size and spend cap after the smoke discordance and invalidity rates",
+      "seed_base": 50000,
+      "size_pending": true,
+      "status": "proposed_pending_smoke"
+    },
+    "layout": {
+      "collision_free": true,
+      "complexity_order": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "complexity_stride": 1000,
+      "family_order": [
+        "hypothesis",
+        "reference",
+        "planning",
+        "poetry",
+        "legal",
+        "lexicon"
+      ],
+      "family_stride": 10000,
+      "max_seeds_per_cell": 999,
+      "seed_base": 19000
+    },
+    "mechanics_smoke": {
+      "instance_ids": [
+        "hypothesis-00004a38",
+        "hypothesis-00004a39",
+        "hypothesis-00004e20",
+        "hypothesis-00004e21",
+        "reference-00007148",
+        "reference-00007149",
+        "planning-00009858",
+        "planning-00009859",
+        "planning-0000a028",
+        "planning-0000a029"
+      ],
+      "manifest_hash": "768256481a983b5ec538797b1da4cc5d26baf4ee056a2ca8acb98f137d9d30b2",
+      "seeds_per_group": 2,
+      "status": "frozen"
+    }
+  },
+  "status": "locked_for_mechanics_smoke",
+  "superseded_artifacts": [
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/cneed-fourfamilies-n9-diagnostic.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/cneed-fourfamilies-n9-report.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/cneed-fourfamilies-n9.jsonl",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/cneed-n20-diagnostic.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/cneed-n20-report.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/cneed-n20.jsonl",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/cneed-n9-diagnostic.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/cneed-n9-report.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/cneed-n9.jsonl",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/comm-n20-diagnostic.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/comm-n20-report.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/comm-n20.jsonl",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/comm-planning-n9-diagnostic.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/comm-planning-n9-report.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/comm-planning-n9.jsonl",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/full-gate-1024-diagnostic.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/full-gate-1024-report.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/full-gate-1024.jsonl",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/full-gate-budget512-diagnostic.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/full-gate-budget512-report.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/full-gate-budget512.jsonl",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/full-gate-diagnostic.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/full-gate-hypmed-1024-diagnostic.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/full-gate-hypmed-1024-report.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/full-gate-hypmed-1024.jsonl",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/full-gate-repair-diagnostic.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/full-gate-repair-preflight.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/full-gate-repair-report.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/full-gate-repair.jsonl",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/full-gate-report.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/full-gate.jsonl",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/paired-analysis-n20.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/paired-analysis-planning.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/paired-screen-diagnostic.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/paired-screen-n5-diagnostic.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/paired-screen-n5-leakfree-diagnostic.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/paired-screen-n5-leakfree-report.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/paired-screen-n5-leakfree.jsonl",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/paired-screen-n5-report.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/paired-screen-n5.jsonl",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/paired-screen-report.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/paired-screen.jsonl",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/stage2-attempt-state.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/stage2-smoke-combined-analysis.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/stage2-smoke-diagnostic.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/stage2-smoke-report.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/stage2-smoke-resume1-diagnostic.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/stage2-smoke-resume1-report.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/stage2-smoke.jsonl",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/t1-pressure-catalog.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/t1-retained-pilot-audit.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/t1-screen-report.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/t1-screen-retry-report.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/t1-screen-retry.jsonl",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/t1-screen.jsonl",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    },
+    {
+      "path": "/home/framework/Workspace/apart-incident-response-epic-126/runs/epic-126/t2-capability-report.json",
+      "reason": "produced before the clue-consistent generator and leak-free treatment boundary",
+      "superseded": true
+    }
+  ],
+  "supersedes": {
+    "hash": "addb263007ee827380ba19d8dfffcbb1b13b0f067b95c25c4728d125c554ddd2",
+    "reason": "seed-range protocol fix",
+    "version": "stage2-preregistration-v1"
+  },
+  "treatment_file_sha256": "8e11259254b6b21bc0b8c048f37a9ed79cfcf9123d76a958c271afb8f8e15737",
+  "treatment_schema": {
+    "board_free_conditions": [
+      "ISO",
+      "FULL",
+      "ORACLE"
+    ],
+    "comm_grammar": {
+      "inducement": "distinct INDUCED condition, never pooled with voluntary COMM",
+      "post_read_evidence": "correlation only (post_read_correlation); causal uptake requires matched replay",
+      "rejected_writes": "recorded as board_write_rejected with reason claim_not_owned_by_writer",
+      "silence": "optional in the primary COMM arm; no penalty",
+      "writer_may_submit": "only an exact claim from the writer's own private clues"
+    },
+    "condition_turns": {
+      "COMM": 2,
+      "FULL": 1,
+      "ISO": 1,
+      "ORACLE": 1
+    },
+    "cue_estimands": {
+      "c_need": "p_FULL - p_ISO",
+      "oracle_gap": "p_ORACLE - p_FULL"
+    },
+    "diagnostic_conditions": [
+      "ORACLE",
+      "INDUCED"
+    ],
+    "finalizer_policy": "one_way_A_finalizer",
+    "finalizing_agent": "A",
+    "forbidden_model_visible_fields": [
+      "joint_candidate_labels"
+    ],
+    "induced_schema_version": "behavioral-induced-v1",
+    "minimum_effective_c_need": 0.1,
+    "oracle_schema_version": "behavioral-oracle-v1",
+    "oracle_separate_from_primary": true,
+    "primary_conditions": [
+      "ISO",
+      "FULL",
+      "COMM"
+    ],
+    "prompt_fields": [
+      "instruction",
+      "family",
+      "complexity",
+      "condition",
+      "turn",
+      "is_finalizer",
+      "finalizing_agent",
+      "candidate_labels",
+      "joint_clues",
+      "private_clues",
+      "visible_messages"
+    ],
+    "prompt_schema_version": "treatment-prompt-v2",
+    "provider_seed_algorithm": "sha256-truncated-signed31-v1",
+    "provider_seed_basis": "sha256(instance_id|condition|turn|agent_id)[:8] masked to 0..2^31-1",
+    "provider_seed_max": 2147483647,
+    "request_budget": {
+      "COMM": 4,
+      "FULL": 1,
+      "ISO": 1,
+      "ORACLE": 1
+    }
+  }
+}

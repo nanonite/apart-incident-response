@@ -1,0 +1,66 @@
+{
+  "board_free_conditions": [
+    "ISO",
+    "FULL",
+    "ORACLE"
+  ],
+  "comm_grammar": {
+    "inducement": "distinct INDUCED condition, never pooled with voluntary COMM",
+    "post_read_evidence": "correlation only (post_read_correlation); causal uptake requires matched replay",
+    "rejected_writes": "recorded as board_write_rejected with reason claim_not_owned_by_writer",
+    "silence": "optional in the primary COMM arm; no penalty",
+    "writer_may_submit": "only an exact claim from the writer's own private clues"
+  },
+  "condition_turns": {
+    "COMM": 2,
+    "FULL": 1,
+    "ISO": 1,
+    "ORACLE": 1
+  },
+  "cue_estimands": {
+    "c_need": "p_FULL - p_ISO",
+    "oracle_gap": "p_ORACLE - p_FULL"
+  },
+  "diagnostic_conditions": [
+    "ORACLE",
+    "INDUCED"
+  ],
+  "finalizer_policy": "one_way_A_finalizer",
+  "finalizing_agent": "A",
+  "forbidden_model_visible_fields": [
+    "joint_candidate_labels"
+  ],
+  "induced_schema_version": "behavioral-induced-v1",
+  "minimum_effective_c_need": 0.1,
+  "mode": "treatment-schema",
+  "oracle_schema_version": "behavioral-oracle-v1",
+  "oracle_separate_from_primary": true,
+  "primary_conditions": [
+    "ISO",
+    "FULL",
+    "COMM"
+  ],
+  "prompt_fields": [
+    "instruction",
+    "family",
+    "complexity",
+    "condition",
+    "turn",
+    "is_finalizer",
+    "finalizing_agent",
+    "candidate_labels",
+    "joint_clues",
+    "private_clues",
+    "visible_messages"
+  ],
+  "prompt_schema_version": "treatment-prompt-v2",
+  "provider_seed_algorithm": "sha256-truncated-signed31-v1",
+  "provider_seed_basis": "sha256(instance_id|condition|turn|agent_id)[:8] masked to 0..2^31-1",
+  "provider_seed_max": 2147483647,
+  "request_budget": {
+    "COMM": 4,
+    "FULL": 1,
+    "ISO": 1,
+    "ORACLE": 1
+  }
+}

@@ -1,0 +1,400 @@
+{
+  "analysis_boundary": {
+    "note": "pre-repair artifacts (no matching protocol_key) must not enter analysis",
+    "require_protocol_key": "six-family-clue-consistent-v2|treatment-prompt-v2|ba3da2fb4503aa06|f33dca6cffc709b4|inclusionai/ling-3.0-flash-vl:free|behavioral-discovery-v1"
+  },
+  "communication_invariants": {
+    "board_optional_primary": true,
+    "post_read_evidence_is_correlation_not_causal": true,
+    "turn_matched_no_information_control_required": true,
+    "writer_may_submit_only_own_exact_claim": true
+  },
+  "frozen_versions": {
+    "checker_version": "oracle-v2",
+    "generator_version": "six-family-clue-consistent-v2",
+    "protocol_key": "six-family-clue-consistent-v2|treatment-prompt-v2|ba3da2fb4503aa06|f33dca6cffc709b4|inclusionai/ling-3.0-flash-vl:free|behavioral-discovery-v1",
+    "provider_seed_algorithm": "sha256-truncated-signed31-v1",
+    "treatment_prompt_schema": "treatment-prompt-v2"
+  },
+  "instance_ids": [
+    "planning-00011170",
+    "planning-00011171",
+    "planning-00011172",
+    "planning-00011173",
+    "planning-00011174",
+    "planning-00011175",
+    "planning-00011176",
+    "planning-00011177",
+    "planning-00011178",
+    "planning-00011179",
+    "planning-0001117a",
+    "planning-0001117b",
+    "planning-0001117c",
+    "planning-0001117d",
+    "planning-0001117e",
+    "planning-0001117f",
+    "planning-00011180"
+  ],
+  "instance_seeds": [
+    70000,
+    70001,
+    70002,
+    70003,
+    70004,
+    70005,
+    70006,
+    70007,
+    70008,
+    70009,
+    70010,
+    70011,
+    70012,
+    70013,
+    70014,
+    70015,
+    70016
+  ],
+  "invariants": {
+    "audit": {
+      "failing_ids": [],
+      "instance_count": 17,
+      "passing": 17,
+      "protocol_version": "jev-planning-low-v1",
+      "rows": [
+        {
+          "all_pass": true,
+          "candidate_count": 6,
+          "checks": {
+            "both_agents_needed": true,
+            "candidate_count_within_255": true,
+            "claims_partitioned": true,
+            "finalizer_needs_peer": true,
+            "joint_size_one": true,
+            "no_answer_key_exposed": true,
+            "pooled_equals_joint": true,
+            "target_in_joint": true
+          },
+          "claim_count": 3,
+          "complexity": "low",
+          "family": "planning",
+          "instance_id": "planning-00011170",
+          "regime": "N"
+        },
+        {
+          "all_pass": true,
+          "candidate_count": 6,
+          "checks": {
+            "both_agents_needed": true,
+            "candidate_count_within_255": true,
+            "claims_partitioned": true,
+            "finalizer_needs_peer": true,
+            "joint_size_one": true,
+            "no_answer_key_exposed": true,
+            "pooled_equals_joint": true,
+            "target_in_joint": true
+          },
+          "claim_count": 3,
+          "complexity": "low",
+          "family": "planning",
+          "instance_id": "planning-00011171",
+          "regime": "N"
+        },
+        {
+          "all_pass": true,
+          "candidate_count": 6,
+          "checks": {
+            "both_agents_needed": true,
+            "candidate_count_within_255": true,
+            "claims_partitioned": true,
+            "finalizer_needs_peer": true,
+            "joint_size_one": true,
+            "no_answer_key_exposed": true,
+            "pooled_equals_joint": true,
+            "target_in_joint": true
+          },
+          "claim_count": 3,
+          "complexity": "low",
+          "family": "planning",
+          "instance_id": "planning-00011172",
+          "regime": "N"
+        },
+        {
+          "all_pass": true,
+          "candidate_count": 6,
+          "checks": {
+            "both_agents_needed": true,
+            "candidate_count_within_255": true,
+            "claims_partitioned": true,
+            "finalizer_needs_peer": true,
+            "joint_size_one": true,
+            "no_answer_key_exposed": true,
+            "pooled_equals_joint": true,
+            "target_in_joint": true
+          },
+          "claim_count": 3,
+          "complexity": "low",
+          "family": "planning",
+          "instance_id": "planning-00011173",
+          "regime": "N"
+        },
+        {
+          "all_pass": true,
+          "candidate_count": 6,
+          "checks": {
+            "both_agents_needed": true,
+            "candidate_count_within_255": true,
+            "claims_partitioned": true,
+            "finalizer_needs_peer": true,
+            "joint_size_one": true,
+            "no_answer_key_exposed": true,
+            "pooled_equals_joint": true,
+            "target_in_joint": true
+          },
+          "claim_count": 3,
+          "complexity": "low",
+          "family": "planning",
+          "instance_id": "planning-00011174",
+          "regime": "N"
+        },
+        {
+          "all_pass": true,
+          "candidate_count": 6,
+          "checks": {
+            "both_agents_needed": true,
+            "candidate_count_within_255": true,
+            "claims_partitioned": true,
+            "finalizer_needs_peer": true,
+            "joint_size_one": true,
+            "no_answer_key_exposed": true,
+            "pooled_equals_joint": true,
+            "target_in_joint": true
+          },
+          "claim_count": 3,
+          "complexity": "low",
+          "family": "planning",
+          "instance_id": "planning-00011175",
+          "regime": "N"
+        },
+        {
+          "all_pass": true,
+          "candidate_count": 6,
+          "checks": {
+            "both_agents_needed": true,
+            "candidate_count_within_255": true,
+            "claims_partitioned": true,
+            "finalizer_needs_peer": true,
+            "joint_size_one": true,
+            "no_answer_key_exposed": true,
+            "pooled_equals_joint": true,
+            "target_in_joint": true
+          },
+          "claim_count": 3,
+          "complexity": "low",
+          "family": "planning",
+          "instance_id": "planning-00011176",
+          "regime": "N"
+        },
+        {
+          "all_pass": true,
+          "candidate_count": 6,
+          "checks": {
+            "both_agents_needed": true,
+            "candidate_count_within_255": true,
+            "claims_partitioned": true,
+            "finalizer_needs_peer": true,
+            "joint_size_one": true,
+            "no_answer_key_exposed": true,
+            "pooled_equals_joint": true,
+            "target_in_joint": true
+          },
+          "claim_count": 3,
+          "complexity": "low",
+          "family": "planning",
+          "instance_id": "planning-00011177",
+          "regime": "N"
+        },
+        {
+          "all_pass": true,
+          "candidate_count": 6,
+          "checks": {
+            "both_agents_needed": true,
+            "candidate_count_within_255": true,
+            "claims_partitioned": true,
+            "finalizer_needs_peer": true,
+            "joint_size_one": true,
+            "no_answer_key_exposed": true,
+            "pooled_equals_joint": true,
+            "target_in_joint": true
+          },
+          "claim_count": 3,
+          "complexity": "low",
+          "family": "planning",
+          "instance_id": "planning-00011178",
+          "regime": "N"
+        },
+        {
+          "all_pass": true,
+          "candidate_count": 6,
+          "checks": {
+            "both_agents_needed": true,
+            "candidate_count_within_255": true,
+            "claims_partitioned": true,
+            "finalizer_needs_peer": true,
+            "joint_size_one": true,
+            "no_answer_key_exposed": true,
+            "pooled_equals_joint": true,
+            "target_in_joint": true
+          },
+          "claim_count": 3,
+          "complexity": "low",
+          "family": "planning",
+          "instance_id": "planning-00011179",
+          "regime": "N"
+        },
+        {
+          "all_pass": true,
+          "candidate_count": 6,
+          "checks": {
+            "both_agents_needed": true,
+            "candidate_count_within_255": true,
+            "claims_partitioned": true,
+            "finalizer_needs_peer": true,
+            "joint_size_one": true,
+            "no_answer_key_exposed": true,
+            "pooled_equals_joint": true,
+            "target_in_joint": true
+          },
+          "claim_count": 3,
+          "complexity": "low",
+          "family": "planning",
+          "instance_id": "planning-0001117a",
+          "regime": "N"
+        },
+        {
+          "all_pass": true,
+          "candidate_count": 6,
+          "checks": {
+            "both_agents_needed": true,
+            "candidate_count_within_255": true,
+            "claims_partitioned": true,
+            "finalizer_needs_peer": true,
+            "joint_size_one": true,
+            "no_answer_key_exposed": true,
+            "pooled_equals_joint": true,
+            "target_in_joint": true
+          },
+          "claim_count": 3,
+          "complexity": "low",
+          "family": "planning",
+          "instance_id": "planning-0001117b",
+          "regime": "N"
+        },
+        {
+          "all_pass": true,
+          "candidate_count": 6,
+          "checks": {
+            "both_agents_needed": true,
+            "candidate_count_within_255": true,
+            "claims_partitioned": true,
+            "finalizer_needs_peer": true,
+            "joint_size_one": true,
+            "no_answer_key_exposed": true,
+            "pooled_equals_joint": true,
+            "target_in_joint": true
+          },
+          "claim_count": 3,
+          "complexity": "low",
+          "family": "planning",
+          "instance_id": "planning-0001117c",
+          "regime": "N"
+        },
+        {
+          "all_pass": true,
+          "candidate_count": 6,
+          "checks": {
+            "both_agents_needed": true,
+            "candidate_count_within_255": true,
+            "claims_partitioned": true,
+            "finalizer_needs_peer": true,
+            "joint_size_one": true,
+            "no_answer_key_exposed": true,
+            "pooled_equals_joint": true,
+            "target_in_joint": true
+          },
+          "claim_count": 3,
+          "complexity": "low",
+          "family": "planning",
+          "instance_id": "planning-0001117d",
+          "regime": "N"
+        },
+        {
+          "all_pass": true,
+          "candidate_count": 6,
+          "checks": {
+            "both_agents_needed": true,
+            "candidate_count_within_255": true,
+            "claims_partitioned": true,
+            "finalizer_needs_peer": true,
+            "joint_size_one": true,
+            "no_answer_key_exposed": true,
+            "pooled_equals_joint": true,
+            "target_in_joint": true
+          },
+          "claim_count": 3,
+          "complexity": "low",
+          "family": "planning",
+          "instance_id": "planning-0001117e",
+          "regime": "N"
+        },
+        {
+          "all_pass": true,
+          "candidate_count": 6,
+          "checks": {
+            "both_agents_needed": true,
+            "candidate_count_within_255": true,
+            "claims_partitioned": true,
+            "finalizer_needs_peer": true,
+            "joint_size_one": true,
+            "no_answer_key_exposed": true,
+            "pooled_equals_joint": true,
+            "target_in_joint": true
+          },
+          "claim_count": 3,
+          "complexity": "low",
+          "family": "planning",
+          "instance_id": "planning-0001117f",
+          "regime": "N"
+        },
+        {
+          "all_pass": true,
+          "candidate_count": 6,
+          "checks": {
+            "both_agents_needed": true,
+            "candidate_count_within_255": true,
+            "claims_partitioned": true,
+            "finalizer_needs_peer": true,
+            "joint_size_one": true,
+            "no_answer_key_exposed": true,
+            "pooled_equals_joint": true,
+            "target_in_joint": true
+          },
+          "claim_count": 3,
+          "complexity": "low",
+          "family": "planning",
+          "instance_id": "planning-00011180",
+          "regime": "N"
+        }
+      ]
+    },
+    "both_agents_carry_unique_useful_information": true,
+    "pooled_private_equals_joint": true,
+    "valid_target_no_answer_key_exposure": true,
+    "writer_claims_from_own_private_clues": true
+  },
+  "manifest_hash": "57c025d1ce177c1e2f293003912cdba5a13ed2fcc24a6fc805432a4b10d5e4d5",
+  "preregistration_version": "jev-planning-low-v1",
+  "seed_base": 70000,
+  "seeds_per_cell": 17,
+  "selected_cell": "planning:low",
+  "superseded_artifacts_excluded": true
+}

@@ -35,6 +35,12 @@ class AgentResponse:
     logprob_mass_coverage: float | None = None
     logprob_status: str = "not_requested"
     failure_reason: str | None = None
+    input_tokens: int | None = None
+    output_tokens: int | None = None
+    cost_usd: float = 0.0
+    prompt_hash: str | None = None
+    prompt_schema_version: str | None = None
+    finish_reason: str | None = None
 
 
 class BatteryProvider(Protocol):
@@ -101,32 +107,35 @@ class TwoAgentBatteryRunner:
                  token_budget: int = 512, turns: int = 2, finalizing_agent: str = "A") -> None:
         if token_budget <= 0 or turns <= 0:
             raise ValueError("token budget and turns must be positive")
-        if finalizing_agent not in {"A", "B"}:
-            raise ValueError("finalizing_agent must be A or B")
         self.prompt_version = prompt_version
         self.token_budget = token_budget
         self.turns = turns
+        if finalizing_agent not in {"A", "B"}:
+            raise ValueError("finalizing_agent must be A or B")
         self.finalizing_agent = finalizing_agent
 
     def run_condition(self, instance: FamilyInstance, condition: BatteryCondition,
                       provider: BatteryProvider, *, pair_id: str | None = None,
-                      run_id: str | None = None) -> BatteryRunResult:
+                      run_id: str | None = None, finalizer_only: bool = False) -> BatteryRunResult:
         pair = pair_id or f"pair-{instance.instance_id}"
         run = run_id or f"comm-{condition.value.lower()}-{uuid.uuid4().hex}"
         log = CommunicationEventLog(run)
         log.record("run_started", "controller", payload={"condition": condition.value,
                                                            "prompt_version": self.prompt_version,
                                                            "token_budget": self.token_budget,
-                                                           "finalizing_agent": self.finalizing_agent})
+                                                           "finalizing_agent": self.finalizing_agent,
+                                                           "finalizer_only": finalizer_only})
         board: list[dict[str, Any]] = []
         message_info: dict[str, Any] = {}
+        rejected_writes: list[dict[str, Any]] = []
         received_information: dict[tuple[str, str], Any] = {}
         read_sequences: dict[tuple[str, str], int] = {}
         used_outputs: list[tuple[str, str, tuple[str, ...], str | None]] = []
         answers: dict[str, str | None] = {"A": None, "B": None}
         invalid: list[str] = []
+        agents = (self.finalizing_agent,) if finalizer_only else ("A", "B")
         for turn in range(self.turns):
-            for agent in ("A", "B"):
+            for agent in agents:
                 if condition is BatteryCondition.FULL:
                     view = instance.agent_view(agent, "FULL")
                 else:
@@ -159,19 +168,42 @@ class TwoAgentBatteryRunner:
                                  logprob_entropy_bits=response.output_logprob_entropy_bits,
                                  logprob_coverage=response.logprob_coverage,
                                  logprob_mass_coverage=response.logprob_mass_coverage,
-                                 logprob_status=response.logprob_status)
+                                 logprob_status=response.logprob_status,
+                                 input_tokens=response.input_tokens,
+                                 output_tokens=response.output_tokens,
+                                 cost_usd=response.cost_usd,
+                                 finish_reason=response.finish_reason)
                 used_outputs.append((agent, output_id, response.used_message_ids, response.answer))
                 if response.answer is not None:
                     answers[agent] = response.answer
                 if condition is BatteryCondition.COMM and response.message:
                     message_id = f"message-{agent}-{turn}"
-                    info = instance.information(agent, response.message, message_id)
+                    if not instance.holds_claim(agent, response.message):
+                        # Treatment grammar: a writer may submit only an exact claim
+                        # from its own private clues. Record the rejected write
+                        # explicitly instead of silently dropping or accepting it.
+                        owner = instance.claim_owner(response.message)
+                        log.record("board_write_rejected", agent, status="rejected",
+                                   payload={"reason": "claim_not_owned_by_writer",
+                                            "raw_text": response.message, "claim_owner": owner})
+                        rejected_writes.append({"agent": agent, "turn": turn,
+                                                "text": response.message, "claim_owner": owner,
+                                                "reason": "claim_not_owned_by_writer"})
+                        continue
+                    receiver = "B" if agent == "A" else "A"
+                    # Transmitted information is measured against the receiver's
+                    # feasible set: the writer already knows its own claim, so a
+                    # writer-perspective value would report zero bits even when
+                    # the message genuinely narrows the peer's set.
+                    info = instance.information(receiver, response.message, message_id)
                     message_info[message_id] = info
-                    row = {"message_id": message_id, "author": agent, "text": response.message,
-                           "status": info.status, "delta_i_bits": info.delta_i_bits,
+                    row = {"message_id": message_id, "author": agent, "receiver": receiver,
+                           "text": response.message, "status": info.status,
+                           "delta_i_bits": info.delta_i_bits,
                            "message_tokens": len(response.message.split())}
                     board.append(row)
-                    log.board_write(agent, info, message_tokens=row["message_tokens"])
+                    log.board_write(agent, info, message_tokens=row["message_tokens"],
+                                    receiver_id=receiver)
         outcomes = {agent: instance.validate(answer) if answer is not None else {"accepted": False, "score": None}
                     for agent, answer in answers.items()}
         final_outcome = outcomes[self.finalizing_agent]
@@ -198,34 +230,31 @@ class TwoAgentBatteryRunner:
                     if prior_sequence is not None and prior_answer is not None
                 )
                 if info.useful and not prior_finalizer_success and instance.validate(answer or "").get("accepted", False):
-                    log.post_read_correlated_use(
-                        agent, info, output_id,
-                        correlation_evidence={
-                            "correlated": True,
-                            "task_checker": f"{instance.family}-oracle-v1",
-                            "answer_accepted": True,
-                            "uptake_rule": "first_checker_accepted_finalizer_output_after_peer_read",
-                            "prior_finalizer_success": False,
-                        },
-                    )
+                    log.post_read_correlation(agent, info, output_id,
+                                              checker_evidence={"evidence_class": "post_read_correlation",
+                                                                "task_checker": instance.checker_id,
+                                                                "answer_accepted": True,
+                                                                "uptake_rule": "first_checker_accepted_finalizer_output_after_peer_read",
+                                                                "prior_finalizer_success": False})
         status = "invalid" if invalid else "completed"
         task_success = task_success and status == "completed"
-        model_id = getattr(provider, "model", "unknown")
         artifact = {
             "run_id": run, "pair_id": pair, "condition": condition.value,
             "family": instance.family, "instance_id": instance.instance_id, "seed": instance.seed,
             "provider": getattr(provider, "provider", type(provider).__name__),
             "provider_version": getattr(provider, "version", "unknown"),
-            "model_id": model_id,
+            "model_id": getattr(provider, "model", "unknown"),
             "prompt_version": self.prompt_version, "task_success": task_success,
+            "finalizing_agent": self.finalizing_agent,
             "answers_present": sorted(agent for agent, answer in answers.items() if answer is not None),
-            "invalid_agents": invalid, "task": instance.public_manifest(),
+            "invalid_agents": invalid, "rejected_writes": rejected_writes,
+            "task": instance.public_manifest(),
             "events": log.summary(),
         }
         return BatteryRunResult(run, pair, instance.instance_id, condition, instance.family, instance.seed,
                                 artifact["provider"], artifact["provider_version"], self.prompt_version,
                                 status, task_success, answers, tuple(invalid), log.summary(), artifact,
-                                model_id=model_id)
+                                artifact["model_id"])
 
     def run_triplet(self, instance: FamilyInstance, provider: BatteryProvider, *, pair_id: str | None = None) -> tuple[BatteryRunResult, ...]:
         pair = pair_id or f"pair-{instance.instance_id}"

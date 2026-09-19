@@ -37,6 +37,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix board IPC integration and CLI tool wiring (#58)
 
 ### Changed
+- Fix planning-high empty outputs (token-budget truncation) before further collection (#168)
+- J2 — Implement offline Jev Choice receiver adapter (#155)
+- J1 — Freeze finite-task and communication invariants (#154)
+- Run preregistered Ling board-necessity screen on corrected generator (#162)
+- Fix provider seed range and re-register the smoke protocol (#167)
+- Preregister distinct cells, paired inference and missingness before fresh Ling screen (#165)
+- Separate structural board need from communication behavior and causal uptake (#164)
+- Audit pooled/joint equality and peer necessity before new screens (#161)
+- Lock FULL, ORACLE and runner treatment schemas (#163)
+- Make clue-consistent feasible sets authoritative for D_idx, I_m and scoring (#166)
 - Support genuine two-role Task 1 fixtures and explicit real-anchor swarm sizes (#100, #94)
 - Capture Ollama per-turn probability records with stable per-agent sampling seeds (#91)
 - Confirm OpenRouter logprob support for a pinned model and route (#93)

@@ -1,0 +1,65 @@
+{
+  "artifact_version": "openrouter-preflight-probe-v1",
+  "credential_source": "project .env (normalized OPENROUTER_API_KEY); value never emitted",
+  "credentials_retained": false,
+  "dominant_error": [],
+  "dominant_status": 200,
+  "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+  "logprobs_omitted": true,
+  "method": "five payload variants isolating provider routing parameters; sanitized status/class only",
+  "model": "inclusionai/ling-3.0-flash-vl:free",
+  "raw_bodies_retained": false,
+  "root_cause": null,
+  "variants": [
+    {
+      "classification": "success",
+      "error": null,
+      "has_choices": true,
+      "latency_seconds": 1.688,
+      "logprobs_in_payload": false,
+      "model_field": "inclusionai/ling-3.0-flash-vl:free",
+      "status": 200,
+      "variant": "current"
+    },
+    {
+      "classification": "success",
+      "error": null,
+      "has_choices": true,
+      "latency_seconds": 5.233,
+      "logprobs_in_payload": false,
+      "model_field": "inclusionai/ling-3.0-flash-vl:free",
+      "status": 200,
+      "variant": "no_provider_block"
+    },
+    {
+      "classification": "success",
+      "error": null,
+      "has_choices": true,
+      "latency_seconds": 1.376,
+      "logprobs_in_payload": false,
+      "model_field": "inclusionai/ling-3.0-flash-vl:free",
+      "status": 200,
+      "variant": "no_seed"
+    },
+    {
+      "classification": "success",
+      "error": null,
+      "has_choices": true,
+      "latency_seconds": 1.136,
+      "logprobs_in_payload": false,
+      "model_field": "inclusionai/ling-3.0-flash-vl:free",
+      "status": 200,
+      "variant": "no_temperature"
+    },
+    {
+      "classification": "success",
+      "error": null,
+      "has_choices": true,
+      "latency_seconds": 1.621,
+      "logprobs_in_payload": false,
+      "model_field": "inclusionai/ling-3.0-flash-vl:free",
+      "status": 200,
+      "variant": "provider_false"
+    }
+  ]
+}
