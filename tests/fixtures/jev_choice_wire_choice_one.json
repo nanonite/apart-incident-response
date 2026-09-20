@@ -1,0 +1,52 @@
+{
+  "_source": {
+    "captured": "2026-09-16",
+    "license": "MIT",
+    "note": "Minimal attributed copy of a captured TypeSafe exchange. ASSUMED_SCHEMA: wire conformance is not claimed until #178 captures a live Jev response.",
+    "openapi_sha256": "72452d6951dbaadd1030af76434917ef103e470bf0cd6ac035b02b111bfd4d24",
+    "path": "test/fixtures/choice-one.json",
+    "repo": "https://github.com/inanna-malick/jev-dsl",
+    "revision": "f16f1363b4d389d6e34f9d695fbd254ca0735f2e"
+  },
+  "probe": "choice-one",
+  "request": {
+    "model": "jev-latest",
+    "questions": {
+      "route": {
+        "criteria": {
+          "owner_0": {
+            "configuration_owner": true
+          }
+        },
+        "instructions": "Who owns configuration?",
+        "type": "choice"
+      }
+    },
+    "state": {
+      "context": {
+        "active": true,
+        "pending": 2,
+        "previous": null
+      },
+      "message": "The worker cannot proceed until the missing configuration is supplied."
+    }
+  },
+  "response": {
+    "answers": {
+      "route": {
+        "choice": "owner_0",
+        "confidence": 1.0,
+        "probabilities": {
+          "owner_0": 1.0
+        },
+        "type": "choice"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 340,
+      "output_tokens": 28
+    }
+  },
+  "status": 200
+}
