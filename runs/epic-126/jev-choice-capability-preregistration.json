@@ -1,9 +1,18 @@
 {
   "approval": {
-    "approved": false
+    "approved": true,
+    "approved_by": "reviewer",
+    "cost_cap_usd": 1.0,
+    "live_collection_authorized": false,
+    "request_cap": 68,
+    "scope": "registration_lock_only"
   },
-  "approval_required": true,
-  "approved_decisions": [],
+  "approval_required": false,
+  "approved_decisions": [
+    "Jev Choice capability/calibration probe: 17 held-out planning-low instances x ISO/FULL",
+    "68 physical requests maximum, including retries; $1 cost cap",
+    "pinned jev-1.13.0 at the TypeSafe System One endpoint"
+  ],
   "calibration_diagnostics": {
     "alpha": 0.05,
     "footnote": "17 held-out instances is a small probe; reliability bins are descriptive and do not establish calibration",
@@ -46,23 +55,82 @@
     ]
   },
   "checker_version": "oracle-v2",
-  "generator_commit": null,
+  "frozen_settings": {
+    "checker_version": "oracle-v2",
+    "codec_version": "jev-choice-wire-v1",
+    "conditions_run": [
+      "ISO",
+      "FULL"
+    ],
+    "cost_cap_usd": 1.0,
+    "criteria_policy": "criteria_keys=exact_sorted_public_candidate_labels;values=null",
+    "diagnostics_not_run": [
+      "COMM",
+      "ORACLE",
+      "INDUCED",
+      "Noul",
+      "Score"
+    ],
+    "endpoint": "https://api.typesafe.ai/v1/systemone",
+    "generator_version": "six-family-clue-consistent-v2",
+    "input_token_ceiling": 8192,
+    "input_usd_per_mtok": 0.042,
+    "instructions": "Using the clues in `state`, assess how well each candidate in `criteria` fits those clues. Return a probability for every candidate in `criteria`.",
+    "max_cost_usd": 1.0,
+    "max_requests": 68,
+    "max_retries": 2,
+    "min_interval_seconds": 0.25,
+    "model": "jev-1.13.0",
+    "normalization_tolerance": 1e-06,
+    "option_id_policy": "option_ids=exact_sorted_public_candidate_labels",
+    "per_cell_instances": 17,
+    "planned_requests": 34,
+    "question_id": "candidate",
+    "request_cap": 68,
+    "retry_preflight_reserve": 34,
+    "retryable_statuses": [
+      408,
+      429,
+      500,
+      502,
+      503,
+      504,
+      529
+    ],
+    "seed_base": 71000,
+    "state_schema": "jev-choice-state-v1",
+    "stop_rules": [
+      "request_cap",
+      "cost_cap",
+      "repeated_http_failure",
+      "contract_mismatch",
+      "model_drift",
+      "missing_checker_evidence"
+    ]
+  },
+  "generator_commit": "b773d5ef42a6d53e4e3f3ff70423e33664603fa9",
   "generator_version": "six-family-clue-consistent-v2",
   "go_no_go": {
     "continue_if": [
       "preflight passes",
+      "attempted_full_cases == 17",
       "full_vector_validity == 1.0 on attempted cases",
-      "task_validity_full >= 0.9 (at most one invalid)",
+      "task_validity_full >= 0.9 (>= 16/17 FULL cases accepted, missing/invalid counted as failures)",
       "no stop rule fired"
     ],
     "decision_owner": "reviewer",
+    "denominator": "all 17 FULL cases must be attempted; a missing or invalid FULL output counts as a failure",
     "note": "a passing probe does not establish calibration and does not authorize #157",
+    "required_full_attempts": 17,
     "stop_if": [
       "any contract mismatch",
       "resolved model differs from the pinned model",
       "request or cost cap reached",
+      "fewer than 17 FULL cases attempted",
       "task_validity_full below threshold"
-    ]
+    ],
+    "task_validity_full_definition": "checker-accepted FULL selections divided by the 17 attempted FULL cases; missing or invalid FULL outputs count as failures",
+    "task_validity_full_threshold": 0.9
   },
   "jev_capability": {
     "conditions_run": [
@@ -133,17 +201,20 @@
     "request_cap": 68,
     "retry_preflight_reserve": 34,
     "seed_base": 71000,
-    "status": "proposed"
+    "source_files": [
+      "src/apart_incident_response/task_families.py",
+      "src/apart_incident_response/communication_protocol.py",
+      "src/apart_incident_response/jev_protocol.py",
+      "src/apart_incident_response/jev_choice.py"
+    ],
+    "source_files_hash": "692243901eaa879263ca114519faf1303e5e5d6e6af7de0ce86f25462fe0f834",
+    "status": "locked",
+    "treatment_hash": "7939ad556f33bcff9c987036975edabc68ae76b3e1a7fb2b48d798bbc0843979"
   },
-  "pending_decisions": [
-    "review held-out Jev capability/calibration design and caps"
-  ],
-  "preregistration_hash": "90395b559089eefd7bc120a7166980b0e93e684ba6b38c902705e0f7c0afbdc7",
+  "pending_decisions": [],
+  "preregistration_hash": "58f056cd09a1045f965f3b56e89a8db6d47306731d9d32a3aef797adda72fc28",
   "preregistration_version": "stage2-jev-choice-capability-v1",
-  "proposed_decisions": [
-    "Jev Choice capability/calibration probe on 17 held-out planning-low instances x ISO/FULL",
-    "68-request and $1 live caps"
-  ],
+  "proposed_decisions": [],
   "protocol_boundary": {
     "codec_version": "jev-choice-wire-v1",
     "jev_protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
@@ -175,5 +246,5 @@
     "state_schema": "jev-choice-state-v1"
   },
   "stage": "jev-choice-capability",
-  "status": "draft_pending_review"
+  "status": "locked_for_jev_choice_capability"
 }

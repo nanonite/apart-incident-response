@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import subprocess
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -43,6 +44,104 @@ JEV_CAPABILITY_STOP_RULES = (
     "model_drift", "missing_checker_evidence",
 )
 JEV_CAPABILITY_MAX_SEEDS_PER_CELL = 40
+#: Source files whose content is bound into the registration so a code change
+#: cannot silently alter the generated treatment behind the same instance ids.
+JEV_CAPABILITY_SOURCE_FILES = (
+    "src/apart_incident_response/task_families.py",
+    "src/apart_incident_response/communication_protocol.py",
+    "src/apart_incident_response/jev_protocol.py",
+    "src/apart_incident_response/jev_choice.py",
+)
+
+
+def _resolve_generator_commit(repo_root: Path, provided: str | None) -> str:
+    if provided:
+        return str(provided)
+    try:
+        result = subprocess.run(["git", "-C", str(repo_root), "rev-parse", "HEAD"],
+                                capture_output=True, text=True, check=True)
+        commit = result.stdout.strip()
+    except Exception as exc:  # pragma: no cover - git always present in this repo
+        raise ValueError("generator_commit is required and could not be resolved from git") from exc
+    if not commit:
+        raise ValueError("generator_commit is required and could not be resolved from git")
+    return commit
+
+
+def _treatment_fingerprint(instances: Sequence[tf.FamilyInstance]) -> str:
+    """Hash the generated, model-visible treatment so ids alone cannot bind it."""
+
+    rows = []
+    for instance in instances:
+        rows.append({
+            "instance_id": instance.instance_id,
+            "seed": instance.seed,
+            "family": instance.family,
+            "complexity": instance.complexity.value,
+            "regime": instance.assignment.regime.value if instance.assignment.regime else None,
+            "solutions": sorted(instance.solutions),
+            "private_clues": {"A": list(instance.private_clues.get("A", [])),
+                              "B": list(instance.private_clues.get("B", []))},
+            "claims": [claim.text for claim in instance.claims],
+            "joint_solutions": sorted(instance.joint_solutions),
+        })
+    return hashlib.sha256(json.dumps(rows, sort_keys=True).encode()).hexdigest()
+
+
+def _source_files_hash(repo_root: Path, files: Sequence[str] = JEV_CAPABILITY_SOURCE_FILES) -> str:
+    digest = hashlib.sha256()
+    missing = []
+    for relative in files:
+        path = repo_root / relative
+        if not path.is_file():
+            missing.append(relative)
+            continue
+        digest.update(relative.encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(path.read_bytes())
+    if missing:
+        raise ValueError(f"missing source files for hashing: {missing}")
+    return digest.hexdigest()
+
+
+def _frozen_settings() -> dict[str, Any]:
+    """The complete set of predeclared settings the verifier must re-check."""
+
+    return {
+        "generator_version": tf.GENERATOR_VERSION,
+        "checker_version": tf.CHECKER_VERSION,
+        "codec_version": jc.JEV_CHOICE_CODEC_VERSION,
+        "state_schema": jc.JEV_CHOICE_STATE_SCHEMA,
+        "criteria_policy": jc.JEV_CHOICE_CRITERIA_POLICY,
+        "option_id_policy": jc.JEV_CHOICE_OPTION_ID_POLICY,
+        "question_id": jc.JEV_QUESTION_ID,
+        "instructions": jc.JEV_CHOICE_INSTRUCTIONS,
+        "normalization_tolerance": jc.NORMALIZATION_TOLERANCE,
+        "model": JEV_CAPABILITY_MODEL,
+        "endpoint": JEV_CAPABILITY_ENDPOINT,
+        "max_retries": JEV_CAPABILITY_MAX_RETRIES,
+        "retryable_statuses": sorted(jc.JEV_RETRYABLE_STATUSES),
+        "seed_base": JEV_CAPABILITY_SEED_BASE,
+        "per_cell_instances": JEV_CAPABILITY_PER_CELL,
+        "conditions_run": list(JEV_CAPABILITY_CONDITIONS),
+        "planned_requests": JEV_CAPABILITY_PLANNED_REQUESTS,
+        "retry_preflight_reserve": JEV_CAPABILITY_RETRY_RESERVE,
+        "request_cap": JEV_CAPABILITY_REQUEST_CAP,
+        "max_requests": JEV_CAPABILITY_REQUEST_CAP,
+        "cost_cap_usd": JEV_CAPABILITY_COST_CAP_USD,
+        "max_cost_usd": JEV_CAPABILITY_COST_CAP_USD,
+        "min_interval_seconds": JEV_CAPABILITY_MIN_INTERVAL_SECONDS,
+        "input_token_ceiling": JEV_CAPABILITY_INPUT_TOKEN_CEILING,
+        "input_usd_per_mtok": JEV_CAPABILITY_INPUT_USD_PER_MTOK,
+        "stop_rules": list(JEV_CAPABILITY_STOP_RULES),
+        "diagnostics_not_run": list(JEV_CAPABILITY_DIAGNOSTICS_NOT_RUN),
+    }
+
+
+def _document_hash(document: Mapping[str, Any]) -> str:
+    payload = json.dumps({key: value for key, value in document.items() if key != "preregistration_hash"},
+                         sort_keys=True)
+    return hashlib.sha256(payload.encode()).hexdigest()
 
 
 def jev_capability_instances(seeds_per_cell: int = JEV_CAPABILITY_PER_CELL) -> list[tf.FamilyInstance]:
@@ -71,6 +170,9 @@ def build_jev_choice_capability_preregistration(*, repo_root: Path, generator_co
     if not all(audit["all_pass"] for audit in audits):
         raise ValueError("held-out Jev capability instances failed the leak/invariant audit")
 
+    resolved_commit = _resolve_generator_commit(repo_root, generator_commit)
+    treatment_hash = _treatment_fingerprint(instances)
+    source_files_hash = _source_files_hash(repo_root)
     manifest_hash = hashlib.sha256(json.dumps(instance_ids, sort_keys=True).encode()).hexdigest()
     protocol_key = jc.jev_choice_protocol_key(model=JEV_CAPABILITY_MODEL, endpoint=JEV_CAPABILITY_ENDPOINT,
                                               max_retries=JEV_CAPABILITY_MAX_RETRIES,
@@ -93,9 +195,10 @@ def build_jev_choice_capability_preregistration(*, repo_root: Path, generator_co
         "status": "locked_for_jev_choice_capability" if approved else "draft_pending_review",
         "approval_required": not approved,
         "approval": ({"approved": True, "approved_by": "reviewer",
+                      "scope": "registration_lock_only", "live_collection_authorized": False,
                       "request_cap": JEV_CAPABILITY_REQUEST_CAP,
                       "cost_cap_usd": JEV_CAPABILITY_COST_CAP_USD} if approved
-                     else {"approved": False}),
+                     else {"approved": False, "live_collection_authorized": False}),
         "approved_decisions": (["Jev Choice capability/calibration probe: 17 held-out planning-low "
                                 "instances x ISO/FULL",
                                 f"{JEV_CAPABILITY_REQUEST_CAP} physical requests maximum, including "
@@ -106,9 +209,10 @@ def build_jev_choice_capability_preregistration(*, repo_root: Path, generator_co
             "Jev Choice capability/calibration probe on 17 held-out planning-low instances x ISO/FULL",
             f"{JEV_CAPABILITY_REQUEST_CAP}-request and $1 live caps",
         ]),
-        "generator_commit": generator_commit,
+        "generator_commit": resolved_commit,
         "generator_version": tf.GENERATOR_VERSION,
         "checker_version": tf.CHECKER_VERSION,
+        "frozen_settings": _frozen_settings(),
         "protocol_boundary": {
             "jev_protocol_key": protocol_key,
             "codec_version": jc.JEV_CHOICE_CODEC_VERSION,
@@ -149,6 +253,9 @@ def build_jev_choice_capability_preregistration(*, repo_root: Path, generator_co
             "instance_ids": instance_ids,
             "instance_seeds": [instance.seed for instance in instances],
             "manifest_hash": manifest_hash,
+            "treatment_hash": treatment_hash,
+            "source_files": list(JEV_CAPABILITY_SOURCE_FILES),
+            "source_files_hash": source_files_hash,
             "conditions_run": list(JEV_CAPABILITY_CONDITIONS),
             "diagnostics_not_run": list(JEV_CAPABILITY_DIAGNOSTICS_NOT_RUN),
             "planned_requests": JEV_CAPABILITY_PLANNED_REQUESTS,
@@ -185,27 +292,42 @@ def build_jev_choice_capability_preregistration(*, repo_root: Path, generator_co
             "alpha": JEV_CAPABILITY_ALPHA,
         },
         "go_no_go": {
+            "denominator": f"all {JEV_CAPABILITY_PER_CELL} FULL cases must be attempted; a missing or "
+                           "invalid FULL output counts as a failure",
+            "task_validity_full_definition": "checker-accepted FULL selections divided by the "
+                                             f"{JEV_CAPABILITY_PER_CELL} attempted FULL cases; missing or "
+                                             "invalid FULL outputs count as failures",
+            "task_validity_full_threshold": 0.9,
+            "required_full_attempts": JEV_CAPABILITY_PER_CELL,
             "continue_if": ["preflight passes",
+                            f"attempted_full_cases == {JEV_CAPABILITY_PER_CELL}",
                             "full_vector_validity == 1.0 on attempted cases",
-                            "task_validity_full >= 0.9 (at most one invalid)",
+                            f"task_validity_full >= 0.9 (>= 16/{JEV_CAPABILITY_PER_CELL} FULL cases accepted, "
+                            "missing/invalid counted as failures)",
                             "no stop rule fired"],
             "stop_if": ["any contract mismatch", "resolved model differs from the pinned model",
-                        "request or cost cap reached", "task_validity_full below threshold"],
+                        "request or cost cap reached",
+                        f"fewer than {JEV_CAPABILITY_PER_CELL} FULL cases attempted",
+                        "task_validity_full below threshold"],
             "decision_owner": "reviewer",
             "note": "a passing probe does not establish calibration and does not authorize #157",
         },
     }
-    payload = json.dumps({key: value for key, value in document.items() if key != "preregistration_hash"},
-                         sort_keys=True)
-    document["preregistration_hash"] = hashlib.sha256(payload.encode()).hexdigest()
+    document["preregistration_hash"] = _document_hash(document)
     return document
 
 
 def verify_against_jev_choice_preregistration(document: Mapping[str, Any], *, instance_ids: Sequence[str],
                                               model: str, endpoint: str, codec_version: str,
                                               question_id: str, instructions: str,
-                                              planned_requests: int | None = None) -> dict[str, Any]:
-    """Verify a planned Jev capability probe against the locked registration."""
+                                              planned_requests: int | None = None,
+                                              repo_root: Path | None = None) -> dict[str, Any]:
+    """Verify a planned Jev capability probe against the locked registration.
+
+    Checks the registration's own hash, every frozen setting, the frozen manifest,
+    the protocol key, the caps and the go/no-go denominator. When ``repo_root`` is
+    given it also regenerates the held-out treatment and source-file hashes.
+    """
 
     errors: list[str] = []
     if str(document.get("preregistration_version", "")) != JEV_CAPABILITY_VERSION:
@@ -214,6 +336,9 @@ def verify_against_jev_choice_preregistration(document: Mapping[str, Any], *, in
         errors.append("registration is not locked for the Jev Choice capability probe")
     if document.get("approval_required") or not document.get("approval", {}).get("approved"):
         errors.append("Jev capability reviewer approval is missing")
+    recorded_hash = document.get("preregistration_hash")
+    if recorded_hash != _document_hash(document):
+        errors.append("registration hash mismatch: the document changed after it was hashed")
     block = document.get("jev_capability", {})
     if block.get("status") != "locked":
         errors.append("Jev capability block is not locked")
@@ -228,6 +353,11 @@ def verify_against_jev_choice_preregistration(document: Mapping[str, Any], *, in
     selected_hash = hashlib.sha256(json.dumps(list(instance_ids), sort_keys=True).encode()).hexdigest()
     if manifest_hash is not None and selected_hash != manifest_hash:
         errors.append("selected manifest hash differs from the frozen Jev manifest")
+
+    frozen = dict(document.get("frozen_settings", {}))
+    if frozen != _frozen_settings():
+        errors.append("frozen settings differ from the locked registration constants")
+
     provider_settings = document.get("provider_settings", {})
     if model != provider_settings.get("model"):
         errors.append(f"model {model!r} != locked {provider_settings.get('model')!r}")
@@ -239,6 +369,11 @@ def verify_against_jev_choice_preregistration(document: Mapping[str, Any], *, in
         errors.append(f"question id {question_id!r} != locked {provider_settings.get('question_id')!r}")
     if instructions != provider_settings.get("instructions"):
         errors.append("instructions differ from the locked Jev registration")
+    for name in ("codec_version", "state_schema", "criteria_policy", "option_id_policy", "question_id",
+                 "instructions", "normalization_tolerance", "max_retries", "retryable_statuses"):
+        if provider_settings.get(name) != frozen.get(name):
+            errors.append(f"provider setting {name!r} disagrees with frozen settings")
+
     actual_key = jc.jev_choice_protocol_key(model=model, endpoint=endpoint,
                                             max_retries=provider_settings.get("max_retries"),
                                             instructions=instructions, question_id=question_id)
@@ -247,15 +382,41 @@ def verify_against_jev_choice_preregistration(document: Mapping[str, Any], *, in
         errors.append("protocol key differs from the locked Jev registration")
     if not jc.is_jev_protocol_key(str(expected_key)):
         errors.append("locked protocol key is not a Jev key")
+
     request_cap = block.get("request_cap")
     caps = document.get("caps", {})
     if caps.get("max_requests") != request_cap or caps.get("max_cost_usd") != block.get("cost_cap_usd"):
         errors.append("Jev capability active caps disagree with the registered block")
+    for name in ("max_requests", "max_cost_usd", "min_interval_seconds", "input_token_ceiling",
+                 "input_usd_per_mtok", "stop_rules"):
+        if caps.get(name) != frozen.get(name):
+            errors.append(f"cap {name!r} disagrees with frozen settings")
+    for name in ("seed_base", "per_cell_instances", "planned_requests", "retry_preflight_reserve",
+                 "request_cap", "cost_cap_usd", "conditions_run", "diagnostics_not_run"):
+        if block.get(name) != frozen.get(name):
+            errors.append(f"block field {name!r} disagrees with frozen settings")
+
+    go_no_go = document.get("go_no_go", {})
+    if go_no_go.get("required_full_attempts") != JEV_CAPABILITY_PER_CELL:
+        errors.append("go/no-go denominator is not the full held-out FULL count")
+    if "missing or invalid" not in str(go_no_go.get("task_validity_full_definition", "")).lower():
+        errors.append("go/no-go does not count missing or invalid FULL outputs as failures")
+
+    if repo_root is not None:
+        try:
+            if block.get("treatment_hash") != _treatment_fingerprint(jev_capability_instances()):
+                errors.append("treatment hash differs from the regenerated held-out instances")
+            if block.get("source_files_hash") != _source_files_hash(repo_root):
+                errors.append("source files hash differs from the current sources")
+        except ValueError as exc:
+            errors.append(f"could not recompute registration inputs: {exc}")
+
     if planned_requests is not None and request_cap is not None and planned_requests > request_cap:
         errors.append(f"planned requests {planned_requests} exceed the Jev request cap {request_cap}")
     return {"ok": not errors, "errors": errors, "expected_protocol_key": expected_key,
             "actual_protocol_key": actual_key, "expected_instance_ids": frozen_ids,
-            "manifest_hash": manifest_hash, "planned_requests": planned_requests, "request_cap": request_cap}
+            "manifest_hash": manifest_hash, "registration_hash": recorded_hash,
+            "planned_requests": planned_requests, "request_cap": request_cap}
 
 
 def main(argv: Sequence[str] | None = None) -> int:

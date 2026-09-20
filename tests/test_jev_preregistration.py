@@ -1,3 +1,4 @@
+import copy
 import hashlib
 import json
 import unittest
@@ -88,6 +89,20 @@ class DraftTests(unittest.TestCase):
     def test_hash_is_reproducible_and_stable(self):
         self.assertEqual(build()["preregistration_hash"], self.doc["preregistration_hash"])
 
+    def test_generator_commit_and_content_hashes_are_bound(self):
+        self.assertTrue(self.doc["generator_commit"])
+        self.assertEqual(len(self.doc["generator_commit"]), 40)
+        block = self.doc["jev_capability"]
+        self.assertEqual(len(block["treatment_hash"]), 64)
+        self.assertEqual(len(block["source_files_hash"]), 64)
+        self.assertEqual(block["source_files"], list(jp.JEV_CAPABILITY_SOURCE_FILES))
+
+    def test_go_no_go_denominator_is_explicit(self):
+        go = self.doc["go_no_go"]
+        self.assertEqual(go["required_full_attempts"], 17)
+        self.assertIn("missing or invalid", go["task_validity_full_definition"].lower())
+        self.assertIn("attempted_full_cases == 17", go["continue_if"])
+
     def test_approved_registration_is_locked(self):
         locked = build(approved=True)
         self.assertEqual(locked["status"], "locked_for_jev_choice_capability")
@@ -120,6 +135,30 @@ class VerifierTests(unittest.TestCase):
     def test_verify_rejects_manifest_and_cap_drift(self):
         self.assertFalse(verify(self.doc, instance_ids=["planning-00000000"])["ok"])
         self.assertFalse(verify(self.doc, planned_requests=jp.JEV_CAPABILITY_REQUEST_CAP + 1)["ok"])
+
+    def test_verify_rejects_tampered_decision_rule(self):
+        tampered = copy.deepcopy(self.doc)
+        tampered["go_no_go"]["continue_if"].append("free pass")
+        result = verify(tampered)
+        self.assertFalse(result["ok"])
+        self.assertTrue(any("hash mismatch" in error for error in result["errors"]))
+
+    def test_verify_rejects_frozen_setting_drift_even_if_rehashed(self):
+        tampered = copy.deepcopy(self.doc)
+        tampered["provider_settings"]["state_schema"] = "tampered"
+        tampered["preregistration_hash"] = jp._document_hash(tampered)
+        result = verify(tampered)
+        self.assertFalse(result["ok"])
+        self.assertTrue(any("state_schema" in error for error in result["errors"]))
+
+    def test_verify_recomputes_treatment_and_source_hashes(self):
+        self.assertTrue(verify(self.doc, repo_root=REPO_ROOT)["ok"])
+        tampered = copy.deepcopy(self.doc)
+        tampered["jev_capability"]["treatment_hash"] = "0" * 64
+        tampered["preregistration_hash"] = jp._document_hash(tampered)
+        result = verify(tampered, repo_root=REPO_ROOT)
+        self.assertFalse(result["ok"])
+        self.assertTrue(any("treatment hash" in error for error in result["errors"]))
 
 
 if __name__ == "__main__":
