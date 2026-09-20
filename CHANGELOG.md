@@ -37,6 +37,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix board IPC integration and CLI tool wiring (#58)
 
 ### Changed
+- J3d — Lock Jev Choice capability and calibration preregistration (#179)
 - J3c — Run separately approved tiny Jev Choice wire smoke (#178)
 - J3b — Implement Choice wire codec and offline conformance (#177)
 - J3a — Decide Jev Choice gate contract and Python transport (#176)
