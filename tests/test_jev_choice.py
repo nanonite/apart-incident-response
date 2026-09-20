@@ -41,6 +41,20 @@ class FakeResponse:
         return self.body
 
 
+class RawResponse:
+    def __init__(self, body):
+        self.body = body if isinstance(body, bytes) else str(body).encode()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        return False
+
+    def read(self):
+        return self.body
+
+
 class ScriptedChoiceClient:
     """Fake transport: returns a canned response or raises."""
 
@@ -54,6 +68,13 @@ class ScriptedChoiceClient:
         if self.error is not None:
             raise self.error
         return self.response
+
+
+class AccountedClient(ScriptedChoiceClient):
+    """Fake transport that reports the effective endpoint/retry settings."""
+
+    endpoint = "https://example.invalid/v1/systemone"
+    max_retries = 0
 
 
 def envelope(option_ids, *, choice=None, model="jev-1.13.0", question_id="candidate",
@@ -90,20 +111,24 @@ class WireStateTests(unittest.TestCase):
     def test_iso_state_is_leak_free(self):
         instance = self.instance()
         state = self.adapter().build_state(instance, "A", "ISO")
-        self.assertEqual(set(state.state["clues"]), set(instance.private_clues["A"]))
+        self.assertEqual(state.state["clues"], list(instance.private_clues["A"]))
         for peer_clue in instance.private_clues["B"]:
             self.assertNotIn(peer_clue, state.state["clues"])
         self.assertNotIn("joint_clues", state.state)
         self.assertNotIn("visible_messages", state.state)
+        self.assertNotIn("condition", state.state)
         self.assertNotIn("joint_solutions", state.state)
         serialized = json.dumps(state.state)
         self.assertNotIn(instance.target, serialized)
         self.assertNotIn("joint_candidate_labels", serialized)
 
-    def test_full_state_adds_joint_clues_not_answer_key(self):
+    def test_full_state_uses_pooled_clues_once(self):
         instance = self.instance()
         state = self.adapter().build_state(instance, "A", "FULL")
-        self.assertEqual(set(state.state["clues"]), {claim.text for claim in instance.claims})
+        expected = [claim.text for claim in instance.claims]
+        self.assertEqual(state.state["clues"], expected)
+        self.assertEqual(len(state.state["clues"]), len(set(state.state["clues"])))
+        self.assertNotIn("condition", state.state)
         self.assertNotIn("joint_solutions", state.state)
         self.assertNotIn("joint_candidate_labels", json.dumps(state.state))
 
@@ -112,7 +137,9 @@ class WireStateTests(unittest.TestCase):
         message = {"message_id": "m1", "text": "precedes=deploy>inspect"}
         state = self.adapter().build_state(instance, "A", "COMM", visible_messages=[message])
         self.assertEqual(state.state["visible_messages"], [message])
+        self.assertEqual(state.state["clues"], list(instance.private_clues["A"]))
         self.assertNotIn("joint_clues", state.state)
+        self.assertNotIn("condition", state.state)
 
     def test_visible_messages_rejected_outside_comm(self):
         instance = self.instance()
@@ -334,6 +361,17 @@ class TransportTests(unittest.TestCase):
             client.complete({"model": "jev-1.13.0", "state": {}, "questions": {}})
         self.assertEqual(slept, [2.5])
 
+    def test_malformed_200_body_is_not_retried(self):
+        labels = sorted(planning_low_instances(1)[0].solutions)
+        client = JevChoiceClient(api_key=self.KEY, max_retries=2, sleep_fn=lambda _: None)
+        adapter = JevChoiceAdapter(client)
+        state = adapter.build_state(planning_low_instances(1)[0], "A", "ISO")
+        with patch("apart_incident_response.jev_choice.urllib.request.urlopen",
+                   side_effect=[RawResponse(b"not-json"), FakeResponse(envelope(labels))]):
+            response = adapter.complete(state)
+        self.assertEqual(response.error_class, "malformed_response")
+        self.assertEqual(client.physical_attempts, 1)
+
     def test_credentials_load_from_file_without_leaking(self):
         with tempfile.TemporaryDirectory() as directory:
             env_file = Path(directory) / "jev.env"
@@ -369,6 +407,25 @@ class ProtocolKeyTests(unittest.TestCase):
             assert_single_jev_protocol_key([{"nope": key}])
         self.assertTrue(is_jev_protocol_key(key))
         self.assertFalse(is_jev_protocol_key("six-family|a|b|c|d|e"))
+
+    def test_record_key_tracks_effective_settings(self):
+        instance = planning_low_instances(1)[0]
+
+        def key_for(adapter):
+            state = adapter.build_state(instance, "A", "ISO")
+            return adapter.record(state, adapter.complete(state))["protocol_key"]
+
+        baseline = key_for(JevChoiceAdapter(ScriptedChoiceClient({})))
+        self.assertEqual(baseline, jev_choice_protocol_key())
+        self.assertNotEqual(key_for(JevChoiceAdapter(ScriptedChoiceClient({}), instructions="Different.")),
+                            baseline)
+        self.assertNotEqual(key_for(JevChoiceAdapter(ScriptedChoiceClient({}), question_id="other")),
+                            baseline)
+        self.assertNotEqual(key_for(JevChoiceAdapter(ScriptedChoiceClient({}), model="jev-1.13.1")),
+                            baseline)
+        self.assertNotEqual(key_for(JevChoiceAdapter(AccountedClient({}))), baseline)
+        self.assertEqual(key_for(JevChoiceAdapter(AccountedClient({}))),
+                         jev_choice_protocol_key(endpoint=AccountedClient.endpoint, max_retries=0))
 
     def test_records_share_key_per_codec_but_hash_per_instance(self):
         first, second = planning_low_instances(2)

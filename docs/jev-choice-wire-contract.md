@@ -127,9 +127,14 @@ instruction for the Ling path and must not leak into the Jev state).
 
 | Condition | State contents | Forbidden |
 |---|---|---|
-| ISO | `family`, `complexity`, `condition`, `agent_id`, `private_clues` | `joint_clues`, peer claims, `joint_solutions`, target, joint candidate set/count |
-| FULL | ISO fields + `joint_clues` | `joint_solutions`, target, joint candidate count/labels |
-| COMM | ISO fields + received peer claims only (`visible_messages`) | joint clues not received, `joint_solutions`, target |
+| ISO | `family`, `complexity`, `agent_id`, `private_clues` | `joint_clues`, peer claims, `joint_solutions`, target, joint candidate set/count |
+| FULL | `family`, `complexity`, `agent_id`, **pooled clues once** (`joint_clues`) | re-prepending A's private clues, `joint_solutions`, target, joint candidate count/labels |
+| COMM | `family`, `complexity`, `agent_id`, `private_clues`, received peer claims only (`visible_messages`) | joint clues not received, `joint_solutions`, target |
+
+The **condition label is not part of the model-visible `state`**; it is recorded
+in the artifact row only. Keeping condition out of `state`, and using the pooled
+clues once in FULL, ensures the only ISO→FULL change is the information content,
+not duplicated clues or a treatment cue.
 
 `instance.solutions` (the 6 public options) is the criteria set in every
 condition and is not a leak; the private feasible set (`private_solutions`) and
@@ -186,6 +191,9 @@ Consequences: we own retry/backoff semantics and must reproduce them exactly
   `retry-after-ms`.
 - Total retry budget cap per call (e.g. 30 s); stop and surface the last error.
 - Count every physical attempt; the physical request counter is the cap unit.
+- **Retry only network errors and the specified HTTP statuses.** A malformed
+  JSON body on an HTTP success is a non-retryable invalid response
+  (`malformed_response`), reported immediately without further requests.
 - Credential only in the `Authorization` header; never in body, logs, or
   artifacts. Provider error bodies are sanitized (key redaction, length cap).
 
@@ -227,8 +235,12 @@ probability vector is not a usable receiver. Therefore:
   key fields.** Each row carries a separate per-call request/state hash plus the
   instance and condition ids, so matched conditions with the same
   codec/wording/policy share one protocol key and different instances do not
-  split the key. The analysis loader must **refuse mixed keys** so Jev artifacts
-  cannot be pooled with Ling artifacts or with the offline scaffold.
+  split the key. The recorded key is **derived from the settings actually used**
+  (model, effective endpoint and retry policy from the client, instruction
+  wording, question id), never from defaults; two adapters with different
+  effective settings cannot record the same key. The analysis loader must
+  **refuse mixed keys** so Jev artifacts cannot be pooled with Ling artifacts or
+  with the offline scaffold.
 - Sanitization / golden fixtures: store only `{probe, status, request, response}`
   with Authorization stripped and no credential echo (jev-dsl policy in
   `scripts/curate-fixtures.py`); `raw_response_retained: false`. Offline fixtures

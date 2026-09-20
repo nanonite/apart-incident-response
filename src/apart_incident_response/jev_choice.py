@@ -95,6 +95,10 @@ class JevTransportError(Exception):
     """Sanitized transport failure (no bodies, no credentials)."""
 
 
+class JevResponseError(Exception):
+    """A successful HTTP response whose body is not valid JSON (never retried)."""
+
+
 class JevProviderRejection(Exception):
     """A non-retryable provider HTTP rejection with a sanitized classification."""
 
@@ -247,7 +251,7 @@ class JevChoiceClient:
             self.physical_attempts += 1
             try:
                 with urllib.request.urlopen(http_request, timeout=self.timeout) as response:
-                    return json.loads(response.read().decode("utf-8"))
+                    raw_body = response.read()
             except urllib.error.HTTPError as exc:
                 status = int(exc.code)
                 if status in JEV_RETRYABLE_STATUSES and attempt < self.max_retries:
@@ -257,12 +261,18 @@ class JevChoiceClient:
                 if status in JEV_RETRYABLE_STATUSES:
                     raise JevTransportError(f"retry_exhausted_http_{status}")
                 raise JevProviderRejection(status, classify_http_status(status), self._error_detail(exc))
-            except (OSError, ValueError, TypeError, KeyError, json.JSONDecodeError) as exc:
+            except (OSError, TypeError, KeyError) as exc:
                 if attempt < self.max_retries:
                     self._sleep_backoff(attempt, None)
                     attempt += 1
                     continue
                 raise JevTransportError(type(exc).__name__)
+            # HTTP success: decode and parse once. A malformed body is an
+            # invalid response, not a retryable transport failure.
+            try:
+                return json.loads(raw_body.decode("utf-8"))
+            except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+                raise JevResponseError("malformed_json_body") from exc
 
 
 @dataclass(frozen=True)
@@ -309,11 +319,13 @@ def _invalid(model: str, request_hash: str, error_class: str) -> ChoiceResponse:
 
 
 def jev_choice_protocol_key(*, model: str = JEV_DEFAULT_MODEL, endpoint: str = JEV_SYSTEMONE_ENDPOINT,
-                            max_retries: int = JEV_MAX_RETRIES) -> str:
+                            max_retries: int = JEV_MAX_RETRIES,
+                            instructions: str = JEV_CHOICE_INSTRUCTIONS,
+                            question_id: str = JEV_QUESTION_ID) -> str:
     """Return the additive Jev protocol key.
 
-    Binds only static, instance-independent inputs; per-instance clue values live
-    in each row's ``request_hash`` instead.
+    Binds only static, instance-independent inputs that the adapter actually
+    uses; per-instance clue values live in each row's ``request_hash`` instead.
     """
 
     components = {
@@ -322,9 +334,9 @@ def jev_choice_protocol_key(*, model: str = JEV_DEFAULT_MODEL, endpoint: str = J
         "requested_model": model,
         "resolved_model_policy": JEV_CHOICE_RESOLVED_MODEL_POLICY,
         "state_schema": JEV_CHOICE_STATE_SCHEMA,
-        "instructions": JEV_CHOICE_INSTRUCTIONS,
+        "instructions": instructions,
         "criteria_policy": JEV_CHOICE_CRITERIA_POLICY,
-        "question_id": JEV_QUESTION_ID,
+        "question_id": question_id,
         "option_id_policy": JEV_CHOICE_OPTION_ID_POLICY,
         "normalization_tolerance": NORMALIZATION_TOLERANCE,
         "max_retries": max_retries,
@@ -374,13 +386,16 @@ class JevChoiceAdapter:
                     visible_messages: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
         view_condition = "FULL" if condition == "FULL" else condition
         view = instance.agent_view(agent, view_condition)
-        clues = list(view.get("private_clues", []))
         if condition == "FULL":
-            clues = clues + list(view.get("joint_clues", []))
+            # Pooled clues once: joint_clues already contains the union of both
+            # agents' private clues, so A's own private clues must not be
+            # re-prepended (that would add repetition, not information).
+            clues = list(view.get("joint_clues", []))
+        else:
+            clues = list(view.get("private_clues", []))
         state: dict[str, Any] = {
             "family": instance.family,
             "complexity": instance.complexity.value,
-            "condition": condition,
             "agent_id": agent,
             "clues": clues,
         }
@@ -433,6 +448,8 @@ class JevChoiceAdapter:
             return _invalid(self.model, state.request_hash, "missing_credentials")
         except JevProviderRejection:
             return _invalid(self.model, state.request_hash, "provider_rejected")
+        except JevResponseError:
+            return _invalid(self.model, state.request_hash, "malformed_response")
         except JevTransportError:
             return _invalid(self.model, state.request_hash, "transport_error")
         except Exception:
@@ -477,7 +494,7 @@ class JevChoiceAdapter:
         if abs(total - 1.0) > NORMALIZATION_TOLERANCE:
             return _invalid(self.model, state.request_hash, "not_normalized")
         peak = max(values.values())
-        argmax = {option_id for option_id, value in values.items() if abs(value - peak) <= 1e-12}
+        argmax = {option_id for option_id, value in values.items() if value == peak}
         selected = answer.get("choice")
         if not isinstance(selected, str) or selected not in expected or selected not in argmax:
             return _invalid(self.model, state.request_hash, "unknown_selection")
@@ -500,9 +517,16 @@ class JevChoiceAdapter:
         return response.selected_option_id if response.status == "complete" else None
 
     def record(self, state: ChoiceState, response: ChoiceResponse) -> dict[str, Any]:
+        protocol_key = jev_choice_protocol_key(
+            model=self.model,
+            endpoint=getattr(self.client, "endpoint", JEV_SYSTEMONE_ENDPOINT),
+            max_retries=getattr(self.client, "max_retries", JEV_MAX_RETRIES),
+            instructions=self.instructions,
+            question_id=self.question_id,
+        )
         return {
             "codec_version": self.version,
-            "protocol_key": jev_choice_protocol_key(model=self.model),
+            "protocol_key": protocol_key,
             "instance_id": state.instance_id,
             "agent_id": state.agent_id,
             "condition": state.condition,
@@ -596,6 +620,6 @@ __all__ = [
     "JEV_PROTOCOL_KEY_PREFIX", "JEV_CREDENTIAL_ENV_NAMES",
     "ChoiceClient", "ChoiceOption", "ChoiceResponse", "ChoiceState", "JevChoiceAdapter",
     "JevChoiceClient", "JevCredentialError", "JevCredentials", "JevProviderRejection",
-    "JevTransportError", "assert_single_jev_protocol_key", "is_jev_protocol_key",
+    "JevResponseError", "JevTransportError", "assert_single_jev_protocol_key", "is_jev_protocol_key",
     "jev_choice_protocol_key", "load_jev_credentials", "main",
 ]
