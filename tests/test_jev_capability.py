@@ -1,5 +1,7 @@
 import dataclasses
 import json
+import math
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -53,19 +55,20 @@ def spread_envelope(options, choice, probability=0.6, model="jev-1.13.0"):
     }
 
 
-def responses_for(plan, instances, *, full_wrong=0, full_invalid=0, iso_invalid=0, model="jev-1.13.0"):
+def build_plan(instances, registration, client):
+    adapter = JevChoiceAdapter(client, model=jp.JEV_CAPABILITY_MODEL)
+    return cap.build_capability_plan(instances, registration, adapter), adapter
+
+
+def responses_for(plan, instances, *, full_wrong=0, full_invalid=0, model="jev-1.13.0"):
     by_id = {instance.instance_id: instance for instance in instances}
     responses = []
-    wrong_left, invalid_left, iso_invalid_left = full_wrong, full_invalid, iso_invalid
+    wrong_left, invalid_left = full_wrong, full_invalid
     for case in plan.cases:
         instance = by_id[case.instance_id]
         options = list(case.option_ids)
         if case.condition == "FULL" and invalid_left > 0:
             invalid_left -= 1
-            responses.append({"model": model, "answers": {}, "usage": {"input_tokens": 10, "output_tokens": 1}})
-            continue
-        if case.condition == "ISO" and iso_invalid_left > 0:
-            iso_invalid_left -= 1
             responses.append({"model": model, "answers": {}, "usage": {"input_tokens": 10, "output_tokens": 1}})
             continue
         choice = instance.target if case.condition == "FULL" else options[0]
@@ -79,12 +82,10 @@ def responses_for(plan, instances, *, full_wrong=0, full_invalid=0, iso_invalid=
 def setup(responses=None, *, instances=None, registration=None, client=None):
     instances = instances or jp.jev_capability_instances()
     registration = registration or cap.load_registration()
-    client = client or FakeClient(responses if responses is not None else responses_for(
-        cap.build_capability_plan(instances, registration,
-                                  JevChoiceAdapter(FakeClient([]), model=jp.JEV_CAPABILITY_MODEL)),
-        instances))
-    adapter = JevChoiceAdapter(client, model=jp.JEV_CAPABILITY_MODEL)
-    plan = cap.build_capability_plan(instances, registration, adapter)
+    if client is None:
+        seed_plan, _ = build_plan(instances, registration, FakeClient([]))
+        client = FakeClient(responses if responses is not None else responses_for(seed_plan, instances))
+    plan, adapter = build_plan(instances, registration, client)
     verification = cap.verify_capability_preflight(plan, registration, adapter, JevCredentials(KEY, "test"),
                                                    repo_root=REPO_ROOT)
     return instances, registration, adapter, plan, verification
@@ -139,7 +140,8 @@ class PreflightTests(unittest.TestCase):
 class ExecutionTests(unittest.TestCase):
     def test_successful_completion_and_metrics(self):
         instances, _, adapter, plan, verification = setup()
-        report = cap.execute_capability_probe(plan, adapter, verification, instances, approval="test")
+        report = cap.execute_capability_probe(plan, adapter, verification, instances, approval="test",
+                                              sleep_fn=lambda _: None)
         self.assertEqual(report["status"], "completed")
         self.assertEqual(report["decision"], "continue")
         self.assertEqual(report["valid_cases"], 34)
@@ -147,43 +149,61 @@ class ExecutionTests(unittest.TestCase):
         self.assertEqual(report["full_vector_validity"], 1.0)
         self.assertEqual(report["task_validity_full"], 1.0)
         self.assertEqual(report["task_validity_full_denominator"], 17)
-        self.assertIsNotNone(report["p_correct_full_wilson"])
-        self.assertIsNotNone(report["brier"])
-        self.assertIsNotNone(report["log_loss"])
-        self.assertTrue(report["reliability_bins"])
-        self.assertIsNotNone(report["iso_mass_on_consistent_set"])
         self.assertEqual(report["by_condition"]["FULL"]["successes"], 17)
         self.assertEqual(report["go_no_go"]["reasons"], [])
+        self.assertEqual(report["metric_definitions"], cap.METRIC_DEFINITIONS)
+
+    def test_case_rows_persist_vectors_target_and_provenance(self):
+        instances, _, adapter, plan, verification = setup()
+        report = cap.execute_capability_probe(plan, adapter, verification, instances, approval="test",
+                                              sleep_fn=lambda _: None)
+        by_id = {instance.instance_id: instance for instance in instances}
+        for row in report["cases"]:
+            self.assertEqual(row["target_id"], by_id[row["instance_id"]].target)
+            self.assertEqual(row["protocol_key"], plan.protocol_key)
+            self.assertEqual(row["resolved_model"], "jev-1.13.0")
+            self.assertIn("input_tokens", row["usage"])
+            self.assertTrue(row["probabilities"])
+            self.assertAlmostEqual(sum(row["probabilities"].values()), 1.0)
+            self.assertEqual(set(row["probabilities"]), set(row["option_ids"]))
+
+    def test_calibration_uses_target_probability_and_multiclass_scores(self):
+        instances, _, adapter, plan, verification = setup()
+        report = cap.execute_capability_probe(plan, adapter, verification, instances, approval="test",
+                                              sleep_fn=lambda _: None)
+        self.assertAlmostEqual(report["p_correct_full"], 0.6, places=6)
+        self.assertEqual(report["p_correct_full_interval"] is not None, True)
+        expected_brier = (0.6 - 1.0) ** 2 + 5 * ((0.4 / 5) ** 2)
+        self.assertAlmostEqual(report["brier_multiclass"], expected_brier, places=6)
+        self.assertAlmostEqual(report["log_loss_multiclass"], -math.log(0.6), places=6)
+        self.assertTrue(report["selected_answer_reliability"])
+        self.assertEqual(report["reliability_bins"], report["selected_answer_reliability"])
 
     def test_retry_and_cap_accounting(self):
         instances, registration, _, _, _ = setup()
-        client = ExtraAttemptClient(responses_for(
-            cap.build_capability_plan(instances, registration,
-                                      JevChoiceAdapter(FakeClient([]), model=jp.JEV_CAPABILITY_MODEL)), instances))
-        adapter = JevChoiceAdapter(client, model=jp.JEV_CAPABILITY_MODEL)
-        plan = cap.build_capability_plan(instances, registration, adapter)
+        seed_plan, _ = build_plan(instances, registration, FakeClient([]))
+        client = ExtraAttemptClient(responses_for(seed_plan, instances))
+        plan, adapter = build_plan(instances, registration, client)
         verification = cap.verify_capability_preflight(plan, registration, adapter, JevCredentials(KEY, "test"),
                                                        repo_root=REPO_ROOT)
-        report = cap.execute_capability_probe(plan, adapter, verification, instances, approval="test")
+        report = cap.execute_capability_probe(plan, adapter, verification, instances, approval="test",
+                                              sleep_fn=lambda _: None)
         self.assertEqual(report["attempted_cases"], 34)
         self.assertEqual(report["physical_attempts"], 35)
-        self.assertGreaterEqual(report["physical_attempts"], report["attempted_cases"])
         self.assertLessEqual(report["physical_attempts"], report["max_physical_requests"])
 
     def test_contract_and_model_drift_stops_with_partial_preserved(self):
         instances, registration, _, _, _ = setup()
-        responses = responses_for(
-            cap.build_capability_plan(instances, registration,
-                                      JevChoiceAdapter(FakeClient([]), model=jp.JEV_CAPABILITY_MODEL)),
-            instances)
+        seed_plan, _ = build_plan(instances, registration, FakeClient([]))
+        responses = responses_for(seed_plan, instances)
         responses[2] = spread_envelope(list(instances[1].solutions), list(instances[1].solutions)[0],
                                        model="jev-1.13.1")
         client = FakeClient(responses)
-        adapter = JevChoiceAdapter(client, model=jp.JEV_CAPABILITY_MODEL)
-        plan = cap.build_capability_plan(instances, registration, adapter)
+        plan, adapter = build_plan(instances, registration, client)
         verification = cap.verify_capability_preflight(plan, registration, adapter, JevCredentials(KEY, "test"),
                                                        repo_root=REPO_ROOT)
-        report = cap.execute_capability_probe(plan, adapter, verification, instances, approval="test")
+        report = cap.execute_capability_probe(plan, adapter, verification, instances, approval="test",
+                                              sleep_fn=lambda _: None)
         self.assertEqual(report["status"], "stopped")
         self.assertEqual(report["stop_reason"], "model_drift")
         self.assertEqual(report["decision"], "stop")
@@ -193,44 +213,95 @@ class ExecutionTests(unittest.TestCase):
 
     def test_invalid_full_counts_as_failure_over_17(self):
         instances, registration, _, _, _ = setup()
-        responses = responses_for(
-            cap.build_capability_plan(instances, registration,
-                                      JevChoiceAdapter(FakeClient([]), model=jp.JEV_CAPABILITY_MODEL)),
-            instances, full_invalid=1)
-        client = FakeClient(responses)
-        adapter = JevChoiceAdapter(client, model=jp.JEV_CAPABILITY_MODEL)
-        plan = cap.build_capability_plan(instances, registration, adapter)
+        seed_plan, _ = build_plan(instances, registration, FakeClient([]))
+        client = FakeClient(responses_for(seed_plan, instances, full_invalid=1))
+        plan, adapter = build_plan(instances, registration, client)
         verification = cap.verify_capability_preflight(plan, registration, adapter, JevCredentials(KEY, "test"),
                                                        repo_root=REPO_ROOT)
-        report = cap.execute_capability_probe(plan, adapter, verification, instances, approval="test")
+        report = cap.execute_capability_probe(plan, adapter, verification, instances, approval="test",
+                                              sleep_fn=lambda _: None)
         self.assertEqual(report["status"], "stopped")
         self.assertEqual(report["task_validity_full"], 0.0)
+        self.assertEqual(report["p_correct_full"], 0.0)
+        self.assertEqual(report["brier_multiclass"], 1.0)
         self.assertEqual(report["task_validity_full_denominator"], 17)
 
     def test_go_no_go_threshold_is_exact(self):
         for full_wrong, expected in ((1, "continue"), (2, "stop")):
             instances, registration, _, _, _ = setup()
-            responses = responses_for(
-                cap.build_capability_plan(instances, registration,
-                                          JevChoiceAdapter(FakeClient([]), model=jp.JEV_CAPABILITY_MODEL)),
-                instances, full_wrong=full_wrong)
-            client = FakeClient(responses)
-            adapter = JevChoiceAdapter(client, model=jp.JEV_CAPABILITY_MODEL)
-            plan = cap.build_capability_plan(instances, registration, adapter)
+            seed_plan, _ = build_plan(instances, registration, FakeClient([]))
+            client = FakeClient(responses_for(seed_plan, instances, full_wrong=full_wrong))
+            plan, adapter = build_plan(instances, registration, client)
             verification = cap.verify_capability_preflight(plan, registration, adapter,
                                                            JevCredentials(KEY, "test"), repo_root=REPO_ROOT)
-            report = cap.execute_capability_probe(plan, adapter, verification, instances, approval="test")
+            report = cap.execute_capability_probe(plan, adapter, verification, instances, approval="test",
+                                                  sleep_fn=lambda _: None)
             self.assertAlmostEqual(report["task_validity_full"], (17 - full_wrong) / 17, places=6)
             self.assertEqual(report["decision"], expected, (full_wrong, report["go_no_go"]))
 
+    def test_min_interval_is_enforced(self):
+        instances, _, adapter, plan, verification = setup()
+        sleeps = []
+        cap.execute_capability_probe(plan, adapter, verification, instances, approval="test",
+                                     sleep_fn=sleeps.append)
+        self.assertEqual(len(sleeps), 33)
+        self.assertTrue(all(delay == plan.min_interval_seconds for delay in sleeps))
+
+    def test_effective_prompts_reported(self):
+        instances, _, adapter, plan, verification = setup()
+        report = cap.execute_capability_probe(plan, adapter, verification, instances, approval="test",
+                                              sleep_fn=lambda _: None)
+        self.assertEqual(report["distinct_request_hashes"], len({case.request_hash for case in plan.cases}))
+        self.assertEqual(report["effective_independent_prompts"], report["distinct_request_hashes"])
+        self.assertLessEqual(report["effective_independent_prompts"], 34)
+        self.assertIn("not 17 independent prompts", report["go_no_go"]["note"])
+
+
+class JournalTests(unittest.TestCase):
+    def test_refuses_existing_output_and_resumes(self):
+        instances, registration, _, _, _ = setup()
+        seed_plan, _ = build_plan(instances, registration, FakeClient([]))
+        all_responses = responses_for(seed_plan, instances)
+        with tempfile.TemporaryDirectory() as directory:
+            journal = Path(directory) / "cap.jsonl"
+            client = FakeClient(list(all_responses))
+            plan, adapter = build_plan(instances, registration, client)
+            verification = cap.verify_capability_preflight(plan, registration, adapter,
+                                                           JevCredentials(KEY, "test"), repo_root=REPO_ROOT)
+            report = cap.execute_capability_probe(plan, adapter, verification, instances, approval="test",
+                                                  journal_path=journal, sleep_fn=lambda _: None)
+            self.assertEqual(report["status"], "completed")
+            self.assertEqual(len(journal.read_text().splitlines()), 34)
+
+            second_client = FakeClient(list(all_responses))
+            _, second_adapter = build_plan(instances, registration, second_client)
+            blocked = cap.execute_capability_probe(plan, second_adapter, verification, instances,
+                                                   approval="test", journal_path=journal, resume=False)
+            self.assertEqual(blocked["stop_reason"], "output_exists")
+            self.assertEqual(second_client.calls, [])
+
+            prior = journal.read_text().splitlines()
+            partial = Path(directory) / "partial.jsonl"
+            partial.write_text("\n".join(prior[:2]) + "\n")
+            resume_client = FakeClient(list(all_responses[2:]))
+            plan3, adapter3 = build_plan(instances, registration, resume_client)
+            resumed = cap.execute_capability_probe(plan3, adapter3, verification, instances, approval="test",
+                                                   journal_path=partial, resume=True, sleep_fn=lambda _: None)
+            self.assertEqual(resumed["resumed_prior_attempts"], 2)
+            self.assertEqual(resumed["attempted_cases"], 34)
+            self.assertEqual(resumed["physical_attempts"], 34)
+            self.assertEqual(resumed["valid_cases"], 34)
+            self.assertEqual(resumed["status"], "completed")
+            self.assertEqual(len(partial.read_text().splitlines()), 34)
+
 
 class StatsTests(unittest.TestCase):
-    def test_reliability_bins_and_brier(self):
+    def test_reliability_bins_and_multiclass_scores(self):
         bins = cap.reliability_bins([(0.9, True), (0.9, True), (0.1, False)])
         self.assertEqual(sum(row["count"] for row in bins), 3)
-        brier, logloss = cap._brier_and_logloss([(0.9, True), (0.1, False)])
-        self.assertAlmostEqual(brier, 0.01)
-        self.assertGreater(logloss, 0.0)
+        brier, logloss = cap._multiclass_scores({"a": 0.9, "b": 0.1}, ["a", "b"], "a")
+        self.assertAlmostEqual(brier, 0.02)
+        self.assertAlmostEqual(logloss, -math.log(0.9))
 
 
 if __name__ == "__main__":
