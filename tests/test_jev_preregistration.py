@@ -84,7 +84,12 @@ class DraftTests(unittest.TestCase):
         for excluded in ("COMM", "Noul", "Score"):
             self.assertIn(excluded, self.doc["jev_capability"]["diagnostics_not_run"])
         self.assertIn("full_vector_validity", self.doc["capability_metrics"]["primary"])
-        self.assertIn("reliability_bins", self.doc["calibration_diagnostics"]["primary"])
+        calibration = self.doc["calibration_diagnostics"]
+        self.assertIn("brier_multiclass", calibration["primary"])
+        self.assertIn("selected_answer_reliability", calibration["primary"])
+        self.assertIn("Wilson does not apply", calibration["uncertainty"])
+        self.assertIn("repeated", calibration["repeated_prompt_limitation"].lower())
+        self.assertIn("12 distinct request hashes", calibration["repeated_prompt_limitation"])
 
     def test_hash_is_reproducible_and_stable(self):
         self.assertEqual(build()["preregistration_hash"], self.doc["preregistration_hash"])

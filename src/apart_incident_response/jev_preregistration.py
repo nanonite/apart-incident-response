@@ -22,7 +22,7 @@ from .jev_protocol import audit_instance
 from .jev_choice_smoke import DEFAULT_MANIFEST as JEV_PLANNING_LOW_MANIFEST
 
 
-JEV_CAPABILITY_VERSION = "stage2-jev-choice-capability-v1"
+JEV_CAPABILITY_VERSION = "stage2-jev-choice-capability-v2"
 JEV_CAPABILITY_STAGE = "jev-choice-capability"
 JEV_CAPABILITY_SEED_BASE = 71000
 JEV_CAPABILITY_PER_CELL = 17
@@ -210,6 +210,19 @@ def build_jev_choice_capability_preregistration(*, repo_root: Path, generator_co
             f"{JEV_CAPABILITY_REQUEST_CAP}-request and $1 live caps",
         ]),
         "generator_commit": resolved_commit,
+        "amendment": {
+            "amends": "stage2-jev-choice-capability-v1",
+            "reason": "the locked v1 named a Wilson interval for p_correct, but p_correct is defined as the "
+                      "mean probability assigned to the true target, to which Wilson does not apply; and the "
+                      "17 instances are repeated queries, not independent prompts",
+            "changes": [
+                "calibration diagnostics are descriptive: a normal-approximation interval for the mean target "
+                "probability, multiclass Brier and log loss, and selected-answer reliability bins",
+                "record the repeated-prompt limitation (12 distinct request hashes, not 17 independent "
+                "prompts) and rename effective_independent_prompts to distinct_request_hashes",
+            ],
+            "live_collection_authorized": False,
+        },
         "generator_version": tf.GENERATOR_VERSION,
         "checker_version": tf.CHECKER_VERSION,
         "frozen_settings": _frozen_settings(),
@@ -273,22 +286,38 @@ def build_jev_choice_capability_preregistration(*, repo_root: Path, generator_co
         },
         "capability_metrics": {
             "primary": ["full_vector_validity", "option_identity", "normalization", "task_validity_full"],
+            "scope": "capability only; these are not calibration estimates",
             "full_vector_validity": "share of attempted cases returning the documented Choice envelope "
                                     "with an exact option-key set and finite in-range probabilities",
             "option_identity": "criteria keys equal the exact sorted public candidate ids and the answer "
                                "probability keys equal them",
             "normalization": "probability sum within the codec normalization tolerance",
             "task_validity_full": "FULL-selected option accepted by the checker on instances whose pooled "
-                                  "clues determine a unique target",
+                                  "clues determine a unique target, over the fixed 17 FULL denominator; a "
+                                  "missing or invalid FULL output counts as a failure",
             "iso_mass_on_consistent_set": "descriptive: ISO probability mass on the private "
                                           "clue-consistent candidate set",
         },
         "calibration_diagnostics": {
-            "primary": ["p_correct", "brier", "log_loss", "reliability_bins"],
-            "uncertainty": "Wilson interval for p_correct; reliability bins reported with counts and "
-                           "intervals (Newcombe for paired contrasts)",
-            "footnote": f"{JEV_CAPABILITY_PER_CELL} held-out instances is a small probe; reliability bins "
-                        "are descriptive and do not establish calibration",
+            "primary": ["p_correct", "brier_multiclass", "log_loss_multiclass", "selected_answer_reliability"],
+            "scope": "descriptive only; this probe cannot establish calibration",
+            "p_correct_definition": "mean probability assigned to the true target over the 17 FULL cases; a "
+                                    "missing or invalid FULL case counts as 0.0",
+            "uncertainty": "normal-approximation interval for the mean target probability; Wilson does not "
+                           "apply to a mean probability",
+            "brier_multiclass": "mean over the 17 FULL cases of sum_i (p_i - 1{option_i == target})^2; a "
+                                "missing or invalid case scores 1.0",
+            "log_loss_multiclass": "mean over the 17 FULL cases of -log(p_target); a missing or invalid case "
+                                   "scores -log(1e-12)",
+            "selected_answer_reliability": "descriptive bins of the selected-option probability against "
+                                           "checker correctness; separate from target calibration",
+            "repeated_prompt_limitation": "the 17 instances yield only 12 distinct request hashes (6 ISO/FULL "
+                                          "prompt pairs) and 10 of 34 requests match the earlier wire smoke; "
+                                          "these are repeated queries, not independent prompts, so no "
+                                          "calibration is established and Wilson intervals must not be read "
+                                          "as 17 independent prompts",
+            "footnote": f"{JEV_CAPABILITY_PER_CELL} held-out instances is a small probe; reliability bins are "
+                        "descriptive and do not establish calibration",
             "alpha": JEV_CAPABILITY_ALPHA,
         },
         "go_no_go": {
@@ -310,7 +339,8 @@ def build_jev_choice_capability_preregistration(*, repo_root: Path, generator_co
                         f"fewer than {JEV_CAPABILITY_PER_CELL} FULL cases attempted",
                         "task_validity_full below threshold"],
             "decision_owner": "reviewer",
-            "note": "a passing probe does not establish calibration and does not authorize #157",
+            "note": "a repeated-query capability check: a passing probe does not establish calibration and "
+                    "does not authorize #157",
         },
     }
     document["preregistration_hash"] = _document_hash(document)

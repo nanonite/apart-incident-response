@@ -1,4 +1,13 @@
 {
+  "amendment": {
+    "amends": "stage2-jev-choice-capability-v1",
+    "changes": [
+      "calibration diagnostics are descriptive: a normal-approximation interval for the mean target probability, multiclass Brier and log loss, and selected-answer reliability bins",
+      "record the repeated-prompt limitation (12 distinct request hashes, not 17 independent prompts) and rename effective_independent_prompts to distinct_request_hashes"
+    ],
+    "live_collection_authorized": false,
+    "reason": "the locked v1 named a Wilson interval for p_correct, but p_correct is defined as the mean probability assigned to the true target, to which Wilson does not apply; and the 17 instances are repeated queries, not independent prompts"
+  },
   "approval": {
     "approved": true,
     "approved_by": "reviewer",
@@ -15,14 +24,20 @@
   ],
   "calibration_diagnostics": {
     "alpha": 0.05,
+    "brier_multiclass": "mean over the 17 FULL cases of sum_i (p_i - 1{option_i == target})^2; a missing or invalid case scores 1.0",
     "footnote": "17 held-out instances is a small probe; reliability bins are descriptive and do not establish calibration",
+    "log_loss_multiclass": "mean over the 17 FULL cases of -log(p_target); a missing or invalid case scores -log(1e-12)",
+    "p_correct_definition": "mean probability assigned to the true target over the 17 FULL cases; a missing or invalid FULL case counts as 0.0",
     "primary": [
       "p_correct",
-      "brier",
-      "log_loss",
-      "reliability_bins"
+      "brier_multiclass",
+      "log_loss_multiclass",
+      "selected_answer_reliability"
     ],
-    "uncertainty": "Wilson interval for p_correct; reliability bins reported with counts and intervals (Newcombe for paired contrasts)"
+    "repeated_prompt_limitation": "the 17 instances yield only 12 distinct request hashes (6 ISO/FULL prompt pairs) and 10 of 34 requests match the earlier wire smoke; these are repeated queries, not independent prompts, so no calibration is established and Wilson intervals must not be read as 17 independent prompts",
+    "scope": "descriptive only; this probe cannot establish calibration",
+    "selected_answer_reliability": "descriptive bins of the selected-option probability against checker correctness; separate from target calibration",
+    "uncertainty": "normal-approximation interval for the mean target probability; Wilson does not apply to a mean probability"
   },
   "capability_metrics": {
     "full_vector_validity": "share of attempted cases returning the documented Choice envelope with an exact option-key set and finite in-range probabilities",
@@ -35,7 +50,8 @@
       "normalization",
       "task_validity_full"
     ],
-    "task_validity_full": "FULL-selected option accepted by the checker on instances whose pooled clues determine a unique target"
+    "scope": "capability only; these are not calibration estimates",
+    "task_validity_full": "FULL-selected option accepted by the checker on instances whose pooled clues determine a unique target, over the fixed 17 FULL denominator; a missing or invalid FULL output counts as a failure"
   },
   "caps": {
     "estimated_cost_ceiling_usd": 0.023396352,
@@ -108,7 +124,7 @@
       "missing_checker_evidence"
     ]
   },
-  "generator_commit": "b773d5ef42a6d53e4e3f3ff70423e33664603fa9",
+  "generator_commit": "ef98eba13c257060bdc184f24dd33d37ab808a93",
   "generator_version": "six-family-clue-consistent-v2",
   "go_no_go": {
     "continue_if": [
@@ -120,7 +136,7 @@
     ],
     "decision_owner": "reviewer",
     "denominator": "all 17 FULL cases must be attempted; a missing or invalid FULL output counts as a failure",
-    "note": "a passing probe does not establish calibration and does not authorize #157",
+    "note": "a repeated-query capability check: a passing probe does not establish calibration and does not authorize #157",
     "required_full_attempts": 17,
     "stop_if": [
       "any contract mismatch",
@@ -212,8 +228,8 @@
     "treatment_hash": "7939ad556f33bcff9c987036975edabc68ae76b3e1a7fb2b48d798bbc0843979"
   },
   "pending_decisions": [],
-  "preregistration_hash": "58f056cd09a1045f965f3b56e89a8db6d47306731d9d32a3aef797adda72fc28",
-  "preregistration_version": "stage2-jev-choice-capability-v1",
+  "preregistration_hash": "f9cb7b314ddf816013ab1d4d671e6b147d1415c897ace0851844c39cc3c78fb5",
+  "preregistration_version": "stage2-jev-choice-capability-v2",
   "proposed_decisions": [],
   "protocol_boundary": {
     "codec_version": "jev-choice-wire-v1",

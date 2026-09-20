@@ -247,18 +247,18 @@ class ExecutionTests(unittest.TestCase):
         self.assertEqual(len(sleeps), 33)
         self.assertTrue(all(delay == plan.min_interval_seconds for delay in sleeps))
 
-    def test_effective_prompts_reported(self):
+    def test_distinct_request_hashes_reported_without_independence_claim(self):
         instances, _, adapter, plan, verification = setup()
         report = cap.execute_capability_probe(plan, adapter, verification, instances, approval="test",
                                               sleep_fn=lambda _: None)
         self.assertEqual(report["distinct_request_hashes"], len({case.request_hash for case in plan.cases}))
-        self.assertEqual(report["effective_independent_prompts"], report["distinct_request_hashes"])
-        self.assertLessEqual(report["effective_independent_prompts"], 34)
+        self.assertNotIn("effective_independent_prompts", report)
         self.assertIn("not 17 independent prompts", report["go_no_go"]["note"])
+        self.assertIn("Wilson does not apply", report["metric_definitions"]["p_correct_full_interval"])
 
 
 class JournalTests(unittest.TestCase):
-    def test_refuses_existing_output_and_resumes(self):
+    def test_journal_is_durable_and_refuses_overwrite(self):
         instances, registration, _, _, _ = setup()
         seed_plan, _ = build_plan(instances, registration, FakeClient([]))
         all_responses = responses_for(seed_plan, instances)
@@ -271,28 +271,19 @@ class JournalTests(unittest.TestCase):
             report = cap.execute_capability_probe(plan, adapter, verification, instances, approval="test",
                                                   journal_path=journal, sleep_fn=lambda _: None)
             self.assertEqual(report["status"], "completed")
-            self.assertEqual(len(journal.read_text().splitlines()), 34)
+            lines = journal.read_text().splitlines()
+            self.assertEqual(len(lines), 34)
+            for line in lines:
+                row = json.loads(line)
+                self.assertEqual(row["protocol_key"], plan.protocol_key)
+                self.assertIn("probabilities", row)
 
             second_client = FakeClient(list(all_responses))
             _, second_adapter = build_plan(instances, registration, second_client)
             blocked = cap.execute_capability_probe(plan, second_adapter, verification, instances,
-                                                   approval="test", journal_path=journal, resume=False)
+                                                   approval="test", journal_path=journal)
             self.assertEqual(blocked["stop_reason"], "output_exists")
             self.assertEqual(second_client.calls, [])
-
-            prior = journal.read_text().splitlines()
-            partial = Path(directory) / "partial.jsonl"
-            partial.write_text("\n".join(prior[:2]) + "\n")
-            resume_client = FakeClient(list(all_responses[2:]))
-            plan3, adapter3 = build_plan(instances, registration, resume_client)
-            resumed = cap.execute_capability_probe(plan3, adapter3, verification, instances, approval="test",
-                                                   journal_path=partial, resume=True, sleep_fn=lambda _: None)
-            self.assertEqual(resumed["resumed_prior_attempts"], 2)
-            self.assertEqual(resumed["attempted_cases"], 34)
-            self.assertEqual(resumed["physical_attempts"], 34)
-            self.assertEqual(resumed["valid_cases"], 34)
-            self.assertEqual(resumed["status"], "completed")
-            self.assertEqual(len(partial.read_text().splitlines()), 34)
 
 
 class StatsTests(unittest.TestCase):

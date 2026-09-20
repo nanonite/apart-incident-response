@@ -2,8 +2,10 @@
 
 Offline by default. The preflight pins the reviewed registration hash and fails
 closed; a live run additionally requires an explicit approval record. Case rows
-are journaled durably and the output refuses to be overwritten unless a reviewed
-resume path accounts for prior attempts. Live collection is separately gated.
+are journaled durably; a fresh run refuses to overwrite an existing journal
+(automatic resume is disabled for this small run so retry accounting cannot
+silently exceed the cap). This is a repeated-query capability check: the 34
+cases contain only 12 distinct request hashes and do not establish calibration.
 """
 
 from __future__ import annotations
@@ -24,8 +26,8 @@ from .jev_choice import JevChoiceAdapter, JevChoiceClient, load_jev_credentials
 from .jev_choice_smoke import estimate_cost_usd
 
 
-#: The reviewed, locked registration hash from #179. Fail closed if it differs.
-JEV_CAPABILITY_REGISTRATION_HASH = "58f056cd09a1045f965f3b56e89a8db6d47306731d9d32a3aef797adda72fc28"
+#: The reviewed, locked registration hash from #179 (amended v2). Fail closed if it differs.
+JEV_CAPABILITY_REGISTRATION_HASH = "f9cb7b314ddf816013ab1d4d671e6b147d1415c897ace0851844c39cc3c78fb5"
 DEFAULT_REGISTRATION = Path("runs/epic-126/jev-choice-capability-preregistration.json")
 DEFAULT_REPORT = Path("runs/epic-126/jev-choice-capability-report.json")
 DEFAULT_OUTPUT = Path("runs/epic-126/jev-choice-capability.jsonl")
@@ -40,6 +42,8 @@ METRIC_DEFINITIONS = {
     "full_vector_validity": "attempted cases returning the documented Choice envelope divided by attempted cases",
     "p_correct_full": "mean probability assigned to the true target over the 17 FULL cases; a missing or "
                       "invalid FULL output counts as 0.0",
+    "p_correct_full_interval": "normal-approximation interval for the mean target probability (descriptive; "
+                               "Wilson does not apply to a mean probability)",
     "brier_multiclass": "mean over the 17 FULL cases of sum_i (p_i - 1{option_i == target})^2; a missing or "
                         "invalid case scores 1.0",
     "log_loss_multiclass": "mean over the 17 FULL cases of -log(p_target); a missing or invalid case scores "
@@ -47,6 +51,9 @@ METRIC_DEFINITIONS = {
     "selected_answer_reliability": "descriptive bins of the selected-option probability against checker "
                                    "correctness; separate from target calibration",
     "reliability_bins": "alias of selected_answer_reliability (kept for the registered metric name)",
+    "repeated_prompt_limitation": "the 34 cases contain only 12 distinct request hashes (6 ISO/FULL prompt "
+                                  "pairs) and 10 match the earlier wire smoke; these are repeated queries, "
+                                  "not independent prompts, so no calibration is established",
 }
 
 
@@ -84,7 +91,6 @@ class CapabilityPlan:
             "model": self.model, "endpoint": self.endpoint, "protocol_key": self.protocol_key,
             "registration_hash": self.registration_hash, "planned_cases": len(self.cases),
             "distinct_request_hashes": distinct,
-            "effective_independent_prompts": distinct,
             "request_cap": self.request_cap, "cost_cap_usd": self.cost_cap_usd,
             "cost_ceiling_usd": estimate_cost_usd(self.input_token_ceiling * max(1, self.request_cap)),
             "min_interval_seconds": self.min_interval_seconds,
@@ -209,21 +215,16 @@ def _blocked(plan: CapabilityPlan, reason: str, approval: str | None) -> dict[st
             "raw_response_retained": False, "credentials_retained": False}
 
 
-def _read_journal(path: Path) -> list[dict[str, Any]]:
-    rows: list[dict[str, Any]] = []
-    if path.is_file():
-        for line in path.read_text(encoding="utf-8").splitlines():
-            if line.strip():
-                rows.append(json.loads(line))
-    return rows
-
-
 def execute_capability_probe(plan: CapabilityPlan, adapter: JevChoiceAdapter, verification: Mapping[str, Any],
                              instances: Sequence[Any], *, approval: str | None,
                              pinned_hash: str = JEV_CAPABILITY_REGISTRATION_HASH,
-                             journal_path: Path | None = None, resume: bool = False,
+                             journal_path: Path | None = None,
                              sleep_fn: Callable[[float], None] = time.sleep) -> dict[str, Any]:
-    """Run the bounded probe. Fails closed: no call unless preflight, pin and caps pass."""
+    """Run the bounded probe. Fails closed: no call unless preflight, pin and caps pass.
+
+    Automatic resume is disabled: a fresh run refuses an existing journal so that
+    prior rows cannot be miscounted as physical requests or accepted unchecked.
+    """
 
     if not approval:
         return _blocked(plan, "missing_approval", approval)
@@ -233,16 +234,8 @@ def execute_capability_probe(plan: CapabilityPlan, adapter: JevChoiceAdapter, ve
         return _blocked(plan, "registration_hash_mismatch", approval)
     if getattr(adapter.client, "max_physical_requests", None) != plan.request_cap:
         return _blocked(plan, "transport_cap_not_enforced", approval)
-    if journal_path is not None:
-        if journal_path.exists() and not resume:
-            return _blocked(plan, "output_exists", approval)
-        if resume and not journal_path.exists():
-            return _blocked(plan, "resume_missing_journal", approval)
-
-    prior_rows = _read_journal(journal_path) if (journal_path is not None and resume) else []
-    completed = {(row.get("instance_id"), row.get("condition")) for row in prior_rows
-                 if row.get("status") == "complete"}
-    prior_attempts = len(prior_rows)
+    if journal_path is not None and journal_path.exists():
+        return _blocked(plan, "output_exists", approval)
 
     by_id = {instance.instance_id: instance for instance in instances}
     report: dict[str, Any] = {
@@ -251,71 +244,36 @@ def execute_capability_probe(plan: CapabilityPlan, adapter: JevChoiceAdapter, ve
         "pinned_registration_hash": pinned_hash, "model": plan.model, "endpoint": plan.endpoint,
         "protocol_key": plan.protocol_key, "planned_cases": len(plan.cases),
         "distinct_request_hashes": len({case.request_hash for case in plan.cases}),
-        "effective_independent_prompts": len({case.request_hash for case in plan.cases}),
-        "resumed_prior_attempts": prior_attempts, "attempted_cases": prior_attempts, "valid_cases": 0,
+        "attempted_cases": 0, "valid_cases": 0,
         "by_condition": {condition: {"planned": 0, "attempted": 0, "valid": 0, "invalid": 0, "successes": 0}
                          for condition in jp.JEV_CAPABILITY_CONDITIONS},
         "physical_attempts": 0, "max_physical_requests": plan.request_cap, "input_tokens": 0,
         "output_tokens": 0, "estimated_cost_usd": 0.0,
         "cost_ceiling_usd": estimate_cost_usd(plan.input_token_ceiling * max(1, plan.request_cap)),
         "cost_cap_usd": plan.cost_cap_usd, "min_interval_seconds": plan.min_interval_seconds,
-        "resolved_models": [], "invalid_classes": {}, "cases": [dict(row) for row in prior_rows],
+        "resolved_models": [], "invalid_classes": {}, "cases": [],
         "metric_definitions": dict(METRIC_DEFINITIONS),
         "raw_response_retained": False, "credentials_retained": False,
     }
     for case in plan.cases:
         report["by_condition"][case.condition]["planned"] += 1
-    for row in prior_rows:
-        condition = row.get("condition")
-        if condition not in report["by_condition"]:
-            continue
-        report["by_condition"][condition]["attempted"] += 1
-        report["input_tokens"] += int((row.get("usage") or {}).get("input_tokens", 0) or 0)
-        report["output_tokens"] += int((row.get("usage") or {}).get("output_tokens", 0) or 0)
-        if row.get("resolved_model"):
-            report["resolved_models"] = sorted(set(report["resolved_models"]) | {row["resolved_model"]})
-        if row.get("status") == "complete":
-            report["valid_cases"] += 1
-            report["by_condition"][condition]["valid"] += 1
-            if row.get("accepted"):
-                report["by_condition"][condition]["successes"] += 1
-        else:
-            report["by_condition"][condition]["invalid"] += 1
-            report["invalid_classes"][row.get("error_class")] = \
-                report["invalid_classes"].get(row.get("error_class"), 0) + 1
-    report["estimated_cost_usd"] = estimate_cost_usd(report["input_tokens"])
 
     handle = None
     if journal_path is not None:
         journal_path.parent.mkdir(parents=True, exist_ok=True)
-        handle = journal_path.open("a" if resume else "x", encoding="utf-8")
+        handle = journal_path.open("x", encoding="utf-8")
 
     full_planned = [case for case in plan.cases if case.condition == "FULL"]
-    recorded: dict[tuple[str, str], dict[str, Any]] = {(row.get("instance_id"), row.get("condition")): row
-                                                       for row in prior_rows}
+    recorded: dict[tuple[str, str], dict[str, Any]] = {}
     selected_pairs: list[tuple[float, bool]] = []
     iso_mass: list[float] = []
-    for row in prior_rows:
-        if row.get("status") != "complete":
-            continue
-        probabilities = row.get("probabilities") or {}
-        if row.get("condition") == "FULL":
-            selected_pairs.append((float(probabilities.get(row.get("selected_option_id") or "", 0.0)),
-                                   bool(row.get("accepted"))))
-        elif row.get("condition") == "ISO":
-            instance = by_id.get(row.get("instance_id"))
-            if instance is not None:
-                iso_mass.append(sum(float(probabilities.get(option, 0.0))
-                                    for option in instance.private_solutions["A"]))
     issued_this_run = 0
     try:
         for case in plan.cases:
-            if (case.instance_id, case.condition) in completed:
-                continue
             if report["estimated_cost_usd"] >= plan.cost_cap_usd:
                 report["status"], report["stop_reason"] = "stopped", "cost_cap"
                 break
-            if prior_attempts + getattr(adapter.client, "physical_attempts", 0) >= plan.request_cap:
+            if getattr(adapter.client, "physical_attempts", 0) >= plan.request_cap:
                 report["status"], report["stop_reason"] = "stopped", "request_cap"
                 break
             if issued_this_run > 0 and plan.min_interval_seconds > 0:
@@ -373,7 +331,7 @@ def execute_capability_probe(plan: CapabilityPlan, adapter: JevChoiceAdapter, ve
         if handle is not None:
             handle.close()
 
-    report["physical_attempts"] = prior_attempts + int(getattr(adapter.client, "physical_attempts", 0) or 0)
+    report["physical_attempts"] = int(getattr(adapter.client, "physical_attempts", 0) or 0)
     attempted = report["attempted_cases"]
     full_successes = report["by_condition"]["FULL"]["successes"]
     report["full_vector_validity"] = round(report["valid_cases"] / attempted, 6) if attempted else None
@@ -418,9 +376,9 @@ def execute_capability_probe(plan: CapabilityPlan, adapter: JevChoiceAdapter, ve
         report["decision"] = "stop" if reasons else "continue"
     report["go_no_go"] = {
         "decision": report["decision"], "reasons": reasons,
-        "effective_independent_prompts": report["effective_independent_prompts"],
-        "note": "Wilson intervals are over the 17 registered cases, which are not 17 independent prompts; "
-                "a passing probe does not establish calibration and does not authorize #157",
+        "distinct_request_hashes": report["distinct_request_hashes"],
+        "note": "repeated-query capability check: the 34 cases are only 12 distinct request hashes, not 17 "
+                "independent prompts; a passing probe does not establish calibration and does not authorize #157",
     }
     return report
 
@@ -447,8 +405,6 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--live", action="store_true", help="issue the live probe (requires --approval)")
     parser.add_argument("--approval", help="recorded reviewer approval reference; required for --live")
-    parser.add_argument("--resume", action="store_true",
-                        help="append to an existing reviewed journal, accounting for prior attempts")
     args = parser.parse_args(argv)
 
     registration = load_registration(args.registration)
@@ -476,7 +432,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                              max_retries=jp.JEV_CAPABILITY_MAX_RETRIES)
     live_adapter = JevChoiceAdapter(client, model=jp.JEV_CAPABILITY_MODEL)
     report = execute_capability_probe(plan, live_adapter, verification, instances, approval=args.approval,
-                                      journal_path=args.output, resume=args.resume)
+                                      journal_path=args.output)
     args.report.parent.mkdir(parents=True, exist_ok=True)
     args.report.write_text(json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n",
                            encoding="utf-8")
