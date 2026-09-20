@@ -1,0 +1,455 @@
+{
+  "candidate_decisions": [
+    {
+      "cell": "hypothesis:low",
+      "decision": "hold",
+      "holm_adjusted_p": 0.453125,
+      "reason": "Ling C_need not Holm-significant on the selection screen"
+    },
+    {
+      "cell": "hypothesis:medium",
+      "decision": "hold",
+      "holm_adjusted_p": 0.0625,
+      "reason": "Ling C_need not Holm-significant on the selection screen"
+    },
+    {
+      "cell": "planning:high",
+      "decision": "hold",
+      "holm_adjusted_p": 0.1875,
+      "reason": "planning-high validity was repaired separately; not in the Jev scope"
+    },
+    {
+      "cell": "planning:low",
+      "decision": "advance",
+      "holm_adjusted_p": 0.009765625,
+      "reason": "Jev ISO/FULL entropy contrast passes the post-hoc criterion"
+    },
+    {
+      "cell": "reference:low",
+      "decision": "hold",
+      "holm_adjusted_p": 0.5,
+      "reason": "Ling C_need not Holm-significant on the selection screen"
+    }
+  ],
+  "causal_uptake_unknowns": [
+    "confirmatory-v3 COMM shows voluntary board use but only 2/17 post-read correlation events and confounds board use with the extra finalizer turn",
+    "no matched real/placebo/null receiver replay has been run, so causal message uptake is unestablished",
+    "Jev has no COMM data; the message effect on H(Choice p) is untested"
+  ],
+  "ceiling_assessment": {
+    "checks": [
+      {
+        "check": "structural_need_complete",
+        "detail": {
+          "all_pass": true,
+          "both_agents_needed_count": 17,
+          "channel_complete_count": 17,
+          "finalizer_needs_peer_count": 17,
+          "instances": 17
+        },
+        "ok": true
+      },
+      {
+        "check": "ling_c_need_significant",
+        "detail": 0.009765625,
+        "ok": true
+      },
+      {
+        "check": "iso_entropy_above_floor",
+        "detail": 1.285273200366824,
+        "ok": true
+      },
+      {
+        "check": "full_entropy_near_ceiling",
+        "detail": 0.004752537405641834,
+        "ok": true
+      },
+      {
+        "check": "iso_to_full_entropy_contrast",
+        "detail": 1.280520662961182,
+        "ok": true
+      },
+      {
+        "check": "iso_mass_on_consistent_set",
+        "detail": 0.9835294117647058,
+        "ok": true
+      }
+    ],
+    "criterion": {
+      "delta_entropy_min_bits": 1.0,
+      "full_entropy_max_bits": 0.1,
+      "iso_consistent_mass_min": 0.9,
+      "iso_entropy_min_bits": 1.0,
+      "ling_holm_alpha": 0.05,
+      "note": "post-hoc selection criterion, not preregistered"
+    },
+    "decision": "advance",
+    "rationale": "The entropy experiment operates on the receiver's pre-read (ISO-like) state and uses FULL as the saturated upper bound, so a near-ceiling FULL is the expected manipulation check, not the measurement cell. Planning-low is compatible with an ISO->FULL information contrast because ISO retains substantial entropy above the floor while its mass is concentrated on the true clue-consistent set; the ceiling would disqualify the cell only if ISO entropy were near zero or ISO mass were not on the consistent set."
+  },
+  "jev": {
+    "by_condition": {
+      "FULL": {
+        "accepted": 17,
+        "entropy_bits_max": 0.08079313589591118,
+        "entropy_bits_min": -0.0,
+        "log2_option_count": 2.584962500721156,
+        "mean_entropy_bits": 0.004752537405641834,
+        "mean_p_target": 0.9994117647058822,
+        "valid": 17
+      },
+      "ISO": {
+        "accepted": 8,
+        "entropy_bits_max": 1.6149144555943609,
+        "entropy_bits_min": 1.0589164350135674,
+        "log2_option_count": 2.584962500721156,
+        "mean_entropy_bits": 1.285273200366824,
+        "mean_p_target": 0.4511764705882353,
+        "valid": 17
+      }
+    },
+    "distinct_prompt_forms": 6,
+    "distinct_request_hashes": 12,
+    "invalid_rows": [],
+    "iso_consistent_mass": 0.9835294117647058,
+    "journal_rows": 34,
+    "mean_delta_entropy_bits": 1.280520662961182,
+    "normalization_ok": true,
+    "option_identity_ok": true,
+    "paired_instances": [
+      {
+        "delta_entropy_bits": 1.1357273273587818,
+        "full_accepted": true,
+        "full_entropy_bits": -0.0,
+        "full_p_target": 1.0,
+        "instance_id": "planning-00011558",
+        "iso_accepted": true,
+        "iso_entropy_bits": 1.1357273273587818,
+        "iso_p_target": 0.75,
+        "request_hash_full": "66cf786ee6fce946e3edb1ddd32cbab8b1cc45273f12036676e899cc5b295cff",
+        "request_hash_iso": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee"
+      },
+      {
+        "delta_entropy_bits": 1.3609339624709247,
+        "full_accepted": true,
+        "full_entropy_bits": -0.0,
+        "full_p_target": 1.0,
+        "instance_id": "planning-00011559",
+        "iso_accepted": false,
+        "iso_entropy_bits": 1.3609339624709247,
+        "iso_p_target": 0.32,
+        "request_hash_full": "457e45ecaaea7a9086e26d27b44f7c9c2ea2a131d4bdc0fe77c4ac6d3b83429d",
+        "request_hash_iso": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb"
+      },
+      {
+        "delta_entropy_bits": 1.4717992776559439,
+        "full_accepted": true,
+        "full_entropy_bits": -0.0,
+        "full_p_target": 1.0,
+        "instance_id": "planning-0001155a",
+        "iso_accepted": true,
+        "iso_entropy_bits": 1.4717992776559439,
+        "iso_p_target": 0.61,
+        "request_hash_full": "f72bb61296573346a82655b00863ffbbdf6e20777ceb6e2763281e54d75e9595",
+        "request_hash_iso": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222"
+      },
+      {
+        "delta_entropy_bits": 1.2663086665790755,
+        "full_accepted": true,
+        "full_entropy_bits": -0.0,
+        "full_p_target": 1.0,
+        "instance_id": "planning-0001155b",
+        "iso_accepted": false,
+        "iso_entropy_bits": 1.2663086665790755,
+        "iso_p_target": 0.22,
+        "request_hash_full": "457e45ecaaea7a9086e26d27b44f7c9c2ea2a131d4bdc0fe77c4ac6d3b83429d",
+        "request_hash_iso": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb"
+      },
+      {
+        "delta_entropy_bits": 1.1222757388469868,
+        "full_accepted": true,
+        "full_entropy_bits": -0.0,
+        "full_p_target": 1.0,
+        "instance_id": "planning-0001155c",
+        "iso_accepted": true,
+        "iso_entropy_bits": 1.1222757388469868,
+        "iso_p_target": 0.75,
+        "request_hash_full": "66cf786ee6fce946e3edb1ddd32cbab8b1cc45273f12036676e899cc5b295cff",
+        "request_hash_iso": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee"
+      },
+      {
+        "delta_entropy_bits": 1.2078993584975828,
+        "full_accepted": true,
+        "full_entropy_bits": -0.0,
+        "full_p_target": 1.0,
+        "instance_id": "planning-0001155d",
+        "iso_accepted": false,
+        "iso_entropy_bits": 1.2078993584975828,
+        "iso_p_target": 0.22,
+        "request_hash_full": "457e45ecaaea7a9086e26d27b44f7c9c2ea2a131d4bdc0fe77c4ac6d3b83429d",
+        "request_hash_iso": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb"
+      },
+      {
+        "delta_entropy_bits": 1.5964835388700853,
+        "full_accepted": true,
+        "full_entropy_bits": -0.0,
+        "full_p_target": 1.0,
+        "instance_id": "planning-0001155e",
+        "iso_accepted": true,
+        "iso_entropy_bits": 1.5964835388700853,
+        "iso_p_target": 0.5,
+        "request_hash_full": "98b00b7fe8ac7a374898193de3cc11325f9c2177bfd04ee473786cac87c94766",
+        "request_hash_iso": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c"
+      },
+      {
+        "delta_entropy_bits": 1.6149144555943609,
+        "full_accepted": true,
+        "full_entropy_bits": -0.0,
+        "full_p_target": 1.0,
+        "instance_id": "planning-0001155f",
+        "iso_accepted": false,
+        "iso_entropy_bits": 1.6149144555943609,
+        "iso_p_target": 0.41,
+        "request_hash_full": "98b00b7fe8ac7a374898193de3cc11325f9c2177bfd04ee473786cac87c94766",
+        "request_hash_iso": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c"
+      },
+      {
+        "delta_entropy_bits": 1.2109236884766434,
+        "full_accepted": true,
+        "full_entropy_bits": -0.0,
+        "full_p_target": 1.0,
+        "instance_id": "planning-00011560",
+        "iso_accepted": true,
+        "iso_entropy_bits": 1.2109236884766434,
+        "iso_p_target": 0.72,
+        "request_hash_full": "66cf786ee6fce946e3edb1ddd32cbab8b1cc45273f12036676e899cc5b295cff",
+        "request_hash_iso": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee"
+      },
+      {
+        "delta_entropy_bits": 1.126682477111473,
+        "full_accepted": true,
+        "full_entropy_bits": 0.08079313589591118,
+        "full_p_target": 0.99,
+        "instance_id": "planning-00011561",
+        "iso_accepted": true,
+        "iso_entropy_bits": 1.207475613007384,
+        "iso_p_target": 0.68,
+        "request_hash_full": "645a4f7872e8225b09611cf69f9373980dbe6dcecea0f9afd24e45362fe0885f",
+        "request_hash_iso": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc"
+      },
+      {
+        "delta_entropy_bits": 1.1803283888251836,
+        "full_accepted": true,
+        "full_entropy_bits": -0.0,
+        "full_p_target": 1.0,
+        "instance_id": "planning-00011562",
+        "iso_accepted": false,
+        "iso_entropy_bits": 1.1803283888251836,
+        "iso_p_target": 0.16,
+        "request_hash_full": "a36bfdb43029f783553493da88929804fd8ce84fe969f641ddaa5b57221d8227",
+        "request_hash_iso": "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569"
+      },
+      {
+        "delta_entropy_bits": 1.151913862409739,
+        "full_accepted": true,
+        "full_entropy_bits": -0.0,
+        "full_p_target": 1.0,
+        "instance_id": "planning-00011563",
+        "iso_accepted": true,
+        "iso_entropy_bits": 1.151913862409739,
+        "iso_p_target": 0.69,
+        "request_hash_full": "645a4f7872e8225b09611cf69f9373980dbe6dcecea0f9afd24e45362fe0885f",
+        "request_hash_iso": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc"
+      },
+      {
+        "delta_entropy_bits": 1.1128828456722897,
+        "full_accepted": true,
+        "full_entropy_bits": -0.0,
+        "full_p_target": 1.0,
+        "instance_id": "planning-00011564",
+        "iso_accepted": true,
+        "iso_entropy_bits": 1.1128828456722897,
+        "iso_p_target": 0.76,
+        "request_hash_full": "66cf786ee6fce946e3edb1ddd32cbab8b1cc45273f12036676e899cc5b295cff",
+        "request_hash_iso": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee"
+      },
+      {
+        "delta_entropy_bits": 1.194756425178048,
+        "full_accepted": true,
+        "full_entropy_bits": -0.0,
+        "full_p_target": 1.0,
+        "instance_id": "planning-00011565",
+        "iso_accepted": false,
+        "iso_entropy_bits": 1.194756425178048,
+        "iso_p_target": 0.18,
+        "request_hash_full": "457e45ecaaea7a9086e26d27b44f7c9c2ea2a131d4bdc0fe77c4ac6d3b83429d",
+        "request_hash_iso": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb"
+      },
+      {
+        "delta_entropy_bits": 1.4568752459636343,
+        "full_accepted": true,
+        "full_entropy_bits": -0.0,
+        "full_p_target": 1.0,
+        "instance_id": "planning-00011566",
+        "iso_accepted": false,
+        "iso_entropy_bits": 1.4568752459636343,
+        "iso_p_target": 0.29,
+        "request_hash_full": "457e45ecaaea7a9086e26d27b44f7c9c2ea2a131d4bdc0fe77c4ac6d3b83429d",
+        "request_hash_iso": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb"
+      },
+      {
+        "delta_entropy_bits": 1.4992295758157739,
+        "full_accepted": true,
+        "full_entropy_bits": -0.0,
+        "full_p_target": 1.0,
+        "instance_id": "planning-00011567",
+        "iso_accepted": false,
+        "iso_entropy_bits": 1.4992295758157739,
+        "iso_p_target": 0.25,
+        "request_hash_full": "457e45ecaaea7a9086e26d27b44f7c9c2ea2a131d4bdc0fe77c4ac6d3b83429d",
+        "request_hash_iso": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb"
+      },
+      {
+        "delta_entropy_bits": 1.0589164350135674,
+        "full_accepted": true,
+        "full_entropy_bits": -0.0,
+        "full_p_target": 1.0,
+        "instance_id": "planning-00011568",
+        "iso_accepted": false,
+        "iso_entropy_bits": 1.0589164350135674,
+        "iso_p_target": 0.16,
+        "request_hash_full": "457e45ecaaea7a9086e26d27b44f7c9c2ea2a131d4bdc0fe77c4ac6d3b83429d",
+        "request_hash_iso": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb"
+      }
+    ],
+    "valid_rows": 34
+  },
+  "ling_selection": {
+    "cell": "planning:low",
+    "comm": {
+      "attempted": 17,
+      "messages": 20,
+      "post_read_correlation_count": 2,
+      "rejected_write_count": 0,
+      "successes": 13,
+      "transmitted_bits": 31.6993,
+      "used_board": 14,
+      "valid": 17
+    },
+    "holm_adjusted_p": 0.009765625,
+    "iso_to_full": {
+      "both_fail": 0,
+      "both_success": 7,
+      "difference": 0.5882352941176471,
+      "left_condition": "ISO",
+      "left_only": 0,
+      "mcnemar_exact_p": 0.001953125,
+      "mcnemar_midp_p": 0.0009765625,
+      "n_pairs": 17,
+      "newcombe_ci": [
+        0.29490373981216933,
+        0.7838921396086862
+      ],
+      "p_left": 0.4117647058823529,
+      "p_right": 1.0,
+      "paired_wald_ci": [
+        0.3542806291426003,
+        0.8221899590926939
+      ],
+      "right_condition": "FULL",
+      "right_only": 10,
+      "wilson_left": [
+        0.21610786039131386,
+        0.6399492561448445
+      ],
+      "wilson_right": [
+        0.8156763396284354,
+        1.0
+      ]
+    },
+    "mcnemar_exact_p": 0.001953125,
+    "significant_fwer_0_05": true
+  },
+  "notes": {
+    "constructs_kept_separate": [
+      "structural_need",
+      "ling_c_need",
+      "voluntary_board_use",
+      "jev_target_probability",
+      "jev_decision_entropy"
+    ],
+    "j3_outcomes_are_not_held_out_j5_evidence": true,
+    "p_value_is_not_an_entropy_gate": true,
+    "repeated_query_not_independent": true
+  },
+  "proposed_j5_manifest": {
+    "arms": [
+      "ISO (Jev receiver, pre-read)",
+      "FULL (saturated bound)",
+      "COMM optional board (Ling writer / Jev receiver)",
+      "matched real/placebo/null receiver replay"
+    ],
+    "caps_draft": {
+      "jev_cost_usd": 1.0,
+      "ling": "pinned free model; OpenRouter free quota",
+      "physical_requests": 300,
+      "stop_rules": [
+        "request_cap",
+        "cost_cap",
+        "repeated_http_failure",
+        "contract_mismatch",
+        "model_drift",
+        "missing_checker_evidence"
+      ]
+    },
+    "complexity": "low",
+    "disjoint_from": {
+      "jev_j3_block_seed_base": 71000,
+      "planning_low_manifest_seed_base": 70000,
+      "wire_smoke_seed_base": 70000
+    },
+    "family": "planning",
+    "instance_ids": [
+      "planning-00011940",
+      "planning-00011941",
+      "planning-00011942",
+      "planning-00011943",
+      "planning-00011944",
+      "planning-00011945",
+      "planning-00011946",
+      "planning-00011947",
+      "planning-00011948",
+      "planning-00011949",
+      "planning-0001194a",
+      "planning-0001194b",
+      "planning-0001194c",
+      "planning-0001194d",
+      "planning-0001194e",
+      "planning-0001194f",
+      "planning-00011950"
+    ],
+    "manifest_hash": "27e0c9faeec47979e44f480af648cd0b37751a8c529d0ab91ba4f32b7b3b2390",
+    "note": "draft for review; this is not live authorization and does not authorize #158",
+    "primary_contrast": "paired change in H(Choice p) and p_target from pre-read to post-read, real vs matched placebo/null, with complete-pair reporting",
+    "regime": "N",
+    "seed_base": 72000,
+    "seeds_per_cell": 17,
+    "status": "draft_pending_review",
+    "thresholds_draft": {
+      "causal_uptake": "Newcombe interval for the real-vs-placebo paired change excludes 0 at alpha=0.05",
+      "no_entropy_gate_from_p_value": true,
+      "verified_board_use_required": "at least one accepted, owner-exact write that reaches the receiver"
+    }
+  },
+  "sources": {
+    "jev_journal": "runs/epic-126/jev-choice-capability.jsonl",
+    "ling_selection": "runs/epic-126/jev-cell-selection-v1.json"
+  },
+  "structural_need": {
+    "all_pass": true,
+    "both_agents_needed_count": 17,
+    "channel_complete_count": 17,
+    "finalizer_needs_peer_count": 17,
+    "instances": 17
+  },
+  "version": "jev-board-necessity-v1"
+}
