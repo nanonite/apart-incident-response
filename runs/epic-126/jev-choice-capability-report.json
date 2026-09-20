@@ -1,0 +1,1262 @@
+{
+  "approval": "chainlink-180-reviewer-approval-2026-09-20",
+  "attempted_cases": 34,
+  "brier_multiclass": 1.1765e-05,
+  "by_condition": {
+    "FULL": {
+      "attempted": 17,
+      "invalid": 0,
+      "planned": 17,
+      "successes": 17,
+      "valid": 17
+    },
+    "ISO": {
+      "attempted": 17,
+      "invalid": 0,
+      "planned": 17,
+      "successes": 8,
+      "valid": 17
+    }
+  },
+  "cases": [
+    {
+      "accepted": true,
+      "condition": "ISO",
+      "confidence": 0.69,
+      "error_class": null,
+      "instance_id": "planning-00011558",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.16,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.01,
+        "stage>deploy>inspect": 0.07,
+        "stage>inspect>deploy": 0.75
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "status": "complete",
+      "target_id": "stage>inspect>deploy",
+      "usage": {
+        "input_tokens": 420,
+        "output_tokens": 97
+      }
+    },
+    {
+      "accepted": true,
+      "condition": "FULL",
+      "confidence": 1.0,
+      "error_class": null,
+      "instance_id": "planning-00011558",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 1.0
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "66cf786ee6fce946e3edb1ddd32cbab8b1cc45273f12036676e899cc5b295cff",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "status": "complete",
+      "target_id": "stage>inspect>deploy",
+      "usage": {
+        "input_tokens": 431,
+        "output_tokens": 97
+      }
+    },
+    {
+      "accepted": false,
+      "condition": "ISO",
+      "confidence": 0.49,
+      "error_class": null,
+      "instance_id": "planning-00011559",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.32,
+        "deploy>stage>inspect": 0.09,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.58,
+        "stage>inspect>deploy": 0.01
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>deploy>inspect",
+      "status": "complete",
+      "target_id": "deploy>inspect>stage",
+      "usage": {
+        "input_tokens": 421,
+        "output_tokens": 97
+      }
+    },
+    {
+      "accepted": true,
+      "condition": "FULL",
+      "confidence": 1.0,
+      "error_class": null,
+      "instance_id": "planning-00011559",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 1.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.0
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "457e45ecaaea7a9086e26d27b44f7c9c2ea2a131d4bdc0fe77c4ac6d3b83429d",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "deploy>inspect>stage",
+      "status": "complete",
+      "target_id": "deploy>inspect>stage",
+      "usage": {
+        "input_tokens": 431,
+        "output_tokens": 96
+      }
+    },
+    {
+      "accepted": true,
+      "condition": "ISO",
+      "confidence": 0.54,
+      "error_class": null,
+      "instance_id": "planning-0001155a",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.01,
+        "inspect>stage>deploy": 0.1,
+        "stage>deploy>inspect": 0.61,
+        "stage>inspect>deploy": 0.26
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>deploy>inspect",
+      "status": "complete",
+      "target_id": "stage>deploy>inspect",
+      "usage": {
+        "input_tokens": 420,
+        "output_tokens": 97
+      }
+    },
+    {
+      "accepted": true,
+      "condition": "FULL",
+      "confidence": 1.0,
+      "error_class": null,
+      "instance_id": "planning-0001155a",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 1.0,
+        "stage>inspect>deploy": 0.0
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "f72bb61296573346a82655b00863ffbbdf6e20777ceb6e2763281e54d75e9595",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>deploy>inspect",
+      "status": "complete",
+      "target_id": "stage>deploy>inspect",
+      "usage": {
+        "input_tokens": 431,
+        "output_tokens": 97
+      }
+    },
+    {
+      "accepted": false,
+      "condition": "ISO",
+      "confidence": 0.6,
+      "error_class": null,
+      "instance_id": "planning-0001155b",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.22,
+        "deploy>stage>inspect": 0.1,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.67,
+        "stage>inspect>deploy": 0.01
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>deploy>inspect",
+      "status": "complete",
+      "target_id": "deploy>inspect>stage",
+      "usage": {
+        "input_tokens": 421,
+        "output_tokens": 97
+      }
+    },
+    {
+      "accepted": true,
+      "condition": "FULL",
+      "confidence": 1.0,
+      "error_class": null,
+      "instance_id": "planning-0001155b",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 1.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.0
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "457e45ecaaea7a9086e26d27b44f7c9c2ea2a131d4bdc0fe77c4ac6d3b83429d",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "deploy>inspect>stage",
+      "status": "complete",
+      "target_id": "deploy>inspect>stage",
+      "usage": {
+        "input_tokens": 431,
+        "output_tokens": 96
+      }
+    },
+    {
+      "accepted": true,
+      "condition": "ISO",
+      "confidence": 0.7,
+      "error_class": null,
+      "instance_id": "planning-0001155c",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.17,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.01,
+        "stage>deploy>inspect": 0.06,
+        "stage>inspect>deploy": 0.75
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "status": "complete",
+      "target_id": "stage>inspect>deploy",
+      "usage": {
+        "input_tokens": 420,
+        "output_tokens": 97
+      }
+    },
+    {
+      "accepted": true,
+      "condition": "FULL",
+      "confidence": 1.0,
+      "error_class": null,
+      "instance_id": "planning-0001155c",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 1.0
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "66cf786ee6fce946e3edb1ddd32cbab8b1cc45273f12036676e899cc5b295cff",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "status": "complete",
+      "target_id": "stage>inspect>deploy",
+      "usage": {
+        "input_tokens": 431,
+        "output_tokens": 97
+      }
+    },
+    {
+      "accepted": false,
+      "condition": "ISO",
+      "confidence": 0.62,
+      "error_class": null,
+      "instance_id": "planning-0001155d",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.22,
+        "deploy>stage>inspect": 0.08,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.69,
+        "stage>inspect>deploy": 0.01
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>deploy>inspect",
+      "status": "complete",
+      "target_id": "deploy>inspect>stage",
+      "usage": {
+        "input_tokens": 421,
+        "output_tokens": 97
+      }
+    },
+    {
+      "accepted": true,
+      "condition": "FULL",
+      "confidence": 1.0,
+      "error_class": null,
+      "instance_id": "planning-0001155d",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 1.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.0
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "457e45ecaaea7a9086e26d27b44f7c9c2ea2a131d4bdc0fe77c4ac6d3b83429d",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "deploy>inspect>stage",
+      "status": "complete",
+      "target_id": "deploy>inspect>stage",
+      "usage": {
+        "input_tokens": 431,
+        "output_tokens": 96
+      }
+    },
+    {
+      "accepted": true,
+      "condition": "ISO",
+      "confidence": 0.4,
+      "error_class": null,
+      "instance_id": "planning-0001155e",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.12,
+        "deploy>stage>inspect": 0.5,
+        "inspect>deploy>stage": 0.35,
+        "inspect>stage>deploy": 0.01,
+        "stage>deploy>inspect": 0.01,
+        "stage>inspect>deploy": 0.01
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "deploy>stage>inspect",
+      "status": "complete",
+      "target_id": "deploy>stage>inspect",
+      "usage": {
+        "input_tokens": 420,
+        "output_tokens": 96
+      }
+    },
+    {
+      "accepted": true,
+      "condition": "FULL",
+      "confidence": 0.99,
+      "error_class": null,
+      "instance_id": "planning-0001155e",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 1.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.0
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "98b00b7fe8ac7a374898193de3cc11325f9c2177bfd04ee473786cac87c94766",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "deploy>stage>inspect",
+      "status": "complete",
+      "target_id": "deploy>stage>inspect",
+      "usage": {
+        "input_tokens": 430,
+        "output_tokens": 96
+      }
+    },
+    {
+      "accepted": false,
+      "condition": "ISO",
+      "confidence": 0.32,
+      "error_class": null,
+      "instance_id": "planning-0001155f",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.12,
+        "deploy>stage>inspect": 0.41,
+        "inspect>deploy>stage": 0.44,
+        "inspect>stage>deploy": 0.01,
+        "stage>deploy>inspect": 0.01,
+        "stage>inspect>deploy": 0.01
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "inspect>deploy>stage",
+      "status": "complete",
+      "target_id": "deploy>stage>inspect",
+      "usage": {
+        "input_tokens": 420,
+        "output_tokens": 96
+      }
+    },
+    {
+      "accepted": true,
+      "condition": "FULL",
+      "confidence": 0.99,
+      "error_class": null,
+      "instance_id": "planning-0001155f",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 1.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.0
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "98b00b7fe8ac7a374898193de3cc11325f9c2177bfd04ee473786cac87c94766",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "deploy>stage>inspect",
+      "status": "complete",
+      "target_id": "deploy>stage>inspect",
+      "usage": {
+        "input_tokens": 430,
+        "output_tokens": 96
+      }
+    },
+    {
+      "accepted": true,
+      "condition": "ISO",
+      "confidence": 0.67,
+      "error_class": null,
+      "instance_id": "planning-00011560",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.18,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.01,
+        "stage>deploy>inspect": 0.08,
+        "stage>inspect>deploy": 0.72
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "status": "complete",
+      "target_id": "stage>inspect>deploy",
+      "usage": {
+        "input_tokens": 420,
+        "output_tokens": 97
+      }
+    },
+    {
+      "accepted": true,
+      "condition": "FULL",
+      "confidence": 1.0,
+      "error_class": null,
+      "instance_id": "planning-00011560",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 1.0
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "66cf786ee6fce946e3edb1ddd32cbab8b1cc45273f12036676e899cc5b295cff",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "status": "complete",
+      "target_id": "stage>inspect>deploy",
+      "usage": {
+        "input_tokens": 431,
+        "output_tokens": 97
+      }
+    },
+    {
+      "accepted": true,
+      "condition": "ISO",
+      "confidence": 0.61,
+      "error_class": null,
+      "instance_id": "planning-00011561",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.24,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.07,
+        "inspect>stage>deploy": 0.68,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.01
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "inspect>stage>deploy",
+      "status": "complete",
+      "target_id": "inspect>stage>deploy",
+      "usage": {
+        "input_tokens": 420,
+        "output_tokens": 96
+      }
+    },
+    {
+      "accepted": true,
+      "condition": "FULL",
+      "confidence": 0.99,
+      "error_class": null,
+      "instance_id": "planning-00011561",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.99,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.01
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "645a4f7872e8225b09611cf69f9373980dbe6dcecea0f9afd24e45362fe0885f",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "inspect>stage>deploy",
+      "status": "complete",
+      "target_id": "inspect>stage>deploy",
+      "usage": {
+        "input_tokens": 430,
+        "output_tokens": 96
+      }
+    },
+    {
+      "accepted": false,
+      "condition": "ISO",
+      "confidence": 0.63,
+      "error_class": null,
+      "instance_id": "planning-00011562",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.16,
+        "inspect>stage>deploy": 0.14,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.7
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "status": "complete",
+      "target_id": "inspect>deploy>stage",
+      "usage": {
+        "input_tokens": 421,
+        "output_tokens": 97
+      }
+    },
+    {
+      "accepted": true,
+      "condition": "FULL",
+      "confidence": 1.0,
+      "error_class": null,
+      "instance_id": "planning-00011562",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 1.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.0
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "a36bfdb43029f783553493da88929804fd8ce84fe969f641ddaa5b57221d8227",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "inspect>deploy>stage",
+      "status": "complete",
+      "target_id": "inspect>deploy>stage",
+      "usage": {
+        "input_tokens": 431,
+        "output_tokens": 96
+      }
+    },
+    {
+      "accepted": true,
+      "condition": "ISO",
+      "confidence": 0.63,
+      "error_class": null,
+      "instance_id": "planning-00011563",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.25,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.05,
+        "inspect>stage>deploy": 0.69,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.01
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "inspect>stage>deploy",
+      "status": "complete",
+      "target_id": "inspect>stage>deploy",
+      "usage": {
+        "input_tokens": 420,
+        "output_tokens": 96
+      }
+    },
+    {
+      "accepted": true,
+      "condition": "FULL",
+      "confidence": 0.99,
+      "error_class": null,
+      "instance_id": "planning-00011563",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 1.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.0
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "645a4f7872e8225b09611cf69f9373980dbe6dcecea0f9afd24e45362fe0885f",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "inspect>stage>deploy",
+      "status": "complete",
+      "target_id": "inspect>stage>deploy",
+      "usage": {
+        "input_tokens": 430,
+        "output_tokens": 96
+      }
+    },
+    {
+      "accepted": true,
+      "condition": "ISO",
+      "confidence": 0.71,
+      "error_class": null,
+      "instance_id": "planning-00011564",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.15,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.01,
+        "stage>deploy>inspect": 0.07,
+        "stage>inspect>deploy": 0.76
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "status": "complete",
+      "target_id": "stage>inspect>deploy",
+      "usage": {
+        "input_tokens": 420,
+        "output_tokens": 97
+      }
+    },
+    {
+      "accepted": true,
+      "condition": "FULL",
+      "confidence": 1.0,
+      "error_class": null,
+      "instance_id": "planning-00011564",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 1.0
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "66cf786ee6fce946e3edb1ddd32cbab8b1cc45273f12036676e899cc5b295cff",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "status": "complete",
+      "target_id": "stage>inspect>deploy",
+      "usage": {
+        "input_tokens": 431,
+        "output_tokens": 97
+      }
+    },
+    {
+      "accepted": false,
+      "condition": "ISO",
+      "confidence": 0.65,
+      "error_class": null,
+      "instance_id": "planning-00011565",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.18,
+        "deploy>stage>inspect": 0.1,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.71,
+        "stage>inspect>deploy": 0.01
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>deploy>inspect",
+      "status": "complete",
+      "target_id": "deploy>inspect>stage",
+      "usage": {
+        "input_tokens": 421,
+        "output_tokens": 97
+      }
+    },
+    {
+      "accepted": true,
+      "condition": "FULL",
+      "confidence": 1.0,
+      "error_class": null,
+      "instance_id": "planning-00011565",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 1.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.0
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "457e45ecaaea7a9086e26d27b44f7c9c2ea2a131d4bdc0fe77c4ac6d3b83429d",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "deploy>inspect>stage",
+      "status": "complete",
+      "target_id": "deploy>inspect>stage",
+      "usage": {
+        "input_tokens": 431,
+        "output_tokens": 96
+      }
+    },
+    {
+      "accepted": false,
+      "condition": "ISO",
+      "confidence": 0.51,
+      "error_class": null,
+      "instance_id": "planning-00011566",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.29,
+        "deploy>stage>inspect": 0.11,
+        "inspect>deploy>stage": 0.01,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.58,
+        "stage>inspect>deploy": 0.01
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>deploy>inspect",
+      "status": "complete",
+      "target_id": "deploy>inspect>stage",
+      "usage": {
+        "input_tokens": 421,
+        "output_tokens": 97
+      }
+    },
+    {
+      "accepted": true,
+      "condition": "FULL",
+      "confidence": 1.0,
+      "error_class": null,
+      "instance_id": "planning-00011566",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 1.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.0
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "457e45ecaaea7a9086e26d27b44f7c9c2ea2a131d4bdc0fe77c4ac6d3b83429d",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "deploy>inspect>stage",
+      "status": "complete",
+      "target_id": "deploy>inspect>stage",
+      "usage": {
+        "input_tokens": 431,
+        "output_tokens": 96
+      }
+    },
+    {
+      "accepted": false,
+      "condition": "ISO",
+      "confidence": 0.51,
+      "error_class": null,
+      "instance_id": "planning-00011567",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.25,
+        "deploy>stage>inspect": 0.15,
+        "inspect>deploy>stage": 0.01,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.58,
+        "stage>inspect>deploy": 0.01
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>deploy>inspect",
+      "status": "complete",
+      "target_id": "deploy>inspect>stage",
+      "usage": {
+        "input_tokens": 421,
+        "output_tokens": 97
+      }
+    },
+    {
+      "accepted": true,
+      "condition": "FULL",
+      "confidence": 1.0,
+      "error_class": null,
+      "instance_id": "planning-00011567",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 1.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.0
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "457e45ecaaea7a9086e26d27b44f7c9c2ea2a131d4bdc0fe77c4ac6d3b83429d",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "deploy>inspect>stage",
+      "status": "complete",
+      "target_id": "deploy>inspect>stage",
+      "usage": {
+        "input_tokens": 431,
+        "output_tokens": 96
+      }
+    },
+    {
+      "accepted": false,
+      "condition": "ISO",
+      "confidence": 0.71,
+      "error_class": null,
+      "instance_id": "planning-00011568",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.16,
+        "deploy>stage>inspect": 0.07,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.76,
+        "stage>inspect>deploy": 0.01
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>deploy>inspect",
+      "status": "complete",
+      "target_id": "deploy>inspect>stage",
+      "usage": {
+        "input_tokens": 421,
+        "output_tokens": 97
+      }
+    },
+    {
+      "accepted": true,
+      "condition": "FULL",
+      "confidence": 1.0,
+      "error_class": null,
+      "instance_id": "planning-00011568",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 1.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.0
+      },
+      "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+      "question_id": "candidate",
+      "request_hash": "457e45ecaaea7a9086e26d27b44f7c9c2ea2a131d4bdc0fe77c4ac6d3b83429d",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "deploy>inspect>stage",
+      "status": "complete",
+      "target_id": "deploy>inspect>stage",
+      "usage": {
+        "input_tokens": 431,
+        "output_tokens": 96
+      }
+    }
+  ],
+  "cost_cap_usd": 1.0,
+  "cost_ceiling_usd": 0.023396352,
+  "credentials_retained": false,
+  "decision": "continue",
+  "distinct_request_hashes": 12,
+  "endpoint": "https://api.typesafe.ai/v1/systemone",
+  "estimated_cost_usd": 0.000607782,
+  "full_vector_validity": 1.0,
+  "go_no_go": {
+    "decision": "continue",
+    "distinct_request_hashes": 12,
+    "note": "repeated-query capability check: the 34 cases are only 12 distinct request hashes, not 17 independent prompts; a passing probe does not establish calibration and does not authorize #157",
+    "reasons": []
+  },
+  "input_tokens": 14471,
+  "invalid_classes": {},
+  "iso_mass_on_consistent_set": 0.983529,
+  "log_loss_multiclass": 0.000591196,
+  "max_physical_requests": 68,
+  "metric_definitions": {
+    "brier_multiclass": "mean over the 17 FULL cases of sum_i (p_i - 1{option_i == target})^2; a missing or invalid case scores 1.0",
+    "full_vector_validity": "attempted cases returning the documented Choice envelope divided by attempted cases",
+    "log_loss_multiclass": "mean over the 17 FULL cases of -log(p_target); a missing or invalid case scores -log(1e-12)",
+    "p_correct_full": "mean probability assigned to the true target over the 17 FULL cases; a missing or invalid FULL output counts as 0.0",
+    "p_correct_full_interval": "normal-approximation interval for the mean target probability (descriptive; Wilson does not apply to a mean probability)",
+    "reliability_bins": "alias of selected_answer_reliability (kept for the registered metric name)",
+    "repeated_prompt_limitation": "the 34 cases contain only 12 distinct request hashes (6 ISO/FULL prompt pairs) and 10 match the earlier wire smoke; these are repeated queries, not independent prompts, so no calibration is established",
+    "selected_answer_reliability": "descriptive bins of the selected-option probability against checker correctness; separate from target calibration",
+    "task_validity_full": "checker-accepted FULL selections divided by the fixed 17 FULL cases; a missing or invalid FULL output counts as a failure"
+  },
+  "min_interval_seconds": 0.25,
+  "mode": "jev-choice-capability",
+  "model": "jev-1.13.0",
+  "output_tokens": 3282,
+  "p_correct_full": 0.999412,
+  "p_correct_full_interval": [
+    0.998259,
+    1.0
+  ],
+  "physical_attempts": 34,
+  "pinned_registration_hash": "f9cb7b314ddf816013ab1d4d671e6b147d1415c897ace0851844c39cc3c78fb5",
+  "planned_cases": 34,
+  "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+  "raw_response_retained": false,
+  "registration_hash": "f9cb7b314ddf816013ab1d4d671e6b147d1415c897ace0851844c39cc3c78fb5",
+  "reliability_bins": [
+    {
+      "bin": [
+        0.8,
+        1.0
+      ],
+      "count": 17,
+      "empirical_accuracy": 1.0,
+      "mean_predicted": 0.999412,
+      "wilson": [
+        0.8156763396284354,
+        1.0
+      ]
+    }
+  ],
+  "resolved_models": [
+    "jev-1.13.0"
+  ],
+  "selected_answer_reliability": [
+    {
+      "bin": [
+        0.8,
+        1.0
+      ],
+      "count": 17,
+      "empirical_accuracy": 1.0,
+      "mean_predicted": 0.999412,
+      "wilson": [
+        0.8156763396284354,
+        1.0
+      ]
+    }
+  ],
+  "status": "completed",
+  "stop_reason": null,
+  "task_validity_full": 1.0,
+  "task_validity_full_denominator": 17,
+  "valid_cases": 34
+}
