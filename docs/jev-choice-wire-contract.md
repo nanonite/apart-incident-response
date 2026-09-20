@@ -141,8 +141,14 @@ the ones already in `tests/test_jev_choice.py`
 
 Frozen wording bound into the protocol key, e.g.:
 
-> Given the clues in `state`, exactly one candidate in `criteria` is consistent
-> with them. Return a probability for every candidate in `criteria`.
+> Using the clues in `state`, assess how well each candidate in `criteria` fits
+> those clues. Return a probability for every candidate in `criteria`.
+
+The wording must be **condition-neutral and identical across ISO/FULL/COMM**, and
+must not assert or reveal whether the visible clues determine a unique answer.
+It is false in ISO (and potentially COMM before a useful message) that exactly
+one candidate is consistent, so any "exactly one"/"unique" phrasing is
+prohibited. Do not let the instruction encode the condition.
 
 ## 5. Transport decision
 
@@ -189,12 +195,20 @@ Consequences: we own retry/backoff semantics and must reproduce them exactly
 and clue wording give Jev enough information to solve the task. A valid
 probability vector is not a usable receiver. Therefore:
 
-- Freeze candidate id set, state wording, instructions, and criteria values, and
-  hash them into the protocol key.
+- Freeze the **static, instance-independent** parts and bind those into the
+  protocol key: the state serializer/schema, the instruction wording, the
+  criteria policy (option ids are the exact candidate labels; values are
+  `null`/neutral), the question id, and the codec/endpoint/model/retry versions.
+  **Do not bind per-instance clue values** into the protocol key. Store a
+  separate **per-call request/state hash** on each row so matched conditions
+  (same codec/wording/policy, different instance) share one protocol key.
 - Add an explicit **FULL task-validity check** to the probe: Jev must actually
   solve FULL instances (accuracy on the determined target), and ISO mass should
-  concentrate on the clue-consistent set. If FULL validity fails, that is a
-  contract/wording failure to fix before #179, not a calibration result.
+  concentrate on the clue-consistent set. FULL task validity is itself measured
+  in #180, **after** #179 locks the protocol. A failed FULL result is therefore
+  a **legitimate no-go outcome of the gate**, not a silent wording repair: any
+  wording/registration change requires a new codec version and a new
+  registration, not an edit under the locked protocol.
 
 ## 8. Endpoint, model, codec, and key versioning
 
@@ -206,10 +220,15 @@ probability vector is not a usable receiver. Therefore:
   separate from the offline scaffold `JEV_ADAPTER_VERSION`. v1 scaffold artifacts
   are preserved unmodified.
 - New **additive Jev protocol key** (`jev_choice_protocol_key`), not the Ling
-  six-field key. Fields: codec version, endpoint, requested model, resolved-model
-  policy, state/instructions/criteria hash, option-id policy, normalization
-  tolerance, retry policy. The analysis loader must **refuse mixed keys** so Jev
-  artifacts cannot be pooled with Ling artifacts or with the offline scaffold.
+  six-field key. It binds only static, instance-independent inputs: codec version,
+  endpoint, requested/resolved-model policy, the state serializer/schema version,
+  instruction wording, criteria policy, question id, option-id policy,
+  normalization tolerance, and retry policy. **Per-instance clue values are not
+  key fields.** Each row carries a separate per-call request/state hash plus the
+  instance and condition ids, so matched conditions with the same
+  codec/wording/policy share one protocol key and different instances do not
+  split the key. The analysis loader must **refuse mixed keys** so Jev artifacts
+  cannot be pooled with Ling artifacts or with the offline scaffold.
 - Sanitization / golden fixtures: store only `{probe, status, request, response}`
   with Authorization stripped and no credential echo (jev-dsl policy in
   `scripts/curate-fixtures.py`); `raw_response_retained: false`. Offline fixtures
@@ -269,7 +288,10 @@ Report:
 - Explicit continue/stop decision for #157.
 
 Caps (sample size, request/cost ceilings) and go/no-go thresholds are set in
-#179 before approval. This memo fixes only the design shape.
+#179 before approval. This memo fixes only the design shape. A failed FULL
+task-validity result is a **legitimate no-go** for #157; it is not repaired by
+editing wording under the locked protocol. Any wording/registration revision
+requires a new codec version and a new registration.
 
 ## 11. Unverified until a live call
 
