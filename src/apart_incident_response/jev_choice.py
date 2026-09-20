@@ -261,7 +261,7 @@ class JevChoiceClient:
                 if status in JEV_RETRYABLE_STATUSES:
                     raise JevTransportError(f"retry_exhausted_http_{status}")
                 raise JevProviderRejection(status, classify_http_status(status), self._error_detail(exc))
-            except (OSError, TypeError, KeyError) as exc:
+            except OSError as exc:
                 if attempt < self.max_retries:
                     self._sleep_backoff(attempt, None)
                     attempt += 1
@@ -434,27 +434,33 @@ class JevChoiceAdapter:
     def build_request(self, state: ChoiceState) -> dict[str, Any]:
         return self._request_body(state.state, state.options)
 
-    def complete(self, state: ChoiceState) -> ChoiceResponse:
+    def complete_with_raw(self, state: ChoiceState) -> tuple[ChoiceResponse, Mapping[str, Any] | None]:
+        """Like :meth:`complete`, but also returns the parsed body for golden capture."""
+
         if len(state.options) > self.max_options:
-            return _invalid(self.model, state.request_hash, "oversized_option_set")
+            return _invalid(self.model, state.request_hash, "oversized_option_set"), None
         ids = [option.option_id for option in state.options]
         if len(set(ids)) != len(ids):
-            return _invalid(self.model, state.request_hash, "duplicate_option_ids")
+            return _invalid(self.model, state.request_hash, "duplicate_option_ids"), None
         if not ids:
-            return _invalid(self.model, state.request_hash, "empty_distribution")
+            return _invalid(self.model, state.request_hash, "empty_distribution"), None
         try:
             raw = self.client.complete(self.build_request(state))
         except JevCredentialError:
-            return _invalid(self.model, state.request_hash, "missing_credentials")
+            return _invalid(self.model, state.request_hash, "missing_credentials"), None
         except JevProviderRejection:
-            return _invalid(self.model, state.request_hash, "provider_rejected")
+            return _invalid(self.model, state.request_hash, "provider_rejected"), None
         except JevResponseError:
-            return _invalid(self.model, state.request_hash, "malformed_response")
+            return _invalid(self.model, state.request_hash, "malformed_response"), None
         except JevTransportError:
-            return _invalid(self.model, state.request_hash, "transport_error")
+            return _invalid(self.model, state.request_hash, "transport_error"), None
         except Exception:
-            return _invalid(self.model, state.request_hash, "transport_error")
-        return self.parse(state, raw)
+            return _invalid(self.model, state.request_hash, "transport_error"), None
+        return self.parse(state, raw), raw
+
+    def complete(self, state: ChoiceState) -> ChoiceResponse:
+        response, _ = self.complete_with_raw(state)
+        return response
 
     def parse(self, state: ChoiceState, raw: Mapping[str, Any]) -> ChoiceResponse:
         if not isinstance(raw, Mapping):

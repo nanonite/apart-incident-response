@@ -361,6 +361,16 @@ class TransportTests(unittest.TestCase):
             client.complete({"model": "jev-1.13.0", "state": {}, "questions": {}})
         self.assertEqual(slept, [2.5])
 
+    def test_programming_errors_are_not_retried(self):
+        for error in (TypeError("shape"), KeyError("key")):
+            client = JevChoiceClient(api_key=self.KEY, max_retries=2, sleep_fn=lambda _: None)
+            adapter = JevChoiceAdapter(client)
+            state = adapter.build_state(planning_low_instances(1)[0], "A", "ISO")
+            with patch("apart_incident_response.jev_choice.urllib.request.urlopen", side_effect=error):
+                response = adapter.complete(state)
+            self.assertEqual(response.error_class, "transport_error")
+            self.assertEqual(client.physical_attempts, 1)
+
     def test_malformed_200_body_is_not_retried(self):
         labels = sorted(planning_low_instances(1)[0].solutions)
         client = JevChoiceClient(api_key=self.KEY, max_retries=2, sleep_fn=lambda _: None)
