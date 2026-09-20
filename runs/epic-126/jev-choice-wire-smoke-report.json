@@ -1,0 +1,65 @@
+{
+  "approval": "chainlink-178-reviewer-approval-2026-09-20",
+  "attempted_cases": 4,
+  "cases": [
+    {
+      "condition": "ISO",
+      "confidence": 0.52,
+      "error_class": null,
+      "instance_id": "planning-00011170",
+      "request_hash": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+      "selected_option_id": "stage>deploy>inspect",
+      "status": "complete"
+    },
+    {
+      "condition": "FULL",
+      "confidence": 1.0,
+      "error_class": null,
+      "instance_id": "planning-00011170",
+      "request_hash": "f72bb61296573346a82655b00863ffbbdf6e20777ceb6e2763281e54d75e9595",
+      "selected_option_id": "stage>deploy>inspect",
+      "status": "complete"
+    },
+    {
+      "condition": "ISO",
+      "confidence": 0.63,
+      "error_class": null,
+      "instance_id": "planning-00011171",
+      "request_hash": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+      "selected_option_id": "stage>inspect>deploy",
+      "status": "complete"
+    },
+    {
+      "condition": "FULL",
+      "confidence": 1.0,
+      "error_class": null,
+      "instance_id": "planning-00011171",
+      "request_hash": "66cf786ee6fce946e3edb1ddd32cbab8b1cc45273f12036676e899cc5b295cff",
+      "selected_option_id": "stage>inspect>deploy",
+      "status": "complete"
+    }
+  ],
+  "cost_cap_usd": 1.0,
+  "cost_ceiling_usd": 0.002064384,
+  "credentials_retained": false,
+  "decision": "continue",
+  "endpoint": "https://api.typesafe.ai/v1/systemone",
+  "estimated_cost_usd": 7.1484e-05,
+  "golden_fixture": "runs/epic-126/jev-choice-wire-smoke-golden.json",
+  "input_tokens": 1702,
+  "invalid_classes": {},
+  "max_physical_requests": 6,
+  "mode": "jev-choice-wire-smoke",
+  "model": "jev-1.13.0",
+  "output_tokens": 388,
+  "physical_attempts": 4,
+  "planned_cases": 4,
+  "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+  "raw_response_retained": false,
+  "resolved_models": [
+    "jev-1.13.0"
+  ],
+  "status": "completed",
+  "stop_reason": null,
+  "valid_cases": 4
+}

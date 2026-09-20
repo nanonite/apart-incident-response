@@ -1,0 +1,60 @@
+{
+  "_source": {
+    "codec_version": "jev-choice-wire-v1",
+    "endpoint": "https://api.typesafe.ai/v1/systemone",
+    "model": "jev-1.13.0",
+    "note": "Curated credential-free capture from the #178 wire smoke; no credential header or key is retained.",
+    "probe": "jev-choice-wire-smoke-planning-00011170-ISO",
+    "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385"
+  },
+  "probe": "jev-choice-wire-smoke-planning-00011170-ISO",
+  "request": {
+    "model": "jev-1.13.0",
+    "questions": {
+      "candidate": {
+        "criteria": {
+          "deploy>inspect>stage": null,
+          "deploy>stage>inspect": null,
+          "inspect>deploy>stage": null,
+          "inspect>stage>deploy": null,
+          "stage>deploy>inspect": null,
+          "stage>inspect>deploy": null
+        },
+        "instructions": "Using the clues in `state`, assess how well each candidate in `criteria` fits those clues. Return a probability for every candidate in `criteria`.",
+        "type": "choice"
+      }
+    },
+    "state": {
+      "agent_id": "A",
+      "clues": [
+        "precedes=stage>deploy",
+        "budget=valid"
+      ],
+      "complexity": "low",
+      "family": "planning"
+    }
+  },
+  "response": {
+    "answers": {
+      "candidate": {
+        "choice": "stage>deploy>inspect",
+        "confidence": 0.52,
+        "probabilities": {
+          "deploy>inspect>stage": 0.01,
+          "deploy>stage>inspect": 0.01,
+          "inspect>deploy>stage": 0.01,
+          "inspect>stage>deploy": 0.12,
+          "stage>deploy>inspect": 0.59,
+          "stage>inspect>deploy": 0.26
+        },
+        "type": "choice"
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 420,
+      "output_tokens": 97
+    }
+  },
+  "status": 200
+}
