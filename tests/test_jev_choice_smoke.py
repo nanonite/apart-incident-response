@@ -82,6 +82,7 @@ class PreflightTests(unittest.TestCase):
     def test_plan_dict_reports_reserve_and_cost_ceiling(self):
         payload = self.plan.to_dict()
         self.assertEqual(payload["retry_reserve"], 2)
+        self.assertLess(payload["estimated_cost_planned_usd"], payload["estimated_cost_ceiling_usd"])
         self.assertLessEqual(payload["estimated_cost_ceiling_usd"], smoke.JEV_SMOKE_COST_CAP_USD)
 
     def test_verification_ok_offline(self):
@@ -154,6 +155,7 @@ class ExecuteSmokeTests(unittest.TestCase):
         self.assertEqual(report["resolved_models"], ["jev-1.13.0"])
         self.assertEqual(self.client.physical_attempts, 4)
         self.assertEqual(report["estimated_cost_usd"], smoke.estimate_cost_usd(400))
+        self.assertGreater(report["cost_ceiling_usd"], report["estimated_cost_usd"])
         self.assertEqual(set(golden), {"_source", "probe", "status", "request", "response"})
         self.assertNotIn("authorization", {key.lower() for key in golden["request"]})
         self.assertNotIn(KEY, json.dumps(golden))

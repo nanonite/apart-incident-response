@@ -108,8 +108,10 @@ class SmokePlan:
             "retry_reserve": max(0, self.max_physical_requests - self.planned_physical_requests),
             "cost_cap_usd": self.cost_cap_usd,
             "input_token_ceiling": self.input_token_ceiling,
-            "estimated_cost_ceiling_usd": estimate_cost_usd(
+            "estimated_cost_planned_usd": estimate_cost_usd(
                 self.input_token_ceiling * max(1, self.planned_physical_requests)),
+            "estimated_cost_ceiling_usd": estimate_cost_usd(
+                self.input_token_ceiling * max(1, self.max_physical_requests)),
             "cases": [case.to_dict() for case in self.cases],
         }
 
@@ -199,6 +201,8 @@ def _blocked(plan: SmokePlan, reason: str, approval: str | None) -> dict[str, An
             "decision": "stop", "approval": approval, "planned_cases": len(plan.cases),
             "attempted_cases": 0, "valid_cases": 0, "physical_attempts": 0,
             "max_physical_requests": plan.max_physical_requests, "estimated_cost_usd": 0.0,
+            "cost_ceiling_usd": estimate_cost_usd(
+                plan.input_token_ceiling * max(1, plan.max_physical_requests)),
             "cost_cap_usd": plan.cost_cap_usd, "cases": [],
             "raw_response_retained": False, "credentials_retained": False}
 
@@ -253,6 +257,7 @@ def execute_smoke(plan: SmokePlan, adapter: JevChoiceAdapter, verification: Mapp
         "protocol_key": plan.protocol_key, "planned_cases": len(plan.cases), "attempted_cases": 0,
         "valid_cases": 0, "physical_attempts": 0, "max_physical_requests": plan.max_physical_requests,
         "input_tokens": 0, "output_tokens": 0, "estimated_cost_usd": 0.0,
+        "cost_ceiling_usd": estimate_cost_usd(plan.input_token_ceiling * max(1, plan.max_physical_requests)),
         "cost_cap_usd": plan.cost_cap_usd, "resolved_models": [], "invalid_classes": {},
         "cases": [], "golden_fixture": None, "raw_response_retained": False,
         "credentials_retained": False,

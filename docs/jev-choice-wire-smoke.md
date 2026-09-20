@@ -65,9 +65,13 @@ are free.
 
     estimated_cost_usd = input_tokens * 0.042 / 1_000_000
 
-The preflight bounds the worst case with a documented 8192 input-token ceiling
-per request (`4 x 8192 x 0.042 / 1e6 = $0.00138`). The live report replaces the
-estimate with the actual `usage.input_tokens` returned by the provider.
+The preflight bounds cost with a documented 8192 input-token ceiling per
+request: the **planned** four calls estimate `4 x 8192 x 0.042 / 1e6 = $0.00138`,
+and the **retry-inclusive ceiling** at six attempts is
+`6 x 8192 x 0.042 / 1e6 = $0.00206`. The live report replaces the estimate with
+the actual `usage.input_tokens` returned by the provider and also reports the
+retry-inclusive bound (`cost_ceiling_usd`). $0.00138 covers the four planned
+calls only, not the six-attempt ceiling.
 
 ## Golden-fixture procedure
 
