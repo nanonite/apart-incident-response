@@ -55,6 +55,28 @@ def verify_probe_preflight(adapter: jc2.JevChoiceAdapterV2, *, probe: Mapping[st
     def check(name: str, ok: bool, detail: Any = None) -> None:
         checks.append({"check": name, "ok": bool(ok), "detail": detail})
 
+    canonical = prv2.build_probe_preregistration()
+    check("probe_status_locked", probe.get("status") == "locked_for_review", probe.get("status"))
+    check("probe_hash_matches", probe.get("probe_hash") == prv2.probe_preregistration_hash(probe),
+          probe.get("probe_hash"))
+    check("probe_matches_canonical", dict(probe) == canonical, None)
+    check("normalization_policy_hash_matches",
+          probe.get("normalization_policy_hash") == prv2.normalization_policy_hash(),
+          probe.get("normalization_policy_hash"))
+
+    model_and_protocol = probe.get("model_and_protocol", {})
+    protocol_key = model_and_protocol.get("protocol_key")
+    check("protocol_key_is_v2", jc2.is_jev_v2_protocol_key(protocol_key), protocol_key)
+    expected_key = jc2.jev_choice_protocol_key_v2(model=model_and_protocol.get("model"),
+                                                  endpoint=model_and_protocol.get("endpoint"),
+                                                  max_retries=prv2.PROBE_MAX_RETRIES)
+    check("protocol_key_reproducible", protocol_key == expected_key, protocol_key)
+    check("model_matches", model_and_protocol.get("model") == pr.JEV_REPLAY_MODEL == adapter.model,
+          model_and_protocol.get("model"))
+    check("endpoint_matches",
+          model_and_protocol.get("endpoint") == pr.JEV_REPLAY_ENDPOINT == getattr(adapter.client, "endpoint", None),
+          model_and_protocol.get("endpoint"))
+
     state = probe_state(adapter)
     check("request_hash_matches", state.request_hash == prv2.PROBE_REQUEST_HASH_FULL,
           state.request_hash)
@@ -77,7 +99,7 @@ def verify_probe_preflight(adapter: jc2.JevChoiceAdapterV2, *, probe: Mapping[st
           getattr(client, "max_physical_requests", None))
     check("receiver_retry_policy", getattr(client, "max_retries", None) == prv2.PROBE_MAX_RETRIES,
           getattr(client, "max_retries", None))
-    check("codec_version_is_v2", probe.get("model_and_protocol", {}).get("codec_version")
+    check("codec_version_is_v2", model_and_protocol.get("codec_version")
           == jc2.JEV_CHOICE_V2_CODEC_VERSION, None)
     check("not_independent_prompt_forms",
           probe.get("design", {}).get("independent_prompt_forms") is False, None)

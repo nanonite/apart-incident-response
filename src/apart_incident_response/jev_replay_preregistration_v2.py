@@ -197,6 +197,14 @@ def _probe_worst_case_cost_usd() -> float:
     return round(PROBE_REQUEST_CAP * PROBE_INPUT_TOKEN_CEILING * PROBE_INPUT_USD_PER_MTOK / 1_000_000, 9)
 
 
+def probe_preregistration_hash(document: Mapping[str, Any]) -> str:
+    """Canonical hash of a probe document (everything except its own hash)."""
+
+    payload = json.dumps({key: value for key, value in document.items() if key != "probe_hash"},
+                         sort_keys=True)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
 def build_probe_preregistration() -> dict[str, Any]:
     """Prepare (never execute) the separately gated repeat diagnostic."""
 
@@ -251,9 +259,7 @@ def build_probe_preregistration() -> dict[str, Any]:
         "outputs": {"probe_report": "runs/epic-126/jev-choice-normalization-probe-report-v2.json",
                     "probe_journal": "runs/epic-126/jev-choice-normalization-probe-v2.jsonl"},
     }
-    payload = json.dumps({key: value for key, value in document.items() if key != "probe_hash"},
-                         sort_keys=True)
-    document["probe_hash"] = hashlib.sha256(payload.encode("utf-8")).hexdigest()
+    document["probe_hash"] = probe_preregistration_hash(document)
     return document
 
 
@@ -555,6 +561,7 @@ __all__ = [
     "PROBE_K", "PROBE_K_RANGE", "PROBE_REQUEST_CAP", "PROBE_COST_CAP_USD", "PROBE_REJECTION_RATES_AT",
     "PROBE_STOP_ABSOLUTE_DEVIATION", "PROBE_REQUEST_HASH_PREFIX", "PROBE_REQUEST_HASH_FULL",
     "DETERMINISM_STANCE", "normalization_policy", "normalization_policy_hash", "treatment_hash_v2",
-    "output_paths", "build_probe_preregistration", "build_replay_preregistration_v2",
+    "output_paths", "probe_preregistration_hash", "build_probe_preregistration",
+    "build_replay_preregistration_v2",
     "verify_against_jev_replay_preregistration_v2", "main",
 ]

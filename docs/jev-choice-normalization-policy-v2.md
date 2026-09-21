@@ -150,6 +150,12 @@ A separately gated repeat diagnostic targets the identical `COMM_CONTROL` reques
 - requires a separate future live approval;
 - repetitions are not treated as independent prompt forms.
 
+The probe preflight is repository-backed: it recomputes the canonical probe hash,
+requires the loaded document to equal `build_probe_preregistration()`, and
+validates the v2 protocol key and its reproducibility, the normalization-policy
+hash, the model, the endpoint, the caps and the frozen request hash before any
+call.
+
 ## 7. Tests
 
 New tests cover: sums exactly `1.0`; sums at and just inside/outside `0.99` and

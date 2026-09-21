@@ -197,7 +197,7 @@
       "src/apart_incident_response/jev_choice_pilot_v2.py",
       "src/apart_incident_response/jev_normalization_probe_v2.py"
     ],
-    "source_files_hash": "1b0d7308eb16041ec25f88e4cb67d433c796ab7c99f2e20076172ec551b176b4",
+    "source_files_hash": "aa4786abd32b8b41447d5e031b3bb10cc49521ec3f389c47885ff2792131d06b",
     "treatment_hash": "29e2678a75bd5e64b012659f235827517ad52f22177ab661f268e96f9e82f9cf"
   },
   "guards": {
@@ -452,7 +452,7 @@
     "label": "illustrative and secondary",
     "sd_caveat": "the observed J3 between-form SD is from ISO-minus-FULL, not the real-minus-placebo estimand; use only as an illustrative sensitivity value, not a plug-in variance"
   },
-  "preregistration_hash": "1dd45224d43ef33b6fc08cb243fe9a9ffd2ecadf1b2ed6bebbd4b8416f995b3e",
+  "preregistration_hash": "f9cc1a2577998e61170bdefca1754065cb3fca5373c29490f2a5476e2db56991",
   "preregistration_version": "stage2-jev-choice-replay-v2",
   "retry_policy": {
     "backoff_max_seconds": 5.0,

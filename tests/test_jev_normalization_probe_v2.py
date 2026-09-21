@@ -1,3 +1,4 @@
+import copy
 import tempfile
 import unittest
 from pathlib import Path
@@ -61,6 +62,42 @@ class ProbePreflightTests(unittest.TestCase):
     def test_cap_mismatch_fails_closed(self):
         _, _, verification = setup(cap=10)
         self.assertIn("receiver_partition_enforced", verification["failed"])
+
+    def tampered(self, mutate):
+        probe = prv2.build_probe_preregistration()
+        mutate(probe)
+        adapter = jc2.JevChoiceAdapterV2(FakeProbeClient(), model=pr.JEV_REPLAY_MODEL)
+        return probe_mod.verify_probe_preflight(adapter, probe=probe, repo_root=REPO_ROOT)
+
+    def test_rejects_modified_caps(self):
+        result = self.tampered(lambda probe: probe["caps"].__setitem__("physical_requests", 9999))
+        self.assertFalse(result["ok"])
+        self.assertIn("probe_matches_canonical", result["failed"])
+        self.assertIn("request_cap_frozen", result["failed"])
+
+    def test_rejects_stale_hash(self):
+        result = self.tampered(lambda probe: probe.__setitem__("probe_hash", "0" * 64))
+        self.assertFalse(result["ok"])
+        self.assertIn("probe_hash_matches", result["failed"])
+
+    def test_rejects_wrong_protocol_key(self):
+        result = self.tampered(
+            lambda probe: probe["model_and_protocol"].__setitem__("protocol_key", "jev-choice-wire-v1|deadbeef"))
+        self.assertFalse(result["ok"])
+        self.assertIn("protocol_key_is_v2", result["failed"])
+        self.assertIn("protocol_key_reproducible", result["failed"])
+
+    def test_rejects_wrong_normalization_policy_hash(self):
+        result = self.tampered(
+            lambda probe: probe.__setitem__("normalization_policy_hash", "f" * 64))
+        self.assertFalse(result["ok"])
+        self.assertIn("normalization_policy_hash_matches", result["failed"])
+
+    def test_rejects_wrong_model_and_endpoint(self):
+        result = self.tampered(
+            lambda probe: probe["model_and_protocol"].__setitem__("model", "jev-0.0.0"))
+        self.assertFalse(result["ok"])
+        self.assertIn("model_matches", result["failed"])
 
 
 class ProbeExecutionTests(unittest.TestCase):
