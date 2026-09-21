@@ -37,6 +37,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix board IPC integration and CLI tool wiring (#58)
 
 ### Changed
+- E4 — Preregister form-level power, manifest and replay gate (#185)
 - J3 — Gate Jev Choice capability and calibration on frozen repaired instances (#156)
 - J3e — Execute bounded Jev Choice capability/calibration gate (#180)
 - J3d — Lock Jev Choice capability and calibration preregistration (#179)
