@@ -183,3 +183,18 @@ UV_CACHE_DIR=.uv-cache uv run env PYTHONPATH=src \
   python -m apart_incident_response.jev_normalization_probe_v2 \
   --live --approval "<ref>"
 ```
+
+## 9. Successor pilot pacing (v3, #186)
+
+The stopped v2 optional-board pilot ended on `writer_http_429_rate_limited` from
+the **Ling/OpenRouter** writer path, not Jev: Jev completed 50 receiver calls
+while Ling/OpenRouter stopped after 29 physical attempts for 25 logical writer
+turns. The v2 result is immutable and the observed 12/12 COMM silences and zero
+exposures remain valid partial-run observations. A successor writer transport
+(`ling-writer-openrouter-pacing-v3`, 3.25 s minimum interval between physical
+OpenRouter attempts, bounded Retry-After handling, sanitized provenance) and a
+fresh v3 registration are documented in
+[`docs/jev-choice-pilot-pacing-v3.md`](jev-choice-pilot-pacing-v3.md). Pacing
+addresses the documented 20 RPM free-model ceiling but cannot guarantee relief
+from a daily quota or upstream-provider capacity limit. #159 remains blocked
+until verified real-message exposure exists.

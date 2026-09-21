@@ -1,0 +1,532 @@
+{
+  "approval": {
+    "approved": true,
+    "approved_by": "reviewer",
+    "live_collection_authorized": false,
+    "scope": "v3_registration_lock_only"
+  },
+  "approval_required": false,
+  "board_evidence": {
+    "rule": "the real arm is proven only if the retained log has an accepted board_write by the writer whose normalized_claim/raw_text equal the claim and whose receiver_id is the reader, followed by a peer_read_exposure by the reader with the recorded exposure_id; a board_write_rejected or a missing/mismatched read fails closed as unverified_real_evidence",
+    "schema": "communication_events.CommunicationEventLog (board_write, peer_read_exposure, board_write_rejected)"
+  },
+  "caps": {
+    "cost_cap_usd": 1.0,
+    "input_token_ceiling": 8192,
+    "input_usd_per_mtok": 0.042,
+    "physical_requests": 300,
+    "planned_by_provider": {
+      "jev": 68,
+      "ling": 34
+    },
+    "planned_calls": {
+      "comm_control_jev_receiver": 17,
+      "comm_control_ling_writer": 17,
+      "comm_jev_receiver": 17,
+      "comm_ling_writer": 17,
+      "full_jev_receiver": 17,
+      "iso_jev_receiver": 17
+    },
+    "planned_physical_requests": 102,
+    "provider_partition": {
+      "jev": 250,
+      "ling": 50,
+      "note": "each transport enforces its own partition per physical attempt, so retries count against that provider's share and the combined total cannot exceed the ceiling; the Ling partition must additionally accommodate the 3.25-second attempt interval",
+      "total": 300
+    },
+    "retry_reserve": 198,
+    "status": "locked; live_collection_authorized=false",
+    "worst_case_cost_usd": 0.1032192
+  },
+  "claim_scope": {
+    "forms": 6,
+    "statement": "pilot conditional on the six frozen prompt forms; v3 changes only the Ling/OpenRouter pacing of the writer transport, never the prompt, the Jev codec or the normalization policy. Not calibration.",
+    "type": "form-conditioned pilot"
+  },
+  "complete_pair_rule": "require at least one valid real/placebo pair in each of the six forms for the six-form primary analysis; aim for two or more planned opportunities per form; if a form is lost the result is incomplete (five-form minimum two-sided sign-flip p = 0.0625). Incomplete pairs reported, not dropped.",
+  "conditions": {
+    "arms": [
+      "ISO (Jev receiver pre-read)",
+      "FULL (Jev receiver, saturated bound)",
+      "COMM optional board (Ling writer / Jev receiver)",
+      "COMM turn-matched no-information control (Ling writer / Jev receiver, no board write)"
+    ],
+    "condition_turns": {
+      "COMM": 2,
+      "FULL": 1,
+      "ISO": 1
+    },
+    "optional_silence": true,
+    "turn_matched_control": {
+      "description": "same COMM turn structure with no real board write; preserves optional silence and never manufactures a real write",
+      "model_visible": "no peer_clue message; empty visible_messages",
+      "purpose": "absorbs the extra finalizer turn so the board effect is not confounded with turns"
+    }
+  },
+  "decision_rule": {
+    "additional_requirement": "negative effect (form_mean < 0)",
+    "interval_reported_alongside": "form-mean t interval (df=k-1)",
+    "no_one_sided_switch": true,
+    "null_branch": "separate manipulation check",
+    "primary_test": "two-sided exact cluster sign-flip on form means"
+  },
+  "determinism": {
+    "classification": "stochastic",
+    "consequence": "repeated samples per prompt form are required; diagnostic repetitions of one frozen request are not independent prompt forms",
+    "evidence": "the official Choice request contract (docs/jev-choice-wire-contract.md) and the pinned local jev-dsl fixture expose only model/state/questions; no seed or temperature field is documented or present",
+    "field_sending_rule": "do not send seed or temperature unless official/local evidence explicitly supports them",
+    "request_fields_sent": [
+      "model",
+      "state",
+      "questions"
+    ],
+    "seed_supported": false,
+    "temperature_supported": false
+  },
+  "eligibility": {
+    "placebo": "the claim is a receiver-already-known pre-read clue with authoritative I_m = 0 and an unchanged feasible set",
+    "real_message": "ownership (instance.holds_claim) and I_m are recomputed from the generated instance; the write-to-read link is verified against the retained CommunicationEventLog board events. Missing, rejected, or mismatched evidence fails closed as unverified_real_evidence."
+  },
+  "estimand": {
+    "directional_prediction": "delta < 0",
+    "estimand": "equal-weight mean across distinct forms",
+    "event_difference": "H_real - H_placebo",
+    "form_effect": "within-form mean of the event difference",
+    "note": "all metrics use the v2-normalized vector; the raw vector is retained separately",
+    "primary_outcome": "entropy_bits"
+  },
+  "experimental_unit": "model-visible pre-read prompt form",
+  "form_capacity_audit": {
+    "blocks": {
+      "70000": {
+        "distinct_full": 6,
+        "distinct_iso": 6,
+        "distinct_total": 12,
+        "new_forms_vs_j3": 0
+      },
+      "71000": {
+        "distinct_full": 6,
+        "distinct_iso": 6,
+        "distinct_total": 12,
+        "new_forms_vs_j3": 0
+      },
+      "72000": {
+        "distinct_full": 6,
+        "distinct_iso": 6,
+        "distinct_total": 12,
+        "new_forms_vs_j3": 0
+      },
+      "73000": {
+        "distinct_full": 6,
+        "distinct_iso": 6,
+        "distinct_total": 12,
+        "new_forms_vs_j3": 0
+      },
+      "74000": {
+        "distinct_full": 5,
+        "distinct_iso": 5,
+        "distinct_total": 10,
+        "new_forms_vs_j3": 0
+      }
+    },
+    "capacity_paired_forms": 6,
+    "distinct_full_forms": 6,
+    "distinct_iso_forms": 6,
+    "note": "seed disjointness does not create new prompt forms: the generator yields six paired ISO/FULL forms across every seed block audited",
+    "recommendation": "conditional on the six known frozen forms; a generator redesign is required for genuinely new forms",
+    "union_distinct_request_forms": 12
+  },
+  "frozen_forms": {
+    "form_manifest_hash": "fb061b7a956ff953f15851e89d79aa6da149a78300164ffa7e493505fc8c96ea",
+    "instance_ids": [
+      "planning-00011940",
+      "planning-00011941",
+      "planning-00011942",
+      "planning-00011943",
+      "planning-00011944",
+      "planning-00011945",
+      "planning-00011946",
+      "planning-00011947",
+      "planning-00011948",
+      "planning-00011949",
+      "planning-0001194a",
+      "planning-0001194b",
+      "planning-0001194c",
+      "planning-0001194d",
+      "planning-0001194e",
+      "planning-0001194f",
+      "planning-00011950"
+    ],
+    "iso_form_ids": [
+      "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+      "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+      "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+      "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+      "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222"
+    ],
+    "manifest_hash": "27e0c9faeec47979e44f480af648cd0b37751a8c529d0ab91ba4f32b7b3b2390",
+    "paired_forms": 6,
+    "per_block": 17,
+    "seed_base": 72000
+  },
+  "generator": {
+    "checker_version": "oracle-v2",
+    "generator_version": "six-family-clue-consistent-v2",
+    "manifest_treatment_hash": "ae6ff9e7fee8dc9428938c062e4296e551456605e2c5879594e38b35208852a5",
+    "normalization_policy_hash": "292ac217f1cf54083252e6363a16a48596daab72a8ca06d4569c20f861b7e1e9",
+    "source_files": [
+      "src/apart_incident_response/task_families.py",
+      "src/apart_incident_response/communication_protocol.py",
+      "src/apart_incident_response/jev_protocol.py",
+      "src/apart_incident_response/jev_choice.py",
+      "src/apart_incident_response/jev_choice_v2.py",
+      "src/apart_incident_response/jev_replay.py",
+      "src/apart_incident_response/jev_replay_inference.py",
+      "src/apart_incident_response/jev_normalization_sensitivity.py",
+      "src/apart_incident_response/jev_ling_writer_v3.py",
+      "src/apart_incident_response/jev_choice_pilot_v3.py"
+    ],
+    "source_files_hash": "fc1cb42ed4858630743e17db632b3c18097a8b19cd2cb9295c4e587db2e9fbee",
+    "treatment_hash": "0189545f1e3493665fa816dc0b3d67eac6f9577332ddfc298669c1d874fe35a9",
+    "writer_transport_hash": "37759975d26cb7338d86ca629881978bc6c797625b9f5615b9fc1400870deb3a"
+  },
+  "guards": {
+    "feasible_set_mass": {
+      "epsilon": 0.01,
+      "guard": "mass_F(real) >= mass_F(placebo) - epsilon",
+      "reference_set": "F = pre-read clue-consistent set S(C), fixed by C and independent of the real message"
+    },
+    "filtering": "never used to filter the primary estimate; every pre-eligible, valid real/placebo pair enters the entropy analysis and the guards are reported alongside it",
+    "objective_information": "I_m kept distinct from model entropy",
+    "reporting": "form-level guard differences and event-level violations",
+    "target_probability": {
+      "guard": "p_target(real) >= p_target(placebo) + delta",
+      "margin_delta": 0.0
+    }
+  },
+  "inference": {
+    "minimum_two_sided_p_at_k5": 0.0625,
+    "minimum_two_sided_p_at_k6": 0.03125,
+    "primary": "form-mean t interval (df=k-1) and exhaustive two-sided cluster sign-flip p",
+    "sensitivities_secondary": [
+      "form-cluster bootstrap",
+      "sign test on form means",
+      "instance-weighted estimate",
+      "hierarchical model (only if defensible)"
+    ]
+  },
+  "invalidity_classes": [
+    "argmax_shifted_on_renormalization",
+    "duplicate_option_ids",
+    "empty_distribution",
+    "extra_answer",
+    "invalid_confidence",
+    "malformed_response",
+    "malformed_usage",
+    "mismatched_option_set",
+    "missing_answer",
+    "missing_credentials",
+    "missing_probabilities",
+    "model_drift",
+    "negative_probability",
+    "non_finite_probability",
+    "not_normalized",
+    "not_normalized_hard",
+    "not_normalized_suspect",
+    "oversized_option_set",
+    "provider_rejected",
+    "response_not_evaluated",
+    "transport_error",
+    "unknown_selection",
+    "wrong_answer_kind"
+  ],
+  "ling_contract": {
+    "backoff_initial_seconds": 0.5,
+    "backoff_max_seconds": 5.0,
+    "contract_hash": "28c819f2c651c4a1bdeb36dc650224123ae27d10dd67d7a39ad6882fb4866aa1",
+    "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+    "max_retries": 2,
+    "max_tokens": 64,
+    "model": "inclusionai/ling-3.0-flash-vl:free",
+    "prompt_template": "You may send at most one exact private clue to a peer, or stay silent. Private clues: {clues}. Reply with MESSAGE: <exact clue> or SILENCE.",
+    "provider": "openrouter",
+    "provider_version": "behavioral-discovery-v1",
+    "retryable_statuses": [
+      408,
+      429,
+      500,
+      502,
+      503,
+      504,
+      529
+    ],
+    "seed_behavior": "not_requested",
+    "temperature": 0.0
+  },
+  "manifest": {
+    "complexity": "low",
+    "family": "planning",
+    "instance_ids": [
+      "planning-00011940",
+      "planning-00011941",
+      "planning-00011942",
+      "planning-00011943",
+      "planning-00011944",
+      "planning-00011945",
+      "planning-00011946",
+      "planning-00011947",
+      "planning-00011948",
+      "planning-00011949",
+      "planning-0001194a",
+      "planning-0001194b",
+      "planning-0001194c",
+      "planning-0001194d",
+      "planning-0001194e",
+      "planning-0001194f",
+      "planning-00011950"
+    ],
+    "manifest_hash": "27e0c9faeec47979e44f480af648cd0b37751a8c529d0ab91ba4f32b7b3b2390",
+    "per_block": 17,
+    "regime": "N",
+    "seed_base": 72000
+  },
+  "message_envelope": {
+    "branch_request_rule": "each branch request = the frozen pre-read body with state.visible_messages set to [] (null) or one peer_clue message; branch request_hash is recomputed and must match the stored value",
+    "placebo_arm": "peer_clue: <known receiver clue>",
+    "real_arm": "peer_clue: <claim>",
+    "source_neutral": true,
+    "template": "peer_clue: {claim}"
+  },
+  "missing_real_message_rule": "when optional board use leaves a form without a real message that form is reported incomplete; because the primary analysis requires a real pair in all six forms, a missing real message makes the result incomplete rather than triggering substitution",
+  "missingness": "planned/attempted/valid/complete/incomplete reported per form and per branch; a failed attempt is distinguished from an unattempted branch",
+  "model_and_protocol": {
+    "codec_version": "jev-choice-wire-v2",
+    "endpoint": "https://api.typesafe.ai/v1/systemone",
+    "ling": "pinned free Ling writer on OpenRouter free quota (paced by writer transport v3)",
+    "model": "jev-1.13.0",
+    "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+    "provider": "jev"
+  },
+  "normalization": {
+    "capture_then_judge": true,
+    "codec_version": "jev-choice-wire-v2",
+    "diagnostics_fields": [
+      "option_count",
+      "raw_probability_sum",
+      "signed_normalization_deviation",
+      "absolute_normalization_deviation",
+      "minimum_probability",
+      "maximum_probability",
+      "zero_count",
+      "all_finite",
+      "all_nonnegative",
+      "shape_valid",
+      "invalid_classes",
+      "raw_argmax_set",
+      "normalization_tier",
+      "renormalized",
+      "argmax_preserved",
+      "normalization_adjustment",
+      "entropy_raw_bits",
+      "entropy_normalized_bits"
+    ],
+    "hard_ceiling": 0.05,
+    "invalidity": {
+      "exact_option_identity_required": true,
+      "malformed_envelope_may_lack_vector": true,
+      "never_repaired": [
+        "empty",
+        "missing",
+        "nonnumeric",
+        "non_finite",
+        "negative",
+        "option_mismatched"
+      ],
+      "raw_vector_retained_on_invalid": "when safe (finite); non-finite values are encoded as strings"
+    },
+    "policy_fingerprint": "",
+    "quantization_bound": 0.03,
+    "raw_provider_envelope_retained": false,
+    "raw_vs_normalized_metrics": {
+      "normalized_vector_used_for": [
+        "entropy_bits",
+        "p_target",
+        "feasible_mass",
+        "brier_score",
+        "log_loss",
+        "selection_validation",
+        "downstream_replay_inference"
+      ],
+      "raw_retained_separately": [
+        "raw_probabilities",
+        "raw_probability_sum",
+        "signed_normalization_deviation",
+        "absolute_normalization_deviation"
+      ]
+    },
+    "renormalization": {
+      "applied_to": "every accepted vector (exact and complete_renormalized)",
+      "argmax_preservation_required": true,
+      "exact_tier_rescale": "within 1e-6; usually a numerical no-op but applied for one invariant",
+      "fail_closed_class": "argmax_shifted_on_renormalization",
+      "formula": "p_normalized[i] = p_raw[i] / sum(p_raw)",
+      "material_correction_band": "complete_renormalized"
+    },
+    "sensitivity_grid": [
+      1e-06,
+      0.01,
+      0.03,
+      0.05
+    ],
+    "tiers": {
+      "complete_renormalized": {
+        "boundary_epsilon": 1.7763568394002505e-15,
+        "boundary_inclusive_with_machine_epsilon": true,
+        "material_correction": true,
+        "max_absolute_deviation": 0.01,
+        "min_absolute_deviation_exclusive": 1e-06,
+        "renormalized": true,
+        "valid": true
+      },
+      "exact": {
+        "inclusive": true,
+        "material_correction": false,
+        "max_absolute_deviation": 1e-06,
+        "renormalized": true,
+        "valid": true
+      },
+      "not_normalized_hard": {
+        "min_absolute_deviation_exclusive": 0.05,
+        "renormalized": false,
+        "role": "invalid; triggers the registered hard stop",
+        "valid": false
+      },
+      "not_normalized_suspect": {
+        "max_absolute_deviation": 0.05,
+        "min_absolute_deviation_exclusive": 0.01,
+        "renormalized": false,
+        "role": "sensitivity diagnostic only; not accepted",
+        "valid": false
+      }
+    }
+  },
+  "outputs": {
+    "journal": "runs/epic-126/jev-choice-pilot-v3.jsonl",
+    "registration": "runs/epic-126/jev-choice-replay-preregistration-v3.json",
+    "report": "runs/epic-126/jev-choice-pilot-report-v3.json"
+  },
+  "pending_decisions": [],
+  "placebo": {
+    "construction": "controller-injected source-neutral re-presentation of a receiver-already-known pre-read clue, using the same envelope as the real arm",
+    "envelope": "peer_clue: {claim}",
+    "origin": "controller",
+    "requirements": [
+      "claim is one of the receiver's own pre-read private clues",
+      "authoritative I_m against the receiver's pre-read feasible set is 0",
+      "the pre-read feasible set is unchanged",
+      "same source-neutral envelope as the real arm; synthetic origin controller-side"
+    ],
+    "synthetic": true,
+    "wording_hash": "268425b3d4bcb5d3a8a30eb52d87a0165e0f2d4c0931eb685adc1c8f21a87f41"
+  },
+  "power": {
+    "between_form_sd_bits": 0.19331804672510103,
+    "illustrative_required_forms": {
+      "delta_0.10": 30,
+      "delta_0.20": 8
+    },
+    "k_forms": 6,
+    "label": "illustrative and secondary",
+    "sd_caveat": "the observed J3 between-form SD is from ISO-minus-FULL, not the real-minus-placebo estimand; use only as an illustrative sensitivity value, not a plug-in variance"
+  },
+  "preregistration_hash": "ef28c92de0e28d32302ace9aed8231749e94937168b24f2e63108e0d30969496",
+  "preregistration_version": "stage2-jev-choice-replay-v3",
+  "retry_policy": {
+    "backoff_max_seconds": 5.0,
+    "backoff_seconds": 0.5,
+    "max_retries": 2,
+    "retryable_statuses": [
+      408,
+      429,
+      500,
+      502,
+      503,
+      504,
+      529
+    ]
+  },
+  "stage": "jev-choice-replay-v3",
+  "status": "locked_for_jev_choice_replay_v3",
+  "stop_rules": [
+    "argmax_shifted_on_renormalization",
+    "contract_mismatch",
+    "cost_cap",
+    "missing_checker_evidence",
+    "model_drift",
+    "not_normalized_hard",
+    "repeated_http_failure",
+    "request_cap",
+    "writer_rate_limited_terminal"
+  ],
+  "successor_of": {
+    "note": "v1 and v2 are not overwritten, resumed, pooled with, or reinterpreted; v3 changes only the Ling/OpenRouter writer pacing and re-registers prospectively",
+    "v1": {
+      "artifact": "runs/epic-126/jev-choice-replay-preregistration.json",
+      "preregistration_version": "stage2-jev-choice-replay-v1"
+    },
+    "v2": {
+      "artifact": "runs/epic-126/jev-choice-replay-preregistration-v2.json",
+      "immutable": true,
+      "preregistration_version": "stage2-jev-choice-replay-v2",
+      "stopped_commit": "c555597",
+      "stopped_result": "runs/epic-126/jev-choice-pilot-report-v2.json",
+      "stopped_stop_reason": "writer_http_429_rate_limited"
+    }
+  },
+  "writer_transport": {
+    "backoff_formula": "min(initial * 2**retry_ordinal, backoff_max)",
+    "backoff_initial_seconds": 0.5,
+    "backoff_max_seconds": 5.0,
+    "delay_rule": "max(remaining_min_interval, exponential_backoff, valid_server_requested_delay)",
+    "max_retries": 2,
+    "max_server_requested_delay_seconds": 10.0,
+    "min_attempt_interval_seconds": 3.25,
+    "monotonic_clock": "time.monotonic",
+    "pacing_algorithm": "monotonic_min_interval_between_physical_attempt_starts",
+    "pacing_scope": "every physical attempt, across logical calls and retries; Ling only",
+    "provenance_fields": [
+      "logical_call_id",
+      "physical_attempt",
+      "retry_ordinal",
+      "status",
+      "delay_seconds",
+      "delay_source",
+      "delay_sources",
+      "retry_after_present",
+      "retry_after_valid",
+      "retry_after_ms_present",
+      "retry_after_ms_valid",
+      "error_class"
+    ],
+    "provider": "openrouter",
+    "retains_credentials": false,
+    "retains_response_bodies": false,
+    "retry_header_parsing": "numeric_only; no HTTP-date parsing; malformed/negative/non-finite/excessive ignored",
+    "retryable_statuses": [
+      408,
+      429,
+      500,
+      502,
+      503,
+      504,
+      529
+    ],
+    "supported_retry_headers": [
+      "retry-after",
+      "retry-after-ms"
+    ],
+    "writer_transport_hash": "37759975d26cb7338d86ca629881978bc6c797625b9f5615b9fc1400870deb3a",
+    "writer_transport_version": "ling-writer-openrouter-pacing-v3"
+  }
+}
