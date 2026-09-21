@@ -136,6 +136,11 @@ continuous entropy or target-probability differences.
 - **Caps (draft)**: ≤ 300 physical requests; ≤ $1 Jev cost; pinned free Ling
   model on OpenRouter free quota; stop rules request_cap / cost_cap /
   repeated_http_failure / contract_mismatch / model_drift / missing_checker_evidence.
+- **Form-level registration**: the frozen estimand is in
+  `docs/jev-prompt-form-estimand.md`; the form-capacity audit (6 paired forms;
+  72000 repeats all J3 forms) and the draft registration are in
+  `runs/epic-126/jev-choice-replay-preregistration.json` (#185). Do not lock or
+  run live until the reviewer resolves the pending decisions.
 
 ## Caveats
 

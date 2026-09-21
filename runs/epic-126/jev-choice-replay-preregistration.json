@@ -1,0 +1,136 @@
+{
+  "approval": {
+    "approved": false,
+    "live_collection_authorized": false
+  },
+  "approval_required": true,
+  "caps": {
+    "cost_cap_usd": 1.0,
+    "ling": "pinned free model",
+    "physical_requests": 300,
+    "status": "draft; not authorized"
+  },
+  "claim_scope": {
+    "forms": 6,
+    "statement": "the estimand is the equal-weight mean over the six frozen prompt forms; it is not a population-level prompt claim and not calibration",
+    "type": "form-conditioned"
+  },
+  "complete_pair_rule": "real and placebo both valid and identity-matched; incomplete pairs reported, not dropped; a form with no complete pair contributes no effect",
+  "estimand": {
+    "directional_prediction": "delta < 0",
+    "estimand": "equal-weight mean across distinct forms",
+    "event_difference": "H_real - H_placebo",
+    "form_effect": "within-form mean of the event difference",
+    "null_branch": "cancels from the primary contrast; retained for real-minus-null and placebo-minus-null manipulation checks",
+    "primary_outcome": "entropy_bits"
+  },
+  "experimental_unit": "model-visible pre-read prompt form",
+  "form_capacity_audit": {
+    "blocks": {
+      "70000": {
+        "distinct_full": 6,
+        "distinct_iso": 6,
+        "distinct_total": 12,
+        "new_forms_vs_j3": 0
+      },
+      "71000": {
+        "distinct_full": 6,
+        "distinct_iso": 6,
+        "distinct_total": 12,
+        "new_forms_vs_j3": 0
+      },
+      "72000": {
+        "distinct_full": 6,
+        "distinct_iso": 6,
+        "distinct_total": 12,
+        "new_forms_vs_j3": 0
+      },
+      "73000": {
+        "distinct_full": 6,
+        "distinct_iso": 6,
+        "distinct_total": 12,
+        "new_forms_vs_j3": 0
+      },
+      "74000": {
+        "distinct_full": 5,
+        "distinct_iso": 5,
+        "distinct_total": 10,
+        "new_forms_vs_j3": 0
+      }
+    },
+    "capacity_paired_forms": 6,
+    "distinct_full_forms": 6,
+    "distinct_iso_forms": 6,
+    "note": "seed disjointness does not create new prompt forms: the generator yields six paired ISO/FULL forms across every seed block audited",
+    "recommendation": "conditional on the six known frozen forms; a generator redesign is required for genuinely new forms",
+    "union_distinct_request_forms": 12
+  },
+  "guards": {
+    "feasible_set_mass": {
+      "epsilon": 0.0,
+      "guard": "mass_F(real) >= mass_F(placebo) - epsilon",
+      "reference_set": "F = pre-read clue-consistent set S(C), fixed by C and independent of the real message",
+      "status": "needs reviewer slack"
+    },
+    "objective_information": "I_m kept distinct from model entropy",
+    "target_probability": {
+      "guard": "p_target(real) >= p_target(placebo)",
+      "margin_delta": 0.0,
+      "status": "needs reviewer margin"
+    }
+  },
+  "inference": {
+    "minimum_two_sided_p_at_k6": 0.03125,
+    "primary": "form-mean t interval (df=k-1) and exhaustive two-sided cluster sign-flip p",
+    "sensitivities_secondary": [
+      "form-cluster bootstrap",
+      "sign test on form means",
+      "instance-weighted estimate",
+      "hierarchical model (only if defensible)"
+    ]
+  },
+  "manifest": {
+    "complexity": "low",
+    "family": "planning",
+    "note": "seed-disjoint IDs do not create new forms; the study is conditional on the six forms regardless of the block chosen",
+    "per_block": 17,
+    "regime": "N",
+    "seed_base": 72000
+  },
+  "missingness": "planned/attempted/valid/complete/incomplete reported per form and per branch",
+  "model_and_protocol": {
+    "codec_version": "jev-choice-wire-v1",
+    "endpoint": "https://api.typesafe.ai/v1/systemone",
+    "model": "jev-1.13.0"
+  },
+  "pending_decisions": [
+    "confirm the conditional six-form claim scope (vs generator redesign)",
+    "set the target-probability margin delta and feasible-set-mass slack epsilon",
+    "set the minimum complete pairs per form",
+    "fix the placebo construction rule (I_m = 0, no feasible-set reduction)",
+    "choose one-sided directional vs two-sided decision rule",
+    "confirm the draft request/cost caps"
+  ],
+  "power": {
+    "between_form_sd_bits": 0.19331804672510103,
+    "illustrative_required_forms": {
+      "delta_0.10": 30,
+      "delta_0.20": 8
+    },
+    "k_forms": 6,
+    "label": "illustrative and secondary",
+    "sd_caveat": "the observed J3 between-form SD is from ISO-minus-FULL, not the real-minus-placebo estimand; use only as an illustrative sensitivity value, not a plug-in variance"
+  },
+  "preregistration_hash": "e1a2662c1ceb40650c7c93d71d2c3183d292f831addba224813be3edf7aaccac",
+  "preregistration_version": "stage2-jev-choice-replay-v1",
+  "stage": "jev-choice-replay",
+  "status": "draft_pending_review",
+  "stop_rules": [
+    "request_cap",
+    "cost_cap",
+    "repeated_http_failure",
+    "contract_mismatch",
+    "model_drift",
+    "missing_checker_evidence"
+  ]
+}
