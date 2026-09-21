@@ -5,6 +5,7 @@ from pathlib import Path
 from apart_incident_response import jev_replay as jr
 from apart_incident_response import jev_replay_inference as ji
 from apart_incident_response import jev_preregistration as jp
+from apart_incident_response.communication_events import CommunicationEventLog
 from apart_incident_response.jev_choice import JEV_CHOICE_INSTRUCTIONS, JEV_DEFAULT_MODEL, jev_choice_protocol_key
 
 
@@ -42,6 +43,9 @@ def build_event(instance, *, real_probs=None, placebo_probs=None, event_id=None,
     placebo_claim = str(instance.private_clues[agent][0])
     real_probs = real_probs or one_hot(options, target)
     placebo_probs = placebo_probs or spread(options, target, 0.5)
+    log = CommunicationEventLog("run-1", clock=lambda: 1)
+    log.board_write(writer, info, message_tokens=2, receiver_id=agent)
+    log.peer_read(agent, info, exposure_id="x")
 
     def branch(name, probabilities, message_text, status="complete"):
         return jr.make_branch(name, status=status, probabilities=probabilities if status == "complete" else None,
@@ -51,7 +55,7 @@ def build_event(instance, *, real_probs=None, placebo_probs=None, event_id=None,
                               request_hash=jr.prompt_form_id(jr.branch_request_body(body, message_text)))
 
     branches = {
-        "real": branch("real", real_probs, jr.serialize_message(writer, real_claim)),
+        "real": branch("real", real_probs, jr.serialize_message(real_claim)),
         "placebo": branch("placebo", placebo_probs, jr.serialize_placebo_message(placebo_claim),
                           status=placebo_status),
         "null": branch("null", spread(options, target, 0.5), None),
@@ -65,12 +69,10 @@ def build_event(instance, *, real_probs=None, placebo_probs=None, event_id=None,
         prompt_form_id_value=form, pre_read_state=state, request_body=body, option_ids=options,
         target_id=target, feasible_set=feasible, i_m_bits=float(info.delta_i_bits),
         real_message={"writer_id": writer, "reader_id": agent, "exposure_id": "x", "message_id": "m-real",
-                      "claim": real_claim,
-                      "board_event": {"message_id": "m-real", "writer": writer, "reader": agent,
-                                      "normalized_claim": real_claim}},
+                      "claim": real_claim},
         placebo={"claim": placebo_claim, "synthetic": True, "construction": jr.PLACEBO_CONSTRUCTION,
                  "envelope": jr.MESSAGE_ENVELOPE_TEMPLATE, "i_m_bits": 0},
-        branches=branches)
+        branches=branches, board_log=[event.to_dict() for event in log.events])
 
 
 def _iso_form(instance):

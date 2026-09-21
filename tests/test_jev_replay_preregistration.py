@@ -77,12 +77,13 @@ class DraftTests(unittest.TestCase):
         self.assertEqual(len(forms["instance_ids"]), 17)
         self.assertEqual(len(forms["form_manifest_hash"]), 64)
         placebo = self.doc["placebo"]
-        self.assertEqual(placebo["envelope"], "peer_message from {writer}: {claim}")
-        self.assertEqual(placebo["placebo_writer_id"], "peer")
+        self.assertEqual(placebo["envelope"], "peer_clue: {claim}")
+        self.assertEqual(placebo["origin"], "controller")
         self.assertTrue(placebo["synthetic"])
         self.assertEqual(len(placebo["wording_hash"]), 64)
+        self.assertTrue(self.doc["message_envelope"]["source_neutral"])
+        self.assertIn("peer_read_exposure", self.doc["board_evidence"]["rule"])
         self.assertIn("unverified_real_evidence", self.doc["eligibility"]["real_message"])
-        self.assertIn("visible_messages", self.doc["message_envelope"]["branch_request_rule"])
 
     def test_hash_is_reproducible(self):
         self.assertEqual(pr.build_replay_preregistration(journal_path=JOURNAL)["preregistration_hash"],

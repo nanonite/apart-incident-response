@@ -31,13 +31,14 @@ REQUIRED_BRANCH_METRICS = ("entropy_bits", "p_target", "feasible_mass")
 REQUIRED_USAGE = ("input_tokens", "output_tokens")
 I_M_TOLERANCE = 1e-9
 
-#: One message envelope for both the real and placebo arms; only the writer label
-#: and claim differ. The placebo writer is a controller-side label fixed here.
-MESSAGE_ENVELOPE_TEMPLATE = "peer_message from {writer}: {claim}"
-PLACEBO_WRITER_ID = "peer"
-PLACEBO_CONSTRUCTION = ("controller-injected re-presentation of a receiver-already-known "
-                        "pre-read clue, using the same message envelope as the real arm")
+#: One source-neutral message envelope for both the real and placebo arms; only
+#: the claim content differs, so sender identity is not a model-visible contrast.
+#: The real writer id and the synthetic placebo origin stay controller-side.
+MESSAGE_ENVELOPE_TEMPLATE = "peer_clue: {claim}"
+PLACEBO_CONSTRUCTION = ("controller-injected source-neutral re-presentation of a "
+                        "receiver-already-known pre-read clue, using the same envelope as the real arm")
 PLACEBO_SYNTHETIC = True
+PLACEBO_ORIGIN = "controller"
 
 INVALID_REPLAY_PROBLEMS = frozenset({
     "missing_branch", "unknown_branch", "malformed_branch", "malformed_event", "unmatched_state",
@@ -70,18 +71,18 @@ def prompt_form_id(request_body: Mapping[str, Any]) -> str:
     return canonical_hash(request_body)
 
 
-def serialize_message(writer_id: str, claim: str) -> str:
-    """Frozen model-visible message envelope shared by the real and placebo arms."""
+def serialize_message(claim: str) -> str:
+    """Frozen source-neutral model-visible message envelope (real and placebo)."""
 
-    return MESSAGE_ENVELOPE_TEMPLATE.format(writer=writer_id, claim=claim)
+    return MESSAGE_ENVELOPE_TEMPLATE.format(claim=claim)
 
 
 def serialize_placebo_message(claim: str) -> str:
-    return serialize_message(PLACEBO_WRITER_ID, claim)
+    return serialize_message(claim)
 
 
 def message_wording_hash() -> str:
-    return canonical_hash({"envelope": MESSAGE_ENVELOPE_TEMPLATE, "placebo_writer": PLACEBO_WRITER_ID})
+    return canonical_hash({"envelope": MESSAGE_ENVELOPE_TEMPLATE, "placebo_origin": PLACEBO_ORIGIN})
 
 
 def branch_request_body(pre_read_body: Mapping[str, Any], message_text: str | None) -> dict[str, Any]:
@@ -97,7 +98,7 @@ def branch_message_text(event: Mapping[str, Any], branch: str) -> str | None:
     real = event.get("real_message") or {}
     placebo = event.get("placebo") or {}
     if branch == "real":
-        return serialize_message(str(real.get("writer_id", "")), str(real.get("claim", "")))
+        return serialize_message(str(real.get("claim", "")))
     if branch == "placebo":
         return serialize_placebo_message(str(placebo.get("claim", "")))
     return None
@@ -153,7 +154,8 @@ def build_event(*, event_id: str, instance_id: str, condition: str, model: str,
                 task: Mapping[str, Any], prompt_form_id_value: str, pre_read_state: Mapping[str, Any],
                 request_body: Mapping[str, Any], option_ids: Sequence[str], target_id: str,
                 feasible_set: Sequence[str], i_m_bits: float, real_message: Mapping[str, Any],
-                placebo: Mapping[str, Any], branches: Mapping[str, Mapping[str, Any]]) -> dict[str, Any]:
+                placebo: Mapping[str, Any], branches: Mapping[str, Mapping[str, Any]],
+                board_log: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
     return {
         "schema_version": JEV_REPLAY_VERSION, "event_id": event_id, "instance_id": instance_id,
         "condition": condition, "model": model, "task": dict(task),
@@ -161,6 +163,7 @@ def build_event(*, event_id: str, instance_id: str, condition: str, model: str,
         "request_body": dict(request_body), "option_ids": list(option_ids), "target_id": target_id,
         "feasible_set": list(feasible_set), "i_m_bits": float(i_m_bits),
         "real_message": dict(real_message), "placebo": dict(placebo),
+        "board_log": [dict(record) for record in board_log],
         "branches": {branch: dict(record) for branch, record in branches.items()},
     }
 
@@ -200,24 +203,49 @@ def _real_message_problems(event: Mapping[str, Any], instance: Any) -> list[str]
     real = event.get("real_message")
     if not isinstance(real, Mapping):
         return ["missing_provenance"]
-    required = ("writer_id", "reader_id", "exposure_id", "message_id", "claim", "board_event")
+    required = ("writer_id", "reader_id", "exposure_id", "message_id", "claim")
     if any(not real.get(name) for name in required):
         return ["missing_provenance"]
     agent = str((event.get("task") or {}).get("agent"))
-    writer, reader, claim = str(real["writer_id"]), str(real["reader_id"]), str(real["claim"])
-    board = real["board_event"]
-    if not isinstance(board, Mapping):
-        return ["unverified_real_evidence"]
-    if (str(board.get("writer")) != writer or str(board.get("reader")) != reader
-            or str(board.get("normalized_claim")) != claim
-            or str(board.get("message_id")) != str(real["message_id"])):
-        return ["unverified_real_evidence"]
+    writer = str(real["writer_id"])
+    reader = str(real["reader_id"])
+    claim = str(real["claim"])
+    message_id = str(real["message_id"])
+    exposure_id = str(real["exposure_id"])
     problems: list[str] = []
     if not instance.holds_claim(writer, claim) or instance.claim_owner(claim) != writer:
         problems.append("ineligible_real_message")
     if reader != agent or reader == writer:
         problems.append("ineligible_real_message")
-    info = instance.information(reader, claim, str(real["message_id"]))
+
+    log = event.get("board_log")
+    if not isinstance(log, Sequence) or isinstance(log, (str, bytes)) or not log:
+        problems.append("unverified_real_evidence")
+        return problems
+    rejected = [row for row in log if row.get("kind") == "board_write_rejected"
+                and str(row.get("message_id")) == message_id]
+    writes = [row for row in log if row.get("kind") == "board_write"
+              and str(row.get("message_id")) == message_id and str(row.get("agent_id")) == writer]
+    reads = [row for row in log if row.get("kind") == "peer_read_exposure"
+             and str(row.get("message_id")) == message_id and str(row.get("agent_id")) == reader]
+    if rejected or not writes or not reads:
+        problems.append("unverified_real_evidence")
+        return problems
+    write = writes[0]
+    write_payload = write.get("payload") or {}
+    if write.get("status") != "accepted" or str(write_payload.get("normalized_claim")) != claim \
+            or str(write_payload.get("raw_text")) != claim:
+        problems.append("unverified_real_evidence")
+    if write_payload.get("receiver_id") not in (None, reader):
+        problems.append("unverified_real_evidence")
+    read = min(reads, key=lambda row: row.get("sequence", 0))
+    if not isinstance(write.get("sequence"), int) or not isinstance(read.get("sequence"), int) \
+            or read["sequence"] <= write["sequence"]:
+        problems.append("unverified_real_evidence")
+    if str((read.get("payload") or {}).get("exposure_id")) != exposure_id:
+        problems.append("unverified_real_evidence")
+
+    info = instance.information(reader, claim, message_id)
     if info.status != "accepted" or info.delta_i_bits is None:
         problems.append("unverified_real_evidence")
         return problems
@@ -476,7 +504,7 @@ def assert_single_protocol(events: Sequence[Mapping[str, Any]]) -> str:
 
 __all__ = [
     "JEV_REPLAY_VERSION", "BRANCHES", "REQUIRED_BRANCH_METRICS", "INVALID_REPLAY_PROBLEMS",
-    "MESSAGE_ENVELOPE_TEMPLATE", "PLACEBO_WRITER_ID", "PLACEBO_CONSTRUCTION",
+    "MESSAGE_ENVELOPE_TEMPLATE", "PLACEBO_CONSTRUCTION", "PLACEBO_ORIGIN",
     "canonical_hash", "pre_read_request_body", "prompt_form_id", "serialize_message",
     "serialize_placebo_message", "message_wording_hash", "branch_request_body",
     "branch_message_text", "entropy_bits", "make_branch", "build_event", "resolve_instance",
