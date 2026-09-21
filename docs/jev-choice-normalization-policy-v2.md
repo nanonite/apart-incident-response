@@ -12,6 +12,15 @@ preserved byte-for-byte; the locked v1 registration and the stopped optional-boa
 pilot (commit `ff2fbc7`) are not modified, reinterpreted, appended to, pooled
 with, or overwritten.
 
+This is a **local analysis policy**, not behavior prescribed by TypeSafe. The
+official Jev Choice contract describes `probabilities` as floats that sum to
+one; it does not tell clients to renormalize a response. The pinned `jev-dsl`
+reference likewise does not renormalize: it accepts the numeric distribution
+and reports sum drift greater than `0.01` as a diagnostic. This repository's v1
+codec instead rejected drift greater than `1e-6`. The capture-and-normalize
+behavior below is therefore new, prospective v2 behavior and must not be
+attributed to Jev itself or applied retroactively to v1 data.
+
 ## 1. Why v2
 
 The stopped v1 pilot ended on the registered contract stop rule: the
@@ -48,7 +57,10 @@ artifacts remain `allow_nan=False` serializable.
 ## 3. Frozen primary tiers
 
 Option-key identity is exact. Empty, missing, nonnumeric, non-finite, negative,
-and option-mismatched vectors remain invalid and are never repaired.
+and option-mismatched vectors remain invalid and are never repaired. Dividing a
+finite, nonnegative, near-unit vector by its positive sum is the only permitted
+transformation; it is recorded explicitly and is not described as provider
+behavior.
 
 | tier | absolute deviation `abs(sum(p)-1)` | valid | renormalized |
 |---|---|---|---|
@@ -63,11 +75,22 @@ For `complete_renormalized`:
 p_normalized[i] = p_raw[i] / sum(p_raw)
 ```
 
-Only the normalized vector is used for entropy, `p_target`, feasible-set mass,
-Brier score, log loss, selection validation, and downstream replay inference.
-The raw vector and raw sum are retained separately. Renormalization must not
-change the argmax; otherwise the response fails closed as
+For `complete_renormalized`, only the normalized vector is used for entropy,
+`p_target`, feasible-set mass, Brier score, log loss, and downstream replay
+inference. The raw vector and raw sum are retained separately. Selection is
+checked against the raw argmax; positive scalar normalization preserves that
+argmax mathematically, and the implementation additionally checks this as a
+defensive invariant. A failure is classified
 `argmax_shifted_on_renormalization`.
+
+Implementation note: the current v2 codec treats the `exact` tier as already
+normalized within numerical tolerance and uses that raw vector unchanged. It
+does **not** divide an `exact` vector whose sum differs from one by at most
+`1e-6`. Consequently, the stronger statement “every accepted vector is always
+divided by its raw sum before every metric” is not yet an implementation
+invariant. If that stronger invariant is required, the codec, tests, protocol
+fingerprint, and locked successor registration must be amended and re-locked
+before live use.
 
 The primary automatic acceptance upper bound is exactly `1e-2`. The
 quantization bound `0.03` and hard ceiling `0.05` are sensitivity/diagnostic
