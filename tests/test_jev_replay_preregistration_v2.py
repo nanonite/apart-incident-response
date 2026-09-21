@@ -63,8 +63,13 @@ class DraftAndLockV2Tests(unittest.TestCase):
         self.assertEqual(normalization, prv2.normalization_policy())
         tiers = normalization["tiers"]
         self.assertEqual(tiers["exact"]["max_absolute_deviation"], 1e-6)
+        self.assertTrue(tiers["exact"]["renormalized"])
+        self.assertFalse(tiers["exact"]["material_correction"])
         self.assertEqual(tiers["complete_renormalized"]["max_absolute_deviation"], 1e-2)
         self.assertTrue(tiers["complete_renormalized"]["boundary_inclusive_with_machine_epsilon"])
+        self.assertTrue(tiers["complete_renormalized"]["material_correction"])
+        self.assertEqual(normalization["renormalization"]["applied_to"],
+                         "every accepted vector (exact and complete_renormalized)")
         self.assertEqual(tiers["not_normalized_suspect"]["max_absolute_deviation"], 0.05)
         self.assertEqual(tiers["not_normalized_hard"]["min_absolute_deviation_exclusive"], 0.05)
         self.assertEqual(normalization["sensitivity_grid"], [1e-6, 0.01, 0.03, 0.05])

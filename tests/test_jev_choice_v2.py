@@ -58,9 +58,21 @@ class CodecV2Tests(unittest.TestCase):
         _, response = self.parse(probs)
         self.assertEqual(response.status, "complete")
         self.assertEqual(response.normalization_tier, "exact")
-        self.assertFalse(response.renormalized)
+        self.assertTrue(response.renormalized)
         self.assertAlmostEqual(sum(response.probabilities.values()), 1.0, places=9)
         self.assertAlmostEqual(sum(response.raw_probabilities.values()), 1.0, places=9)
+
+    def test_exact_tier_is_also_rescaled_by_its_raw_sum(self):
+        probs = spread(self.labels, 1.0 - 5e-7, first=0.5)  # |dev| = 5e-7 <= 1e-6 -> exact
+        _, response = self.parse(probs)
+        self.assertEqual(response.status, "complete")
+        self.assertEqual(response.normalization_tier, "exact")
+        self.assertTrue(response.renormalized)
+        raw_total = sum(response.raw_probabilities.values())
+        self.assertAlmostEqual(sum(response.probabilities.values()), 1.0, places=12)
+        for option_id, value in response.raw_probabilities.items():
+            self.assertAlmostEqual(response.probabilities[option_id], value / raw_total, places=12)
+        self.assertNotEqual(dict(response.probabilities), dict(response.raw_probabilities))
 
     def test_boundary_sums_are_complete_renormalized(self):
         for total in (0.99, 1.01):

@@ -62,35 +62,33 @@ finite, nonnegative, near-unit vector by its positive sum is the only permitted
 transformation; it is recorded explicitly and is not described as provider
 behavior.
 
-| tier | absolute deviation `abs(sum(p)-1)` | valid | renormalized |
+| tier | absolute deviation `abs(sum(p)-1)` | valid | metric vector rescaled by raw sum |
 |---|---|---|---|
-| `exact` | `<= 1e-6` | yes | no |
-| `complete_renormalized` | `1e-6 < d <= 1e-2` (boundary inclusive with machine-epsilon allowance) | yes | yes |
+| `exact` | `<= 1e-6` | yes | yes (within 1e-6; usually a numerical no-op) |
+| `complete_renormalized` | `1e-6 < d <= 1e-2` (boundary inclusive with machine-epsilon allowance) | yes | yes (material correction) |
 | `not_normalized_suspect` | `1e-2 < d <= 0.05` | no (sensitivity only) | no |
 | `not_normalized_hard` | `d > 0.05` | no (hard stop) | no |
 
-For `complete_renormalized`:
+For **every accepted vector** (`exact` as well as `complete_renormalized`):
 
 ```
 p_normalized[i] = p_raw[i] / sum(p_raw)
 ```
 
-For `complete_renormalized`, only the normalized vector is used for entropy,
-`p_target`, feasible-set mass, Brier score, log loss, and downstream replay
-inference. The raw vector and raw sum are retained separately. Selection is
-checked against the raw argmax; positive scalar normalization preserves that
-argmax mathematically, and the implementation additionally checks this as a
-defensive invariant. A failure is classified
-`argmax_shifted_on_renormalization`.
+There is exactly one downstream invariant: all metrics are computed from the
+rescaled vector. That vector is used for entropy, `p_target`, feasible-set mass,
+Brier score, log loss, selection validation, and downstream replay inference.
+The raw vector and raw sum are retained separately, and `normalization_tier`
+records whether the rescale was a material correction (`complete_renormalized`)
+or a numerical no-op within `1e-6` (`exact`). Selection is checked against the
+raw argmax; positive scalar rescaling preserves that argmax mathematically, and
+the implementation additionally checks this as a defensive invariant. A failure
+is classified `argmax_shifted_on_renormalization`.
 
-Implementation note: the current v2 codec treats the `exact` tier as already
-normalized within numerical tolerance and uses that raw vector unchanged. It
-does **not** divide an `exact` vector whose sum differs from one by at most
-`1e-6`. Consequently, the stronger statement “every accepted vector is always
-divided by its raw sum before every metric” is not yet an implementation
-invariant. If that stronger invariant is required, the codec, tests, protocol
-fingerprint, and locked successor registration must be amended and re-locked
-before live use.
+The codec field `renormalized` is true for both accepted tiers, because both are
+rescaled by the raw sum; `material_correction` (registration policy) distinguishes
+the `complete_renormalized` band. The protocol fingerprint binds
+`normalize_all_accepted_vectors: true` and `metric_vector: p_raw / sum(p_raw)`.
 
 The primary automatic acceptance upper bound is exactly `1e-2`. The
 quantization bound `0.03` and hard ceiling `0.05` are sensitivity/diagnostic

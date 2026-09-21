@@ -88,7 +88,7 @@
     "execution_authorized": false,
     "frozen_k": 16,
     "live_collection_authorized": false,
-    "probe_hash": "d8c5c3dbf2f9695876f9120e3b5646bebd44efc50dfb8bef45dcd07bf3585b34",
+    "probe_hash": "8cf82272f0c9ce5ab2441d31caf285bfe2a1633b7ea204e87133984184920b31",
     "probe_version": "jev-choice-normalization-probe-v2",
     "request_cap": 48,
     "requires_separate_future_approval": true
@@ -184,7 +184,7 @@
     "checker_version": "oracle-v2",
     "generator_version": "six-family-clue-consistent-v2",
     "manifest_treatment_hash": "ae6ff9e7fee8dc9428938c062e4296e551456605e2c5879594e38b35208852a5",
-    "normalization_policy_hash": "e30d9f1636b7fd8b71ac3996c076b0e3427a0ea3648afdd62d3802b91454327b",
+    "normalization_policy_hash": "292ac217f1cf54083252e6363a16a48596daab72a8ca06d4569c20f861b7e1e9",
     "source_files": [
       "src/apart_incident_response/task_families.py",
       "src/apart_incident_response/communication_protocol.py",
@@ -197,8 +197,8 @@
       "src/apart_incident_response/jev_choice_pilot_v2.py",
       "src/apart_incident_response/jev_normalization_probe_v2.py"
     ],
-    "source_files_hash": "3ed5bb383d07ed4ee4c53961bf822319d342e62e6561b475800232725e6d58f2",
-    "treatment_hash": "ad3aef7edd25ab8bd74e1eef963d8c41dcc71cd36962bfe3f6685738616deb22"
+    "source_files_hash": "cb402b501babef40dfd5468a4e2aeea39c133f4180da16f3206714a0ae382349",
+    "treatment_hash": "29e2678a75bd5e64b012659f235827517ad52f22177ab661f268e96f9e82f9cf"
   },
   "guards": {
     "feasible_set_mass": {
@@ -314,7 +314,7 @@
     "endpoint": "https://api.typesafe.ai/v1/systemone",
     "ling": "pinned free Ling writer on OpenRouter free quota",
     "model": "jev-1.13.0",
-    "protocol_key": "jev-choice-wire-v2|bf92dc17650aa16f3903183d07f5218724f95e6d8dba8656c04630d217a5adb2",
+    "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
     "protocol_key_prefix": "jev-choice-wire-v2|",
     "provider": "jev"
   },
@@ -376,10 +376,12 @@
       ]
     },
     "renormalization": {
+      "applied_to": "every accepted vector (exact and complete_renormalized)",
       "argmax_preservation_required": true,
+      "exact_tier_rescale": "within 1e-6; usually a numerical no-op but applied for one invariant",
       "fail_closed_class": "argmax_shifted_on_renormalization",
       "formula": "p_normalized[i] = p_raw[i] / sum(p_raw)",
-      "trigger": "complete_renormalized"
+      "material_correction_band": "complete_renormalized"
     },
     "sensitivity_grid": [
       1e-06,
@@ -391,6 +393,7 @@
       "complete_renormalized": {
         "boundary_epsilon": 1.7763568394002505e-15,
         "boundary_inclusive_with_machine_epsilon": true,
+        "material_correction": true,
         "max_absolute_deviation": 0.01,
         "min_absolute_deviation_exclusive": 1e-06,
         "renormalized": true,
@@ -398,8 +401,9 @@
       },
       "exact": {
         "inclusive": true,
+        "material_correction": false,
         "max_absolute_deviation": 1e-06,
-        "renormalized": false,
+        "renormalized": true,
         "valid": true
       },
       "not_normalized_hard": {
@@ -448,7 +452,7 @@
     "label": "illustrative and secondary",
     "sd_caveat": "the observed J3 between-form SD is from ISO-minus-FULL, not the real-minus-placebo estimand; use only as an illustrative sensitivity value, not a plug-in variance"
   },
-  "preregistration_hash": "b8e9ec0f9f71dd47d1bcae9e611f9fcf15777c7544fad7d7db919ed92c7055b4",
+  "preregistration_hash": "383ecb11a0d012bc0f753590416c45fcd02c2f1737eaf97343af7a0dd5edac08",
   "preregistration_version": "stage2-jev-choice-replay-v2",
   "retry_policy": {
     "backoff_max_seconds": 5.0,

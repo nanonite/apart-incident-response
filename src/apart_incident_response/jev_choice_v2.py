@@ -258,7 +258,9 @@ def diagnose_probability_vector(probabilities: Any, option_ids: Sequence[str]
         problems.append("argmax_shifted_on_renormalization")
         shape_valid = False
         tier = "malformed"
-    renormalized = shape_valid and tier == "complete_renormalized"
+    # Every accepted vector is rescaled by its raw sum before any metric, so the
+    # flag is true for both accepted tiers and false for suspect/hard/malformed.
+    renormalized = shape_valid and tier in {"exact", "complete_renormalized"}
 
     diagnostics = ChoiceVectorDiagnostics(
         option_count=option_count,
@@ -283,19 +285,23 @@ def diagnose_probability_vector(probabilities: Any, option_ids: Sequence[str]
     return raw, diagnostics, problems
 
 
-def _normalized_or_raw(probabilities: Mapping[str, Any], diagnostics: ChoiceVectorDiagnostics,
-                       problems: Sequence[str]) -> dict[str, float]:
-    """Return the vector to be used for all metrics; normalized when permitted."""
+def normalized_metric_vector(probabilities: Mapping[str, Any],
+                             diagnostics: ChoiceVectorDiagnostics,
+                             problems: Sequence[str]) -> dict[str, float]:
+    """Return the single metric vector for an accepted response.
+
+    Every accepted vector -- ``exact`` as well as ``complete_renormalized`` -- is
+    divided by its raw sum, so the downstream invariant is unambiguous: all
+    metrics are computed from ``p_raw / sum(p_raw)``. Invalid vectors return an
+    empty mapping.
+    """
 
     if not diagnostics.shape_valid or problems:
         return {}
-    values = {str(key): float(value) for key, value in probabilities.items()}
-    if diagnostics.renormalized:
-        total = diagnostics.raw_probability_sum
-        if total is None or total <= 0:
-            return {}
-        return {option_id: value / total for option_id, value in values.items()}
-    return values
+    total = diagnostics.raw_probability_sum
+    if total is None or total <= 0:
+        return {}
+    return {str(key): float(value) / total for key, value in probabilities.items()}
 
 
 def entropy_bits(probabilities: Mapping[str, float]) -> float:
@@ -375,6 +381,8 @@ def jev_choice_protocol_key_v2(*, model: str = JEV_DEFAULT_MODEL,
             "hard_deviation_ceiling": HARD_DEVIATION_CEILING,
             "boundary_epsilon": NORMALIZATION_BOUNDARY_EPSILON,
             "renormalize_near_normalized": True,
+            "normalize_all_accepted_vectors": True,
+            "metric_vector": "p_raw / sum(p_raw)",
             "argmax_preservation_required": True,
         },
         "max_retries": max_retries,
@@ -481,7 +489,7 @@ class JevChoiceAdapterV2(JevChoiceAdapter):
         if problems:
             return _invalid_v2(self.model, state.request_hash, problems[0],
                                diagnostics=diagnostics, raw_probabilities=raw_vector)
-        used = _normalized_or_raw(answer["probabilities"], diagnostics, problems)
+        used = normalized_metric_vector(answer["probabilities"], diagnostics, problems)
 
         argmax = set(diagnostics.raw_argmax_set)
         selected = answer.get("choice")
@@ -556,5 +564,5 @@ __all__ = [
     "JevChoiceAdapterV2", "JevChoiceClient", "assert_single_jev_v2_protocol_key",
     "brier_score", "classify_normalization", "diagnose_probability_vector",
     "distribution_metrics", "entropy_bits", "is_any_jev_protocol_key", "is_jev_v2_protocol_key",
-    "jev_choice_protocol_key_v2", "json_safe", "log_loss",
+    "jev_choice_protocol_key_v2", "json_safe", "log_loss", "normalized_metric_vector",
 ]

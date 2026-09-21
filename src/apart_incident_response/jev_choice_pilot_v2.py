@@ -201,7 +201,8 @@ def execute_pilot(plan: PilotPlan, receiver: jc2.JevChoiceAdapterV2, writer: Any
                          "invalid": 0, "real_writes": 0, "reads": 0} for arm in ARMS},
         "by_tier": {"exact": 0, "complete_renormalized": 0, "not_normalized_suspect": 0,
                     "not_normalized_hard": 0, "malformed": 0},
-        "renormalized_rows": 0, "suspect_rows": 0, "hard_rows": 0,
+        "renormalized_rows": 0, "material_renormalized_rows": 0,
+        "suspect_rows": 0, "hard_rows": 0,
         "by_form": {}, "resolved_models": [], "replay_started": False,
         "note": "does not start #159 replay; missing form exposure makes the pilot inconclusive",
         "cases": [], "raw_response_retained": False, "credentials_retained": False,
@@ -321,11 +322,13 @@ def execute_pilot(plan: PilotPlan, receiver: jc2.JevChoiceAdapterV2, writer: Any
             arm_row = report["by_arm"][case.arm]
             if valid:
                 arm_row["valid"] += 1
+                if response.renormalized:
+                    report["renormalized_rows"] += 1
                 if tier == "exact":
                     arm_row["valid_exact"] += 1
                 elif tier == "complete_renormalized":
                     arm_row["valid_renormalized"] += 1
-                    report["renormalized_rows"] += 1
+                    report["material_renormalized_rows"] += 1
             else:
                 arm_row["invalid"] += 1
                 if tier == "not_normalized_suspect":

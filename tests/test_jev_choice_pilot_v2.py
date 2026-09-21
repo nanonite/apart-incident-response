@@ -127,19 +127,21 @@ class GatingV2Tests(unittest.TestCase):
 
 
 class ExecutionV2Tests(unittest.TestCase):
-    def test_exact_run_reports_no_renormalization(self):
+    def test_exact_run_is_rescaled_but_not_materially_renormalized(self):
         instances, receiver, plan, verification, writer = setup()
         report = pilot.execute_pilot(plan, receiver, writer, verification, instances, approval="test",
                                      pinned_hash=PIN, sleep_fn=lambda _: None)
         self.assertEqual(report["status"], "completed")
         self.assertEqual(report["by_tier"]["exact"], 68)
         self.assertEqual(report["by_tier"]["complete_renormalized"], 0)
-        self.assertEqual(report["renormalized_rows"], 0)
+        self.assertEqual(report["renormalized_rows"], 68)
+        self.assertEqual(report["material_renormalized_rows"], 0)
         self.assertTrue(report["replay_ready"])
         row = next(row for row in report["cases"] if row["arm"] == "COMM")
         self.assertIn("probability_diagnostics", row)
         self.assertIsNotNone(row["probability_diagnostics"])
         self.assertEqual(row["normalization_tier"], "exact")
+        self.assertTrue(row["renormalized"])
 
     def test_renormalized_run_is_valid_and_reported_separately(self):
         instances, receiver, plan, verification, writer = setup(total=1.01)
@@ -149,6 +151,7 @@ class ExecutionV2Tests(unittest.TestCase):
         self.assertEqual(report["by_tier"]["complete_renormalized"], 68)
         self.assertEqual(report["by_tier"]["exact"], 0)
         self.assertEqual(report["renormalized_rows"], 68)
+        self.assertEqual(report["material_renormalized_rows"], 68)
         row = next(row for row in report["cases"] if row["arm"] == "ISO")
         self.assertEqual(row["normalization_tier"], "complete_renormalized")
         self.assertTrue(row["renormalized"])
