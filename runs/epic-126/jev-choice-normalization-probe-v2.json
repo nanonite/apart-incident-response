@@ -1,0 +1,70 @@
+{
+  "approval_requirement": "separate future live approval; this lock is not live authorization",
+  "caps": {
+    "cost_cap_usd": 0.25,
+    "input_token_ceiling": 8192,
+    "input_usd_per_mtok": 0.042,
+    "max_retries": 2,
+    "physical_requests": 48,
+    "worst_case_cost_usd": 0.016515072
+  },
+  "design": {
+    "frozen_k": 16,
+    "independent_prompt_forms": false,
+    "k_range": [
+      12,
+      20
+    ],
+    "note": "repetitions of one frozen request are stochastic repeats, not independent prompt forms; they cannot be used as independent units in the form-level contrast",
+    "rationale": "K=16 sits mid-range: enough repetitions to resolve a sub-1% rejection rate at the strict 1e-6 tolerance while keeping the physical-request cap small",
+    "recommended_k": 16,
+    "record_every_deviation": true,
+    "record_every_raw_vector": true,
+    "rejection_rates_at": [
+      1e-06,
+      0.01,
+      0.03
+    ],
+    "stop_if_absolute_deviation_above": 0.05,
+    "stop_rule": "not_normalized_hard"
+  },
+  "determinism": {
+    "classification": "stochastic",
+    "consequence": "repeated samples per prompt form are required; diagnostic repetitions of one frozen request are not independent prompt forms",
+    "evidence": "the official Choice request contract (docs/jev-choice-wire-contract.md) and the pinned local jev-dsl fixture expose only model/state/questions; no seed or temperature field is documented or present",
+    "field_sending_rule": "do not send seed or temperature unless official/local evidence explicitly supports them",
+    "request_fields_sent": [
+      "model",
+      "state",
+      "questions"
+    ],
+    "seed_supported": false,
+    "temperature_supported": false
+  },
+  "execution_authorized": false,
+  "live_collection_authorized": false,
+  "model_and_protocol": {
+    "codec_version": "jev-choice-wire-v2",
+    "endpoint": "https://api.typesafe.ai/v1/systemone",
+    "model": "jev-1.13.0",
+    "protocol_key": "jev-choice-wire-v2|bf92dc17650aa16f3903183d07f5218724f95e6d8dba8656c04630d217a5adb2",
+    "provider": "jev"
+  },
+  "normalization_policy_hash": "e30d9f1636b7fd8b71ac3996c076b0e3427a0ea3648afdd62d3802b91454327b",
+  "outputs": {
+    "probe_journal": "runs/epic-126/jev-choice-normalization-probe-v2.jsonl",
+    "probe_report": "runs/epic-126/jev-choice-normalization-probe-report-v2.json"
+  },
+  "probe_hash": "d8c5c3dbf2f9695876f9120e3b5646bebd44efc50dfb8bef45dcd07bf3585b34",
+  "probe_version": "jev-choice-normalization-probe-v2",
+  "purpose": "estimate normalization deviation and rejection rates on the identical COMM_CONTROL request whose vector was lost under strict v1, and retain every raw vector",
+  "source": {
+    "condition": "COMM",
+    "instance_seed": 72000,
+    "note": "identical request for COMM and COMM_CONTROL; the v1 run rejected it as not_normalized",
+    "request_hash_full": "2ba516131bdb635c3fe972dbe2c017fd512bbd2727c054eb84bc8530cab403c1",
+    "request_hash_prefix": "2ba516131bdb",
+    "visible_messages": []
+  },
+  "status": "locked_for_review"
+}

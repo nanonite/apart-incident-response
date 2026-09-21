@@ -1,0 +1,341 @@
+{
+  "capability_journal": {
+    "path": "runs/epic-126/jev-choice-capability.jsonl",
+    "report": {
+      "argmax_changes": false,
+      "codec_version": "jev-choice-wire-v2",
+      "conclusion_stable": true,
+      "grid": [
+        1e-06,
+        0.01,
+        0.03,
+        0.05
+      ],
+      "max_induced_entropy_difference": 0.0,
+      "max_normalization_adjustment": 1.1102230246251565e-16,
+      "note": "method/diagnostic only; a conclusion that changes anywhere across the registered grid is labelled unstable and is not a scientific result",
+      "per_tolerance": {
+        "0.01": {
+          "accepted": 34,
+          "accepted_classes": {
+            "exact": 34
+          },
+          "argmax_changes": false,
+          "conclusion": {
+            "distinct_argmax_sets": [
+              [
+                "deploy>inspect>stage"
+              ],
+              [
+                "deploy>stage>inspect"
+              ],
+              [
+                "inspect>deploy>stage"
+              ],
+              [
+                "inspect>stage>deploy"
+              ],
+              [
+                "stage>deploy>inspect"
+              ],
+              [
+                "stage>inspect>deploy"
+              ]
+            ],
+            "max_absolute_deviation": 1.1102230246251565e-16,
+            "mean_entropy_bits": 0.645012869,
+            "n_accepted": 34
+          },
+          "conclusion_hash": "6779af9a09385e08a27040b23104874a5219d4b52a62810edb3b2604fb827bf6",
+          "max_induced_entropy_difference": 0.0,
+          "max_normalization_adjustment": 1.1102230246251565e-16,
+          "mixed_shape_validity": false,
+          "rejected": 0,
+          "rejected_by_shape": 0,
+          "rejected_by_tier": {},
+          "tolerance": 0.01
+        },
+        "0.03": {
+          "accepted": 34,
+          "accepted_classes": {
+            "exact": 34
+          },
+          "argmax_changes": false,
+          "conclusion": {
+            "distinct_argmax_sets": [
+              [
+                "deploy>inspect>stage"
+              ],
+              [
+                "deploy>stage>inspect"
+              ],
+              [
+                "inspect>deploy>stage"
+              ],
+              [
+                "inspect>stage>deploy"
+              ],
+              [
+                "stage>deploy>inspect"
+              ],
+              [
+                "stage>inspect>deploy"
+              ]
+            ],
+            "max_absolute_deviation": 1.1102230246251565e-16,
+            "mean_entropy_bits": 0.645012869,
+            "n_accepted": 34
+          },
+          "conclusion_hash": "6779af9a09385e08a27040b23104874a5219d4b52a62810edb3b2604fb827bf6",
+          "max_induced_entropy_difference": 0.0,
+          "max_normalization_adjustment": 1.1102230246251565e-16,
+          "mixed_shape_validity": false,
+          "rejected": 0,
+          "rejected_by_shape": 0,
+          "rejected_by_tier": {},
+          "tolerance": 0.03
+        },
+        "0.05": {
+          "accepted": 34,
+          "accepted_classes": {
+            "exact": 34
+          },
+          "argmax_changes": false,
+          "conclusion": {
+            "distinct_argmax_sets": [
+              [
+                "deploy>inspect>stage"
+              ],
+              [
+                "deploy>stage>inspect"
+              ],
+              [
+                "inspect>deploy>stage"
+              ],
+              [
+                "inspect>stage>deploy"
+              ],
+              [
+                "stage>deploy>inspect"
+              ],
+              [
+                "stage>inspect>deploy"
+              ]
+            ],
+            "max_absolute_deviation": 1.1102230246251565e-16,
+            "mean_entropy_bits": 0.645012869,
+            "n_accepted": 34
+          },
+          "conclusion_hash": "6779af9a09385e08a27040b23104874a5219d4b52a62810edb3b2604fb827bf6",
+          "max_induced_entropy_difference": 0.0,
+          "max_normalization_adjustment": 1.1102230246251565e-16,
+          "mixed_shape_validity": false,
+          "rejected": 0,
+          "rejected_by_shape": 0,
+          "rejected_by_tier": {},
+          "tolerance": 0.05
+        },
+        "1e-06": {
+          "accepted": 34,
+          "accepted_classes": {
+            "exact": 34
+          },
+          "argmax_changes": false,
+          "conclusion": {
+            "distinct_argmax_sets": [
+              [
+                "deploy>inspect>stage"
+              ],
+              [
+                "deploy>stage>inspect"
+              ],
+              [
+                "inspect>deploy>stage"
+              ],
+              [
+                "inspect>stage>deploy"
+              ],
+              [
+                "stage>deploy>inspect"
+              ],
+              [
+                "stage>inspect>deploy"
+              ]
+            ],
+            "max_absolute_deviation": 1.1102230246251565e-16,
+            "mean_entropy_bits": 0.645012869,
+            "n_accepted": 34
+          },
+          "conclusion_hash": "6779af9a09385e08a27040b23104874a5219d4b52a62810edb3b2604fb827bf6",
+          "max_induced_entropy_difference": 0.0,
+          "max_normalization_adjustment": 1.1102230246251565e-16,
+          "mixed_shape_validity": false,
+          "rejected": 0,
+          "rejected_by_shape": 0,
+          "rejected_by_tier": {},
+          "tolerance": 1e-06
+        }
+      },
+      "sensitivity_version": "jev-normalization-sensitivity-v1",
+      "unstable": false,
+      "vector_count": 34
+    },
+    "rows": 34,
+    "vectors": 34
+  },
+  "codec_version": "jev-choice-wire-v2",
+  "does_not_reclassify_stopped_v1": true,
+  "mode": "offline_method_diagnostic",
+  "normalization_policy": {
+    "boundary_epsilon": 1.7763568394002505e-15,
+    "exact_deviation_tolerance": 1e-06,
+    "hard_deviation_ceiling": 0.05,
+    "primary_acceptance_bound": 0.01,
+    "quantization_bound": 0.03,
+    "sensitivity_grid": [
+      1e-06,
+      0.01,
+      0.03,
+      0.05
+    ]
+  },
+  "note": "the stopped strict-v1 run's rejected vector was discarded and is not reclassified here; this report is a method diagnostic over vectors retained by capture-then-judge, not a scientific conclusion",
+  "pilot_journal": {
+    "path": "runs/epic-126/jev-choice-pilot.jsonl",
+    "report": {
+      "argmax_changes": false,
+      "codec_version": "jev-choice-wire-v2",
+      "conclusion_stable": true,
+      "grid": [
+        1e-06,
+        0.01,
+        0.03,
+        0.05
+      ],
+      "max_induced_entropy_difference": 0.0,
+      "max_normalization_adjustment": 0.0,
+      "note": "method/diagnostic only; a conclusion that changes anywhere across the registered grid is labelled unstable and is not a scientific result",
+      "per_tolerance": {
+        "0.01": {
+          "accepted": 3,
+          "accepted_classes": {
+            "exact": 3
+          },
+          "argmax_changes": false,
+          "conclusion": {
+            "distinct_argmax_sets": [
+              [
+                "inspect>deploy>stage"
+              ],
+              [
+                "stage>inspect>deploy"
+              ]
+            ],
+            "max_absolute_deviation": 0.0,
+            "mean_entropy_bits": 0.843245419,
+            "n_accepted": 3
+          },
+          "conclusion_hash": "a7c2e23c16811af948e895789b6e69384a6300619c5a153f3f4658cd9465834d",
+          "max_induced_entropy_difference": 0.0,
+          "max_normalization_adjustment": 0.0,
+          "mixed_shape_validity": false,
+          "rejected": 0,
+          "rejected_by_shape": 0,
+          "rejected_by_tier": {},
+          "tolerance": 0.01
+        },
+        "0.03": {
+          "accepted": 3,
+          "accepted_classes": {
+            "exact": 3
+          },
+          "argmax_changes": false,
+          "conclusion": {
+            "distinct_argmax_sets": [
+              [
+                "inspect>deploy>stage"
+              ],
+              [
+                "stage>inspect>deploy"
+              ]
+            ],
+            "max_absolute_deviation": 0.0,
+            "mean_entropy_bits": 0.843245419,
+            "n_accepted": 3
+          },
+          "conclusion_hash": "a7c2e23c16811af948e895789b6e69384a6300619c5a153f3f4658cd9465834d",
+          "max_induced_entropy_difference": 0.0,
+          "max_normalization_adjustment": 0.0,
+          "mixed_shape_validity": false,
+          "rejected": 0,
+          "rejected_by_shape": 0,
+          "rejected_by_tier": {},
+          "tolerance": 0.03
+        },
+        "0.05": {
+          "accepted": 3,
+          "accepted_classes": {
+            "exact": 3
+          },
+          "argmax_changes": false,
+          "conclusion": {
+            "distinct_argmax_sets": [
+              [
+                "inspect>deploy>stage"
+              ],
+              [
+                "stage>inspect>deploy"
+              ]
+            ],
+            "max_absolute_deviation": 0.0,
+            "mean_entropy_bits": 0.843245419,
+            "n_accepted": 3
+          },
+          "conclusion_hash": "a7c2e23c16811af948e895789b6e69384a6300619c5a153f3f4658cd9465834d",
+          "max_induced_entropy_difference": 0.0,
+          "max_normalization_adjustment": 0.0,
+          "mixed_shape_validity": false,
+          "rejected": 0,
+          "rejected_by_shape": 0,
+          "rejected_by_tier": {},
+          "tolerance": 0.05
+        },
+        "1e-06": {
+          "accepted": 3,
+          "accepted_classes": {
+            "exact": 3
+          },
+          "argmax_changes": false,
+          "conclusion": {
+            "distinct_argmax_sets": [
+              [
+                "inspect>deploy>stage"
+              ],
+              [
+                "stage>inspect>deploy"
+              ]
+            ],
+            "max_absolute_deviation": 0.0,
+            "mean_entropy_bits": 0.843245419,
+            "n_accepted": 3
+          },
+          "conclusion_hash": "a7c2e23c16811af948e895789b6e69384a6300619c5a153f3f4658cd9465834d",
+          "max_induced_entropy_difference": 0.0,
+          "max_normalization_adjustment": 0.0,
+          "mixed_shape_validity": false,
+          "rejected": 0,
+          "rejected_by_shape": 0,
+          "rejected_by_tier": {},
+          "tolerance": 1e-06
+        }
+      },
+      "sensitivity_version": "jev-normalization-sensitivity-v1",
+      "unstable": false,
+      "vector_count": 3
+    },
+    "rows": 4,
+    "vectors": 3
+  },
+  "scientific_conclusion": false,
+  "sensitivity_version": "jev-normalization-sensitivity-v1"
+}

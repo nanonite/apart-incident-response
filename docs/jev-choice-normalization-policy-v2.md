@@ -1,0 +1,156 @@
+# Jev Choice normalization policy v2 and successor registration (#158)
+
+Status: offline implementation and registration lock for review. **No live calls,
+no pilot rerun, no #159 start, no push/merge.** The locked v2 registration
+carries `live_collection_authorized: false`; the diagnostic probe carries
+`execution_authorized: false` and requires a separate future approval.
+
+This document records the reviewer-approved prospective normalization policy
+implemented under a distinct codec/protocol version, `jev-choice-wire-v2`, and
+the successor registration. Strict v1 semantics and every v1 artifact are
+preserved byte-for-byte; the locked v1 registration and the stopped optional-board
+pilot (commit `ff2fbc7`) are not modified, reinterpreted, appended to, pooled
+with, or overwritten.
+
+## 1. Why v2
+
+The stopped v1 pilot ended on the registered contract stop rule: the
+`COMM_CONTROL` case returned a vector classified `not_normalized` under the
+strict `1e-6` tolerance, while `COMM` used the **identical request hash**
+`2ba516131bdb…` and summed to `1.00`. The v1 invalid path discarded the rejected
+vector, so its exact deviation cannot be recovered and `ff2fbc7` must not be
+retroactively reclassified.
+
+Across the 34 retained prior vectors, 34/34 summed to `1.0` on a predominantly
+`0.01` grid; the `1e-6` tolerance was mismatched to two-decimal quantization.
+v2 changes **only** the probability-vector acceptance policy, never the prompt.
+
+## 2. Capture-then-judge
+
+`src/apart_incident_response/jev_choice_v2.py` parses and retains the
+credential-free option probability vector **before** classifying it. Credentials,
+authorization headers, and raw provider envelopes are never retained.
+
+For every syntactically parseable vector it records:
+
+`option_count`, `raw_probability_sum`, `signed_normalization_deviation`,
+`absolute_normalization_deviation`, `minimum_probability`, `maximum_probability`,
+`zero_count`, `all_finite`, `all_nonnegative`, `shape_valid`, `invalid_classes`,
+`raw_argmax_set`, `normalization_tier`, `renormalized`, `argmax_preserved`,
+`normalization_adjustment`, `entropy_raw_bits`, `entropy_normalized_bits`, and the
+normalized probability vector when permitted.
+
+Invalid responses retain the parsed public vector and diagnostics when safe.
+Malformed envelopes (no `answers`, wrong kind, extra/missing answer) may lack a
+vector. Non-finite values are encoded as `"nan"`/`"inf"`/`"-inf"` strings so
+artifacts remain `allow_nan=False` serializable.
+
+## 3. Frozen primary tiers
+
+Option-key identity is exact. Empty, missing, nonnumeric, non-finite, negative,
+and option-mismatched vectors remain invalid and are never repaired.
+
+| tier | absolute deviation `abs(sum(p)-1)` | valid | renormalized |
+|---|---|---|---|
+| `exact` | `<= 1e-6` | yes | no |
+| `complete_renormalized` | `1e-6 < d <= 1e-2` (boundary inclusive with machine-epsilon allowance) | yes | yes |
+| `not_normalized_suspect` | `1e-2 < d <= 0.05` | no (sensitivity only) | no |
+| `not_normalized_hard` | `d > 0.05` | no (hard stop) | no |
+
+For `complete_renormalized`:
+
+```
+p_normalized[i] = p_raw[i] / sum(p_raw)
+```
+
+Only the normalized vector is used for entropy, `p_target`, feasible-set mass,
+Brier score, log loss, selection validation, and downstream replay inference.
+The raw vector and raw sum are retained separately. Renormalization must not
+change the argmax; otherwise the response fails closed as
+`argmax_shifted_on_renormalization`.
+
+The primary automatic acceptance upper bound is exactly `1e-2`. The
+quantization bound `0.03` and hard ceiling `0.05` are sensitivity/diagnostic
+thresholds only. The quantization argument `n*q/2 = 0.03` for `n=6, q=0.01` and
+the empirical entropy perturbation grid (`0.01 -> 0.0147` bits, `0.03 -> 0.0453`,
+`0.05 -> 0.0779`, argmax observed stable through `0.05`) are recorded as
+sensitivity context, not as authorization to expand the primary `1e-2` bound.
+
+## 4. Sensitivity reporting
+
+`src/apart_incident_response/jev_normalization_sensitivity.py` reports, at the
+registered grid `1e-6, 0.01, 0.03, 0.05`, the accepted/rejected counts, the
+maximum normalization adjustment, the maximum induced entropy difference,
+whether the argmax changes, and whether any conclusion changes. A conclusion is
+labelled **unstable** when it changes anywhere across the grid. The offline
+diagnostic `runs/epic-126/jev-choice-normalization-diagnostics-v2.json` is
+labelled a method/diagnostic and does **not** make a scientific conclusion (and
+does not reclassify the stopped v1 run).
+
+## 5. Successor registration
+
+`src/apart_incident_response/jev_replay_preregistration_v2.py` builds and
+verifies the successor v2 registration. The v1 registration object is untouched;
+v2 lives at a fresh versioned path.
+
+- registration: `runs/epic-126/jev-choice-replay-preregistration-v2.json`
+- probability diagnostics: `runs/epic-126/jev-choice-normalization-diagnostics-v2.json`
+- v2 journal: `runs/epic-126/jev-choice-pilot-v2.jsonl`
+- v2 report: `runs/epic-126/jev-choice-pilot-report-v2.json`
+- probe registration: `runs/epic-126/jev-choice-normalization-probe-v2.json`
+
+Frozen: codec/protocol v2; tiers and thresholds; raw-versus-normalized metric
+definitions; the sensitivity grid; invalidity and stop rules; changed
+source/treatment hashes; the exact manifest, models, prompts, request partitions
+and cost caps. The verifier rejects v1 protocol keys, old v1 output paths,
+settings/hash drift, and tolerance drift, and requires
+`live_collection_authorized: false`.
+
+### Determinism
+
+The official Choice request contract and the pinned local jev-dsl fixture expose
+only `model`/`state`/`questions`; **no seed or temperature field is documented or
+present**. Neither is sent. Jev is therefore recorded as **stochastic**, and
+repeated samples per prompt form are required. Diagnostic repetitions are not
+independent prompt forms.
+
+## 6. Diagnostic probe (prepared, not executed)
+
+A separately gated repeat diagnostic targets the identical `COMM_CONTROL` request
+`2ba516131bdb…`:
+
+- proposed and frozen `K = 16` (allowed range 12–20);
+- every raw vector and deviation recorded;
+- rejection rates reported at `1e-6`, `0.01`, `0.03`;
+- stop immediately if any absolute deviation exceeds `0.05`;
+- its own caps: `48` physical requests, `$0.25`;
+- requires a separate future live approval;
+- repetitions are not treated as independent prompt forms.
+
+## 7. Tests
+
+New tests cover: sums exactly `1.0`; sums at and just inside/outside `0.99` and
+`1.01`; suspect deviations through `0.05`; hard deviations above `0.05`;
+negative/non-finite/empty/mismatched vectors; raw-vector retention on invalid
+normalization; normalized metrics and argmax preservation; v1 compatibility; v2
+protocol-key separation; runner handling/reporting of `complete_renormalized`;
+registration and output-path segregation; and zero provider calls during offline
+preparation and gating.
+
+## 8. Future live commands (NOT run; each needs separate approval)
+
+v2 optional-board pilot:
+
+```
+UV_CACHE_DIR=.uv-cache uv run env PYTHONPATH=src \
+  python -m apart_incident_response.jev_choice_pilot_v2 \
+  --live --approval "<ref>"
+```
+
+v2 diagnostic probe:
+
+```
+UV_CACHE_DIR=.uv-cache uv run env PYTHONPATH=src \
+  python -m apart_incident_response.jev_normalization_probe_v2 \
+  --live --approval "<ref>"
+```
