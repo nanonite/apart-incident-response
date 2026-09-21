@@ -7,6 +7,7 @@ from apart_incident_response import jev_board_necessity as bn
 from apart_incident_response import jev_preregistration as jp
 from apart_incident_response import task_families as tf
 from apart_incident_response.communication_protocol import DependenceRegime, ReasoningComplexity
+from apart_incident_response.jev_choice import JevChoiceAdapter
 from apart_incident_response.jev_protocol import audit_instance
 
 
@@ -114,6 +115,13 @@ class ManifestAndReportTests(unittest.TestCase):
         instances = [tf.generate_instance("planning", 72000 + r, DependenceRegime.N, ReasoningComplexity.LOW)
                      for r in range(17)]
         self.assertTrue(all(audit_instance(instance)["all_pass"] for instance in instances))
+        adapter = JevChoiceAdapter(object())
+        j3_hashes = {adapter.build_state(instance, "A", condition).request_hash
+                     for instance in jp.jev_capability_instances() for condition in ("ISO", "FULL")}
+        j5_hashes = {adapter.build_state(instance, "A", condition).request_hash
+                     for instance in instances for condition in ("ISO", "FULL")}
+        self.assertEqual(j5_hashes, j3_hashes)
+        self.assertEqual(len(j5_hashes), 12)
 
     def test_build_report_decisions(self):
         report = bn.build_report(journal_path=JOURNAL, selection_path=SELECTION)
@@ -126,6 +134,13 @@ class ManifestAndReportTests(unittest.TestCase):
         self.assertTrue(report["notes"]["p_value_is_not_an_entropy_gate"])
         self.assertTrue(report["notes"]["repeated_query_not_independent"])
         self.assertEqual(report["proposed_j5_manifest"]["status"], "draft_pending_review")
+        proposal = report["proposed_j5_manifest"]
+        self.assertIn("id_disjoint_from", proposal)
+        self.assertNotIn("disjoint_from", proposal)
+        self.assertIn("prompt-form disjointness", proposal["prompt_form_status"]["note"])
+        self.assertIn("H_real minus H_placebo", proposal["primary_contrast"])
+        self.assertIn("form means", proposal["analysis_draft"]["interval"])
+        self.assertIn("Newcombe/McNemar only", proposal["analysis_draft"]["binary_outcomes"])
 
 
 if __name__ == "__main__":

@@ -261,18 +261,40 @@ def proposed_j5_manifest(*, seeds_per_cell: int = JEV_J5_PER_CELL) -> dict[str, 
         "seeds_per_cell": seeds_per_cell,
         "instance_ids": instance_ids,
         "manifest_hash": hashlib.sha256(json.dumps(instance_ids, sort_keys=True).encode()).hexdigest(),
-        "disjoint_from": {
+        "id_disjoint_from": {
             "planning_low_manifest_seed_base": 70000,
             "jev_j3_block_seed_base": 71000,
             "wire_smoke_seed_base": 70000,
         },
+        "prompt_form_status": {
+            "note": "IDs are disjoint, but all 34 proposed ISO/FULL requests match J3 request hashes; "
+                    "seed disjointness is not prompt-form disjointness",
+            "choice_required": "either test new messages conditional on the six known forms or redesign the "
+                               "generator and preregister new forms",
+        },
         "arms": ["ISO (Jev receiver, pre-read)", "FULL (saturated bound)", "COMM optional board "
                  "(Ling writer / Jev receiver)", "matched real/placebo/null receiver replay"],
-        "primary_contrast": "paired change in H(Choice p) and p_target from pre-read to post-read, real vs "
-                            "matched placebo/null, with complete-pair reporting",
+        "primary_contrast": "equal-weight mean across prompt forms of within-form paired "
+                            "H_real minus H_placebo, using only complete real/placebo pairs on the "
+                            "identical pre-read receiver state; negative is the directional prediction",
+        "analysis_draft": {
+            "unit": "distinct model-visible pre-read prompt form, not instance ID",
+            "null_branch": "retain for real-minus-null and placebo-minus-null manipulation checks; "
+                           "null cancels from the real-minus-placebo primary contrast",
+            "interval": "t interval on form means with df k-1",
+            "test": "exact two-sided cluster sign-flip over form means, with assumptions and k reported",
+            "continuous_sensitivities": ["hierarchical model", "form-cluster bootstrap",
+                                         "Wilcoxon on form means", "instance-weighted mean"],
+            "binary_outcomes": "keep paired Newcombe/McNemar only for checker-success proportions",
+            "power_basis": "number of distinct forms k and between-form SD, not repeated IDs or "
+                           "binary discordant counts",
+        },
         "thresholds_draft": {
             "verified_board_use_required": "at least one accepted, owner-exact write that reaches the receiver",
-            "causal_uptake": "Newcombe interval for the real-vs-placebo paired change excludes 0 at alpha=0.05",
+            "causal_uptake": "primary form-mean entropy interval below 0, supported by the registered "
+                             "cluster sign-flip test; exact guards and k limit to be frozen before live work",
+            "useful_information_guards": "separately preregister real-versus-placebo target-probability "
+                                         "and clue-consistent-mass checks; an entropy drop alone is insufficient",
             "no_entropy_gate_from_p_value": True,
         },
         "caps_draft": {

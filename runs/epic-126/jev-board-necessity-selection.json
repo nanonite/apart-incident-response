@@ -382,6 +382,20 @@
     "repeated_query_not_independent": true
   },
   "proposed_j5_manifest": {
+    "analysis_draft": {
+      "binary_outcomes": "keep paired Newcombe/McNemar only for checker-success proportions",
+      "continuous_sensitivities": [
+        "hierarchical model",
+        "form-cluster bootstrap",
+        "Wilcoxon on form means",
+        "instance-weighted mean"
+      ],
+      "interval": "t interval on form means with df k-1",
+      "null_branch": "retain for real-minus-null and placebo-minus-null manipulation checks; null cancels from the real-minus-placebo primary contrast",
+      "power_basis": "number of distinct forms k and between-form SD, not repeated IDs or binary discordant counts",
+      "test": "exact two-sided cluster sign-flip over form means, with assumptions and k reported",
+      "unit": "distinct model-visible pre-read prompt form, not instance ID"
+    },
     "arms": [
       "ISO (Jev receiver, pre-read)",
       "FULL (saturated bound)",
@@ -402,12 +416,12 @@
       ]
     },
     "complexity": "low",
-    "disjoint_from": {
+    "family": "planning",
+    "id_disjoint_from": {
       "jev_j3_block_seed_base": 71000,
       "planning_low_manifest_seed_base": 70000,
       "wire_smoke_seed_base": 70000
     },
-    "family": "planning",
     "instance_ids": [
       "planning-00011940",
       "planning-00011941",
@@ -429,14 +443,19 @@
     ],
     "manifest_hash": "27e0c9faeec47979e44f480af648cd0b37751a8c529d0ab91ba4f32b7b3b2390",
     "note": "draft for review; this is not live authorization and does not authorize #158",
-    "primary_contrast": "paired change in H(Choice p) and p_target from pre-read to post-read, real vs matched placebo/null, with complete-pair reporting",
+    "primary_contrast": "equal-weight mean across prompt forms of within-form paired H_real minus H_placebo, using only complete real/placebo pairs on the identical pre-read receiver state; negative is the directional prediction",
+    "prompt_form_status": {
+      "choice_required": "either test new messages conditional on the six known forms or redesign the generator and preregister new forms",
+      "note": "IDs are disjoint, but all 34 proposed ISO/FULL requests match J3 request hashes; seed disjointness is not prompt-form disjointness"
+    },
     "regime": "N",
     "seed_base": 72000,
     "seeds_per_cell": 17,
     "status": "draft_pending_review",
     "thresholds_draft": {
-      "causal_uptake": "Newcombe interval for the real-vs-placebo paired change excludes 0 at alpha=0.05",
+      "causal_uptake": "primary form-mean entropy interval below 0, supported by the registered cluster sign-flip test; exact guards and k limit to be frozen before live work",
       "no_entropy_gate_from_p_value": true,
+      "useful_information_guards": "separately preregister real-versus-placebo target-probability and clue-consistent-mass checks; an entropy drop alone is insufficient",
       "verified_board_use_required": "at least one accepted, owner-exact write that reaches the receiver"
     }
   },
