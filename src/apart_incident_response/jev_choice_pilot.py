@@ -152,6 +152,13 @@ def verify_pilot_preflight(plan: PilotPlan, registration: Mapping[str, Any], rec
     check("models_match", receiver.model == provider.get("model") and plan.model == provider.get("model"),
           plan.model)
     check("endpoint_matches", plan.endpoint == provider.get("endpoint"), plan.endpoint)
+    client = receiver.client
+    check("receiver_endpoint_matches", getattr(client, "endpoint", None) == plan.endpoint,
+          getattr(client, "endpoint", None))
+    check("receiver_retry_policy", getattr(client, "max_retries", None) == pr.JEV_REPLAY_MAX_RETRIES,
+          getattr(client, "max_retries", None))
+    check("receiver_partition_enforced", getattr(client, "max_physical_requests", None) == plan.jev_request_cap,
+          getattr(client, "max_physical_requests", None))
     check("planned_within_cap", plan.planned_requests <= plan.request_cap,
           {"planned": plan.planned_requests, "cap": plan.request_cap})
     check("partition_sums_to_cap", plan.jev_request_cap + plan.ling_request_cap == plan.request_cap,
@@ -266,6 +273,28 @@ def execute_pilot(plan: PilotPlan, receiver: JevChoiceAdapter, writer: WriterCli
             handle.flush()
             os.fsync(handle.fileno())
 
+    def failure_row(case: PilotCase, instance: tf.FamilyInstance, condition: str, turns_executed: int,
+                    write_status: str | None, error_class: str, **extra: Any) -> dict[str, Any]:
+        row: dict[str, Any] = {
+            "instance_id": case.instance_id, "arm": case.arm, "condition": condition,
+            "turns_registered": case.turns, "turns_executed": turns_executed,
+            "prompt_form_id": case.prompt_form_id, "request_hash": None,
+            "task": {"family": instance.family, "seed": instance.seed,
+                     "regime": instance.assignment.regime.value,
+                     "complexity": instance.complexity.value, "agent": RECEIVER_AGENT},
+            "option_ids": sorted(instance.solutions), "target_id": instance.target,
+            "feasible_set": sorted(instance.private_solutions[RECEIVER_AGENT]),
+            "protocol_key": plan.protocol_key, "resolved_model": None,
+            "status": "invalid", "error_class": error_class, "selected_option_id": None,
+            "confidence": None, "probabilities": {}, "usage": {},
+            "write_status": write_status, "claim": None, "message_id": None, "exposure_id": None,
+            "i_m_bits": None, "board_log": [], "eligible_exposure": False,
+            "provider_attempts": {"jev": int(getattr(receiver.client, "physical_attempts", 0) or 0),
+                                  "ling": int(getattr(writer, "physical_attempts", 0) or 0)},
+        }
+        row.update(extra)
+        return row
+
     try:
         for case in plan.cases:
             attempts_so_far = int(getattr(receiver.client, "physical_attempts", 0) or 0) \
@@ -309,20 +338,21 @@ def execute_pilot(plan: PilotPlan, receiver: JevChoiceAdapter, writer: WriterCli
                 report["status"], report["stop_reason"] = "stopped", "request_hash_drift"
                 break
             if writer_error is not None:
-                journal({"instance_id": case.instance_id, "arm": case.arm, "condition": condition,
-                         "status": "invalid", "error_class": writer_error,
-                         "write_status": write_status, "turns_executed": turns_executed,
-                         "prompt_form_id": case.prompt_form_id})
+                journal(failure_row(case, instance, condition, turns_executed, write_status, writer_error))
+                report["by_arm"][case.arm]["attempted"] += 1
+                report["by_arm"][case.arm]["invalid"] += 1
                 report["status"], report["stop_reason"] = "stopped", writer_error
                 break
             try:
                 response, _ = receiver.complete_with_raw(state)
             except Exception as exc:  # defensive: durable invalid row, partial report
                 error_class = f"jev_{type(exc).__name__}"
-                journal({"instance_id": case.instance_id, "arm": case.arm, "condition": condition,
-                         "status": "invalid", "error_class": error_class,
-                         "write_status": write_status, "turns_executed": turns_executed,
-                         "prompt_form_id": case.prompt_form_id})
+                journal(failure_row(case, instance, condition, turns_executed, write_status, error_class,
+                                    claim=message, message_id=f"m-{instance.instance_id}" if message else None,
+                                    exposure_id=exposure_id, i_m_bits=i_m_bits, board_log=board_log,
+                                    eligible_exposure=bool(write_status == "real")))
+                report["by_arm"][case.arm]["attempted"] += 1
+                report["by_arm"][case.arm]["invalid"] += 1
                 report["status"], report["stop_reason"] = "stopped", error_class
                 break
             turns_executed += 1
@@ -472,14 +502,6 @@ class LingWriterClient:
         return {"message": None}
 
 
-class _PreflightWriter:
-    provider = "openrouter"
-    max_physical_requests: int | None = None
-
-    def write(self, context: Mapping[str, Any]) -> Mapping[str, Any]:  # pragma: no cover
-        raise RuntimeError("preflight writer must never issue a request")
-
-
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="#158 optional-board Ling-writer/Jev-receiver pilot")
     parser.add_argument("--registration", type=Path, default=pr.DEFAULT_OUTPUT)
@@ -490,7 +512,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
     registration = json.loads(args.registration.read_text(encoding="utf-8"))
     instances = pilot_instances()
-    receiver = JevChoiceAdapter(_PreflightWriter(), model=pr.JEV_REPLAY_MODEL)
+    receiver = JevChoiceAdapter(
+        JevChoiceClient(model=pr.JEV_REPLAY_MODEL, max_physical_requests=pr.JEV_REPLAY_JEV_REQUEST_CAP),
+        model=pr.JEV_REPLAY_MODEL)
     plan = build_pilot_plan(instances, registration, receiver)
     writer = LingWriterClient(max_physical_requests=plan.ling_request_cap)
     verification = verify_pilot_preflight(plan, registration, receiver,
@@ -508,10 +532,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(json.dumps({"mode": "jev-choice-pilot", "status": "blocked",
                           "stop_reason": "missing_approval"}, indent=2, sort_keys=True))
         return 2
-    live_receiver = JevChoiceAdapter(
-        JevChoiceClient(model=pr.JEV_REPLAY_MODEL, max_physical_requests=plan.jev_request_cap),
-        model=pr.JEV_REPLAY_MODEL)
-    report = execute_pilot(plan, live_receiver, writer, verification, instances, approval=args.approval,
+    report = execute_pilot(plan, receiver, writer, verification, instances, approval=args.approval,
                            pinned_hash=registration.get("preregistration_hash"),
                            journal_path=args.journal)
     args.report.parent.mkdir(parents=True, exist_ok=True)

@@ -115,10 +115,10 @@ class GatingTests(unittest.TestCase):
         self.assertEqual(receiver.client.calls, 0)
 
     def test_partitions_must_be_enforced(self):
-        instances, receiver, plan, verification, writer = setup(receiver_cap=300)
-        report = pilot.execute_pilot(plan, receiver, writer, verification, instances, approval="test")
-        self.assertEqual(report["stop_reason"], "receiver_partition_not_enforced")
-        instances, receiver, plan, verification, writer = setup(writer_cap=300)
+        _, _, _, verification, _ = setup(receiver_cap=300)
+        self.assertFalse(verification["ok"])
+        self.assertIn("receiver_partition_enforced", verification["failed"])
+        _, _, _, verification, _ = setup(writer_cap=300)
         self.assertFalse(verification["ok"])
         self.assertIn("writer_partition_enforced", verification["failed"])
 
@@ -173,7 +173,38 @@ class ExecutionTests(unittest.TestCase):
         report = pilot.execute_pilot(plan, receiver, writer, verification, instances, approval="test",
                                      pinned_hash=PIN, sleep_fn=lambda _: None)
         self.assertEqual(report["stop_reason"], "writer_RuntimeError")
-        self.assertTrue(any(row.get("error_class") == "writer_RuntimeError" for row in report["cases"]))
+        row = next(row for row in report["cases"] if row.get("error_class") == "writer_RuntimeError")
+        self.assertEqual(row["arm"], "COMM")
+        self.assertEqual(row["turns_registered"], 2)
+        self.assertIn("turns_executed", row)
+        self.assertEqual(row["protocol_key"], plan.protocol_key)
+        self.assertIn("provider_attempts", row)
+        self.assertEqual(row["task"]["family"], "planning")
+        self.assertTrue(row["option_ids"])
+        self.assertEqual(report["by_arm"]["COMM"]["attempted"], 1)
+        self.assertEqual(report["by_arm"]["COMM"]["invalid"], 1)
+
+    def test_jev_exception_is_durable_and_counted(self):
+        class RaisingAdapter(JevChoiceAdapter):
+            def complete_with_raw(self, state):
+                raise RuntimeError("provider blew up")
+
+        instances = pilot.pilot_instances()
+        receiver = RaisingAdapter(FakeReceiverClient(), model=pr.JEV_REPLAY_MODEL)
+        plan = pilot.build_pilot_plan(instances, REGISTRATION, receiver)
+        writer = FakeWriter()
+        verification = pilot.verify_pilot_preflight(plan, REGISTRATION, receiver, repo_root=REPO_ROOT,
+                                                     pinned_hash=PIN, ling_key_present=True, writer=writer)
+        report = pilot.execute_pilot(plan, receiver, writer, verification, instances, approval="test",
+                                     pinned_hash=PIN, sleep_fn=lambda _: None)
+        self.assertEqual(report["status"], "stopped")
+        self.assertEqual(report["stop_reason"], "jev_RuntimeError")
+        row = next(row for row in report["cases"] if row.get("error_class") == "jev_RuntimeError")
+        self.assertEqual(row["arm"], "ISO")
+        self.assertEqual(row["protocol_key"], plan.protocol_key)
+        self.assertIn("provider_attempts", row)
+        self.assertEqual(report["by_arm"]["ISO"]["attempted"], 1)
+        self.assertEqual(report["by_arm"]["ISO"]["invalid"], 1)
 
     def test_writer_sanitized_error_class_preserved(self):
         instances, receiver, plan, verification, writer = setup(
