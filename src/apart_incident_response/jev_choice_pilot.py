@@ -76,12 +76,18 @@ class PilotPlan:
     protocol_key: str
     model: str
     endpoint: str
+    ling_model: str
+    ling_endpoint: str
+    ling_prompt_template: str
+    ling_max_tokens: int
+    ling_temperature: float
 
     def to_dict(self) -> dict[str, Any]:
         return {"planned_requests": self.planned_requests, "request_cap": self.request_cap,
                 "jev_request_cap": self.jev_request_cap, "ling_request_cap": self.ling_request_cap,
                 "cost_cap_usd": self.cost_cap_usd, "registration_hash": self.registration_hash,
                 "protocol_key": self.protocol_key, "model": self.model, "endpoint": self.endpoint,
+                "ling_model": self.ling_model, "ling_endpoint": self.ling_endpoint,
                 "cases": [case.to_dict() for case in self.cases]}
 
 
@@ -106,6 +112,7 @@ def build_pilot_plan(instances: Sequence[tf.FamilyInstance], registration: Mappi
                                    arm in ("COMM", "COMM_CONTROL")))
     caps = registration.get("caps", {})
     partition = caps.get("provider_partition") or {}
+    ling = registration.get("ling_contract") or {}
     planned = sum(case.turns for case in cases)
     return PilotPlan(cases=tuple(cases), planned_requests=planned,
                      request_cap=int(caps.get("physical_requests", 0)),
@@ -117,12 +124,16 @@ def build_pilot_plan(instances: Sequence[tf.FamilyInstance], registration: Mappi
                      registration_hash=str(registration.get("preregistration_hash", "")),
                      protocol_key=str((registration.get("model_and_protocol") or {}).get("protocol_key", "")),
                      model=str((registration.get("model_and_protocol") or {}).get("model", "")),
-                     endpoint=str((registration.get("model_and_protocol") or {}).get("endpoint", "")))
+                     endpoint=str((registration.get("model_and_protocol") or {}).get("endpoint", "")),
+                     ling_model=str(ling.get("model", "")), ling_endpoint=str(ling.get("endpoint", "")),
+                     ling_prompt_template=str(ling.get("prompt_template", "")),
+                     ling_max_tokens=int(ling.get("max_tokens", 0)),
+                     ling_temperature=float(ling.get("temperature", 0.0)))
 
 
 def verify_pilot_preflight(plan: PilotPlan, registration: Mapping[str, Any], receiver: JevChoiceAdapter,
                            *, repo_root: Path, pinned_hash: str | None = None,
-                           ling_key_present: bool | None = None) -> dict[str, Any]:
+                           ling_key_present: bool | None = None, writer: Any | None = None) -> dict[str, Any]:
     checks: list[dict[str, Any]] = []
 
     def check(name: str, ok: bool, detail: Any = None) -> None:
@@ -161,6 +172,25 @@ def verify_pilot_preflight(plan: PilotPlan, registration: Mapping[str, Any], rec
           credentials.redacted())
     ling_ok = bd._api_key() is not None if ling_key_present is None else bool(ling_key_present)
     check("ling_credentials_present", ling_ok, None)
+    ling = registration.get("ling_contract") or {}
+    check("ling_model_frozen", plan.ling_model and plan.ling_model == ling.get("model") == pr.LING_MODEL,
+          plan.ling_model)
+    check("ling_endpoint_frozen",
+          plan.ling_endpoint and plan.ling_endpoint == ling.get("endpoint") == pr.LING_ENDPOINT,
+          plan.ling_endpoint)
+    check("ling_prompt_frozen", plan.ling_prompt_template == ling.get("prompt_template") == pr.LING_PROMPT_TEMPLATE,
+          None)
+    check("ling_decoding_frozen",
+          plan.ling_max_tokens == ling.get("max_tokens") and plan.ling_temperature == ling.get("temperature"),
+          {"max_tokens": plan.ling_max_tokens, "temperature": plan.ling_temperature})
+    if writer is not None:
+        check("writer_model_matches", getattr(writer, "model", None) == plan.ling_model,
+              getattr(writer, "model", None))
+        check("writer_endpoint_matches", getattr(writer, "endpoint", None) == plan.ling_endpoint,
+              getattr(writer, "endpoint", None))
+        check("writer_partition_enforced",
+              getattr(writer, "max_physical_requests", None) == plan.ling_request_cap,
+              getattr(writer, "max_physical_requests", None))
     return {"ok": all(item["ok"] for item in checks), "checks": checks,
             "failed": [item["check"] for item in checks if not item["ok"]],
             "registration_verification": registration_result}
@@ -266,8 +296,11 @@ def execute_pilot(plan: PilotPlan, receiver: JevChoiceAdapter, writer: WriterCli
                             f"m-{instance.instance_id}", exposure_id)
                     else:
                         write_status = "control_no_write"
-                except Exception as exc:  # sanitized durable writer failure
-                    writer_error = type(exc).__name__
+                except WriterError as exc:  # bounded sanitized writer failure
+                    writer_error = exc.error_class
+                    write_status = "writer_error"
+                except Exception as exc:
+                    writer_error = f"writer_{type(exc).__name__}"
                     write_status = "writer_error"
             visible = [{"text": jc_message(message)}] if message else []
             condition = case.condition
@@ -277,12 +310,21 @@ def execute_pilot(plan: PilotPlan, receiver: JevChoiceAdapter, writer: WriterCli
                 break
             if writer_error is not None:
                 journal({"instance_id": case.instance_id, "arm": case.arm, "condition": condition,
-                         "status": "invalid", "error_class": f"writer_{writer_error}",
+                         "status": "invalid", "error_class": writer_error,
                          "write_status": write_status, "turns_executed": turns_executed,
                          "prompt_form_id": case.prompt_form_id})
-                report["status"], report["stop_reason"] = "stopped", f"writer_{writer_error}"
+                report["status"], report["stop_reason"] = "stopped", writer_error
                 break
-            response, _ = receiver.complete_with_raw(state)
+            try:
+                response, _ = receiver.complete_with_raw(state)
+            except Exception as exc:  # defensive: durable invalid row, partial report
+                error_class = f"jev_{type(exc).__name__}"
+                journal({"instance_id": case.instance_id, "arm": case.arm, "condition": condition,
+                         "status": "invalid", "error_class": error_class,
+                         "write_status": write_status, "turns_executed": turns_executed,
+                         "prompt_form_id": case.prompt_form_id})
+                report["status"], report["stop_reason"] = "stopped", error_class
+                break
             turns_executed += 1
             issued += 1
             report["attempted_requests"] += 1
@@ -360,17 +402,25 @@ def jc_message(message: str | None) -> str:
 LING_RETRYABLE = jc.JEV_RETRYABLE_STATUSES
 
 
+class WriterError(Exception):
+    """Sanitized writer failure carrying only a bounded error class (no bodies)."""
+
+    def __init__(self, error_class: str) -> None:
+        self.error_class = str(error_class)
+        super().__init__(self.error_class)
+
+
 class LingWriterClient:
-    """OpenRouter chat writer with the registered retry policy; live only."""
+    """OpenRouter chat writer with the registered contract and retry policy; live only."""
 
     provider = "openrouter"
-    endpoint = "https://openrouter.ai/api/v1/chat/completions"
 
-    def __init__(self, *, model: str = bd.DEFAULT_FREE_MODEL, api_key: str | None = None,
-                 timeout: float = 120.0, max_retries: int = pr.JEV_REPLAY_MAX_RETRIES,
-                 max_physical_requests: int | None = None,
+    def __init__(self, *, model: str = pr.LING_MODEL, endpoint: str = pr.LING_ENDPOINT,
+                 api_key: str | None = None, timeout: float = 120.0,
+                 max_retries: int = pr.LING_MAX_RETRIES, max_physical_requests: int | None = None,
                  sleep_fn: Callable[[float], None] = time.sleep) -> None:
         self.model = model
+        self.endpoint = endpoint
         self.api_key = api_key if api_key is not None else bd._api_key()
         self.timeout = timeout
         self.max_retries = max_retries
@@ -378,20 +428,23 @@ class LingWriterClient:
         self.physical_attempts = 0
         self._sleep = sleep_fn
 
+    def _backoff(self, attempt: int) -> float:
+        return min(pr.LING_BACKOFF_INITIAL * (2 ** attempt), pr.LING_BACKOFF_MAX)
+
     def write(self, context: Mapping[str, Any]) -> Mapping[str, Any]:  # pragma: no cover - live only
         import urllib.error
         import urllib.request
         if not self.api_key:
-            raise RuntimeError("missing openrouter credential")
+            raise WriterError("writer_missing_credentials")
         clues = list(context.get("private_clues", ()))
-        prompt = ("You may send at most one exact private clue to a peer, or stay silent. "
-                  f"Private clues: {clues}. Reply with MESSAGE: <exact clue> or SILENCE.")
+        prompt = pr.LING_PROMPT_TEMPLATE.format(clues=clues)
         body = json.dumps({"model": self.model, "messages": [{"role": "user", "content": prompt}],
-                           "max_tokens": 64}).encode()
+                           "max_tokens": pr.LING_MAX_TOKENS,
+                           "temperature": pr.LING_TEMPERATURE}).encode()
         attempt = 0
         while True:
             if self.max_physical_requests is not None and self.physical_attempts >= self.max_physical_requests:
-                raise RuntimeError("physical_request_cap_exhausted")
+                raise WriterError("writer_physical_request_cap_exhausted")
             self.physical_attempts += 1
             request = urllib.request.Request(self.endpoint, data=body, method="POST",
                                              headers={"Authorization": f"Bearer {self.api_key}",
@@ -402,23 +455,17 @@ class LingWriterClient:
                 break
             except urllib.error.HTTPError as exc:
                 status = int(exc.code)
-                detail = ""
-                try:
-                    detail = bd.sanitize_provider_message(exc.read().decode("utf-8", "replace"), self.api_key)
-                except Exception:
-                    detail = ""
                 if status in LING_RETRYABLE and attempt < self.max_retries:
-                    self._sleep(min(2 ** attempt, 5.0))
+                    self._sleep(self._backoff(attempt))
                     attempt += 1
                     continue
-                raise RuntimeError(f"writer_http_{status}_{bd.classify_http_status(status)}"
-                                   f"{(':' + detail) if detail else ''}") from exc
+                raise WriterError(f"writer_http_{status}_{bd.classify_http_status(status)}") from exc
             except OSError as exc:
                 if attempt < self.max_retries:
-                    self._sleep(min(2 ** attempt, 5.0))
+                    self._sleep(self._backoff(attempt))
                     attempt += 1
                     continue
-                raise RuntimeError(f"writer_{type(exc).__name__}") from exc
+                raise WriterError(f"writer_network_{type(exc).__name__}") from exc
         text = str(payload["choices"][0]["message"]["content"])
         if "MESSAGE:" in text:
             return {"message": text.split("MESSAGE:", 1)[1].strip()}
@@ -445,9 +492,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     instances = pilot_instances()
     receiver = JevChoiceAdapter(_PreflightWriter(), model=pr.JEV_REPLAY_MODEL)
     plan = build_pilot_plan(instances, registration, receiver)
+    writer = LingWriterClient(max_physical_requests=plan.ling_request_cap)
     verification = verify_pilot_preflight(plan, registration, receiver,
                                           repo_root=Path(__file__).resolve().parents[2],
-                                          pinned_hash=registration.get("preregistration_hash"))
+                                          pinned_hash=registration.get("preregistration_hash"),
+                                          writer=writer)
     print(json.dumps({"mode": "jev-choice-pilot-preflight", "ok": verification["ok"],
                       "failed": verification["failed"], "plan": plan.to_dict(),
                       "checks": verification["checks"]}, indent=2, sort_keys=True, allow_nan=False))
@@ -462,7 +511,6 @@ def main(argv: Sequence[str] | None = None) -> int:
     live_receiver = JevChoiceAdapter(
         JevChoiceClient(model=pr.JEV_REPLAY_MODEL, max_physical_requests=plan.jev_request_cap),
         model=pr.JEV_REPLAY_MODEL)
-    writer = LingWriterClient(max_physical_requests=plan.ling_request_cap)
     report = execute_pilot(plan, live_receiver, writer, verification, instances, approval=args.approval,
                            pinned_hash=registration.get("preregistration_hash"),
                            journal_path=args.journal)

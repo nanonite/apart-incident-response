@@ -20,16 +20,19 @@ class FakeReceiverClient:
     endpoint = jc.JEV_SYSTEMONE_ENDPOINT
     max_retries = 2
 
-    def __init__(self, *, max_physical_requests=250, attempts=0):
+    def __init__(self, *, max_physical_requests=250, attempts=0, fail=False):
         self.max_physical_requests = max_physical_requests
         self.physical_attempts = attempts
         self.calls = 0
+        self.fail = fail
 
     def complete(self, request):
         if self.max_physical_requests is not None and self.physical_attempts >= self.max_physical_requests:
             raise RuntimeError("physical_request_cap_exhausted")
         self.physical_attempts += 1
         self.calls += 1
+        if self.fail:
+            raise OSError("network down")
         question_id = next(iter(request["questions"]))
         option_ids = list(request["questions"][question_id]["criteria"])
         probability = 1.0 / len(option_ids)
@@ -43,18 +46,24 @@ class FakeReceiverClient:
 class FakeWriter:
     provider = "openrouter"
 
-    def __init__(self, *, silent=False, error=None, max_physical_requests=50):
+    def __init__(self, *, model=pr.LING_MODEL, endpoint=pr.LING_ENDPOINT, silent=False, error=None,
+                 error_class=None, max_physical_requests=50):
+        self.model = model
+        self.endpoint = endpoint
         self.silent = silent
         self.error = error
+        self.error_class = error_class
         self.max_physical_requests = max_physical_requests
         self.physical_attempts = 0
         self.calls = 0
 
     def write(self, context):
         if self.max_physical_requests is not None and self.physical_attempts >= self.max_physical_requests:
-            raise RuntimeError("physical_request_cap_exhausted")
+            raise pilot.WriterError("writer_physical_request_cap_exhausted")
         self.physical_attempts += 1
         self.calls += 1
+        if self.error_class is not None:
+            raise pilot.WriterError(self.error_class)
         if self.error is not None:
             raise RuntimeError(self.error)
         if self.silent:
@@ -63,14 +72,17 @@ class FakeWriter:
         return {"message": clues[0] if clues else None}
 
 
-def setup(*, silent=False, writer_error=None, receiver_cap=250, writer_cap=50, receiver_attempts=0):
+def setup(*, silent=False, writer_error=None, writer_error_class=None, receiver_cap=250, writer_cap=50,
+          receiver_attempts=0, writer_model=pr.LING_MODEL, receiver_fail=False):
     instances = pilot.pilot_instances()
-    client = FakeReceiverClient(max_physical_requests=receiver_cap, attempts=receiver_attempts)
+    client = FakeReceiverClient(max_physical_requests=receiver_cap, attempts=receiver_attempts,
+                                fail=receiver_fail)
     receiver = JevChoiceAdapter(client, model=pr.JEV_REPLAY_MODEL)
     plan = pilot.build_pilot_plan(instances, REGISTRATION, receiver)
+    writer = FakeWriter(silent=silent, error=writer_error, error_class=writer_error_class,
+                        max_physical_requests=writer_cap, model=writer_model)
     verification = pilot.verify_pilot_preflight(plan, REGISTRATION, receiver, repo_root=REPO_ROOT,
-                                                 pinned_hash=PIN, ling_key_present=True)
-    writer = FakeWriter(silent=silent, error=writer_error, max_physical_requests=writer_cap)
+                                                 pinned_hash=PIN, ling_key_present=True, writer=writer)
     return instances, receiver, plan, verification, writer
 
 
@@ -107,8 +119,13 @@ class GatingTests(unittest.TestCase):
         report = pilot.execute_pilot(plan, receiver, writer, verification, instances, approval="test")
         self.assertEqual(report["stop_reason"], "receiver_partition_not_enforced")
         instances, receiver, plan, verification, writer = setup(writer_cap=300)
-        report = pilot.execute_pilot(plan, receiver, writer, verification, instances, approval="test")
-        self.assertEqual(report["stop_reason"], "writer_partition_not_enforced")
+        self.assertFalse(verification["ok"])
+        self.assertIn("writer_partition_enforced", verification["failed"])
+
+    def test_preflight_rejects_wrong_ling_model(self):
+        instances, receiver, plan, verification, writer = setup(writer_model="some/other-model")
+        self.assertFalse(verification["ok"])
+        self.assertIn("writer_model_matches", verification["failed"])
 
 
 class ExecutionTests(unittest.TestCase):
@@ -157,6 +174,23 @@ class ExecutionTests(unittest.TestCase):
                                      pinned_hash=PIN, sleep_fn=lambda _: None)
         self.assertEqual(report["stop_reason"], "writer_RuntimeError")
         self.assertTrue(any(row.get("error_class") == "writer_RuntimeError" for row in report["cases"]))
+
+    def test_writer_sanitized_error_class_preserved(self):
+        instances, receiver, plan, verification, writer = setup(
+            writer_error_class="writer_http_429_rate_limited")
+        report = pilot.execute_pilot(plan, receiver, writer, verification, instances, approval="test",
+                                     pinned_hash=PIN, sleep_fn=lambda _: None)
+        self.assertEqual(report["stop_reason"], "writer_http_429_rate_limited")
+        self.assertTrue(any(row.get("error_class") == "writer_http_429_rate_limited"
+                            for row in report["cases"]))
+
+    def test_jev_transport_failure_is_durable_and_partial(self):
+        instances, receiver, plan, verification, writer = setup(receiver_fail=True)
+        report = pilot.execute_pilot(plan, receiver, writer, verification, instances, approval="test",
+                                     pinned_hash=PIN, sleep_fn=lambda _: None)
+        self.assertEqual(report["status"], "stopped")
+        self.assertEqual(report["stop_reason"], "transport_error")
+        self.assertTrue(any(row.get("error_class") == "transport_error" for row in report["cases"]))
 
     def test_partition_cap_stops_without_crossing(self):
         instances, receiver, plan, verification, writer = setup(receiver_attempts=250)
