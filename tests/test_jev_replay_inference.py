@@ -55,9 +55,13 @@ def make_event(form_index, p_placebo, *, event_id=None, protocol_key=PROTOCOL_KE
                                request_hash="n"),
     }
     return jr.build_event(event_id=event_id or f"ev-{form_index}", instance_id=f"inst-{form_index}",
-                          condition="COMM", prompt_form_id_value=form, pre_read_state=state,
-                          option_ids=OPTIONS, target_id=TARGET, feasible_set=FEASIBLE, i_m_bits=1.0,
-                          message={"writer_id": "B", "reader_id": "A", "exposure_id": "x"},
+                          condition="COMM", model=JEV_DEFAULT_MODEL, prompt_form_id_value=form,
+                          pre_read_state=state, option_ids=OPTIONS, target_id=TARGET,
+                          feasible_set=FEASIBLE, i_m_bits=1.0,
+                          message={"writer_id": "B", "reader_id": "A", "exposure_id": "x",
+                                   "owner_exact": True, "i_m_bits": 1.0},
+                          placebo={"construction": jr.PLACEBO_CONSTRUCTION, "wording": jr.PLACEBO_WORDING_TEMPLATE,
+                                   "synthetic": True, "i_m_bits": 0, "claim": "clue"},
                           branches=branches, request_body=body)
 
 
@@ -130,6 +134,27 @@ class ContrastTests(unittest.TestCase):
         five = ji.paired_continuous_contrast(events[:5], required_forms=6)
         self.assertFalse(five["complete_forms"])
         self.assertAlmostEqual(five["minimum_two_sided_p"], 2 / 32)
+
+    def test_required_forms_exact_membership(self):
+        events = [make_event(index, 0.5 + 0.02 * index) for index in range(6)]
+        ids = [event["prompt_form_id"] for event in events]
+        exact = ji.paired_continuous_contrast(events, required_forms=ids)
+        self.assertTrue(exact["complete_forms"])
+        subset = ji.paired_continuous_contrast(events, required_forms=ids[:5])
+        self.assertFalse(subset["complete_forms"])
+        self.assertTrue(subset["extra_forms"])
+        missing = ji.paired_continuous_contrast(events, required_forms=ids + ["deadbeef"])
+        self.assertFalse(missing["complete_forms"])
+        self.assertTrue(missing["missing_forms"])
+
+    def test_fail_on_invalid_raises(self):
+        event = make_event(0, 0.5)
+        event["branches"]["real"]["entropy_bits"] += 0.5
+        with self.assertRaises(ValueError):
+            ji.paired_continuous_contrast([event])
+        relaxed = ji.paired_continuous_contrast([event], fail_on_invalid=False)
+        self.assertEqual(relaxed["missingness"]["invalid_events"], 1)
+        self.assertEqual(relaxed["missingness"]["usable_pairs"], 0)
 
 
 class GuardTests(unittest.TestCase):

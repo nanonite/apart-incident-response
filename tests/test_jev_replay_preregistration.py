@@ -70,6 +70,17 @@ class DraftTests(unittest.TestCase):
         self.assertIn("planned_calls", caps)
         self.assertIn("not authorized", json.dumps(caps))
 
+    def test_frozen_forms_and_placebo(self):
+        forms = self.doc["frozen_forms"]
+        self.assertEqual(forms["paired_forms"], 6)
+        self.assertEqual(len(forms["iso_form_ids"]), 6)
+        self.assertEqual(len(forms["instance_ids"]), 17)
+        self.assertEqual(len(forms["form_manifest_hash"]), 64)
+        placebo = self.doc["placebo"]
+        self.assertEqual(placebo["wording"], "peer_clue: {claim}")
+        self.assertTrue(placebo["synthetic"])
+        self.assertEqual(len(placebo["wording_hash"]), 64)
+
     def test_hash_is_reproducible(self):
         self.assertEqual(pr.build_replay_preregistration(journal_path=JOURNAL)["preregistration_hash"],
                          self.doc["preregistration_hash"])

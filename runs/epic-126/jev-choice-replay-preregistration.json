@@ -80,6 +80,38 @@
     "recommendation": "conditional on the six known frozen forms; a generator redesign is required for genuinely new forms",
     "union_distinct_request_forms": 12
   },
+  "frozen_forms": {
+    "form_manifest_hash": "fb061b7a956ff953f15851e89d79aa6da149a78300164ffa7e493505fc8c96ea",
+    "instance_ids": [
+      "planning-00011940",
+      "planning-00011941",
+      "planning-00011942",
+      "planning-00011943",
+      "planning-00011944",
+      "planning-00011945",
+      "planning-00011946",
+      "planning-00011947",
+      "planning-00011948",
+      "planning-00011949",
+      "planning-0001194a",
+      "planning-0001194b",
+      "planning-0001194c",
+      "planning-0001194d",
+      "planning-0001194e",
+      "planning-0001194f",
+      "planning-00011950"
+    ],
+    "iso_form_ids": [
+      "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+      "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+      "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+      "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+      "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222"
+    ],
+    "paired_forms": 6,
+    "seed_base": 72000
+  },
   "guards": {
     "feasible_set_mass": {
       "epsilon": 0.01,
@@ -125,13 +157,16 @@
     "confirm the controller-injected placebo wording"
   ],
   "placebo": {
-    "construction": "preregistered, controller-injected typed claim already known to the receiver",
+    "construction": "re-present one of the receiver's own pre-read private clues as a peer claim",
     "note": "the current audited instances have no B-owned zero-information claim, so a naturally B-owned placebo is not feasible without a generator change",
     "requirements": [
       "verified I_m = 0",
       "no feasible-set reduction",
       "synthetic origin recorded outside the model-visible message"
-    ]
+    ],
+    "synthetic": true,
+    "wording": "peer_clue: {claim}",
+    "wording_hash": "ba66c46561e219e66be0dd9c3cef7f8d3e2f1cf34970ca375e47e1869531160e"
   },
   "power": {
     "between_form_sd_bits": 0.19331804672510103,
@@ -143,7 +178,7 @@
     "label": "illustrative and secondary",
     "sd_caveat": "the observed J3 between-form SD is from ISO-minus-FULL, not the real-minus-placebo estimand; use only as an illustrative sensitivity value, not a plug-in variance"
   },
-  "preregistration_hash": "22160f547434f16d06ec7f8b8a34e95d83ddc7153e01bc52bf3e1c5420c030ef",
+  "preregistration_hash": "2461f968291f870ead4c45e09c3b04347b5106a0b373e86679e7ab4e7c3bca2d",
   "preregistration_version": "stage2-jev-choice-replay-v1",
   "stage": "jev-choice-replay",
   "status": "draft_pending_review",

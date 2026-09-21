@@ -88,25 +88,34 @@ def _sign_test(form_means: Sequence[float]) -> dict[str, Any]:
 def paired_continuous_contrast(events: Sequence[Mapping[str, Any]], *, outcome: str = "entropy_bits",
                                left: str = "real", right: str = "placebo", min_pairs_per_form: int = 1,
                                bootstrap_iterations: int = 2000, seed: int = 157,
-                               required_forms: int | None = None) -> dict[str, Any]:
+                               required_forms: int | Sequence[str] | None = None,
+                               fail_on_invalid: bool = True) -> dict[str, Any]:
     """Equal-form paired continuous contrast over complete (left, right) pairs.
 
-    Fails closed on duplicate events or mixed protocols. Guards are *not* used to
-    filter this estimate; see :func:`guard_evaluation`.
+    Fails closed on duplicate events, mixed protocols, or (by default) any event
+    that fails schema validation. ``required_forms`` may be an exact collection of
+    frozen form IDs, in which case the analyzed forms must match it exactly.
+    Guards are *not* used to filter this estimate; see :func:`guard_evaluation`.
     """
 
     if events:
         jr.assert_no_duplicate_events(events)
         jr.assert_single_protocol(events)
-
-    form_values: dict[str, list[float]] = defaultdict(list)
-    form_instances: dict[str, list[str]] = defaultdict(list)
-    missingness = {"events": len(events), "usable_pairs": 0, "invalid_events": 0,
-                   "incomplete_pairs": 0, "forms_below_min_pairs": 0}
+    invalid_events = []
     for event in events:
         problems = jr.validate_event(event)
         if problems:
-            missingness["invalid_events"] += 1
+            invalid_events.append({"event_id": event.get("event_id"), "problems": sorted(set(problems))})
+    if invalid_events and fail_on_invalid:
+        raise ValueError(f"invalid_replay_events: {invalid_events}")
+
+    form_values: dict[str, list[float]] = defaultdict(list)
+    form_instances: dict[str, list[str]] = defaultdict(list)
+    missingness = {"events": len(events), "usable_pairs": 0, "invalid_events": len(invalid_events),
+                   "incomplete_pairs": 0, "forms_below_min_pairs": 0, "invalid": invalid_events}
+    invalid_ids = {item["event_id"] for item in invalid_events}
+    for event in events:
+        if event.get("event_id") in invalid_ids:
             continue
         branches = event.get("branches", {})
         left_branch, right_branch = branches.get(left), branches.get(right)
@@ -149,15 +158,28 @@ def paired_continuous_contrast(events: Sequence[Mapping[str, Any]], *, outcome: 
     weighted = None
     if form_means and sum(instance_weights) > 0:
         weighted = sum(mean * weight for mean, weight in zip(form_means, instance_weights)) / sum(instance_weights)
-    complete_forms = required_forms is None or k >= required_forms
+    if required_forms is None:
+        complete_forms, missing_forms, extra_forms = True, [], []
+    elif isinstance(required_forms, int):
+        complete_forms = k >= required_forms
+        missing_forms, extra_forms = [], []
+    else:
+        allowed = set(required_forms)
+        observed = set(form_effects)
+        missing_forms = sorted(allowed - observed)
+        extra_forms = sorted(observed - allowed)
+        complete_forms = not missing_forms and not extra_forms
     return {
         "contrast_version": CONTRAST_VERSION,
         "outcome": outcome,
         "left": left,
         "right": right,
         "k_forms": k,
-        "required_forms": required_forms,
+        "required_forms": list(required_forms) if isinstance(required_forms, (list, tuple, set))
+        else required_forms,
         "complete_forms": complete_forms,
+        "missing_forms": missing_forms,
+        "extra_forms": extra_forms,
         "form_effects": form_effects,
         "form_mean": form_mean,
         "df": df,

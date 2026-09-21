@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from . import jev_preregistration as jp
+from . import jev_replay as jr
 from . import jev_replay_inference as ji
 from . import task_families as tf
 from .communication_protocol import DependenceRegime, ReasoningComplexity
@@ -88,6 +89,29 @@ def audit_form_capacity(seed_bases: Sequence[int] = FORM_CAPACITY_SEED_BASES,
     }
 
 
+def frozen_forms(*, seed_base: int = JEV_REPLAY_SEED_BASE,
+                 per_block: int = JEV_REPLAY_PER_BLOCK) -> dict[str, Any]:
+    """Freeze the six paired ISO pre-read form IDs and the instance manifest."""
+
+    adapter = JevChoiceAdapter(_NoopClient(), model=jp.JEV_CAPABILITY_MODEL)
+    instance_ids: list[str] = []
+    iso_forms: dict[str, str] = {}
+    for replicate in range(per_block):
+        instance = tf.generate_instance("planning", seed_base + replicate, DependenceRegime.N,
+                                        ReasoningComplexity.LOW)
+        instance_ids.append(instance.instance_id)
+        state = adapter.build_state(instance, "A", "ISO")
+        iso_forms[state.request_hash] = instance.instance_id
+    form_ids = sorted(iso_forms)
+    return {
+        "seed_base": seed_base,
+        "paired_forms": len(form_ids),
+        "iso_form_ids": form_ids,
+        "instance_ids": instance_ids,
+        "form_manifest_hash": hashlib.sha256(json.dumps(form_ids, sort_keys=True).encode()).hexdigest(),
+    }
+
+
 def between_form_sd(journal: Sequence[Mapping[str, Any]]) -> float | None:
     regression = ji.j3_iso_full_regression(journal)
     means = regression["form_means"]
@@ -156,12 +180,16 @@ def build_replay_preregistration(*, journal_path: Path = DEFAULT_JOURNAL,
             "objective_information": "I_m kept distinct from model entropy",
         },
         "placebo": {
-            "construction": "preregistered, controller-injected typed claim already known to the receiver",
+            "construction": jr.PLACEBO_CONSTRUCTION,
+            "wording": jr.PLACEBO_WORDING_TEMPLATE,
+            "synthetic": jr.PLACEBO_SYNTHETIC,
+            "wording_hash": jr.placebo_wording_hash(),
             "requirements": ["verified I_m = 0", "no feasible-set reduction",
                              "synthetic origin recorded outside the model-visible message"],
             "note": "the current audited instances have no B-owned zero-information claim, so a naturally "
                     "B-owned placebo is not feasible without a generator change",
         },
+        "frozen_forms": frozen_forms(),
         "decision_rule": {
             "primary_test": "two-sided exact cluster sign-flip on form means",
             "additional_requirement": "negative effect (form_mean < 0)",

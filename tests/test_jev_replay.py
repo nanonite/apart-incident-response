@@ -51,10 +51,12 @@ def sample_event():
                                request_hash="n"),
     }
     return jr.build_event(event_id="ev-1", instance_id=instance.instance_id, condition="COMM",
-                          prompt_form_id_value=form, pre_read_state=state, option_ids=options,
-                          target_id=target, feasible_set=feasible, i_m_bits=1.0,
+                          model=JEV_DEFAULT_MODEL, prompt_form_id_value=form, pre_read_state=state,
+                          option_ids=options, target_id=target, feasible_set=feasible, i_m_bits=1.0,
                           message={"writer_id": "B", "reader_id": "A", "exposure_id": "x1",
                                    "owner_exact": True, "i_m_bits": 1.0},
+                          placebo={"construction": jr.PLACEBO_CONSTRUCTION, "wording": jr.PLACEBO_WORDING_TEMPLATE,
+                                   "synthetic": True, "i_m_bits": 0, "claim": list(instance.private_clues["A"])[0]},
                           branches=branches, request_body=body)
 
 
@@ -72,6 +74,11 @@ class IdentityTests(unittest.TestCase):
         other2 = json.loads(json.dumps(body))
         other2["state"]["clues"] = ["a", "c"]
         self.assertNotEqual(first, jr.prompt_form_id(other2))
+
+    def test_placebo_serializer_is_frozen(self):
+        self.assertEqual(jr.serialize_placebo_message("clue-x"), "peer_clue: clue-x")
+        self.assertEqual(jr.placebo_wording_hash(), jr.placebo_wording_hash())
+        self.assertEqual(len(jr.placebo_wording_hash()), 64)
 
     def test_entropy_and_guards(self):
         self.assertEqual(jr.entropy_bits({"a": 1.0}), 0.0)
@@ -99,6 +106,20 @@ class ValidationTests(unittest.TestCase):
         event["branches"]["placebo"]["state_hash"] = "different"
         self.assertIn("unmatched_state", jr.validate_event(event))
 
+    def test_request_body_is_mandatory_and_cross_checked(self):
+        event = sample_event()
+        del event["request_body"]
+        self.assertIn("missing_request_body", jr.validate_event(event))
+        event = sample_event()
+        event["request_body"]["state"] = {"different": True}
+        self.assertIn("request_body_state_mismatch", jr.validate_event(event))
+        event = sample_event()
+        event["request_body"]["questions"]["candidate"]["criteria"] = {"only": None}
+        self.assertIn("request_body_options_mismatch", jr.validate_event(event))
+        event = sample_event()
+        event["request_body"]["model"] = "jev-1.13.1"
+        self.assertIn("request_body_model_mismatch", jr.validate_event(event))
+
     def test_mixed_protocol(self):
         event = sample_event()
         event["branches"]["real"]["protocol_key"] = "six-family-clue-consistent-v2|a|b|c|d|e"
@@ -108,13 +129,48 @@ class ValidationTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             jr.assert_single_protocol([event])
 
-    def test_malformed_vector(self):
+    def test_malformed_vector_does_not_raise(self):
         event = sample_event()
         event["branches"]["real"]["probabilities"] = {"only": 1.0}
         self.assertIn("option_identity_mismatch", jr.validate_event(event))
         event = sample_event()
+        event["branches"]["placebo"]["probabilities"] = {o: "bad" for o in event["option_ids"]}
+        problems = jr.validate_event(event)  # must not raise
+        self.assertIn("non_finite_probability", problems)
+        event = sample_event()
         event["branches"]["placebo"]["probabilities"] = {o: 0.1 for o in event["option_ids"]}
         self.assertIn("not_normalized", jr.validate_event(event))
+
+    def test_required_branch_metrics_model_usage_and_request(self):
+        event = sample_event()
+        del event["branches"]["real"]["entropy_bits"]
+        self.assertIn("missing_branch_metric", jr.validate_event(event))
+        event = sample_event()
+        event["branches"]["real"]["resolved_model"] = "jev-1.13.1"
+        self.assertIn("branch_model_mismatch", jr.validate_event(event))
+        event = sample_event()
+        event["branches"]["placebo"]["usage"] = {"input_tokens": 1}
+        self.assertIn("missing_usage", jr.validate_event(event))
+        event = sample_event()
+        event["branches"]["real"]["request_hash"] = ""
+        self.assertIn("missing_branch_request_hash", jr.validate_event(event))
+        event = sample_event()
+        del event["model"]
+        self.assertIn("missing_model", jr.validate_event(event))
+
+    def test_provenance_and_placebo_inertness(self):
+        event = sample_event()
+        event["message"] = {"writer_id": "B"}
+        self.assertIn("missing_provenance", jr.validate_event(event))
+        event = sample_event()
+        event["message"]["owner_exact"] = False
+        self.assertIn("ineligible_real_message", jr.validate_event(event))
+        event = sample_event()
+        event["placebo"]["i_m_bits"] = 1
+        self.assertIn("placebo_not_inert", jr.validate_event(event))
+        event = sample_event()
+        event["placebo"]["wording"] = "tampered"
+        self.assertIn("placebo_wording_mismatch", jr.validate_event(event))
 
     def test_answer_key_leakage(self):
         event = sample_event()
@@ -136,11 +192,6 @@ class ValidationTests(unittest.TestCase):
         event = sample_event()
         event["prompt_form_id"] = "0" * 64
         self.assertIn("form_hash_mismatch", jr.validate_event(event))
-
-    def test_missing_provenance(self):
-        event = sample_event()
-        event["message"] = {"writer_id": "B"}
-        self.assertIn("missing_provenance", jr.validate_event(event))
 
     def test_duplicates_raise(self):
         event = sample_event()
