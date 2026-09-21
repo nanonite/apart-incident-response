@@ -43,21 +43,27 @@ message content is held fixed (receiver model, options, wording, target, timing)
   primary comparator because a null branch cannot separate "no message" from
   timing/exposure effects that the placebo controls.
 
-## Guards (separate from the entropy effect)
+## Guards (evaluated separately from the entropy estimate)
 
 A reduction in entropy alone is **not** evidence of useful, target-directed
-information. Every useful-information claim additionally requires both guards,
-evaluated per event before it enters `d_f`:
+information. **Every pre-eligible, valid real/placebo pair enters the primary
+entropy estimate regardless of the guards**; selecting events by their outcomes
+would bias the contrast. The guards are evaluated and reported **alongside** the
+primary estimate, never used to filter it.
 
-1. **Target-probability guard**: `p_target(real) ≥ p_target(placebo)` — the real
-   message must not lower the true-target probability. A stricter practical
-   margin `δ` may be required.
+For each event the useful-information claim additionally requires both guards:
+
+1. **Target-probability guard**: `p_target(real) ≥ p_target(placebo) + δ` — the
+   real message must not lower the true-target probability. Provisional `δ = 0`.
 2. **Feasible-set-mass guard**: `mass_F(real) ≥ mass_F(placebo) − ε`, where
    **`F` is the pre-read clue-consistent set `S(C)`** (the receiver's own feasible
    set before any message), which is fixed by `C` and **independent of the real
    message content**. This avoids the tautology of scoring the real claim against
    a set the real claim defines. Mass on `F` must not fall; reduced entropy that
-   concentrates mass outside `F` is not useful information.
+   concentrates mass outside `F` is not useful information. Provisional `ε = 0.01`.
+
+Report form-level guard differences and event-level violations. An entropy drop
+with no target-probability improvement must **not** be called useful uptake.
 
 Objective claim `I_m` (controller-side log-cardinality reduction of the feasible
 set, in bits) is kept **distinct** from model entropy `H(Choice p)`. `I_m` is a
@@ -87,13 +93,25 @@ property of the message, not of the model's distribution.
 
 ## Judgments needing reviewer approval (not chosen silently)
 
-1. **`ε`** (feasible-set-mass slack) and **`δ`** (target-probability margin); a
-   default of `ε=δ=0` is proposed but the practical margins are a judgment.
-2. **Minimum complete pairs per form** before `d_f` is computed.
-3. **Placebo construction rule** (e.g. writer-owned but already-implied claim vs
-   a format-matched non-claim) — must satisfy `I_m = 0` and not reduce `F`.
-4. **Decision rule**: one-sided directional (`Δ<0`) vs two-sided inference with a
-   directional claim only if the sign holds.
-5. **k**: conditional on the **six known forms**, or a **generator redesign** for
-   new forms (see #185). Wilson/interval claims must not read repeated queries as
-   independent.
+1. **`ε`** (feasible-set-mass slack) and **`δ`** (target-probability margin).
+   Provisional recommendation: **`δ = 0`, `ε = 0.01`**, reported form-level and
+   event-level, never used to filter the primary estimate.
+2. **Minimum complete pairs per form**: require at least one valid pair in each of
+   the six forms for the six-form primary analysis; aim for two or more planned
+   opportunities per form. If a form is lost, call the result incomplete — at five
+   forms the smallest two-sided sign-flip p is 0.0625.
+3. **Placebo construction rule**: a preregistered, controller-injected typed claim
+   **already known to the receiver**, verified `I_m = 0` and no feasible-set
+   reduction, with its synthetic origin recorded outside the model-visible
+   message. The current audited instances have no B-owned zero-information claim,
+   so a naturally B-owned placebo is not feasible without a generator change.
+4. **Decision rule**: keep the **two-sided exact sign-flip** and additionally
+   require a negative effect; report the form-mean t interval alongside it. Do not
+   switch to one-sided testing after seeing data. Null remains a separate check.
+5. **k**: run as a pilot **conditional on the six known forms**; new seed IDs do
+   not create new forms. Treat the t interval and sign-flip result as
+   assumption-dependent summaries of these forms, not generalization; redesign the
+   generator before a broader claim (see #185).
+6. **Caps**: ≤300 physical requests and ≤$1 Jev cost are ceilings only; freeze
+   them after the registration spells out planned Ling and Jev calls, retries, and
+   what happens when optional board use leaves a form without a real message.

@@ -49,15 +49,26 @@ class DraftTests(unittest.TestCase):
         self.assertEqual(self.doc["estimand"]["event_difference"], "H_real - H_placebo")
         self.assertEqual(self.doc["estimand"]["directional_prediction"], "delta < 0")
         self.assertIn("equal-weight mean", self.doc["estimand"]["estimand"])
-        self.assertIn("pre-read clue-consistent set", self.doc["guards"]["feasible_set_mass"]["reference_set"])
+        guards = self.doc["guards"]
+        self.assertIn("never used to filter", guards["filtering"])
+        self.assertEqual(guards["target_probability"]["margin_delta"], 0.0)
+        self.assertEqual(guards["feasible_set_mass"]["epsilon"], 0.01)
+        self.assertIn("pre-read clue-consistent set", guards["feasible_set_mass"]["reference_set"])
+        self.assertTrue(self.doc["decision_rule"]["no_one_sided_switch"])
+        self.assertTrue(any("I_m = 0" in requirement for requirement in self.doc["placebo"]["requirements"]))
+        self.assertIn("one valid real/placebo pair in each of the six forms",
+                      self.doc["complete_pair_rule"])
         self.assertEqual(self.doc["claim_scope"]["forms"], 6)
-        self.assertEqual(self.doc["claim_scope"]["type"], "form-conditioned")
+        self.assertEqual(self.doc["claim_scope"]["type"], "form-conditioned pilot")
 
     def test_pending_decisions_and_caps(self):
         self.assertTrue(self.doc["pending_decisions"])
-        self.assertEqual(self.doc["caps"]["physical_requests"], pr.DRAFT_REQUEST_CAP)
-        self.assertEqual(self.doc["caps"]["status"], "draft; not authorized")
-        self.assertIn("not authorized", json.dumps(self.doc["caps"]))
+        caps = self.doc["caps"]
+        self.assertEqual(caps["physical_requests"], pr.DRAFT_REQUEST_CAP)
+        self.assertEqual(caps["status"], "draft; not authorized")
+        self.assertIn("missing_real_message_rule", caps)
+        self.assertIn("planned_calls", caps)
+        self.assertIn("not authorized", json.dumps(caps))
 
     def test_hash_is_reproducible(self):
         self.assertEqual(pr.build_replay_preregistration(journal_path=JOURNAL)["preregistration_hash"],

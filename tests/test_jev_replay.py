@@ -55,7 +55,7 @@ def sample_event():
                           target_id=target, feasible_set=feasible, i_m_bits=1.0,
                           message={"writer_id": "B", "reader_id": "A", "exposure_id": "x1",
                                    "owner_exact": True, "i_m_bits": 1.0},
-                          branches=branches)
+                          branches=branches, request_body=body)
 
 
 class IdentityTests(unittest.TestCase):
@@ -121,6 +121,22 @@ class ValidationTests(unittest.TestCase):
         event["pre_read_state"]["clues"] = [event["target_id"]]
         self.assertIn("answer_key_leakage", jr.validate_event(event))
 
+    def test_stored_metric_tamper_is_detected(self):
+        event = sample_event()
+        event["branches"]["real"]["entropy_bits"] += 0.5
+        self.assertIn("stored_metric_mismatch", jr.validate_event(event))
+        event = sample_event()
+        event["branches"]["placebo"]["p_target"] = 0.123
+        self.assertIn("stored_metric_mismatch", jr.validate_event(event))
+        event = sample_event()
+        event["branches"]["null"]["feasible_mass"] = 0.0
+        self.assertIn("stored_metric_mismatch", jr.validate_event(event))
+
+    def test_form_hash_mismatch_is_detected(self):
+        event = sample_event()
+        event["prompt_form_id"] = "0" * 64
+        self.assertIn("form_hash_mismatch", jr.validate_event(event))
+
     def test_missing_provenance(self):
         event = sample_event()
         event["message"] = {"writer_id": "B"}
@@ -153,6 +169,16 @@ class SummaryTests(unittest.TestCase):
         self.assertEqual(row["incomplete_pairs"], 1)
         self.assertEqual(row["attempted"], 1)
         self.assertEqual(summary["invalid"], [])
+
+    def test_branch_denominators_distinguish_failed_and_unattempted(self):
+        event = sample_event()
+        event["branches"]["placebo"]["status"] = "invalid"
+        event["branches"]["null"]["status"] = "unattempted"
+        summary = jr.summarize_events([event])
+        row = next(iter(summary["by_form"].values()))
+        self.assertEqual(row["branches"]["real"], {"attempted": 1, "valid": 1, "failed": 0, "unattempted": 0})
+        self.assertEqual(row["branches"]["placebo"], {"attempted": 1, "valid": 0, "failed": 1, "unattempted": 0})
+        self.assertEqual(row["branches"]["null"], {"attempted": 0, "valid": 0, "failed": 0, "unattempted": 1})
 
 
 if __name__ == "__main__":

@@ -6,16 +6,31 @@
   "approval_required": true,
   "caps": {
     "cost_cap_usd": 1.0,
-    "ling": "pinned free model",
+    "ling": "pinned free model; OpenRouter free quota",
+    "missing_real_message_rule": "when optional board use leaves a form without a real message that form is reported incomplete; because the primary analysis requires a real pair in all six forms, a missing real message makes the result incomplete rather than triggering substitution",
     "physical_requests": 300,
+    "planned_calls": {
+      "jev_pre_read_iso_full": "17 instances x 2 conditions = 34",
+      "jev_replay_real_placebo_null": "17 instances x 3 branches = 51",
+      "ling_writer": "one writer turn per optional-board event (upper bound 17)",
+      "note": "ceilings only; freeze after review",
+      "retry_allowance": "per Jev retry policy (max 2 retries; 408/429/5xx/529)"
+    },
     "status": "draft; not authorized"
   },
   "claim_scope": {
     "forms": 6,
-    "statement": "the estimand is the equal-weight mean over the six frozen prompt forms; it is not a population-level prompt claim and not calibration",
-    "type": "form-conditioned"
+    "statement": "pilot conditional on the six frozen prompt forms; new seed IDs do not create new prompt forms. The t interval and sign-flip result are assumption-dependent summaries of these forms, not evidence of generalization; a generator redesign is required before a broader claim. Not calibration.",
+    "type": "form-conditioned pilot"
   },
-  "complete_pair_rule": "real and placebo both valid and identity-matched; incomplete pairs reported, not dropped; a form with no complete pair contributes no effect",
+  "complete_pair_rule": "require at least one valid real/placebo pair in each of the six forms for the six-form primary analysis; aim for two or more planned opportunities per form; if a form is lost the result is incomplete (five-form minimum two-sided sign-flip p = 0.0625). Incomplete pairs reported, not dropped.",
+  "decision_rule": {
+    "additional_requirement": "negative effect (form_mean < 0)",
+    "interval_reported_alongside": "form-mean t interval (df=k-1)",
+    "no_one_sided_switch": true,
+    "null_branch": "separate manipulation check",
+    "primary_test": "two-sided exact cluster sign-flip on form means"
+  },
   "estimand": {
     "directional_prediction": "delta < 0",
     "estimand": "equal-weight mean across distinct forms",
@@ -67,19 +82,20 @@
   },
   "guards": {
     "feasible_set_mass": {
-      "epsilon": 0.0,
+      "epsilon": 0.01,
       "guard": "mass_F(real) >= mass_F(placebo) - epsilon",
-      "reference_set": "F = pre-read clue-consistent set S(C), fixed by C and independent of the real message",
-      "status": "needs reviewer slack"
+      "reference_set": "F = pre-read clue-consistent set S(C), fixed by C and independent of the real message"
     },
+    "filtering": "never used to filter the primary estimate; every pre-eligible, valid real/placebo pair enters the entropy analysis and the guards are reported alongside it",
     "objective_information": "I_m kept distinct from model entropy",
+    "reporting": "form-level guard differences and event-level violations",
     "target_probability": {
-      "guard": "p_target(real) >= p_target(placebo)",
-      "margin_delta": 0.0,
-      "status": "needs reviewer margin"
+      "guard": "p_target(real) >= p_target(placebo) + delta",
+      "margin_delta": 0.0
     }
   },
   "inference": {
+    "minimum_two_sided_p_at_k5": 0.0625,
     "minimum_two_sided_p_at_k6": 0.03125,
     "primary": "form-mean t interval (df=k-1) and exhaustive two-sided cluster sign-flip p",
     "sensitivities_secondary": [
@@ -97,20 +113,26 @@
     "regime": "N",
     "seed_base": 72000
   },
-  "missingness": "planned/attempted/valid/complete/incomplete reported per form and per branch",
+  "missingness": "planned/attempted/valid/complete/incomplete reported per form and per branch; a failed attempt is distinguished from an unattempted branch",
   "model_and_protocol": {
     "codec_version": "jev-choice-wire-v1",
     "endpoint": "https://api.typesafe.ai/v1/systemone",
     "model": "jev-1.13.0"
   },
   "pending_decisions": [
-    "confirm the conditional six-form claim scope (vs generator redesign)",
-    "set the target-probability margin delta and feasible-set-mass slack epsilon",
-    "set the minimum complete pairs per form",
-    "fix the placebo construction rule (I_m = 0, no feasible-set reduction)",
-    "choose one-sided directional vs two-sided decision rule",
-    "confirm the draft request/cost caps"
+    "reviewer lock of this draft (separate from any live authorization)",
+    "confirm the draft request/cost caps after the planned-call breakdown",
+    "confirm the controller-injected placebo wording"
   ],
+  "placebo": {
+    "construction": "preregistered, controller-injected typed claim already known to the receiver",
+    "note": "the current audited instances have no B-owned zero-information claim, so a naturally B-owned placebo is not feasible without a generator change",
+    "requirements": [
+      "verified I_m = 0",
+      "no feasible-set reduction",
+      "synthetic origin recorded outside the model-visible message"
+    ]
+  },
   "power": {
     "between_form_sd_bits": 0.19331804672510103,
     "illustrative_required_forms": {
@@ -121,7 +143,7 @@
     "label": "illustrative and secondary",
     "sd_caveat": "the observed J3 between-form SD is from ISO-minus-FULL, not the real-minus-placebo estimand; use only as an illustrative sensitivity value, not a plug-in variance"
   },
-  "preregistration_hash": "e1a2662c1ceb40650c7c93d71d2c3183d292f831addba224813be3edf7aaccac",
+  "preregistration_hash": "22160f547434f16d06ec7f8b8a34e95d83ddc7153e01bc52bf3e1c5420c030ef",
   "preregistration_version": "stage2-jev-choice-replay-v1",
   "stage": "jev-choice-replay",
   "status": "draft_pending_review",

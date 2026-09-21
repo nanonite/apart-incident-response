@@ -27,20 +27,23 @@ def spread(target=TARGET, p=0.5):
     return probabilities
 
 
-def make_event(form_index, p_placebo, *, event_id=None, protocol_key=PROTOCOL_KEY, placebo_status="complete"):
+def make_event(form_index, p_placebo, *, event_id=None, protocol_key=PROTOCOL_KEY, placebo_status="complete",
+               real_probabilities=None, placebo_probabilities=None):
     state = {"family": "planning", "agent_id": "A", "clues": [f"clue-{form_index}"]}
     body = jr.pre_read_request_body(state=state, question_id="candidate",
                                     instructions=JEV_CHOICE_INSTRUCTIONS, option_ids=OPTIONS,
                                     model=JEV_DEFAULT_MODEL)
     form = jr.prompt_form_id(body)
     state_hash = jr.canonical_hash(state)
+    real_probs = real_probabilities if real_probabilities is not None else one_hot()
+    placebo_probs = placebo_probabilities if placebo_probabilities is not None else spread(p=p_placebo)
     branches = {
-        "real": jr.make_branch("real", status="complete", probabilities=one_hot(), option_ids=OPTIONS,
+        "real": jr.make_branch("real", status="complete", probabilities=real_probs, option_ids=OPTIONS,
                               target_id=TARGET, feasible_set=FEASIBLE, state_hash=state_hash,
                               protocol_key=protocol_key, resolved_model=JEV_DEFAULT_MODEL,
                               usage={"input_tokens": 5, "output_tokens": 1}, request_hash="r"),
         "placebo": jr.make_branch("placebo", status=placebo_status,
-                                  probabilities=spread(p=p_placebo) if placebo_status == "complete" else None,
+                                  probabilities=placebo_probs if placebo_status == "complete" else None,
                                   option_ids=OPTIONS, target_id=TARGET, feasible_set=FEASIBLE,
                                   state_hash=state_hash, protocol_key=protocol_key,
                                   resolved_model=JEV_DEFAULT_MODEL, usage={"input_tokens": 5, "output_tokens": 1},
@@ -55,7 +58,7 @@ def make_event(form_index, p_placebo, *, event_id=None, protocol_key=PROTOCOL_KE
                           condition="COMM", prompt_form_id_value=form, pre_read_state=state,
                           option_ids=OPTIONS, target_id=TARGET, feasible_set=FEASIBLE, i_m_bits=1.0,
                           message={"writer_id": "B", "reader_id": "A", "exposure_id": "x"},
-                          branches=branches)
+                          branches=branches, request_body=body)
 
 
 class TDfTests(unittest.TestCase):
@@ -104,6 +107,52 @@ class ContrastTests(unittest.TestCase):
         contrast = ji.paired_continuous_contrast(events, min_pairs_per_form=2)
         self.assertEqual(contrast["k_forms"], 0)
         self.assertEqual(contrast["missingness"]["forms_below_min_pairs"], 2)
+
+    def test_duplicate_events_rejected(self):
+        event = make_event(0, 0.5)
+        duplicate = json.loads(json.dumps(event))
+        with self.assertRaises(ValueError):
+            ji.paired_continuous_contrast([event, duplicate])
+
+    def test_mixed_protocol_rejected(self):
+        first = make_event(0, 0.5)
+        second = make_event(1, 0.6, protocol_key="six-family-clue-consistent-v2|a|b|c|d|e")
+        with self.assertRaises(ValueError):
+            ji.paired_continuous_contrast([first, second])
+
+    def test_required_forms_and_two_sided_decision(self):
+        events = [make_event(index, 0.5 + 0.02 * index) for index in range(6)]
+        contrast = ji.paired_continuous_contrast(events, required_forms=6)
+        self.assertTrue(contrast["complete_forms"])
+        self.assertTrue(contrast["two_sided_only"])
+        self.assertTrue(contrast["negative_effect"])
+        self.assertAlmostEqual(contrast["minimum_two_sided_p"], 2 / 64)
+        five = ji.paired_continuous_contrast(events[:5], required_forms=6)
+        self.assertFalse(five["complete_forms"])
+        self.assertAlmostEqual(five["minimum_two_sided_p"], 2 / 32)
+
+
+class GuardTests(unittest.TestCase):
+    def test_guard_violation_does_not_filter_primary(self):
+        real = {option: 0.1 for option in OPTIONS}
+        real[TARGET] = 0.1
+        real["c1"] = 0.5
+        placebo = {option: 1 / 6 for option in OPTIONS}
+        violation = make_event(1, 0.5, real_probabilities=real, placebo_probabilities=placebo)
+        guards = ji.guard_evaluation([violation])
+        row = guards["events"][0]
+        self.assertLess(row["entropy_diff"], 0.0)
+        self.assertFalse(row["target_guard_ok"])
+        self.assertFalse(row["useful_info"])
+        self.assertEqual(guards["filtering"], "never used to filter the primary estimate")
+        contrast = ji.paired_continuous_contrast([violation])
+        self.assertEqual(contrast["missingness"]["usable_pairs"], 1)
+
+    def test_useful_info_requires_target_and_mass(self):
+        useful = make_event(0, 0.5)
+        guards = ji.guard_evaluation([useful])
+        self.assertTrue(guards["events"][0]["useful_info"])
+        self.assertEqual(guards["useful_info_events"], 1)
 
 
 class J3RegressionTests(unittest.TestCase):

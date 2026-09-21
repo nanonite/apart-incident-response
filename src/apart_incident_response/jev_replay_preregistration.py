@@ -122,17 +122,16 @@ def build_replay_preregistration(*, journal_path: Path = DEFAULT_JOURNAL,
         "approval_required": True,
         "approval": {"approved": False, "live_collection_authorized": False},
         "pending_decisions": [
-            "confirm the conditional six-form claim scope (vs generator redesign)",
-            "set the target-probability margin delta and feasible-set-mass slack epsilon",
-            "set the minimum complete pairs per form",
-            "fix the placebo construction rule (I_m = 0, no feasible-set reduction)",
-            "choose one-sided directional vs two-sided decision rule",
-            "confirm the draft request/cost caps",
+            "reviewer lock of this draft (separate from any live authorization)",
+            "confirm the draft request/cost caps after the planned-call breakdown",
+            "confirm the controller-injected placebo wording",
         ],
         "claim_scope": {
-            "type": "form-conditioned",
-            "statement": "the estimand is the equal-weight mean over the six frozen prompt forms; it is "
-                         "not a population-level prompt claim and not calibration",
+            "type": "form-conditioned pilot",
+            "statement": "pilot conditional on the six frozen prompt forms; new seed IDs do not create new "
+                         "prompt forms. The t interval and sign-flip result are assumption-dependent "
+                         "summaries of these forms, not evidence of generalization; a generator redesign is "
+                         "required before a broader claim. Not calibration.",
             "forms": 6,
         },
         "experimental_unit": "model-visible pre-read prompt form",
@@ -146,23 +145,43 @@ def build_replay_preregistration(*, journal_path: Path = DEFAULT_JOURNAL,
                            "placebo-minus-null manipulation checks",
         },
         "guards": {
-            "target_probability": {"guard": "p_target(real) >= p_target(placebo)", "margin_delta": 0.0,
-                                    "status": "needs reviewer margin"},
+            "filtering": "never used to filter the primary estimate; every pre-eligible, valid real/placebo "
+                         "pair enters the entropy analysis and the guards are reported alongside it",
+            "target_probability": {"guard": "p_target(real) >= p_target(placebo) + delta", "margin_delta": 0.0},
             "feasible_set_mass": {"guard": "mass_F(real) >= mass_F(placebo) - epsilon",
                                   "reference_set": "F = pre-read clue-consistent set S(C), fixed by C and "
                                                    "independent of the real message",
-                                  "epsilon": 0.0, "status": "needs reviewer slack"},
+                                  "epsilon": 0.01},
+            "reporting": "form-level guard differences and event-level violations",
             "objective_information": "I_m kept distinct from model entropy",
+        },
+        "placebo": {
+            "construction": "preregistered, controller-injected typed claim already known to the receiver",
+            "requirements": ["verified I_m = 0", "no feasible-set reduction",
+                             "synthetic origin recorded outside the model-visible message"],
+            "note": "the current audited instances have no B-owned zero-information claim, so a naturally "
+                    "B-owned placebo is not feasible without a generator change",
+        },
+        "decision_rule": {
+            "primary_test": "two-sided exact cluster sign-flip on form means",
+            "additional_requirement": "negative effect (form_mean < 0)",
+            "interval_reported_alongside": "form-mean t interval (df=k-1)",
+            "no_one_sided_switch": True,
+            "null_branch": "separate manipulation check",
         },
         "inference": {
             "primary": "form-mean t interval (df=k-1) and exhaustive two-sided cluster sign-flip p",
             "minimum_two_sided_p_at_k6": 2 / (2 ** 6),
+            "minimum_two_sided_p_at_k5": 2 / (2 ** 5),
             "sensitivities_secondary": ["form-cluster bootstrap", "sign test on form means",
                                         "instance-weighted estimate", "hierarchical model (only if defensible)"],
         },
-        "complete_pair_rule": "real and placebo both valid and identity-matched; incomplete pairs reported, "
-                              "not dropped; a form with no complete pair contributes no effect",
-        "missingness": "planned/attempted/valid/complete/incomplete reported per form and per branch",
+        "complete_pair_rule": "require at least one valid real/placebo pair in each of the six forms for the "
+                              "six-form primary analysis; aim for two or more planned opportunities per form; "
+                              "if a form is lost the result is incomplete (five-form minimum two-sided "
+                              "sign-flip p = 0.0625). Incomplete pairs reported, not dropped.",
+        "missingness": "planned/attempted/valid/complete/incomplete reported per form and per branch; a failed "
+                       "attempt is distinguished from an unattempted branch",
         "model_and_protocol": {
             "model": jp.JEV_CAPABILITY_MODEL,
             "endpoint": jp.JEV_CAPABILITY_ENDPOINT,
@@ -191,8 +210,23 @@ def build_replay_preregistration(*, journal_path: Path = DEFAULT_JOURNAL,
         },
         "stop_rules": ["request_cap", "cost_cap", "repeated_http_failure", "contract_mismatch", "model_drift",
                        "missing_checker_evidence"],
-        "caps": {"physical_requests": DRAFT_REQUEST_CAP, "cost_cap_usd": DRAFT_COST_CAP_USD,
-                 "ling": "pinned free model", "status": "draft; not authorized"},
+        "caps": {
+            "physical_requests": DRAFT_REQUEST_CAP,
+            "cost_cap_usd": DRAFT_COST_CAP_USD,
+            "ling": "pinned free model; OpenRouter free quota",
+            "planned_calls": {
+                "jev_pre_read_iso_full": "17 instances x 2 conditions = 34",
+                "jev_replay_real_placebo_null": "17 instances x 3 branches = 51",
+                "ling_writer": "one writer turn per optional-board event (upper bound 17)",
+                "retry_allowance": "per Jev retry policy (max 2 retries; 408/429/5xx/529)",
+                "note": "ceilings only; freeze after review",
+            },
+            "missing_real_message_rule": "when optional board use leaves a form without a real message that "
+                                         "form is reported incomplete; because the primary analysis requires a "
+                                         "real pair in all six forms, a missing real message makes the result "
+                                         "incomplete rather than triggering substitution",
+            "status": "draft; not authorized",
+        },
     }
     payload = json.dumps({key: value for key, value in document.items()
                           if key != "preregistration_hash"}, sort_keys=True)

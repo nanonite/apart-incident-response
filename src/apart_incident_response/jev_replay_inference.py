@@ -87,8 +87,17 @@ def _sign_test(form_means: Sequence[float]) -> dict[str, Any]:
 
 def paired_continuous_contrast(events: Sequence[Mapping[str, Any]], *, outcome: str = "entropy_bits",
                                left: str = "real", right: str = "placebo", min_pairs_per_form: int = 1,
-                               bootstrap_iterations: int = 2000, seed: int = 157) -> dict[str, Any]:
-    """Equal-form paired continuous contrast over complete (left, right) pairs."""
+                               bootstrap_iterations: int = 2000, seed: int = 157,
+                               required_forms: int | None = None) -> dict[str, Any]:
+    """Equal-form paired continuous contrast over complete (left, right) pairs.
+
+    Fails closed on duplicate events or mixed protocols. Guards are *not* used to
+    filter this estimate; see :func:`guard_evaluation`.
+    """
+
+    if events:
+        jr.assert_no_duplicate_events(events)
+        jr.assert_single_protocol(events)
 
     form_values: dict[str, list[float]] = defaultdict(list)
     form_instances: dict[str, list[str]] = defaultdict(list)
@@ -140,18 +149,26 @@ def paired_continuous_contrast(events: Sequence[Mapping[str, Any]], *, outcome: 
     weighted = None
     if form_means and sum(instance_weights) > 0:
         weighted = sum(mean * weight for mean, weight in zip(form_means, instance_weights)) / sum(instance_weights)
+    complete_forms = required_forms is None or k >= required_forms
     return {
         "contrast_version": CONTRAST_VERSION,
         "outcome": outcome,
         "left": left,
         "right": right,
         "k_forms": k,
+        "required_forms": required_forms,
+        "complete_forms": complete_forms,
         "form_effects": form_effects,
         "form_mean": form_mean,
         "df": df,
         "t_interval_975": t_interval,
         "sign_flip": sign_flip,
         "minimum_two_sided_p": sign_flip["min_p_value"],
+        "two_sided_only": True,
+        "negative_effect": form_mean is not None and form_mean < 0,
+        "directional_claim": bool(k >= 2 and form_mean is not None and form_mean < 0
+                                  and sign_flip["p_value"] is not None and sign_flip["p_value"] < 0.05
+                                  and complete_forms),
         "missingness": missingness,
         "sensitivities": {
             "label": "secondary; not the primary inference",
@@ -162,9 +179,57 @@ def paired_continuous_contrast(events: Sequence[Mapping[str, Any]], *, outcome: 
         },
         "assumptions": [
             "unit is the prompt form; repeated queries within a form are averaged, not independent",
-            "complete real/placebo pairs only; incomplete and invalid events reported, not dropped",
+            "complete real/placebo pairs only; guards are evaluated separately and never filter this estimate",
             f"small k ({k}) gives a minimum two-sided sign-flip p of 2/2^k",
+            "if a form is lost the result is incomplete",
         ],
+    }
+
+
+def guard_evaluation(events: Sequence[Mapping[str, Any]], *, delta: float = 0.0,
+                     epsilon: float = 0.01) -> dict[str, Any]:
+    """Useful-information guards, evaluated separately from the primary contrast.
+
+    Never used to filter the entropy estimate: every pre-eligible, valid
+    real/placebo pair enters the primary analysis, and guard violations are
+    reported alongside it.
+    """
+
+    rows: list[dict[str, Any]] = []
+    per_form: dict[str, dict[str, int]] = defaultdict(lambda: {"events": 0, "target_ok": 0, "mass_ok": 0,
+                                                               "useful_info": 0})
+    for event in events:
+        if jr.validate_event(event):
+            continue
+        branches = event.get("branches", {})
+        real, placebo = branches.get("real"), branches.get("placebo")
+        if not real or not placebo or real.get("status") != "complete" or placebo.get("status") != "complete":
+            continue
+        entropy_diff = float(real["entropy_bits"]) - float(placebo["entropy_bits"])
+        p_target_diff = float(real["p_target"]) - float(placebo["p_target"])
+        mass_diff = float(real["feasible_mass"]) - float(placebo["feasible_mass"])
+        target_ok = p_target_diff >= delta
+        mass_ok = mass_diff >= -epsilon
+        useful = entropy_diff < 0 and target_ok and mass_ok
+        form = str(event.get("prompt_form_id"))
+        counters = per_form[form]
+        counters["events"] += 1
+        counters["target_ok"] += int(target_ok)
+        counters["mass_ok"] += int(mass_ok)
+        counters["useful_info"] += int(useful)
+        rows.append({"event_id": event.get("event_id"), "form": form, "entropy_diff": entropy_diff,
+                     "p_target_diff": p_target_diff, "feasible_mass_diff": mass_diff,
+                     "target_guard_ok": target_ok, "mass_guard_ok": mass_ok, "useful_info": useful})
+    return {
+        "delta": delta,
+        "epsilon": epsilon,
+        "filtering": "never used to filter the primary estimate",
+        "events": rows,
+        "per_form": dict(sorted(per_form.items())),
+        "target_violations": sum(1 for row in rows if not row["target_guard_ok"]),
+        "mass_violations": sum(1 for row in rows if not row["mass_guard_ok"]),
+        "useful_info_events": sum(1 for row in rows if row["useful_info"]),
+        "note": "an entropy drop with no target-probability improvement is not useful uptake",
     }
 
 
@@ -210,5 +275,5 @@ def contrast_manifest_hash(contrast: Mapping[str, Any]) -> str:
 
 __all__ = [
     "CONTRAST_VERSION", "T_CRITICAL_975", "t_critical_975", "sign_flip_two_sided",
-    "paired_continuous_contrast", "j3_iso_full_regression", "contrast_manifest_hash",
+    "paired_continuous_contrast", "guard_evaluation", "j3_iso_full_regression", "contrast_manifest_hash",
 ]
