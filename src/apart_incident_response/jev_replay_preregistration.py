@@ -42,6 +42,11 @@ JEV_REPLAY_RETRYABLE = sorted(jc.JEV_RETRYABLE_STATUSES)
 JEV_REPLAY_TURNS = {"ISO": 1, "FULL": 1, "COMM": 2}
 JEV_REPLAY_REQUEST_CAP = 300
 JEV_REPLAY_COST_CAP_USD = 1.0
+#: Per-provider partition of the combined physical-request ceiling (a separate
+#: cap per transport counts retries against its own partition, so the combined
+#: total cannot exceed the ceiling).
+JEV_REPLAY_JEV_REQUEST_CAP = 250
+JEV_REPLAY_LING_REQUEST_CAP = 50
 #: Worst-case planned physical requests by arm (17 instances each).
 JEV_REPLAY_PLANNED_CALLS = {
     "iso_jev_receiver": 17,
@@ -52,6 +57,8 @@ JEV_REPLAY_PLANNED_CALLS = {
     "comm_control_jev_receiver": 17,
 }
 JEV_REPLAY_PLANNED_REQUESTS = sum(JEV_REPLAY_PLANNED_CALLS.values())
+JEV_REPLAY_PLANNED_JEV_REQUESTS = 68
+JEV_REPLAY_PLANNED_LING_REQUESTS = 34
 JEV_REPLAY_RETRY_RESERVE = JEV_REPLAY_REQUEST_CAP - JEV_REPLAY_PLANNED_REQUESTS
 JEV_REPLAY_INPUT_TOKEN_CEILING = 8192
 JEV_REPLAY_INPUT_USD_PER_MTOK = 0.042
@@ -64,6 +71,7 @@ JEV_REPLAY_SOURCE_FILES = (
     "src/apart_incident_response/jev_choice.py",
     "src/apart_incident_response/jev_replay.py",
     "src/apart_incident_response/jev_replay_inference.py",
+    "src/apart_incident_response/jev_choice_pilot.py",
 )
 
 DEFAULT_JOURNAL = Path("runs/epic-126/jev-choice-capability.jsonl")
@@ -376,9 +384,22 @@ def build_replay_preregistration(*, journal_path: Path = DEFAULT_JOURNAL,
             "input_token_ceiling": JEV_REPLAY_INPUT_TOKEN_CEILING,
             "input_usd_per_mtok": JEV_REPLAY_INPUT_USD_PER_MTOK,
             "worst_case_cost_usd": _worst_case_cost_usd(),
+            "provider_partition": {
+                "jev": JEV_REPLAY_JEV_REQUEST_CAP,
+                "ling": JEV_REPLAY_LING_REQUEST_CAP,
+                "total": JEV_REPLAY_REQUEST_CAP,
+                "note": "each transport enforces its own partition per physical attempt, so retries "
+                        "count against that provider's share and the combined total cannot exceed the ceiling",
+            },
             "planned_calls": dict(JEV_REPLAY_PLANNED_CALLS),
             "planned_physical_requests": JEV_REPLAY_PLANNED_REQUESTS,
+            "planned_by_provider": {"jev": JEV_REPLAY_PLANNED_JEV_REQUESTS,
+                                    "ling": JEV_REPLAY_PLANNED_LING_REQUESTS},
             "retry_reserve": JEV_REPLAY_RETRY_RESERVE,
+            "retry_reserve_by_provider": {
+                "jev": JEV_REPLAY_JEV_REQUEST_CAP - JEV_REPLAY_PLANNED_JEV_REQUESTS,
+                "ling": JEV_REPLAY_LING_REQUEST_CAP - JEV_REPLAY_PLANNED_LING_REQUESTS,
+            },
             "status": ("locked; live_collection_authorized=false" if approved
                        else "draft; not authorized"),
         },
@@ -492,6 +513,7 @@ if __name__ == "__main__":
 __all__ = [
     "JEV_REPLAY_PREREG_VERSION", "JEV_REPLAY_DRAFT_STATUS", "JEV_REPLAY_LOCKED_STATUS",
     "JEV_REPLAY_SEED_BASE", "JEV_REPLAY_REQUEST_CAP", "JEV_REPLAY_COST_CAP_USD",
+    "JEV_REPLAY_JEV_REQUEST_CAP", "JEV_REPLAY_LING_REQUEST_CAP",
     "JEV_REPLAY_PLANNED_CALLS", "JEV_REPLAY_PLANNED_REQUESTS", "JEV_REPLAY_TURNS",
     "audit_form_capacity", "frozen_forms", "treatment_hash", "between_form_sd",
     "illustrative_required_forms", "build_replay_preregistration",

@@ -57,6 +57,10 @@ class DraftAndLockTests(unittest.TestCase):
         self.assertEqual(caps["physical_requests"], 300)
         self.assertEqual(caps["retry_reserve"], 198)
         self.assertLessEqual(caps["worst_case_cost_usd"], caps["cost_cap_usd"])
+        partition = caps["provider_partition"]
+        self.assertEqual(partition["jev"] + partition["ling"], partition["total"])
+        self.assertEqual(partition["total"], pr.JEV_REPLAY_REQUEST_CAP)
+        self.assertEqual(caps["planned_by_provider"], {"jev": 68, "ling": 34})
         self.assertIn("locked", caps["status"])
 
     def test_conditions_include_turn_matched_control(self):

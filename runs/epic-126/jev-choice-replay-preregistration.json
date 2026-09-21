@@ -15,6 +15,10 @@
     "input_token_ceiling": 8192,
     "input_usd_per_mtok": 0.042,
     "physical_requests": 300,
+    "planned_by_provider": {
+      "jev": 68,
+      "ling": 34
+    },
     "planned_calls": {
       "comm_control_jev_receiver": 17,
       "comm_control_ling_writer": 17,
@@ -24,7 +28,17 @@
       "iso_jev_receiver": 17
     },
     "planned_physical_requests": 102,
+    "provider_partition": {
+      "jev": 250,
+      "ling": 50,
+      "note": "each transport enforces its own partition per physical attempt, so retries count against that provider's share and the combined total cannot exceed the ceiling",
+      "total": 300
+    },
     "retry_reserve": 198,
+    "retry_reserve_by_provider": {
+      "jev": 182,
+      "ling": 16
+    },
     "status": "locked; live_collection_authorized=false",
     "worst_case_cost_usd": 0.1032192
   },
@@ -156,9 +170,10 @@
       "src/apart_incident_response/jev_protocol.py",
       "src/apart_incident_response/jev_choice.py",
       "src/apart_incident_response/jev_replay.py",
-      "src/apart_incident_response/jev_replay_inference.py"
+      "src/apart_incident_response/jev_replay_inference.py",
+      "src/apart_incident_response/jev_choice_pilot.py"
     ],
-    "source_files_hash": "bd8b15072cdcace5de99dad90ed69c6bd820fd65a09345978cfa5671ed0d4998",
+    "source_files_hash": "e7eb192655a42b5a88d843f97c870d0ea323758aa36b23c6f6a2778009033eb9",
     "treatment_hash": "ae6ff9e7fee8dc9428938c062e4296e551456605e2c5879594e38b35208852a5"
   },
   "guards": {
@@ -307,7 +322,7 @@
     "label": "illustrative and secondary",
     "sd_caveat": "the observed J3 between-form SD is from ISO-minus-FULL, not the real-minus-placebo estimand; use only as an illustrative sensitivity value, not a plug-in variance"
   },
-  "preregistration_hash": "6e2a901f304cf50a0d3bf65ddef8bca7fac2a613f0fe6d4c04af9f7aba687617",
+  "preregistration_hash": "55c952ec7c8272aa68a1e3928456c42b70ccd5d5e6fa2cd15d01f51b4c92a79e",
   "preregistration_version": "stage2-jev-choice-replay-v1",
   "retry_policy": {
     "backoff_max_seconds": 5.0,
