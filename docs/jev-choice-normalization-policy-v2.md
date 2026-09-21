@@ -80,10 +80,12 @@ rescaled vector. That vector is used for entropy, `p_target`, feasible-set mass,
 Brier score, log loss, selection validation, and downstream replay inference.
 The raw vector and raw sum are retained separately, and `normalization_tier`
 records whether the rescale was a material correction (`complete_renormalized`)
-or a numerical no-op within `1e-6` (`exact`). Selection is checked against the
-raw argmax; positive scalar rescaling preserves that argmax mathematically, and
-the implementation additionally checks this as a defensive invariant. A failure
-is classified `argmax_shifted_on_renormalization`.
+or a numerical no-op within `1e-6` (`exact`). Selection is validated against the
+argmax of the normalized metric vector actually used downstream, and is then
+separately confirmed to agree with the raw argmax; positive scalar rescaling
+preserves that argmax mathematically, and the implementation checks this as a
+fail-closed invariant. A divergence is classified
+`argmax_shifted_on_renormalization`.
 
 The codec field `renormalized` is true for both accepted tiers, because both are
 rescaled by the raw sum; `material_correction` (registration policy) distinguishes

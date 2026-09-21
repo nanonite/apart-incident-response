@@ -153,6 +153,30 @@ class CodecV2Tests(unittest.TestCase):
                                v2.brier_score(response.probabilities, self.instance.target), places=9)
         self.assertEqual(metrics["log_loss"], v2.log_loss(response.probabilities, self.instance.target))
 
+    def test_selection_is_validated_against_the_normalized_argmax(self):
+        probs = spread(self.labels, 0.99)
+        adapter = v2.JevChoiceAdapterV2(ScriptedChoiceClient(envelope(self.labels, probs)))
+        state = adapter.build_state(self.instance, "A", "ISO")
+        real_normalized = v2.normalized_metric_vector
+
+        def swapped(probabilities, diagnostics, problems):
+            used = real_normalized(probabilities, diagnostics, problems)
+            if not used:
+                return used
+            peak = max(used, key=used.get)
+            runner_up = sorted(used, key=used.get)[-2]
+            used = dict(used)
+            used[peak], used[runner_up] = used[runner_up], used[peak]
+            return used
+
+        v2.normalized_metric_vector = swapped
+        try:
+            response = adapter.parse(state, envelope(self.labels, probs))
+        finally:
+            v2.normalized_metric_vector = real_normalized
+        self.assertEqual(response.status, "invalid")
+        self.assertEqual(response.error_class, "argmax_shifted_on_renormalization")
+
     def test_argmax_shift_fails_closed(self):
         probs = spread(self.labels, 0.99)
         adapter = v2.JevChoiceAdapterV2(ScriptedChoiceClient(envelope(self.labels, probs)))

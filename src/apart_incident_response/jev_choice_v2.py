@@ -490,10 +490,20 @@ class JevChoiceAdapterV2(JevChoiceAdapter):
             return _invalid_v2(self.model, state.request_hash, problems[0],
                                diagnostics=diagnostics, raw_probabilities=raw_vector)
         used = normalized_metric_vector(answer["probabilities"], diagnostics, problems)
+        if not used:
+            return _invalid_v2(self.model, state.request_hash, "malformed_response",
+                               diagnostics=diagnostics, raw_probabilities=raw_vector)
 
-        argmax = set(diagnostics.raw_argmax_set)
+        # Selection is validated against the normalized metric vector that every
+        # downstream metric uses, then separately confirmed to agree with the raw
+        # argmax so the two views cannot diverge silently.
+        used_peak = max(used.values())
+        used_argmax = {option_id for option_id, value in used.items() if value == used_peak}
+        if used_argmax != set(diagnostics.raw_argmax_set):
+            return _invalid_v2(self.model, state.request_hash, "argmax_shifted_on_renormalization",
+                               diagnostics=diagnostics, raw_probabilities=raw_vector)
         selected = answer.get("choice")
-        if not isinstance(selected, str) or selected not in set(expected) or selected not in argmax:
+        if not isinstance(selected, str) or selected not in set(expected) or selected not in used_argmax:
             return _invalid_v2(self.model, state.request_hash, "unknown_selection",
                                diagnostics=diagnostics, raw_probabilities=raw_vector)
         confidence = answer.get("confidence")
