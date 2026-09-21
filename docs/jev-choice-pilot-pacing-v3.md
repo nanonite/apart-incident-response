@@ -49,6 +49,9 @@ For the registered retryable statuses (`408, 429, 500, 502, 503, 504, 529`):
 - the delay before the next physical attempt is
   `max(remaining 3.25 s interval, registered exponential backoff, valid server delay)`;
 - the registered maximum retry count (2) and retryable statuses are unchanged;
+- the exponential backoff ordinal starts at one for the first retry, so the
+  sequence is `initial * 2**(retry_ordinal - 1)` = 0.5 s, 1.0 s, 2.0 s … capped
+  at 5.0 s (the 3.25 s limiter normally dominates);
 - a terminal 429 remains a durable invalid writer row and stops the pilot.
 
 Provider response bodies are never parsed or retained. On error, only the HTTP
@@ -80,10 +83,14 @@ monotonic pacing algorithm, retryable statuses and retry count, exponential
 backoff, supported retry headers and parsing rules, maximum accepted server
 delay, sanitized provenance schema, Ling model/endpoint/prompt/decoding, Jev
 model/protocol, source and treatment hashes, request/cost caps, stop rules, the
-exact manifest and prompt forms, and the fresh v3 paths. The verifier rejects old
-v1/v2 protocol keys and output paths and any source, timing, retry-policy, model,
-endpoint, manifest, cap or hash drift, and requires
-`live_collection_authorized: false`.
+exact manifest and prompt forms, and the fresh v3 paths. The frozen source
+closure includes every runtime dependency the runner imports — the v1/v2 pilot
+and registration modules, `behavioral_discovery.py` (credential/error
+classification) and `jev_choice_smoke.py` (cost calculation) — plus the v3
+writer, runner and registration module itself, so none of them can change
+without changing the bound hash. The verifier rejects old v1/v2 protocol keys and
+output paths and any source, timing, retry-policy, model, endpoint, manifest, cap
+or hash drift, and requires `live_collection_authorized: false`.
 
 ## 6. Fail-closed preflight
 
@@ -91,8 +98,11 @@ The v3 pilot preflight (32 checks) inspects the actual instantiated writer and
 verifies model, endpoint, the 3.25 s minimum interval, the monotonic clock and
 pacing-algorithm version, the Retry-After policy, retry count and backoff, the
 physical-request partition, registration and source hashes, the protocol key,
-caps, fresh output paths, and redacted credential presence. A failed preflight or
-a missing live approval results in **zero provider calls**.
+caps, fresh output paths, and redacted credential presence. Before the first
+provider call the runner additionally requires **both** the v3 journal and the v3
+report paths to be absent; an existing journal or report fails closed with zero
+calls, and the report is never overwritten. A failed preflight or a missing live
+approval results in **zero provider calls**.
 
 ## 7. Scope preserved
 

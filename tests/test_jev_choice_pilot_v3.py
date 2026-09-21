@@ -238,6 +238,21 @@ class ExecutionV3Tests(unittest.TestCase):
             self.assertEqual(blocked["stop_reason"], "output_exists")
             self.assertEqual(receiver2.client.calls, 0)
 
+    def test_report_is_fail_closed_before_any_call(self):
+        instances, receiver, plan, verification, writer = setup()
+        with tempfile.TemporaryDirectory() as directory:
+            journal = Path(directory) / "pilot-v3.jsonl"
+            report_path = Path(directory) / "pilot-v3-report.json"
+            report_path.write_text('{"existing": true}\n', encoding="utf-8")
+            blocked = pilot.execute_pilot(plan, receiver, writer, verification, instances,
+                                          approval="test", pinned_hash=PIN, journal_path=journal,
+                                          report_path=report_path, sleep_fn=lambda _: None)
+            self.assertEqual(blocked["stop_reason"], "report_exists")
+            self.assertEqual(receiver.client.calls, 0)
+            self.assertEqual(writer.calls, 0)
+            self.assertFalse(journal.exists())
+            self.assertEqual(report_path.read_text(encoding="utf-8"), '{"existing": true}\n')
+
     def test_fresh_paths_do_not_collide_with_v1_or_v2(self):
         self.assertNotEqual(pilot.DEFAULT_JOURNAL, pilot_v1.DEFAULT_JOURNAL)
         self.assertNotEqual(pilot.DEFAULT_REPORT, pilot_v1.DEFAULT_REPORT)

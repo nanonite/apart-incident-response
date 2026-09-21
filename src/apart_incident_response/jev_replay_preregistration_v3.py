@@ -50,14 +50,22 @@ OLD_OUTPUT_PATHS = (
 JEV_REPLAY_V3_SOURCE_FILES = (
     "src/apart_incident_response/task_families.py",
     "src/apart_incident_response/communication_protocol.py",
+    "src/apart_incident_response/behavioral_discovery.py",
     "src/apart_incident_response/jev_protocol.py",
     "src/apart_incident_response/jev_choice.py",
     "src/apart_incident_response/jev_choice_v2.py",
+    "src/apart_incident_response/jev_choice_smoke.py",
     "src/apart_incident_response/jev_replay.py",
     "src/apart_incident_response/jev_replay_inference.py",
     "src/apart_incident_response/jev_normalization_sensitivity.py",
+    # v1/v2 runtime dependencies actually imported by the v3 runner.
+    "src/apart_incident_response/jev_choice_pilot.py",
+    "src/apart_incident_response/jev_replay_preregistration.py",
+    "src/apart_incident_response/jev_replay_preregistration_v2.py",
+    # Offline repair modules and the registration module itself.
     "src/apart_incident_response/jev_ling_writer_v3.py",
     "src/apart_incident_response/jev_choice_pilot_v3.py",
+    "src/apart_incident_response/jev_replay_preregistration_v3.py",
 )
 
 

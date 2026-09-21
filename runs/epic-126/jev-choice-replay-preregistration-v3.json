@@ -178,18 +178,24 @@
     "source_files": [
       "src/apart_incident_response/task_families.py",
       "src/apart_incident_response/communication_protocol.py",
+      "src/apart_incident_response/behavioral_discovery.py",
       "src/apart_incident_response/jev_protocol.py",
       "src/apart_incident_response/jev_choice.py",
       "src/apart_incident_response/jev_choice_v2.py",
+      "src/apart_incident_response/jev_choice_smoke.py",
       "src/apart_incident_response/jev_replay.py",
       "src/apart_incident_response/jev_replay_inference.py",
       "src/apart_incident_response/jev_normalization_sensitivity.py",
+      "src/apart_incident_response/jev_choice_pilot.py",
+      "src/apart_incident_response/jev_replay_preregistration.py",
+      "src/apart_incident_response/jev_replay_preregistration_v2.py",
       "src/apart_incident_response/jev_ling_writer_v3.py",
-      "src/apart_incident_response/jev_choice_pilot_v3.py"
+      "src/apart_incident_response/jev_choice_pilot_v3.py",
+      "src/apart_incident_response/jev_replay_preregistration_v3.py"
     ],
-    "source_files_hash": "fc1cb42ed4858630743e17db632b3c18097a8b19cd2cb9295c4e587db2e9fbee",
-    "treatment_hash": "0189545f1e3493665fa816dc0b3d67eac6f9577332ddfc298669c1d874fe35a9",
-    "writer_transport_hash": "37759975d26cb7338d86ca629881978bc6c797625b9f5615b9fc1400870deb3a"
+    "source_files_hash": "7342c9b4ed93e70bbcd62aa0c427217d3dcaaedd87b8ba9d6c2e71a26a5b8e31",
+    "treatment_hash": "b74af33c471627c1897b9269dcaef2d1fc7ffed7988426db7c65726bf8f4ecfd",
+    "writer_transport_hash": "2b96f16d04ccba94df8f441a44658faa8dcc77573f47dc41b732fd08cc58e304"
   },
   "guards": {
     "feasible_set_mass": {
@@ -440,7 +446,7 @@
     "label": "illustrative and secondary",
     "sd_caveat": "the observed J3 between-form SD is from ISO-minus-FULL, not the real-minus-placebo estimand; use only as an illustrative sensitivity value, not a plug-in variance"
   },
-  "preregistration_hash": "ef28c92de0e28d32302ace9aed8231749e94937168b24f2e63108e0d30969496",
+  "preregistration_hash": "0521ad1b830c9ba26c5fee3bd0369eccdc122407e9f0c339cc8b490aeaa9691f",
   "preregistration_version": "stage2-jev-choice-replay-v3",
   "retry_policy": {
     "backoff_max_seconds": 5.0,
@@ -485,9 +491,10 @@
     }
   },
   "writer_transport": {
-    "backoff_formula": "min(initial * 2**retry_ordinal, backoff_max)",
+    "backoff_formula": "min(initial * 2**(retry_ordinal - 1), backoff_max)",
     "backoff_initial_seconds": 0.5,
     "backoff_max_seconds": 5.0,
+    "backoff_ordinal_convention": "retry_ordinal=1 for the first retry",
     "delay_rule": "max(remaining_min_interval, exponential_backoff, valid_server_requested_delay)",
     "max_retries": 2,
     "max_server_requested_delay_seconds": 10.0,
@@ -526,7 +533,7 @@
       "retry-after",
       "retry-after-ms"
     ],
-    "writer_transport_hash": "37759975d26cb7338d86ca629881978bc6c797625b9f5615b9fc1400870deb3a",
+    "writer_transport_hash": "2b96f16d04ccba94df8f441a44658faa8dcc77573f47dc41b732fd08cc58e304",
     "writer_transport_version": "ling-writer-openrouter-pacing-v3"
   }
 }

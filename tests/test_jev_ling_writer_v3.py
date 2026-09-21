@@ -136,13 +136,23 @@ class RetryHeaderTests(unittest.TestCase):
         clock = FakeClock()
         client = writer(clock, min_attempt_interval_seconds=1.0)
         client._last_attempt_start = clock.now()
-        delay, source, sources = client._delay(1, None)  # backoff 1.0, interval 1.0 -> tie resolved
-        self.assertEqual(delay, 1.0)
-        delay, source, sources = client._delay(2, None)  # backoff 2.0 beats interval 1.0
+        delay, source, sources = client._delay(1, None)  # backoff 0.5, interval 1.0 -> interval wins
+        self.assertEqual((delay, source), (1.0, "min_interval"))
+        delay, source, sources = client._delay(3, None)  # backoff 2.0 beats interval 1.0
         self.assertEqual((delay, source), (2.0, "backoff"))
         delay, source, sources = client._delay(1, 5.0)   # server delay beats interval and backoff
         self.assertEqual((delay, source), (5.0, "server_requested"))
         self.assertEqual(sorted(sources), ["backoff", "min_interval", "server_requested"])
+
+    def test_registered_backoff_sequence_starts_at_half_second(self):
+        clock = FakeClock()
+        client = writer(clock, min_attempt_interval_seconds=0.0)
+        with patch.object(w.urllib.request, "urlopen",
+                          side_effect=[http_error(429), http_error(429), success()]):
+            client.write({"private_clues": ["a"]})
+        self.assertEqual(clock.sleeps, [0.5, 1.0])
+        self.assertEqual([record["retry_ordinal"] for record in client.rate_limit_diagnostics()],
+                         [0, 1, 2])
 
     def test_server_delay_above_bound_is_ignored(self):
         clock, client = self.run_retry({"Retry-After": str(w.LING_MAX_SERVER_REQUESTED_DELAY_SECONDS + 1)})

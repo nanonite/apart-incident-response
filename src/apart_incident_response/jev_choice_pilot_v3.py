@@ -202,7 +202,7 @@ def _writer_call_diagnostics(writer: Any) -> list[dict[str, Any]]:
 def execute_pilot(plan: PilotPlan, receiver: jc2.JevChoiceAdapterV2, writer: Any,
                   verification: Mapping[str, Any], instances: Sequence[tf.FamilyInstance], *,
                   approval: str | None, pinned_hash: str | None = None,
-                  journal_path: Path | None = None,
+                  journal_path: Path | None = None, report_path: Path | None = None,
                   sleep_fn: Callable[[float], None] = time.sleep) -> dict[str, Any]:
     """Run the registered v3 schedule. Fails closed without approval, preflight or partitions."""
 
@@ -220,6 +220,8 @@ def execute_pilot(plan: PilotPlan, receiver: jc2.JevChoiceAdapterV2, writer: Any
         return _blocked(plan, "writer_partition_not_enforced", approval)
     if journal_path is not None and journal_path.exists():
         return _blocked(plan, "output_exists", approval)
+    if report_path is not None and report_path.exists():
+        return _blocked(plan, "report_exists", approval)
 
     by_id = {instance.instance_id: instance for instance in instances}
     report: dict[str, Any] = {
@@ -487,10 +489,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 2
     report = execute_pilot(plan, receiver, writer, verification, instances, approval=args.approval,
                            pinned_hash=registration.get("preregistration_hash"),
-                           journal_path=args.journal)
-    args.report.parent.mkdir(parents=True, exist_ok=True)
-    args.report.write_text(json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n",
-                           encoding="utf-8")
+                           journal_path=args.journal, report_path=args.report)
+    if report.get("status") != "blocked":
+        args.report.parent.mkdir(parents=True, exist_ok=True)
+        args.report.write_text(json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n",
+                               encoding="utf-8")
     print(json.dumps(report, indent=2, sort_keys=True, allow_nan=False))
     return 0 if report["status"] == "completed" else 1
 

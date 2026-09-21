@@ -72,7 +72,8 @@ def writer_transport_spec() -> dict[str, Any]:
         "max_retries": LING_MAX_RETRIES,
         "backoff_initial_seconds": LING_BACKOFF_INITIAL_SECONDS,
         "backoff_max_seconds": LING_BACKOFF_MAX_SECONDS,
-        "backoff_formula": "min(initial * 2**retry_ordinal, backoff_max)",
+        "backoff_ordinal_convention": "retry_ordinal=1 for the first retry",
+        "backoff_formula": "min(initial * 2**(retry_ordinal - 1), backoff_max)",
         "supported_retry_headers": list(LING_SUPPORTED_RETRY_HEADERS),
         "retry_header_parsing": LING_RETRY_HEADER_PARSING,
         "max_server_requested_delay_seconds": LING_MAX_SERVER_REQUESTED_DELAY_SECONDS,
@@ -149,7 +150,10 @@ class LingWriterClientV3:
         self._last_attempt_start: float | None = None
 
     def _backoff(self, retry_ordinal: int) -> float:
-        return min(self.backoff_initial_seconds * (2 ** retry_ordinal), self.backoff_max_seconds)
+        # Ordinals start at 1 for the first retry, so the registered sequence is
+        # initial, initial*2, initial*4, ... (0.5, 1.0, 2.0, ...).
+        return min(self.backoff_initial_seconds * (2 ** (retry_ordinal - 1)),
+                   self.backoff_max_seconds)
 
     def _remaining_min_interval(self) -> float:
         if self._last_attempt_start is None:
