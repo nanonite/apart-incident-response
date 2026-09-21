@@ -1,26 +1,32 @@
 {
   "approval": {
-    "approved": false,
-    "live_collection_authorized": false
+    "approved": true,
+    "approved_by": "reviewer",
+    "live_collection_authorized": false,
+    "scope": "registration_lock_only"
   },
-  "approval_required": true,
+  "approval_required": false,
   "board_evidence": {
     "rule": "the real arm is proven only if the retained log has an accepted board_write by the writer whose normalized_claim/raw_text equal the claim and whose receiver_id is the reader, followed by a peer_read_exposure by the reader with the recorded exposure_id; a board_write_rejected or a missing/mismatched read fails closed as unverified_real_evidence",
     "schema": "communication_events.CommunicationEventLog (board_write, peer_read_exposure, board_write_rejected)"
   },
   "caps": {
     "cost_cap_usd": 1.0,
-    "ling": "pinned free model; OpenRouter free quota",
-    "missing_real_message_rule": "when optional board use leaves a form without a real message that form is reported incomplete; because the primary analysis requires a real pair in all six forms, a missing real message makes the result incomplete rather than triggering substitution",
+    "input_token_ceiling": 8192,
+    "input_usd_per_mtok": 0.042,
     "physical_requests": 300,
     "planned_calls": {
-      "jev_pre_read_iso_full": "17 instances x 2 conditions = 34",
-      "jev_replay_real_placebo_null": "17 instances x 3 branches = 51",
-      "ling_writer": "one writer turn per optional-board event (upper bound 17)",
-      "note": "ceilings only; freeze after review",
-      "retry_allowance": "per Jev retry policy (max 2 retries; 408/429/5xx/529)"
+      "comm_control_jev_receiver": 17,
+      "comm_control_ling_writer": 17,
+      "comm_jev_receiver": 17,
+      "comm_ling_writer": 17,
+      "full_jev_receiver": 17,
+      "iso_jev_receiver": 17
     },
-    "status": "draft; not authorized"
+    "planned_physical_requests": 102,
+    "retry_reserve": 198,
+    "status": "locked; live_collection_authorized=false",
+    "worst_case_cost_usd": 0.1032192
   },
   "claim_scope": {
     "forms": 6,
@@ -28,6 +34,25 @@
     "type": "form-conditioned pilot"
   },
   "complete_pair_rule": "require at least one valid real/placebo pair in each of the six forms for the six-form primary analysis; aim for two or more planned opportunities per form; if a form is lost the result is incomplete (five-form minimum two-sided sign-flip p = 0.0625). Incomplete pairs reported, not dropped.",
+  "conditions": {
+    "arms": [
+      "ISO (Jev receiver pre-read)",
+      "FULL (Jev receiver, saturated bound)",
+      "COMM optional board (Ling writer / Jev receiver)",
+      "COMM turn-matched no-information control (Ling writer / Jev receiver, no board write)"
+    ],
+    "condition_turns": {
+      "COMM": 2,
+      "FULL": 1,
+      "ISO": 1
+    },
+    "optional_silence": true,
+    "turn_matched_control": {
+      "description": "same COMM turn structure with no real board write; preserves optional silence and never manufactures a real write",
+      "model_visible": "no peer_clue message; empty visible_messages",
+      "purpose": "absorbs the extra finalizer turn so the board effect is not confounded with turns"
+    }
+  },
   "decision_rule": {
     "additional_requirement": "negative effect (form_mean < 0)",
     "interval_reported_alongside": "form-mean t interval (df=k-1)",
@@ -37,7 +62,7 @@
   },
   "eligibility": {
     "placebo": "the claim is a receiver-already-known pre-read clue with authoritative I_m = 0 and an unchanged feasible set",
-    "real_message": "ownership (instance.holds_claim) and I_m are recomputed from the generated instance; the write-to-read link is verified against the retained CommunicationEventLog board events. Missing, rejected, or mismatched evidence fails closed as unverified_real_evidence; owner_exact flags are not trusted."
+    "real_message": "ownership (instance.holds_claim) and I_m are recomputed from the generated instance; the write-to-read link is verified against the retained CommunicationEventLog board events. Missing, rejected, or mismatched evidence fails closed as unverified_real_evidence."
   },
   "estimand": {
     "directional_prediction": "delta < 0",
@@ -117,8 +142,24 @@
       "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
       "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222"
     ],
+    "manifest_hash": "27e0c9faeec47979e44f480af648cd0b37751a8c529d0ab91ba4f32b7b3b2390",
     "paired_forms": 6,
+    "per_block": 17,
     "seed_base": 72000
+  },
+  "generator": {
+    "checker_version": "oracle-v2",
+    "generator_version": "six-family-clue-consistent-v2",
+    "source_files": [
+      "src/apart_incident_response/task_families.py",
+      "src/apart_incident_response/communication_protocol.py",
+      "src/apart_incident_response/jev_protocol.py",
+      "src/apart_incident_response/jev_choice.py",
+      "src/apart_incident_response/jev_replay.py",
+      "src/apart_incident_response/jev_replay_inference.py"
+    ],
+    "source_files_hash": "bd8b15072cdcace5de99dad90ed69c6bd820fd65a09345978cfa5671ed0d4998",
+    "treatment_hash": "ae6ff9e7fee8dc9428938c062e4296e551456605e2c5879594e38b35208852a5"
   },
   "guards": {
     "feasible_set_mass": {
@@ -145,37 +186,107 @@
       "hierarchical model (only if defensible)"
     ]
   },
+  "invalidity_classes": [
+    "answer_key_leakage",
+    "branch_model_mismatch",
+    "branch_request_mismatch",
+    "duplicate_option_ids",
+    "empty_distribution",
+    "extra_answer",
+    "feasible_set_not_in_options",
+    "form_hash_mismatch",
+    "ineligible_real_message",
+    "instance_mismatch",
+    "invalid_confidence",
+    "malformed_branch",
+    "malformed_event",
+    "malformed_response",
+    "malformed_usage",
+    "malformed_vector",
+    "mismatched_option_set",
+    "missing_answer",
+    "missing_branch",
+    "missing_branch_metric",
+    "missing_branch_request_hash",
+    "missing_credentials",
+    "missing_model",
+    "missing_probabilities",
+    "missing_provenance",
+    "missing_request_body",
+    "missing_usage",
+    "mixed_protocol",
+    "model_drift",
+    "negative_probability",
+    "non_finite_probability",
+    "non_jev_protocol_key",
+    "not_normalized",
+    "option_identity_mismatch",
+    "oversized_option_set",
+    "placebo_not_inert",
+    "placebo_wording_mismatch",
+    "provider_rejected",
+    "real_not_informative",
+    "request_body_model_mismatch",
+    "request_body_options_mismatch",
+    "request_body_state_mismatch",
+    "response_not_evaluated",
+    "stored_metric_mismatch",
+    "target_not_in_options",
+    "transport_error",
+    "unknown_branch",
+    "unknown_selection",
+    "unmatched_state",
+    "unverified_real_evidence",
+    "wrong_answer_kind"
+  ],
   "manifest": {
     "complexity": "low",
     "family": "planning",
-    "note": "seed-disjoint IDs do not create new forms; the study is conditional on the six forms regardless of the block chosen",
+    "instance_ids": [
+      "planning-00011940",
+      "planning-00011941",
+      "planning-00011942",
+      "planning-00011943",
+      "planning-00011944",
+      "planning-00011945",
+      "planning-00011946",
+      "planning-00011947",
+      "planning-00011948",
+      "planning-00011949",
+      "planning-0001194a",
+      "planning-0001194b",
+      "planning-0001194c",
+      "planning-0001194d",
+      "planning-0001194e",
+      "planning-0001194f",
+      "planning-00011950"
+    ],
+    "manifest_hash": "27e0c9faeec47979e44f480af648cd0b37751a8c529d0ab91ba4f32b7b3b2390",
     "per_block": 17,
     "regime": "N",
     "seed_base": 72000
   },
   "message_envelope": {
     "branch_request_rule": "each branch request = the frozen pre-read body with state.visible_messages set to [] (null) or one peer_clue message; branch request_hash is recomputed and must match the stored value",
-    "note": "sender identity is not model-visible and is not a treatment contrast; the real writer id and the synthetic placebo origin are retained only controller-side",
     "placebo_arm": "peer_clue: <known receiver clue>",
     "real_arm": "peer_clue: <claim>",
     "source_neutral": true,
     "template": "peer_clue: {claim}"
   },
+  "missing_real_message_rule": "when optional board use leaves a form without a real message that form is reported incomplete; because the primary analysis requires a real pair in all six forms, a missing real message makes the result incomplete rather than triggering substitution",
   "missingness": "planned/attempted/valid/complete/incomplete reported per form and per branch; a failed attempt is distinguished from an unattempted branch",
   "model_and_protocol": {
     "codec_version": "jev-choice-wire-v1",
     "endpoint": "https://api.typesafe.ai/v1/systemone",
-    "model": "jev-1.13.0"
+    "ling": "pinned free Ling writer on OpenRouter free quota",
+    "model": "jev-1.13.0",
+    "protocol_key": "jev-choice-wire-v1|856a2636a322ae9834277f48bd30a6f2412962af129db33c92a1c328e5f41385",
+    "provider": "jev"
   },
-  "pending_decisions": [
-    "reviewer lock of this draft (separate from any live authorization)",
-    "confirm the draft request/cost caps after the planned-call breakdown",
-    "confirm the controller-injected placebo wording"
-  ],
+  "pending_decisions": [],
   "placebo": {
     "construction": "controller-injected source-neutral re-presentation of a receiver-already-known pre-read clue, using the same envelope as the real arm",
     "envelope": "peer_clue: {claim}",
-    "note": "the current audited instances have no B-owned zero-information claim, so a naturally B-owned placebo is not feasible without a generator change",
     "origin": "controller",
     "requirements": [
       "claim is one of the receiver's own pre-read private clues",
@@ -196,10 +307,24 @@
     "label": "illustrative and secondary",
     "sd_caveat": "the observed J3 between-form SD is from ISO-minus-FULL, not the real-minus-placebo estimand; use only as an illustrative sensitivity value, not a plug-in variance"
   },
-  "preregistration_hash": "f8df71339d2c4735b70bcc63d32df9fdbd012f66729a972802a2913058fe2566",
+  "preregistration_hash": "6e2a901f304cf50a0d3bf65ddef8bca7fac2a613f0fe6d4c04af9f7aba687617",
   "preregistration_version": "stage2-jev-choice-replay-v1",
+  "retry_policy": {
+    "backoff_max_seconds": 5.0,
+    "backoff_seconds": 0.5,
+    "max_retries": 2,
+    "retryable_statuses": [
+      408,
+      429,
+      500,
+      502,
+      503,
+      504,
+      529
+    ]
+  },
   "stage": "jev-choice-replay",
-  "status": "draft_pending_review",
+  "status": "locked_for_jev_choice_replay",
   "stop_rules": [
     "request_cap",
     "cost_cap",

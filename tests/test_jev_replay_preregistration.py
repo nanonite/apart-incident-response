@@ -1,93 +1,121 @@
+import copy
 import json
 import unittest
 from pathlib import Path
 
 from apart_incident_response import jev_replay_preregistration as pr
+from apart_incident_response.jev_choice import JEV_CHOICE_CODEC_VERSION, jev_choice_protocol_key
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 JOURNAL = REPO_ROOT / "runs" / "epic-126" / "jev-choice-capability.jsonl"
 
 
-def j3_hashes():
-    rows = [json.loads(line) for line in JOURNAL.read_text(encoding="utf-8").splitlines() if line.strip()]
-    return {str(row["request_hash"]) for row in rows}
+def locked():
+    return pr.build_replay_preregistration(journal_path=JOURNAL, approved=True, repo_root=REPO_ROOT)
 
 
-class CapacityTests(unittest.TestCase):
-    def test_capacity_is_six_paired_forms(self):
-        audit = pr.audit_form_capacity(j3_hashes=j3_hashes())
-        self.assertEqual(audit["capacity_paired_forms"], 6)
-        self.assertEqual(audit["union_distinct_request_forms"], 12)
-        self.assertEqual(audit["blocks"]["72000"]["new_forms_vs_j3"], 0)
-        self.assertEqual(audit["blocks"]["74000"]["new_forms_vs_j3"], 0)
-        self.assertIn("generator redesign", audit["recommendation"])
-
-    def test_between_form_sd_is_illustrative(self):
-        rows = [json.loads(line) for line in JOURNAL.read_text(encoding="utf-8").splitlines() if line.strip()]
-        sd = pr.between_form_sd(rows)
-        self.assertAlmostEqual(sd, 0.193, places=2)
-
-    def test_illustrative_required_forms_is_monotone(self):
-        self.assertIsNotNone(pr.illustrative_required_forms(0.2, 0.193))
-        self.assertGreater(pr.illustrative_required_forms(0.1, 0.193),
-                           pr.illustrative_required_forms(0.2, 0.193))
-        self.assertIsNone(pr.illustrative_required_forms(0.0, 0.193))
+def verify(document, **overrides):
+    params = {
+        "instance_ids": document["frozen_forms"]["instance_ids"],
+        "model": document["model_and_protocol"]["model"],
+        "endpoint": document["model_and_protocol"]["endpoint"],
+        "protocol_key": document["model_and_protocol"]["protocol_key"],
+        "planned_requests": document["caps"]["planned_physical_requests"],
+        "repo_root": REPO_ROOT,
+    }
+    params.update(overrides)
+    return pr.verify_against_jev_replay_preregistration(document, **params)
 
 
-class DraftTests(unittest.TestCase):
+class DraftAndLockTests(unittest.TestCase):
     def setUp(self):
-        self.doc = pr.build_replay_preregistration(journal_path=JOURNAL)
+        self.draft = pr.build_replay_preregistration(journal_path=JOURNAL, repo_root=REPO_ROOT)
+        self.doc = locked()
 
     def test_draft_is_not_locked_or_authorized(self):
-        self.assertEqual(self.doc["status"], "draft_pending_review")
-        self.assertTrue(self.doc["approval_required"])
-        self.assertFalse(self.doc["approval"]["approved"])
+        self.assertEqual(self.draft["status"], pr.JEV_REPLAY_DRAFT_STATUS)
+        self.assertFalse(self.draft["approval"]["approved"])
+        self.assertFalse(self.draft["approval"]["live_collection_authorized"])
+
+    def test_locked_is_not_live_authorized(self):
+        self.assertEqual(self.doc["status"], pr.JEV_REPLAY_LOCKED_STATUS)
+        self.assertTrue(self.doc["approval"]["approved"])
         self.assertFalse(self.doc["approval"]["live_collection_authorized"])
+        self.assertEqual(self.doc["pending_decisions"], [])
 
-    def test_estimand_and_guards_frozen(self):
-        self.assertEqual(self.doc["estimand"]["event_difference"], "H_real - H_placebo")
-        self.assertEqual(self.doc["estimand"]["directional_prediction"], "delta < 0")
-        self.assertIn("equal-weight mean", self.doc["estimand"]["estimand"])
-        guards = self.doc["guards"]
-        self.assertIn("never used to filter", guards["filtering"])
-        self.assertEqual(guards["target_probability"]["margin_delta"], 0.0)
-        self.assertEqual(guards["feasible_set_mass"]["epsilon"], 0.01)
-        self.assertIn("pre-read clue-consistent set", guards["feasible_set_mass"]["reference_set"])
-        self.assertTrue(self.doc["decision_rule"]["no_one_sided_switch"])
-        self.assertTrue(any("I_m" in requirement for requirement in self.doc["placebo"]["requirements"]))
-        self.assertIn("one valid real/placebo pair in each of the six forms",
-                      self.doc["complete_pair_rule"])
-        self.assertEqual(self.doc["claim_scope"]["forms"], 6)
-        self.assertEqual(self.doc["claim_scope"]["type"], "form-conditioned pilot")
-
-    def test_pending_decisions_and_caps(self):
-        self.assertTrue(self.doc["pending_decisions"])
-        caps = self.doc["caps"]
-        self.assertEqual(caps["physical_requests"], pr.DRAFT_REQUEST_CAP)
-        self.assertEqual(caps["status"], "draft; not authorized")
-        self.assertIn("missing_real_message_rule", caps)
-        self.assertIn("planned_calls", caps)
-        self.assertIn("not authorized", json.dumps(caps))
-
-    def test_frozen_forms_and_placebo(self):
+    def test_frozen_manifest_and_forms(self):
         forms = self.doc["frozen_forms"]
         self.assertEqual(forms["paired_forms"], 6)
-        self.assertEqual(len(forms["iso_form_ids"]), 6)
         self.assertEqual(len(forms["instance_ids"]), 17)
-        self.assertEqual(len(forms["form_manifest_hash"]), 64)
-        placebo = self.doc["placebo"]
-        self.assertEqual(placebo["envelope"], "peer_clue: {claim}")
-        self.assertEqual(placebo["origin"], "controller")
-        self.assertTrue(placebo["synthetic"])
-        self.assertEqual(len(placebo["wording_hash"]), 64)
-        self.assertTrue(self.doc["message_envelope"]["source_neutral"])
-        self.assertIn("peer_read_exposure", self.doc["board_evidence"]["rule"])
-        self.assertIn("unverified_real_evidence", self.doc["eligibility"]["real_message"])
+        self.assertEqual(len(forms["manifest_hash"]), 64)
+        self.assertEqual(self.doc["manifest"]["manifest_hash"], forms["manifest_hash"])
 
-    def test_hash_is_reproducible(self):
-        self.assertEqual(pr.build_replay_preregistration(journal_path=JOURNAL)["preregistration_hash"],
-                         self.doc["preregistration_hash"])
+    def test_caps_and_worst_case_accounting(self):
+        caps = self.doc["caps"]
+        self.assertEqual(caps["planned_physical_requests"], 102)
+        self.assertEqual(caps["physical_requests"], 300)
+        self.assertEqual(caps["retry_reserve"], 198)
+        self.assertLessEqual(caps["worst_case_cost_usd"], caps["cost_cap_usd"])
+        self.assertIn("locked", caps["status"])
+
+    def test_conditions_include_turn_matched_control(self):
+        conditions = self.doc["conditions"]
+        self.assertEqual(conditions["condition_turns"], {"ISO": 1, "FULL": 1, "COMM": 2})
+        self.assertIn("turn_matched_control", conditions)
+        self.assertIn("no real board write", conditions["turn_matched_control"]["description"])
+        self.assertTrue(conditions["optional_silence"])
+        self.assertEqual(len(conditions["arms"]), 4)
+
+    def test_generator_hashes_and_invalidity_classes(self):
+        generator = self.doc["generator"]
+        self.assertEqual(len(generator["source_files_hash"]), 64)
+        self.assertEqual(len(generator["treatment_hash"]), 64)
+        self.assertTrue(self.doc["invalidity_classes"])
+        self.assertIn("unverified_real_evidence", self.doc["invalidity_classes"])
+
+    def test_locked_hash_reproduces(self):
+        self.assertEqual(locked()["preregistration_hash"], self.doc["preregistration_hash"])
+
+
+class VerifierTests(unittest.TestCase):
+    def setUp(self):
+        self.doc = locked()
+
+    def test_verify_ok_on_locked(self):
+        result = verify(self.doc)
+        self.assertTrue(result["ok"], result["errors"])
+        self.assertEqual(result["expected_protocol_key"], self.doc["model_and_protocol"]["protocol_key"])
+
+    def test_verify_rejects_draft(self):
+        draft = pr.build_replay_preregistration(journal_path=JOURNAL, repo_root=REPO_ROOT)
+        self.assertFalse(verify(draft)["ok"])
+
+    def test_verify_rejects_hash_or_setting_drift(self):
+        tampered = copy.deepcopy(self.doc)
+        tampered["caps"]["physical_requests"] = 999
+        self.assertFalse(verify(tampered)["ok"])
+        tampered = copy.deepcopy(self.doc)
+        tampered["guards"]["feasible_set_mass"]["epsilon"] = 0.5
+        self.assertFalse(verify(tampered)["ok"])
+
+    def test_verify_rejects_wrong_manifest(self):
+        self.assertFalse(verify(self.doc, instance_ids=["planning-00000000"])["ok"])
+
+    def test_verify_rejects_mixed_protocol_and_overbudget(self):
+        self.assertFalse(verify(self.doc, protocol_key="six-family-clue-consistent-v2|a|b|c|d|e")["ok"])
+        self.assertFalse(verify(self.doc, planned_requests=pr.JEV_REPLAY_REQUEST_CAP + 1)["ok"])
+
+    def test_protocol_key_matches_codec(self):
+        self.assertEqual(self.doc["model_and_protocol"]["protocol_key"],
+                         jev_choice_protocol_key(model=self.doc["model_and_protocol"]["model"],
+                                                 endpoint=self.doc["model_and_protocol"]["endpoint"],
+                                                 max_retries=pr.JEV_REPLAY_MAX_RETRIES,
+                                                 instructions=__import__(
+                                                     "apart_incident_response.jev_choice",
+                                                     fromlist=["JEV_CHOICE_INSTRUCTIONS"]).JEV_CHOICE_INSTRUCTIONS,
+                                                 question_id="candidate"))
+        self.assertEqual(self.doc["model_and_protocol"]["codec_version"], JEV_CHOICE_CODEC_VERSION)
 
 
 if __name__ == "__main__":
