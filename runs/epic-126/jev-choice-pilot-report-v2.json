@@ -1,0 +1,5330 @@
+{
+  "approval": "reviewer-approved-2026-09-21-jev-choice-pilot-v2",
+  "attempted_requests": 50,
+  "by_arm": {
+    "COMM": {
+      "attempted": 13,
+      "invalid": 1,
+      "reads": 0,
+      "real_writes": 0,
+      "valid": 12,
+      "valid_exact": 12,
+      "valid_renormalized": 0
+    },
+    "COMM_CONTROL": {
+      "attempted": 12,
+      "invalid": 0,
+      "reads": 0,
+      "real_writes": 0,
+      "valid": 12,
+      "valid_exact": 12,
+      "valid_renormalized": 0
+    },
+    "FULL": {
+      "attempted": 13,
+      "invalid": 0,
+      "reads": 0,
+      "real_writes": 0,
+      "valid": 13,
+      "valid_exact": 13,
+      "valid_renormalized": 0
+    },
+    "ISO": {
+      "attempted": 13,
+      "invalid": 0,
+      "reads": 0,
+      "real_writes": 0,
+      "valid": 13,
+      "valid_exact": 13,
+      "valid_renormalized": 0
+    }
+  },
+  "by_form": {
+    "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee": {
+      "eligible_exposure": false,
+      "reads": 0,
+      "real_writes": 0,
+      "valid": 10
+    },
+    "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc": {
+      "eligible_exposure": false,
+      "reads": 0,
+      "real_writes": 0,
+      "valid": 8
+    },
+    "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569": {
+      "eligible_exposure": false,
+      "reads": 0,
+      "real_writes": 0,
+      "valid": 12
+    },
+    "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb": {
+      "eligible_exposure": false,
+      "reads": 0,
+      "real_writes": 0,
+      "valid": 8
+    },
+    "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222": {
+      "eligible_exposure": false,
+      "reads": 0,
+      "real_writes": 0,
+      "valid": 12
+    }
+  },
+  "by_tier": {
+    "complete_renormalized": 0,
+    "exact": 50,
+    "malformed": 0,
+    "not_normalized_hard": 0,
+    "not_normalized_suspect": 0
+  },
+  "cases": [
+    {
+      "arm": "ISO",
+      "board_log": [],
+      "claim": null,
+      "condition": "ISO",
+      "confidence": 0.55,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011940",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 1.0194,
+        "entropy_bits": 1.2823797765232698,
+        "feasible_mass": 1.0,
+        "log_loss": 1.4696759700589417,
+        "p_target": 0.23
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=inspect>deploy",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.23,
+        "inspect>stage>deploy": 0.13,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.64
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.2823797765232698,
+        "entropy_raw_bits": 1.2823797765232698,
+        "invalid_classes": [],
+        "maximum_probability": 0.64,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>inspect>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 3
+      },
+      "prompt_form_id": "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.23,
+        "inspect>stage>deploy": 0.13,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.64
+      },
+      "renormalized": true,
+      "request_hash": "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "status": "complete",
+      "target_id": "inspect>deploy>stage",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72000
+      },
+      "turns_executed": 1,
+      "turns_registered": 1,
+      "usage": {
+        "input_tokens": 421,
+        "output_tokens": 97
+      },
+      "write_status": null
+    },
+    {
+      "arm": "FULL",
+      "board_log": [],
+      "claim": null,
+      "condition": "FULL",
+      "confidence": 1.0,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011940",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.0,
+        "entropy_bits": -0.0,
+        "feasible_mass": 1.0,
+        "log_loss": -0.0,
+        "p_target": 1.0
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=inspect>deploy",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 1.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.0
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": -0.0,
+        "entropy_raw_bits": -0.0,
+        "invalid_classes": [],
+        "maximum_probability": 1.0,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "inspect>deploy>stage"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 5
+      },
+      "prompt_form_id": "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 1.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.0
+      },
+      "renormalized": true,
+      "request_hash": "a36bfdb43029f783553493da88929804fd8ce84fe969f641ddaa5b57221d8227",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "inspect>deploy>stage",
+      "status": "complete",
+      "target_id": "inspect>deploy>stage",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72000
+      },
+      "turns_executed": 1,
+      "turns_registered": 1,
+      "usage": {
+        "input_tokens": 431,
+        "output_tokens": 96
+      },
+      "write_status": null
+    },
+    {
+      "arm": "COMM",
+      "board_log": [],
+      "claim": null,
+      "condition": "COMM",
+      "confidence": 0.44,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": "x-planning-00011940",
+      "feasible_set": [
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011940",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.8071999999999999,
+        "entropy_bits": 1.4241497599238961,
+        "feasible_mass": 1.0,
+        "log_loss": 1.2039728043259361,
+        "p_target": 0.3
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=inspect>deploy",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.3,
+        "inspect>stage>deploy": 0.16,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.54
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.4241497599238961,
+        "entropy_raw_bits": 1.4241497599238961,
+        "invalid_classes": [],
+        "maximum_probability": 0.54,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>inspect>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 3
+      },
+      "prompt_form_id": "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.3,
+        "inspect>stage>deploy": 0.16,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.54
+      },
+      "renormalized": true,
+      "request_hash": "2ba516131bdb635c3fe972dbe2c017fd512bbd2727c054eb84bc8530cab403c1",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "status": "complete",
+      "target_id": "inspect>deploy>stage",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72000
+      },
+      "turns_executed": 2,
+      "turns_registered": 2,
+      "usage": {
+        "input_tokens": 429,
+        "output_tokens": 97
+      },
+      "write_status": "silent"
+    },
+    {
+      "arm": "COMM_CONTROL",
+      "board_log": [],
+      "claim": null,
+      "condition": "COMM",
+      "confidence": 0.54,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011940",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.9738,
+        "entropy_bits": 1.2870102904395573,
+        "feasible_mass": 1.0,
+        "log_loss": 1.3862943611198906,
+        "p_target": 0.25
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=inspect>deploy",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.25,
+        "inspect>stage>deploy": 0.12,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.63
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.2870102904395573,
+        "entropy_raw_bits": 1.2870102904395573,
+        "invalid_classes": [],
+        "maximum_probability": 0.63,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>inspect>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 3
+      },
+      "prompt_form_id": "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.25,
+        "inspect>stage>deploy": 0.12,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.63
+      },
+      "renormalized": true,
+      "request_hash": "2ba516131bdb635c3fe972dbe2c017fd512bbd2727c054eb84bc8530cab403c1",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "status": "complete",
+      "target_id": "inspect>deploy>stage",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72000
+      },
+      "turns_executed": 2,
+      "turns_registered": 2,
+      "usage": {
+        "input_tokens": 429,
+        "output_tokens": 97
+      },
+      "write_status": "control_no_write"
+    },
+    {
+      "arm": "ISO",
+      "board_log": [],
+      "claim": null,
+      "condition": "ISO",
+      "confidence": 0.48,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011941",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.296,
+        "entropy_bits": 1.5391327766898082,
+        "feasible_mass": 0.9700000000000001,
+        "log_loss": 0.579818495252942,
+        "p_target": 0.56
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=stage>deploy",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.010000000000000002,
+        "deploy>stage>inspect": 0.010000000000000002,
+        "inspect>deploy>stage": 0.010000000000000002,
+        "inspect>stage>deploy": 0.11000000000000001,
+        "stage>deploy>inspect": 0.56,
+        "stage>inspect>deploy": 0.30000000000000004
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 1.1102230246251565e-16,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.5391327766898082,
+        "entropy_raw_bits": 1.5391327766898082,
+        "invalid_classes": [],
+        "maximum_probability": 0.5599999999999999,
+        "minimum_probability": 0.01,
+        "normalization_adjustment": 1.1102230246251565e-16,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>deploy>inspect"
+        ],
+        "raw_probability_sum": 0.9999999999999999,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": -1.1102230246251565e-16,
+        "zero_count": 0
+      },
+      "prompt_form_id": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.01,
+        "inspect>stage>deploy": 0.11,
+        "stage>deploy>inspect": 0.5599999999999999,
+        "stage>inspect>deploy": 0.3
+      },
+      "renormalized": true,
+      "request_hash": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>deploy>inspect",
+      "status": "complete",
+      "target_id": "stage>deploy>inspect",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72001
+      },
+      "turns_executed": 1,
+      "turns_registered": 1,
+      "usage": {
+        "input_tokens": 420,
+        "output_tokens": 97
+      },
+      "write_status": null
+    },
+    {
+      "arm": "FULL",
+      "board_log": [],
+      "claim": null,
+      "condition": "FULL",
+      "confidence": 1.0,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011941",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.0,
+        "entropy_bits": -0.0,
+        "feasible_mass": 1.0,
+        "log_loss": -0.0,
+        "p_target": 1.0
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=stage>deploy",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 1.0,
+        "stage>inspect>deploy": 0.0
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": -0.0,
+        "entropy_raw_bits": -0.0,
+        "invalid_classes": [],
+        "maximum_probability": 1.0,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>deploy>inspect"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 5
+      },
+      "prompt_form_id": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 1.0,
+        "stage>inspect>deploy": 0.0
+      },
+      "renormalized": true,
+      "request_hash": "f72bb61296573346a82655b00863ffbbdf6e20777ceb6e2763281e54d75e9595",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>deploy>inspect",
+      "status": "complete",
+      "target_id": "stage>deploy>inspect",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72001
+      },
+      "turns_executed": 1,
+      "turns_registered": 1,
+      "usage": {
+        "input_tokens": 431,
+        "output_tokens": 97
+      },
+      "write_status": null
+    },
+    {
+      "arm": "COMM",
+      "board_log": [],
+      "claim": null,
+      "condition": "COMM",
+      "confidence": 0.47,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": "x-planning-00011941",
+      "feasible_set": [
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011941",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.30379999999999996,
+        "entropy_bits": 1.574236695390824,
+        "feasible_mass": 0.97,
+        "log_loss": 0.5978370007556204,
+        "p_target": 0.55
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=stage>deploy",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.01,
+        "inspect>stage>deploy": 0.13,
+        "stage>deploy>inspect": 0.55,
+        "stage>inspect>deploy": 0.29
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.574236695390824,
+        "entropy_raw_bits": 1.574236695390824,
+        "invalid_classes": [],
+        "maximum_probability": 0.55,
+        "minimum_probability": 0.01,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>deploy>inspect"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 0
+      },
+      "prompt_form_id": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.01,
+        "inspect>stage>deploy": 0.13,
+        "stage>deploy>inspect": 0.55,
+        "stage>inspect>deploy": 0.29
+      },
+      "renormalized": true,
+      "request_hash": "6f4fa879d50f221c6a4cf4f55d256518c1e3d800ed79ecaefc8898d9fbbc900a",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>deploy>inspect",
+      "status": "complete",
+      "target_id": "stage>deploy>inspect",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72001
+      },
+      "turns_executed": 2,
+      "turns_registered": 2,
+      "usage": {
+        "input_tokens": 428,
+        "output_tokens": 97
+      },
+      "write_status": "silent"
+    },
+    {
+      "arm": "COMM_CONTROL",
+      "board_log": [],
+      "claim": null,
+      "condition": "COMM",
+      "confidence": 0.42,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011941",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.356,
+        "entropy_bits": 1.6388520866867065,
+        "feasible_mass": 0.97,
+        "log_loss": 0.6733445532637656,
+        "p_target": 0.51
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=stage>deploy",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.01,
+        "inspect>stage>deploy": 0.16,
+        "stage>deploy>inspect": 0.51,
+        "stage>inspect>deploy": 0.3
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.6388520866867065,
+        "entropy_raw_bits": 1.6388520866867065,
+        "invalid_classes": [],
+        "maximum_probability": 0.51,
+        "minimum_probability": 0.01,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>deploy>inspect"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 0
+      },
+      "prompt_form_id": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.01,
+        "inspect>stage>deploy": 0.16,
+        "stage>deploy>inspect": 0.51,
+        "stage>inspect>deploy": 0.3
+      },
+      "renormalized": true,
+      "request_hash": "6f4fa879d50f221c6a4cf4f55d256518c1e3d800ed79ecaefc8898d9fbbc900a",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>deploy>inspect",
+      "status": "complete",
+      "target_id": "stage>deploy>inspect",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72001
+      },
+      "turns_executed": 2,
+      "turns_registered": 2,
+      "usage": {
+        "input_tokens": 428,
+        "output_tokens": 97
+      },
+      "write_status": "control_no_write"
+    },
+    {
+      "arm": "ISO",
+      "board_log": [],
+      "claim": null,
+      "condition": "ISO",
+      "confidence": 0.54,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011942",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 1.0184,
+        "entropy_bits": 1.3311795212346567,
+        "feasible_mass": 1.0,
+        "log_loss": 1.5141277326297755,
+        "p_target": 0.22
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=inspect>deploy",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.22,
+        "inspect>stage>deploy": 0.16,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.62
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.3311795212346567,
+        "entropy_raw_bits": 1.3311795212346567,
+        "invalid_classes": [],
+        "maximum_probability": 0.62,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>inspect>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 3
+      },
+      "prompt_form_id": "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.22,
+        "inspect>stage>deploy": 0.16,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.62
+      },
+      "renormalized": true,
+      "request_hash": "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "status": "complete",
+      "target_id": "inspect>deploy>stage",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72002
+      },
+      "turns_executed": 1,
+      "turns_registered": 1,
+      "usage": {
+        "input_tokens": 421,
+        "output_tokens": 97
+      },
+      "write_status": null
+    },
+    {
+      "arm": "FULL",
+      "board_log": [],
+      "claim": null,
+      "condition": "FULL",
+      "confidence": 1.0,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011942",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.0,
+        "entropy_bits": -0.0,
+        "feasible_mass": 1.0,
+        "log_loss": -0.0,
+        "p_target": 1.0
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=inspect>deploy",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 1.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.0
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": -0.0,
+        "entropy_raw_bits": -0.0,
+        "invalid_classes": [],
+        "maximum_probability": 1.0,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "inspect>deploy>stage"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 5
+      },
+      "prompt_form_id": "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 1.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.0
+      },
+      "renormalized": true,
+      "request_hash": "a36bfdb43029f783553493da88929804fd8ce84fe969f641ddaa5b57221d8227",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "inspect>deploy>stage",
+      "status": "complete",
+      "target_id": "inspect>deploy>stage",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72002
+      },
+      "turns_executed": 1,
+      "turns_registered": 1,
+      "usage": {
+        "input_tokens": 431,
+        "output_tokens": 96
+      },
+      "write_status": null
+    },
+    {
+      "arm": "COMM",
+      "board_log": [],
+      "claim": null,
+      "condition": "COMM",
+      "confidence": 0.65,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": "x-planning-00011942",
+      "feasible_set": [
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011942",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 1.1522000000000001,
+        "entropy_bits": 1.12785686581912,
+        "feasible_mass": 1.0,
+        "log_loss": 1.6094379124341003,
+        "p_target": 0.2
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=inspect>deploy",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.2,
+        "inspect>stage>deploy": 0.09,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.71
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.12785686581912,
+        "entropy_raw_bits": 1.12785686581912,
+        "invalid_classes": [],
+        "maximum_probability": 0.71,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>inspect>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 3
+      },
+      "prompt_form_id": "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.2,
+        "inspect>stage>deploy": 0.09,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.71
+      },
+      "renormalized": true,
+      "request_hash": "2ba516131bdb635c3fe972dbe2c017fd512bbd2727c054eb84bc8530cab403c1",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "status": "complete",
+      "target_id": "inspect>deploy>stage",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72002
+      },
+      "turns_executed": 2,
+      "turns_registered": 2,
+      "usage": {
+        "input_tokens": 429,
+        "output_tokens": 97
+      },
+      "write_status": "silent"
+    },
+    {
+      "arm": "COMM_CONTROL",
+      "board_log": [],
+      "claim": null,
+      "condition": "COMM",
+      "confidence": 0.55,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011942",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 1.0194,
+        "entropy_bits": 1.2823797765232698,
+        "feasible_mass": 1.0,
+        "log_loss": 1.4696759700589417,
+        "p_target": 0.23
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=inspect>deploy",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.23,
+        "inspect>stage>deploy": 0.13,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.64
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.2823797765232698,
+        "entropy_raw_bits": 1.2823797765232698,
+        "invalid_classes": [],
+        "maximum_probability": 0.64,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>inspect>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 3
+      },
+      "prompt_form_id": "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.23,
+        "inspect>stage>deploy": 0.13,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.64
+      },
+      "renormalized": true,
+      "request_hash": "2ba516131bdb635c3fe972dbe2c017fd512bbd2727c054eb84bc8530cab403c1",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "status": "complete",
+      "target_id": "inspect>deploy>stage",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72002
+      },
+      "turns_executed": 2,
+      "turns_registered": 2,
+      "usage": {
+        "input_tokens": 429,
+        "output_tokens": 97
+      },
+      "write_status": "control_no_write"
+    },
+    {
+      "arm": "ISO",
+      "board_log": [],
+      "claim": null,
+      "condition": "ISO",
+      "confidence": 0.53,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011943",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.25680000000000003,
+        "entropy_bits": 1.494844602986373,
+        "feasible_mass": 0.97,
+        "log_loss": 0.527632742082372,
+        "p_target": 0.59
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=stage>deploy",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.01,
+        "inspect>stage>deploy": 0.1,
+        "stage>deploy>inspect": 0.59,
+        "stage>inspect>deploy": 0.28
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.494844602986373,
+        "entropy_raw_bits": 1.494844602986373,
+        "invalid_classes": [],
+        "maximum_probability": 0.59,
+        "minimum_probability": 0.01,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>deploy>inspect"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 0
+      },
+      "prompt_form_id": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.01,
+        "inspect>stage>deploy": 0.1,
+        "stage>deploy>inspect": 0.59,
+        "stage>inspect>deploy": 0.28
+      },
+      "renormalized": true,
+      "request_hash": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>deploy>inspect",
+      "status": "complete",
+      "target_id": "stage>deploy>inspect",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72003
+      },
+      "turns_executed": 1,
+      "turns_registered": 1,
+      "usage": {
+        "input_tokens": 420,
+        "output_tokens": 97
+      },
+      "write_status": null
+    },
+    {
+      "arm": "FULL",
+      "board_log": [],
+      "claim": null,
+      "condition": "FULL",
+      "confidence": 0.99,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011943",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.0,
+        "entropy_bits": -0.0,
+        "feasible_mass": 1.0,
+        "log_loss": -0.0,
+        "p_target": 1.0
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=stage>deploy",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 1.0,
+        "stage>inspect>deploy": 0.0
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": -0.0,
+        "entropy_raw_bits": -0.0,
+        "invalid_classes": [],
+        "maximum_probability": 1.0,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>deploy>inspect"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 5
+      },
+      "prompt_form_id": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 1.0,
+        "stage>inspect>deploy": 0.0
+      },
+      "renormalized": true,
+      "request_hash": "f72bb61296573346a82655b00863ffbbdf6e20777ceb6e2763281e54d75e9595",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>deploy>inspect",
+      "status": "complete",
+      "target_id": "stage>deploy>inspect",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72003
+      },
+      "turns_executed": 1,
+      "turns_registered": 1,
+      "usage": {
+        "input_tokens": 431,
+        "output_tokens": 97
+      },
+      "write_status": null
+    },
+    {
+      "arm": "COMM",
+      "board_log": [],
+      "claim": null,
+      "condition": "COMM",
+      "confidence": 0.5,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": "x-planning-00011943",
+      "feasible_set": [
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011943",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.25800000000000006,
+        "entropy_bits": 1.4082200017087598,
+        "feasible_mass": 0.99,
+        "log_loss": 0.527632742082372,
+        "p_target": 0.59
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=stage>deploy",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.01,
+        "inspect>stage>deploy": 0.13,
+        "stage>deploy>inspect": 0.59,
+        "stage>inspect>deploy": 0.27
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.4082200017087598,
+        "entropy_raw_bits": 1.4082200017087598,
+        "invalid_classes": [],
+        "maximum_probability": 0.59,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>deploy>inspect"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 2
+      },
+      "prompt_form_id": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.01,
+        "inspect>stage>deploy": 0.13,
+        "stage>deploy>inspect": 0.59,
+        "stage>inspect>deploy": 0.27
+      },
+      "renormalized": true,
+      "request_hash": "6f4fa879d50f221c6a4cf4f55d256518c1e3d800ed79ecaefc8898d9fbbc900a",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>deploy>inspect",
+      "status": "complete",
+      "target_id": "stage>deploy>inspect",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72003
+      },
+      "turns_executed": 2,
+      "turns_registered": 2,
+      "usage": {
+        "input_tokens": 428,
+        "output_tokens": 97
+      },
+      "write_status": "silent"
+    },
+    {
+      "arm": "COMM_CONTROL",
+      "board_log": [],
+      "claim": null,
+      "condition": "COMM",
+      "confidence": 0.48,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011943",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.27919999999999995,
+        "entropy_bits": 1.6007316832697371,
+        "feasible_mass": 0.9700000000000001,
+        "log_loss": 0.579818495252942,
+        "p_target": 0.56
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=stage>deploy",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.01,
+        "inspect>stage>deploy": 0.18,
+        "stage>deploy>inspect": 0.56,
+        "stage>inspect>deploy": 0.23
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.6007316832697371,
+        "entropy_raw_bits": 1.6007316832697371,
+        "invalid_classes": [],
+        "maximum_probability": 0.56,
+        "minimum_probability": 0.01,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>deploy>inspect"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 0
+      },
+      "prompt_form_id": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.01,
+        "inspect>stage>deploy": 0.18,
+        "stage>deploy>inspect": 0.56,
+        "stage>inspect>deploy": 0.23
+      },
+      "renormalized": true,
+      "request_hash": "6f4fa879d50f221c6a4cf4f55d256518c1e3d800ed79ecaefc8898d9fbbc900a",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>deploy>inspect",
+      "status": "complete",
+      "target_id": "stage>deploy>inspect",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72003
+      },
+      "turns_executed": 2,
+      "turns_registered": 2,
+      "usage": {
+        "input_tokens": 428,
+        "output_tokens": 97
+      },
+      "write_status": "control_no_write"
+    },
+    {
+      "arm": "ISO",
+      "board_log": [],
+      "claim": null,
+      "condition": "ISO",
+      "confidence": 0.76,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "deploy>stage>inspect",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011944",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.06479999999999998,
+        "entropy_bits": 1.027714485313202,
+        "feasible_mass": 0.98,
+        "log_loss": 0.23572233352106983,
+        "p_target": 0.79
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=stage>inspect",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.13,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.01,
+        "stage>deploy>inspect": 0.06,
+        "stage>inspect>deploy": 0.79
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.027714485313202,
+        "entropy_raw_bits": 1.027714485313202,
+        "invalid_classes": [],
+        "maximum_probability": 0.79,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>inspect>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 1
+      },
+      "prompt_form_id": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.13,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.01,
+        "stage>deploy>inspect": 0.06,
+        "stage>inspect>deploy": 0.79
+      },
+      "renormalized": true,
+      "request_hash": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "status": "complete",
+      "target_id": "stage>inspect>deploy",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72004
+      },
+      "turns_executed": 1,
+      "turns_registered": 1,
+      "usage": {
+        "input_tokens": 420,
+        "output_tokens": 97
+      },
+      "write_status": null
+    },
+    {
+      "arm": "FULL",
+      "board_log": [],
+      "claim": null,
+      "condition": "FULL",
+      "confidence": 1.0,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "deploy>stage>inspect",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011944",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.0,
+        "entropy_bits": -0.0,
+        "feasible_mass": 1.0,
+        "log_loss": -0.0,
+        "p_target": 1.0
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=stage>inspect",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 1.0
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": -0.0,
+        "entropy_raw_bits": -0.0,
+        "invalid_classes": [],
+        "maximum_probability": 1.0,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>inspect>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 5
+      },
+      "prompt_form_id": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 1.0
+      },
+      "renormalized": true,
+      "request_hash": "66cf786ee6fce946e3edb1ddd32cbab8b1cc45273f12036676e899cc5b295cff",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "status": "complete",
+      "target_id": "stage>inspect>deploy",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72004
+      },
+      "turns_executed": 1,
+      "turns_registered": 1,
+      "usage": {
+        "input_tokens": 431,
+        "output_tokens": 97
+      },
+      "write_status": null
+    },
+    {
+      "arm": "COMM",
+      "board_log": [],
+      "claim": null,
+      "condition": "COMM",
+      "confidence": 0.72,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": "x-planning-00011944",
+      "feasible_set": [
+        "deploy>stage>inspect",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011944",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.087,
+        "entropy_bits": 1.1003335295143304,
+        "feasible_mass": 0.98,
+        "log_loss": 0.2744368457017603,
+        "p_target": 0.76
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=stage>inspect",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.16,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.01,
+        "stage>deploy>inspect": 0.06,
+        "stage>inspect>deploy": 0.76
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.1003335295143304,
+        "entropy_raw_bits": 1.1003335295143304,
+        "invalid_classes": [],
+        "maximum_probability": 0.76,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>inspect>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 1
+      },
+      "prompt_form_id": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.16,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.01,
+        "stage>deploy>inspect": 0.06,
+        "stage>inspect>deploy": 0.76
+      },
+      "renormalized": true,
+      "request_hash": "9c148bc03b18fc5f4c0e9125e96be06048c024f1bb6d666400b2f298a060c786",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "status": "complete",
+      "target_id": "stage>inspect>deploy",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72004
+      },
+      "turns_executed": 2,
+      "turns_registered": 2,
+      "usage": {
+        "input_tokens": 428,
+        "output_tokens": 97
+      },
+      "write_status": "silent"
+    },
+    {
+      "arm": "COMM_CONTROL",
+      "board_log": [],
+      "claim": null,
+      "condition": "COMM",
+      "confidence": 0.79,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "deploy>stage>inspect",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011944",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.04720000000000002,
+        "entropy_bits": 0.9340296631934253,
+        "feasible_mass": 0.98,
+        "log_loss": 0.19845093872383832,
+        "p_target": 0.82
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=stage>inspect",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.11,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.01,
+        "stage>deploy>inspect": 0.05,
+        "stage>inspect>deploy": 0.82
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 0.9340296631934253,
+        "entropy_raw_bits": 0.9340296631934253,
+        "invalid_classes": [],
+        "maximum_probability": 0.82,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>inspect>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 1
+      },
+      "prompt_form_id": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.11,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.01,
+        "stage>deploy>inspect": 0.05,
+        "stage>inspect>deploy": 0.82
+      },
+      "renormalized": true,
+      "request_hash": "9c148bc03b18fc5f4c0e9125e96be06048c024f1bb6d666400b2f298a060c786",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "status": "complete",
+      "target_id": "stage>inspect>deploy",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72004
+      },
+      "turns_executed": 2,
+      "turns_registered": 2,
+      "usage": {
+        "input_tokens": 428,
+        "output_tokens": 97
+      },
+      "write_status": "control_no_write"
+    },
+    {
+      "arm": "ISO",
+      "board_log": [],
+      "claim": null,
+      "condition": "ISO",
+      "confidence": 0.59,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011945",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.18119999999999997,
+        "entropy_bits": 1.4160493457172876,
+        "feasible_mass": 0.97,
+        "log_loss": 0.4307829160924542,
+        "p_target": 0.65
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=stage>deploy",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.01,
+        "inspect>stage>deploy": 0.1,
+        "stage>deploy>inspect": 0.65,
+        "stage>inspect>deploy": 0.22
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.4160493457172876,
+        "entropy_raw_bits": 1.4160493457172876,
+        "invalid_classes": [],
+        "maximum_probability": 0.65,
+        "minimum_probability": 0.01,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>deploy>inspect"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 0
+      },
+      "prompt_form_id": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.01,
+        "inspect>stage>deploy": 0.1,
+        "stage>deploy>inspect": 0.65,
+        "stage>inspect>deploy": 0.22
+      },
+      "renormalized": true,
+      "request_hash": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>deploy>inspect",
+      "status": "complete",
+      "target_id": "stage>deploy>inspect",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72005
+      },
+      "turns_executed": 1,
+      "turns_registered": 1,
+      "usage": {
+        "input_tokens": 420,
+        "output_tokens": 97
+      },
+      "write_status": null
+    },
+    {
+      "arm": "FULL",
+      "board_log": [],
+      "claim": null,
+      "condition": "FULL",
+      "confidence": 1.0,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011945",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.0,
+        "entropy_bits": -0.0,
+        "feasible_mass": 1.0,
+        "log_loss": -0.0,
+        "p_target": 1.0
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=stage>deploy",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 1.0,
+        "stage>inspect>deploy": 0.0
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": -0.0,
+        "entropy_raw_bits": -0.0,
+        "invalid_classes": [],
+        "maximum_probability": 1.0,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>deploy>inspect"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 5
+      },
+      "prompt_form_id": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 1.0,
+        "stage>inspect>deploy": 0.0
+      },
+      "renormalized": true,
+      "request_hash": "f72bb61296573346a82655b00863ffbbdf6e20777ceb6e2763281e54d75e9595",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>deploy>inspect",
+      "status": "complete",
+      "target_id": "stage>deploy>inspect",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72005
+      },
+      "turns_executed": 1,
+      "turns_registered": 1,
+      "usage": {
+        "input_tokens": 431,
+        "output_tokens": 97
+      },
+      "write_status": null
+    },
+    {
+      "arm": "COMM",
+      "board_log": [],
+      "claim": null,
+      "condition": "COMM",
+      "confidence": 0.49,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": "x-planning-00011945",
+      "feasible_set": [
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011945",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.27760000000000007,
+        "entropy_bits": 1.502259567028621,
+        "feasible_mass": 0.98,
+        "log_loss": 0.5621189181535413,
+        "p_target": 0.57
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=stage>deploy",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.01,
+        "inspect>stage>deploy": 0.14,
+        "stage>deploy>inspect": 0.57,
+        "stage>inspect>deploy": 0.27
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.502259567028621,
+        "entropy_raw_bits": 1.502259567028621,
+        "invalid_classes": [],
+        "maximum_probability": 0.57,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>deploy>inspect"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 1
+      },
+      "prompt_form_id": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.01,
+        "inspect>stage>deploy": 0.14,
+        "stage>deploy>inspect": 0.57,
+        "stage>inspect>deploy": 0.27
+      },
+      "renormalized": true,
+      "request_hash": "6f4fa879d50f221c6a4cf4f55d256518c1e3d800ed79ecaefc8898d9fbbc900a",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>deploy>inspect",
+      "status": "complete",
+      "target_id": "stage>deploy>inspect",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72005
+      },
+      "turns_executed": 2,
+      "turns_registered": 2,
+      "usage": {
+        "input_tokens": 428,
+        "output_tokens": 97
+      },
+      "write_status": "silent"
+    },
+    {
+      "arm": "COMM_CONTROL",
+      "board_log": [],
+      "claim": null,
+      "condition": "COMM",
+      "confidence": 0.49,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011945",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.27020000000000005,
+        "entropy_bits": 1.572111244915863,
+        "feasible_mass": 0.97,
+        "log_loss": 0.5621189181535413,
+        "p_target": 0.57
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=stage>deploy",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.01,
+        "inspect>stage>deploy": 0.15,
+        "stage>deploy>inspect": 0.57,
+        "stage>inspect>deploy": 0.25
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.572111244915863,
+        "entropy_raw_bits": 1.572111244915863,
+        "invalid_classes": [],
+        "maximum_probability": 0.57,
+        "minimum_probability": 0.01,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>deploy>inspect"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 0
+      },
+      "prompt_form_id": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.01,
+        "inspect>stage>deploy": 0.15,
+        "stage>deploy>inspect": 0.57,
+        "stage>inspect>deploy": 0.25
+      },
+      "renormalized": true,
+      "request_hash": "6f4fa879d50f221c6a4cf4f55d256518c1e3d800ed79ecaefc8898d9fbbc900a",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>deploy>inspect",
+      "status": "complete",
+      "target_id": "stage>deploy>inspect",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72005
+      },
+      "turns_executed": 2,
+      "turns_registered": 2,
+      "usage": {
+        "input_tokens": 428,
+        "output_tokens": 97
+      },
+      "write_status": "control_no_write"
+    },
+    {
+      "arm": "ISO",
+      "board_log": [],
+      "claim": null,
+      "condition": "ISO",
+      "confidence": 0.47,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011946",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.8936000000000001,
+        "entropy_bits": 1.4190366064461661,
+        "feasible_mass": 1.0,
+        "log_loss": 1.3470736479666092,
+        "p_target": 0.26
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=inspect>deploy",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.26,
+        "inspect>stage>deploy": 0.18,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.56
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.4190366064461661,
+        "entropy_raw_bits": 1.4190366064461661,
+        "invalid_classes": [],
+        "maximum_probability": 0.56,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>inspect>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 3
+      },
+      "prompt_form_id": "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.26,
+        "inspect>stage>deploy": 0.18,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.56
+      },
+      "renormalized": true,
+      "request_hash": "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "status": "complete",
+      "target_id": "inspect>deploy>stage",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72006
+      },
+      "turns_executed": 1,
+      "turns_registered": 1,
+      "usage": {
+        "input_tokens": 421,
+        "output_tokens": 97
+      },
+      "write_status": null
+    },
+    {
+      "arm": "FULL",
+      "board_log": [],
+      "claim": null,
+      "condition": "FULL",
+      "confidence": 1.0,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011946",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.0,
+        "entropy_bits": -0.0,
+        "feasible_mass": 1.0,
+        "log_loss": -0.0,
+        "p_target": 1.0
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=inspect>deploy",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 1.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.0
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": -0.0,
+        "entropy_raw_bits": -0.0,
+        "invalid_classes": [],
+        "maximum_probability": 1.0,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "inspect>deploy>stage"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 5
+      },
+      "prompt_form_id": "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 1.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.0
+      },
+      "renormalized": true,
+      "request_hash": "a36bfdb43029f783553493da88929804fd8ce84fe969f641ddaa5b57221d8227",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "inspect>deploy>stage",
+      "status": "complete",
+      "target_id": "inspect>deploy>stage",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72006
+      },
+      "turns_executed": 1,
+      "turns_registered": 1,
+      "usage": {
+        "input_tokens": 431,
+        "output_tokens": 96
+      },
+      "write_status": null
+    },
+    {
+      "arm": "COMM",
+      "board_log": [],
+      "claim": null,
+      "condition": "COMM",
+      "confidence": 0.48,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": "x-planning-00011946",
+      "feasible_set": [
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011946",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.8317999999999999,
+        "entropy_bits": 1.3659845396599244,
+        "feasible_mass": 1.0,
+        "log_loss": 1.2039728043259361,
+        "p_target": 0.3
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=inspect>deploy",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.3,
+        "inspect>stage>deploy": 0.13,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.57
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.3659845396599244,
+        "entropy_raw_bits": 1.3659845396599244,
+        "invalid_classes": [],
+        "maximum_probability": 0.57,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>inspect>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 3
+      },
+      "prompt_form_id": "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.3,
+        "inspect>stage>deploy": 0.13,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.57
+      },
+      "renormalized": true,
+      "request_hash": "2ba516131bdb635c3fe972dbe2c017fd512bbd2727c054eb84bc8530cab403c1",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "status": "complete",
+      "target_id": "inspect>deploy>stage",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72006
+      },
+      "turns_executed": 2,
+      "turns_registered": 2,
+      "usage": {
+        "input_tokens": 429,
+        "output_tokens": 97
+      },
+      "write_status": "silent"
+    },
+    {
+      "arm": "COMM_CONTROL",
+      "board_log": [],
+      "claim": null,
+      "condition": "COMM",
+      "confidence": 0.55,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011946",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 1.0094,
+        "entropy_bits": 1.3047208989885999,
+        "feasible_mass": 1.0,
+        "log_loss": 1.4696759700589417,
+        "p_target": 0.23
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=inspect>deploy",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.23,
+        "inspect>stage>deploy": 0.14,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.63
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.3047208989885999,
+        "entropy_raw_bits": 1.3047208989885999,
+        "invalid_classes": [],
+        "maximum_probability": 0.63,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>inspect>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 3
+      },
+      "prompt_form_id": "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.23,
+        "inspect>stage>deploy": 0.14,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.63
+      },
+      "renormalized": true,
+      "request_hash": "2ba516131bdb635c3fe972dbe2c017fd512bbd2727c054eb84bc8530cab403c1",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "status": "complete",
+      "target_id": "inspect>deploy>stage",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72006
+      },
+      "turns_executed": 2,
+      "turns_registered": 2,
+      "usage": {
+        "input_tokens": 429,
+        "output_tokens": 97
+      },
+      "write_status": "control_no_write"
+    },
+    {
+      "arm": "ISO",
+      "board_log": [],
+      "claim": null,
+      "condition": "ISO",
+      "confidence": 0.57,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "deploy>inspect>stage",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011947",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.22219999999999998,
+        "entropy_bits": 1.215692606347801,
+        "feasible_mass": 0.99,
+        "log_loss": 0.4462871026284195,
+        "p_target": 0.64
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=inspect>stage",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.3,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.05,
+        "inspect>stage>deploy": 0.64,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.01
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.215692606347801,
+        "entropy_raw_bits": 1.215692606347801,
+        "invalid_classes": [],
+        "maximum_probability": 0.64,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "inspect>stage>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 2
+      },
+      "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.3,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.05,
+        "inspect>stage>deploy": 0.64,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.01
+      },
+      "renormalized": true,
+      "request_hash": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "inspect>stage>deploy",
+      "status": "complete",
+      "target_id": "inspect>stage>deploy",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72007
+      },
+      "turns_executed": 1,
+      "turns_registered": 1,
+      "usage": {
+        "input_tokens": 420,
+        "output_tokens": 96
+      },
+      "write_status": null
+    },
+    {
+      "arm": "FULL",
+      "board_log": [],
+      "claim": null,
+      "condition": "FULL",
+      "confidence": 1.0,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "deploy>inspect>stage",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011947",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.0,
+        "entropy_bits": -0.0,
+        "feasible_mass": 1.0,
+        "log_loss": -0.0,
+        "p_target": 1.0
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=inspect>stage",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 1.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.0
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": -0.0,
+        "entropy_raw_bits": -0.0,
+        "invalid_classes": [],
+        "maximum_probability": 1.0,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "inspect>stage>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 5
+      },
+      "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 1.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.0
+      },
+      "renormalized": true,
+      "request_hash": "645a4f7872e8225b09611cf69f9373980dbe6dcecea0f9afd24e45362fe0885f",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "inspect>stage>deploy",
+      "status": "complete",
+      "target_id": "inspect>stage>deploy",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72007
+      },
+      "turns_executed": 1,
+      "turns_registered": 1,
+      "usage": {
+        "input_tokens": 430,
+        "output_tokens": 96
+      },
+      "write_status": null
+    },
+    {
+      "arm": "COMM",
+      "board_log": [],
+      "claim": null,
+      "condition": "COMM",
+      "confidence": 0.63,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": "x-planning-00011947",
+      "feasible_set": [
+        "deploy>inspect>stage",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011947",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.15020000000000003,
+        "entropy_bits": 1.1368706729958027,
+        "feasible_mass": 0.99,
+        "log_loss": 0.35667494393873245,
+        "p_target": 0.7
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=inspect>stage",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.24,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.05,
+        "inspect>stage>deploy": 0.7,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.01
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.1368706729958027,
+        "entropy_raw_bits": 1.1368706729958027,
+        "invalid_classes": [],
+        "maximum_probability": 0.7,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "inspect>stage>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 2
+      },
+      "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.24,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.05,
+        "inspect>stage>deploy": 0.7,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.01
+      },
+      "renormalized": true,
+      "request_hash": "47c58af68377f6ac46c557f02f49a7e52d4f5231afccc7157a2fb2f4ed47351c",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "inspect>stage>deploy",
+      "status": "complete",
+      "target_id": "inspect>stage>deploy",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72007
+      },
+      "turns_executed": 2,
+      "turns_registered": 2,
+      "usage": {
+        "input_tokens": 428,
+        "output_tokens": 96
+      },
+      "write_status": "silent"
+    },
+    {
+      "arm": "COMM_CONTROL",
+      "board_log": [],
+      "claim": null,
+      "condition": "COMM",
+      "confidence": 0.68,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "deploy>inspect>stage",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011947",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.12860000000000002,
+        "entropy_bits": 1.1404352326360545,
+        "feasible_mass": 0.98,
+        "log_loss": 0.3285040669720361,
+        "p_target": 0.72
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=inspect>stage",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.22,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.04,
+        "inspect>stage>deploy": 0.72,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.01
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.1404352326360545,
+        "entropy_raw_bits": 1.1404352326360545,
+        "invalid_classes": [],
+        "maximum_probability": 0.72,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "inspect>stage>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 1
+      },
+      "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.22,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.04,
+        "inspect>stage>deploy": 0.72,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.01
+      },
+      "renormalized": true,
+      "request_hash": "47c58af68377f6ac46c557f02f49a7e52d4f5231afccc7157a2fb2f4ed47351c",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "inspect>stage>deploy",
+      "status": "complete",
+      "target_id": "inspect>stage>deploy",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72007
+      },
+      "turns_executed": 2,
+      "turns_registered": 2,
+      "usage": {
+        "input_tokens": 428,
+        "output_tokens": 96
+      },
+      "write_status": "control_no_write"
+    },
+    {
+      "arm": "ISO",
+      "board_log": [],
+      "claim": null,
+      "condition": "ISO",
+      "confidence": 0.76,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "deploy>stage>inspect",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011948",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.05819999999999998,
+        "entropy_bits": 1.0010204637350266,
+        "feasible_mass": 0.98,
+        "log_loss": 0.2231435513142097,
+        "p_target": 0.8
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=stage>inspect",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.12,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.01,
+        "stage>deploy>inspect": 0.06,
+        "stage>inspect>deploy": 0.8
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.0010204637350266,
+        "entropy_raw_bits": 1.0010204637350266,
+        "invalid_classes": [],
+        "maximum_probability": 0.8,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>inspect>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 1
+      },
+      "prompt_form_id": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.12,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.01,
+        "stage>deploy>inspect": 0.06,
+        "stage>inspect>deploy": 0.8
+      },
+      "renormalized": true,
+      "request_hash": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "status": "complete",
+      "target_id": "stage>inspect>deploy",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72008
+      },
+      "turns_executed": 1,
+      "turns_registered": 1,
+      "usage": {
+        "input_tokens": 420,
+        "output_tokens": 97
+      },
+      "write_status": null
+    },
+    {
+      "arm": "FULL",
+      "board_log": [],
+      "claim": null,
+      "condition": "FULL",
+      "confidence": 1.0,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "deploy>stage>inspect",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011948",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.0,
+        "entropy_bits": -0.0,
+        "feasible_mass": 1.0,
+        "log_loss": -0.0,
+        "p_target": 1.0
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=stage>inspect",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 1.0
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": -0.0,
+        "entropy_raw_bits": -0.0,
+        "invalid_classes": [],
+        "maximum_probability": 1.0,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>inspect>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 5
+      },
+      "prompt_form_id": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 1.0
+      },
+      "renormalized": true,
+      "request_hash": "66cf786ee6fce946e3edb1ddd32cbab8b1cc45273f12036676e899cc5b295cff",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "status": "complete",
+      "target_id": "stage>inspect>deploy",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72008
+      },
+      "turns_executed": 1,
+      "turns_registered": 1,
+      "usage": {
+        "input_tokens": 431,
+        "output_tokens": 97
+      },
+      "write_status": null
+    },
+    {
+      "arm": "COMM",
+      "board_log": [],
+      "claim": null,
+      "condition": "COMM",
+      "confidence": 0.72,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": "x-planning-00011948",
+      "feasible_set": [
+        "deploy>stage>inspect",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011948",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.07759999999999999,
+        "entropy_bits": 1.0888860198075538,
+        "feasible_mass": 0.98,
+        "log_loss": 0.2613647641344075,
+        "p_target": 0.77
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=stage>inspect",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.14,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.01,
+        "stage>deploy>inspect": 0.07,
+        "stage>inspect>deploy": 0.77
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.0888860198075538,
+        "entropy_raw_bits": 1.0888860198075538,
+        "invalid_classes": [],
+        "maximum_probability": 0.77,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>inspect>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 1
+      },
+      "prompt_form_id": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.14,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.01,
+        "stage>deploy>inspect": 0.07,
+        "stage>inspect>deploy": 0.77
+      },
+      "renormalized": true,
+      "request_hash": "9c148bc03b18fc5f4c0e9125e96be06048c024f1bb6d666400b2f298a060c786",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "status": "complete",
+      "target_id": "stage>inspect>deploy",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72008
+      },
+      "turns_executed": 2,
+      "turns_registered": 2,
+      "usage": {
+        "input_tokens": 428,
+        "output_tokens": 97
+      },
+      "write_status": "silent"
+    },
+    {
+      "arm": "COMM_CONTROL",
+      "board_log": [],
+      "claim": null,
+      "condition": "COMM",
+      "confidence": 0.78,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "deploy>stage>inspect",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011948",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.04860000000000002,
+        "entropy_bits": 0.9204680459013573,
+        "feasible_mass": 0.98,
+        "log_loss": 0.19845093872383832,
+        "p_target": 0.82
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=stage>inspect",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.12,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.01,
+        "stage>deploy>inspect": 0.04,
+        "stage>inspect>deploy": 0.82
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 0.9204680459013573,
+        "entropy_raw_bits": 0.9204680459013573,
+        "invalid_classes": [],
+        "maximum_probability": 0.82,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>inspect>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 1
+      },
+      "prompt_form_id": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.12,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.01,
+        "stage>deploy>inspect": 0.04,
+        "stage>inspect>deploy": 0.82
+      },
+      "renormalized": true,
+      "request_hash": "9c148bc03b18fc5f4c0e9125e96be06048c024f1bb6d666400b2f298a060c786",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "status": "complete",
+      "target_id": "stage>inspect>deploy",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72008
+      },
+      "turns_executed": 2,
+      "turns_registered": 2,
+      "usage": {
+        "input_tokens": 428,
+        "output_tokens": 97
+      },
+      "write_status": "control_no_write"
+    },
+    {
+      "arm": "ISO",
+      "board_log": [],
+      "claim": null,
+      "condition": "ISO",
+      "confidence": 0.66,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "stage>deploy>inspect"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011949",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 1.2052,
+        "entropy_bits": 1.20212957386374,
+        "feasible_mass": 0.99,
+        "log_loss": 1.7719568419318752,
+        "p_target": 0.17
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=deploy>inspect",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.17,
+        "deploy>stage>inspect": 0.11,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.71,
+        "stage>inspect>deploy": 0.01
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.20212957386374,
+        "entropy_raw_bits": 1.20212957386374,
+        "invalid_classes": [],
+        "maximum_probability": 0.71,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>deploy>inspect"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 2
+      },
+      "prompt_form_id": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.17,
+        "deploy>stage>inspect": 0.11,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.71,
+        "stage>inspect>deploy": 0.01
+      },
+      "renormalized": true,
+      "request_hash": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>deploy>inspect",
+      "status": "complete",
+      "target_id": "deploy>inspect>stage",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72009
+      },
+      "turns_executed": 1,
+      "turns_registered": 1,
+      "usage": {
+        "input_tokens": 421,
+        "output_tokens": 97
+      },
+      "write_status": null
+    },
+    {
+      "arm": "FULL",
+      "board_log": [],
+      "claim": null,
+      "condition": "FULL",
+      "confidence": 1.0,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "stage>deploy>inspect"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011949",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.0,
+        "entropy_bits": -0.0,
+        "feasible_mass": 1.0,
+        "log_loss": -0.0,
+        "p_target": 1.0
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=deploy>inspect",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 1.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.0
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": -0.0,
+        "entropy_raw_bits": -0.0,
+        "invalid_classes": [],
+        "maximum_probability": 1.0,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "deploy>inspect>stage"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 5
+      },
+      "prompt_form_id": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 1.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.0
+      },
+      "renormalized": true,
+      "request_hash": "457e45ecaaea7a9086e26d27b44f7c9c2ea2a131d4bdc0fe77c4ac6d3b83429d",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "deploy>inspect>stage",
+      "status": "complete",
+      "target_id": "deploy>inspect>stage",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72009
+      },
+      "turns_executed": 1,
+      "turns_registered": 1,
+      "usage": {
+        "input_tokens": 431,
+        "output_tokens": 96
+      },
+      "write_status": null
+    },
+    {
+      "arm": "COMM",
+      "board_log": [],
+      "claim": null,
+      "condition": "COMM",
+      "confidence": 0.65,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": "x-planning-00011949",
+      "feasible_set": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "stage>deploy>inspect"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011949",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 1.2174,
+        "entropy_bits": 1.1744486962349658,
+        "feasible_mass": 0.99,
+        "log_loss": 1.7719568419318752,
+        "p_target": 0.17
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=deploy>inspect",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.17,
+        "deploy>stage>inspect": 0.1,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.72,
+        "stage>inspect>deploy": 0.01
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.1744486962349658,
+        "entropy_raw_bits": 1.1744486962349658,
+        "invalid_classes": [],
+        "maximum_probability": 0.72,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>deploy>inspect"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 2
+      },
+      "prompt_form_id": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.17,
+        "deploy>stage>inspect": 0.1,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.72,
+        "stage>inspect>deploy": 0.01
+      },
+      "renormalized": true,
+      "request_hash": "40f9a6c24d02149c02ca0acf7e3d057d56194c9c8e6a0b367fa7e6afee6a3804",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>deploy>inspect",
+      "status": "complete",
+      "target_id": "deploy>inspect>stage",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72009
+      },
+      "turns_executed": 2,
+      "turns_registered": 2,
+      "usage": {
+        "input_tokens": 429,
+        "output_tokens": 97
+      },
+      "write_status": "silent"
+    },
+    {
+      "arm": "COMM_CONTROL",
+      "board_log": [],
+      "claim": null,
+      "condition": "COMM",
+      "confidence": 0.53,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "stage>deploy>inspect"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-00011949",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.9516,
+        "entropy_bits": 1.384085203059341,
+        "feasible_mass": 0.99,
+        "log_loss": 1.3862943611198906,
+        "p_target": 0.25
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=deploy>inspect",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.25,
+        "deploy>stage>inspect": 0.13,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.61,
+        "stage>inspect>deploy": 0.01
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.384085203059341,
+        "entropy_raw_bits": 1.384085203059341,
+        "invalid_classes": [],
+        "maximum_probability": 0.61,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>deploy>inspect"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 2
+      },
+      "prompt_form_id": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.25,
+        "deploy>stage>inspect": 0.13,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.61,
+        "stage>inspect>deploy": 0.01
+      },
+      "renormalized": true,
+      "request_hash": "40f9a6c24d02149c02ca0acf7e3d057d56194c9c8e6a0b367fa7e6afee6a3804",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>deploy>inspect",
+      "status": "complete",
+      "target_id": "deploy>inspect>stage",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72009
+      },
+      "turns_executed": 2,
+      "turns_registered": 2,
+      "usage": {
+        "input_tokens": 429,
+        "output_tokens": 97
+      },
+      "write_status": "control_no_write"
+    },
+    {
+      "arm": "ISO",
+      "board_log": [],
+      "claim": null,
+      "condition": "ISO",
+      "confidence": 0.55,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "stage>deploy>inspect"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-0001194a",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.911,
+        "entropy_bits": 1.3209018490289248,
+        "feasible_mass": 0.99,
+        "log_loss": 1.2729656758128873,
+        "p_target": 0.28
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=deploy>inspect",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.28,
+        "deploy>stage>inspect": 0.09,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.62,
+        "stage>inspect>deploy": 0.01
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.3209018490289248,
+        "entropy_raw_bits": 1.3209018490289248,
+        "invalid_classes": [],
+        "maximum_probability": 0.62,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>deploy>inspect"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 2
+      },
+      "prompt_form_id": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.28,
+        "deploy>stage>inspect": 0.09,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.62,
+        "stage>inspect>deploy": 0.01
+      },
+      "renormalized": true,
+      "request_hash": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>deploy>inspect",
+      "status": "complete",
+      "target_id": "deploy>inspect>stage",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72010
+      },
+      "turns_executed": 1,
+      "turns_registered": 1,
+      "usage": {
+        "input_tokens": 421,
+        "output_tokens": 97
+      },
+      "write_status": null
+    },
+    {
+      "arm": "FULL",
+      "board_log": [],
+      "claim": null,
+      "condition": "FULL",
+      "confidence": 1.0,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "stage>deploy>inspect"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-0001194a",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.0,
+        "entropy_bits": -0.0,
+        "feasible_mass": 1.0,
+        "log_loss": -0.0,
+        "p_target": 1.0
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=deploy>inspect",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 1.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.0
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": -0.0,
+        "entropy_raw_bits": -0.0,
+        "invalid_classes": [],
+        "maximum_probability": 1.0,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "deploy>inspect>stage"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 5
+      },
+      "prompt_form_id": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 1.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.0
+      },
+      "renormalized": true,
+      "request_hash": "457e45ecaaea7a9086e26d27b44f7c9c2ea2a131d4bdc0fe77c4ac6d3b83429d",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "deploy>inspect>stage",
+      "status": "complete",
+      "target_id": "deploy>inspect>stage",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72010
+      },
+      "turns_executed": 1,
+      "turns_registered": 1,
+      "usage": {
+        "input_tokens": 431,
+        "output_tokens": 96
+      },
+      "write_status": null
+    },
+    {
+      "arm": "COMM",
+      "board_log": [],
+      "claim": null,
+      "condition": "COMM",
+      "confidence": 0.66,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": "x-planning-0001194a",
+      "feasible_set": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "stage>deploy>inspect"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-0001194a",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 1.199,
+        "entropy_bits": 1.1656304383468354,
+        "feasible_mass": 0.99,
+        "log_loss": 1.7147984280919266,
+        "p_target": 0.18
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=deploy>inspect",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.18,
+        "deploy>stage>inspect": 0.09,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.72,
+        "stage>inspect>deploy": 0.01
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.1656304383468354,
+        "entropy_raw_bits": 1.1656304383468354,
+        "invalid_classes": [],
+        "maximum_probability": 0.72,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>deploy>inspect"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 2
+      },
+      "prompt_form_id": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.18,
+        "deploy>stage>inspect": 0.09,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.72,
+        "stage>inspect>deploy": 0.01
+      },
+      "renormalized": true,
+      "request_hash": "40f9a6c24d02149c02ca0acf7e3d057d56194c9c8e6a0b367fa7e6afee6a3804",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>deploy>inspect",
+      "status": "complete",
+      "target_id": "deploy>inspect>stage",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72010
+      },
+      "turns_executed": 2,
+      "turns_registered": 2,
+      "usage": {
+        "input_tokens": 429,
+        "output_tokens": 97
+      },
+      "write_status": "silent"
+    },
+    {
+      "arm": "COMM_CONTROL",
+      "board_log": [],
+      "claim": null,
+      "condition": "COMM",
+      "confidence": 0.59,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "stage>deploy>inspect"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-0001194a",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 1.0386,
+        "entropy_bits": 1.2819440116162963,
+        "feasible_mass": 0.99,
+        "log_loss": 1.4696759700589417,
+        "p_target": 0.23
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=deploy>inspect",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.23,
+        "deploy>stage>inspect": 0.1,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.66,
+        "stage>inspect>deploy": 0.01
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.2819440116162963,
+        "entropy_raw_bits": 1.2819440116162963,
+        "invalid_classes": [],
+        "maximum_probability": 0.66,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>deploy>inspect"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 2
+      },
+      "prompt_form_id": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.23,
+        "deploy>stage>inspect": 0.1,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.66,
+        "stage>inspect>deploy": 0.01
+      },
+      "renormalized": true,
+      "request_hash": "40f9a6c24d02149c02ca0acf7e3d057d56194c9c8e6a0b367fa7e6afee6a3804",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>deploy>inspect",
+      "status": "complete",
+      "target_id": "deploy>inspect>stage",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72010
+      },
+      "turns_executed": 2,
+      "turns_registered": 2,
+      "usage": {
+        "input_tokens": 429,
+        "output_tokens": 97
+      },
+      "write_status": "control_no_write"
+    },
+    {
+      "arm": "ISO",
+      "board_log": [],
+      "claim": null,
+      "condition": "ISO",
+      "confidence": 0.6,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "deploy>inspect>stage",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-0001194b",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.187,
+        "entropy_bits": 1.2773439942381921,
+        "feasible_mass": 0.98,
+        "log_loss": 0.4155154439616658,
+        "p_target": 0.66
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=inspect>stage",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.26,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.06,
+        "inspect>stage>deploy": 0.66,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.01
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.2773439942381921,
+        "entropy_raw_bits": 1.2773439942381921,
+        "invalid_classes": [],
+        "maximum_probability": 0.66,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "inspect>stage>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 1
+      },
+      "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.26,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.06,
+        "inspect>stage>deploy": 0.66,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.01
+      },
+      "renormalized": true,
+      "request_hash": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "inspect>stage>deploy",
+      "status": "complete",
+      "target_id": "inspect>stage>deploy",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72011
+      },
+      "turns_executed": 1,
+      "turns_registered": 1,
+      "usage": {
+        "input_tokens": 420,
+        "output_tokens": 96
+      },
+      "write_status": null
+    },
+    {
+      "arm": "FULL",
+      "board_log": [],
+      "claim": null,
+      "condition": "FULL",
+      "confidence": 1.0,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "deploy>inspect>stage",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-0001194b",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.0,
+        "entropy_bits": -0.0,
+        "feasible_mass": 1.0,
+        "log_loss": -0.0,
+        "p_target": 1.0
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=inspect>stage",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 1.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.0
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": -0.0,
+        "entropy_raw_bits": -0.0,
+        "invalid_classes": [],
+        "maximum_probability": 1.0,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "inspect>stage>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 5
+      },
+      "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 1.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.0
+      },
+      "renormalized": true,
+      "request_hash": "645a4f7872e8225b09611cf69f9373980dbe6dcecea0f9afd24e45362fe0885f",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "inspect>stage>deploy",
+      "status": "complete",
+      "target_id": "inspect>stage>deploy",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72011
+      },
+      "turns_executed": 1,
+      "turns_registered": 1,
+      "usage": {
+        "input_tokens": 430,
+        "output_tokens": 96
+      },
+      "write_status": null
+    },
+    {
+      "arm": "COMM",
+      "board_log": [],
+      "claim": null,
+      "condition": "COMM",
+      "confidence": 0.63,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": "x-planning-0001194b",
+      "feasible_set": [
+        "deploy>inspect>stage",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-0001194b",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.15739999999999998,
+        "entropy_bits": 1.1734855643814412,
+        "feasible_mass": 0.9900000000000001,
+        "log_loss": 0.3710636813908319,
+        "p_target": 0.6900000000000001
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=inspect>stage",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.24000000000000002,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.060000000000000005,
+        "inspect>stage>deploy": 0.6900000000000001,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.010000000000000002
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 1.1102230246251565e-16,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.1734855643814412,
+        "entropy_raw_bits": 1.1734855643814412,
+        "invalid_classes": [],
+        "maximum_probability": 0.69,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 1.1102230246251565e-16,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "inspect>stage>deploy"
+        ],
+        "raw_probability_sum": 0.9999999999999999,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": -1.1102230246251565e-16,
+        "zero_count": 2
+      },
+      "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.24,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.06,
+        "inspect>stage>deploy": 0.69,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.01
+      },
+      "renormalized": true,
+      "request_hash": "47c58af68377f6ac46c557f02f49a7e52d4f5231afccc7157a2fb2f4ed47351c",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "inspect>stage>deploy",
+      "status": "complete",
+      "target_id": "inspect>stage>deploy",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72011
+      },
+      "turns_executed": 2,
+      "turns_registered": 2,
+      "usage": {
+        "input_tokens": 428,
+        "output_tokens": 96
+      },
+      "write_status": "silent"
+    },
+    {
+      "arm": "COMM_CONTROL",
+      "board_log": [],
+      "claim": null,
+      "condition": "COMM",
+      "confidence": 0.64,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "deploy>inspect>stage",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-0001194b",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.13960000000000003,
+        "entropy_bits": 1.1210200802889194,
+        "feasible_mass": 0.99,
+        "log_loss": 0.342490308946776,
+        "p_target": 0.71
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=inspect>stage",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.23,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.05,
+        "inspect>stage>deploy": 0.71,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.01
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.1210200802889194,
+        "entropy_raw_bits": 1.1210200802889194,
+        "invalid_classes": [],
+        "maximum_probability": 0.71,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "inspect>stage>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 2
+      },
+      "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.23,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.05,
+        "inspect>stage>deploy": 0.71,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.01
+      },
+      "renormalized": true,
+      "request_hash": "47c58af68377f6ac46c557f02f49a7e52d4f5231afccc7157a2fb2f4ed47351c",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "inspect>stage>deploy",
+      "status": "complete",
+      "target_id": "inspect>stage>deploy",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72011
+      },
+      "turns_executed": 2,
+      "turns_registered": 2,
+      "usage": {
+        "input_tokens": 428,
+        "output_tokens": 96
+      },
+      "write_status": "control_no_write"
+    },
+    {
+      "arm": "ISO",
+      "board_log": [],
+      "claim": null,
+      "condition": "ISO",
+      "confidence": 0.75,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "deploy>stage>inspect",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-0001194c",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.07039999999999999,
+        "entropy_bits": 1.0636704511597967,
+        "feasible_mass": 0.98,
+        "log_loss": 0.2484613592984996,
+        "p_target": 0.78
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=stage>inspect",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.13,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.01,
+        "stage>deploy>inspect": 0.07,
+        "stage>inspect>deploy": 0.78
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.0636704511597967,
+        "entropy_raw_bits": 1.0636704511597967,
+        "invalid_classes": [],
+        "maximum_probability": 0.78,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>inspect>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 1
+      },
+      "prompt_form_id": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.13,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.01,
+        "stage>deploy>inspect": 0.07,
+        "stage>inspect>deploy": 0.78
+      },
+      "renormalized": true,
+      "request_hash": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "status": "complete",
+      "target_id": "stage>inspect>deploy",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72012
+      },
+      "turns_executed": 1,
+      "turns_registered": 1,
+      "usage": {
+        "input_tokens": 420,
+        "output_tokens": 97
+      },
+      "write_status": null
+    },
+    {
+      "arm": "FULL",
+      "board_log": [],
+      "claim": null,
+      "condition": "FULL",
+      "confidence": 1.0,
+      "eligible_exposure": false,
+      "error_class": null,
+      "exposure_id": null,
+      "feasible_set": [
+        "deploy>stage>inspect",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-0001194c",
+      "message_id": null,
+      "metrics": {
+        "brier_score": 0.0,
+        "entropy_bits": -0.0,
+        "feasible_mass": 1.0,
+        "log_loss": -0.0,
+        "p_target": 1.0
+      },
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "pre_read_state": {
+        "agent_id": "A",
+        "clues": [
+          "precedes=stage>inspect",
+          "budget=valid"
+        ],
+        "complexity": "low",
+        "family": "planning"
+      },
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 1.0
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": -0.0,
+        "entropy_raw_bits": -0.0,
+        "invalid_classes": [],
+        "maximum_probability": 1.0,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>inspect>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 5
+      },
+      "prompt_form_id": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 1.0
+      },
+      "renormalized": true,
+      "request_hash": "66cf786ee6fce946e3edb1ddd32cbab8b1cc45273f12036676e899cc5b295cff",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "status": "complete",
+      "target_id": "stage>inspect>deploy",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72012
+      },
+      "turns_executed": 1,
+      "turns_registered": 1,
+      "usage": {
+        "input_tokens": 431,
+        "output_tokens": 97
+      },
+      "write_status": null
+    },
+    {
+      "arm": "COMM",
+      "board_log": [],
+      "claim": null,
+      "condition": "COMM",
+      "confidence": null,
+      "eligible_exposure": false,
+      "error_class": "writer_http_429_rate_limited",
+      "exposure_id": null,
+      "feasible_set": [
+        "deploy>stage>inspect",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "i_m_bits": null,
+      "instance_id": "planning-0001194c",
+      "message_id": null,
+      "metrics": null,
+      "normalization_tier": "malformed",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {},
+      "probability_diagnostics": null,
+      "prompt_form_id": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "provider_attempts": {
+        "jev": 50,
+        "ling": 29
+      },
+      "raw_probabilities": {},
+      "renormalized": false,
+      "request_hash": null,
+      "resolved_model": null,
+      "selected_option_id": null,
+      "status": "invalid",
+      "target_id": "stage>inspect>deploy",
+      "task": {
+        "agent": "A",
+        "complexity": "low",
+        "family": "planning",
+        "regime": "N",
+        "seed": 72012
+      },
+      "turns_executed": 1,
+      "turns_registered": 2,
+      "usage": {},
+      "write_status": "writer_error"
+    }
+  ],
+  "codec_version": "jev-choice-wire-v2",
+  "cost_cap_usd": 1.0,
+  "credentials_retained": false,
+  "estimated_cost_usd": 0.000896616,
+  "forms_missing_exposure": [
+    "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+    "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+    "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+    "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+    "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+    "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222"
+  ],
+  "forms_with_eligible_exposure": 0,
+  "hard_rows": 0,
+  "input_tokens": 21348,
+  "material_renormalized_rows": 0,
+  "max_physical_requests": 300,
+  "mode": "jev-choice-pilot-v2",
+  "note": "does not start #159 replay; missing form exposure makes the pilot inconclusive",
+  "output_tokens": 4837,
+  "physical_attempts": 79,
+  "pilot_version": "jev-choice-pilot-v2",
+  "pinned_registration_hash": "f9cc1a2577998e61170bdefca1754065cb3fca5373c29490f2a5476e2db56991",
+  "planned_requests": 102,
+  "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+  "provider_attempts": {
+    "combined": 79,
+    "jev": 50,
+    "jev_partition": 250,
+    "ling": 29,
+    "ling_partition": 50
+  },
+  "raw_response_retained": false,
+  "registration_hash": "f9cc1a2577998e61170bdefca1754065cb3fca5373c29490f2a5476e2db56991",
+  "renormalized_rows": 50,
+  "replay_ready": false,
+  "replay_started": false,
+  "resolved_models": [
+    "jev-1.13.0"
+  ],
+  "status": "stopped",
+  "stop_reason": "writer_http_429_rate_limited",
+  "suspect_rows": 0
+}
