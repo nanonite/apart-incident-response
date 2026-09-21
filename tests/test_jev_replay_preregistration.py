@@ -55,7 +55,7 @@ class DraftTests(unittest.TestCase):
         self.assertEqual(guards["feasible_set_mass"]["epsilon"], 0.01)
         self.assertIn("pre-read clue-consistent set", guards["feasible_set_mass"]["reference_set"])
         self.assertTrue(self.doc["decision_rule"]["no_one_sided_switch"])
-        self.assertTrue(any("I_m = 0" in requirement for requirement in self.doc["placebo"]["requirements"]))
+        self.assertTrue(any("I_m" in requirement for requirement in self.doc["placebo"]["requirements"]))
         self.assertIn("one valid real/placebo pair in each of the six forms",
                       self.doc["complete_pair_rule"])
         self.assertEqual(self.doc["claim_scope"]["forms"], 6)
@@ -77,9 +77,12 @@ class DraftTests(unittest.TestCase):
         self.assertEqual(len(forms["instance_ids"]), 17)
         self.assertEqual(len(forms["form_manifest_hash"]), 64)
         placebo = self.doc["placebo"]
-        self.assertEqual(placebo["wording"], "peer_clue: {claim}")
+        self.assertEqual(placebo["envelope"], "peer_message from {writer}: {claim}")
+        self.assertEqual(placebo["placebo_writer_id"], "peer")
         self.assertTrue(placebo["synthetic"])
         self.assertEqual(len(placebo["wording_hash"]), 64)
+        self.assertIn("unverified_real_evidence", self.doc["eligibility"]["real_message"])
+        self.assertIn("visible_messages", self.doc["message_envelope"]["branch_request_rule"])
 
     def test_hash_is_reproducible(self):
         self.assertEqual(pr.build_replay_preregistration(journal_path=JOURNAL)["preregistration_hash"],

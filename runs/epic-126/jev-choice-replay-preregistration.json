@@ -31,6 +31,10 @@
     "null_branch": "separate manipulation check",
     "primary_test": "two-sided exact cluster sign-flip on form means"
   },
+  "eligibility": {
+    "placebo": "the claim is a receiver-already-known pre-read clue with authoritative I_m = 0 and an unchanged feasible set",
+    "real_message": "the writer provably owns the exact claim (instance.holds_claim), the reader is the receiver, and the recorded board event matches writer/reader/claim/message_id; I_m is recomputed from the generated instance, not self-reported. Missing evidence fails closed as unverified_real_evidence and owner_exact flags are not trusted."
+  },
   "estimand": {
     "directional_prediction": "delta < 0",
     "estimand": "equal-weight mean across distinct forms",
@@ -145,6 +149,12 @@
     "regime": "N",
     "seed_base": 72000
   },
+  "message_envelope": {
+    "branch_request_rule": "each branch request = the frozen pre-read body with state.visible_messages set to [] (null) or one peer message; branch request_hash is recomputed and must match the stored value",
+    "placebo_arm": "peer_message from peer: <known receiver clue>",
+    "real_arm": "peer_message from <writer>: <claim>",
+    "template": "peer_message from {writer}: {claim}"
+  },
   "missingness": "planned/attempted/valid/complete/incomplete reported per form and per branch; a failed attempt is distinguished from an unattempted branch",
   "model_and_protocol": {
     "codec_version": "jev-choice-wire-v1",
@@ -157,16 +167,18 @@
     "confirm the controller-injected placebo wording"
   ],
   "placebo": {
-    "construction": "re-present one of the receiver's own pre-read private clues as a peer claim",
+    "construction": "controller-injected re-presentation of a receiver-already-known pre-read clue, using the same message envelope as the real arm",
+    "envelope": "peer_message from {writer}: {claim}",
     "note": "the current audited instances have no B-owned zero-information claim, so a naturally B-owned placebo is not feasible without a generator change",
+    "placebo_writer_id": "peer",
     "requirements": [
-      "verified I_m = 0",
-      "no feasible-set reduction",
-      "synthetic origin recorded outside the model-visible message"
+      "claim is one of the receiver's own pre-read private clues",
+      "authoritative I_m against the receiver's pre-read feasible set is 0",
+      "the pre-read feasible set is unchanged",
+      "same message envelope as the real arm; synthetic provenance controller-side"
     ],
     "synthetic": true,
-    "wording": "peer_clue: {claim}",
-    "wording_hash": "ba66c46561e219e66be0dd9c3cef7f8d3e2f1cf34970ca375e47e1869531160e"
+    "wording_hash": "91fb96aa8203c1dd39baf1c16828480e2ccb6d389ba99cf84b3971d7f8157389"
   },
   "power": {
     "between_form_sd_bits": 0.19331804672510103,
@@ -178,7 +190,7 @@
     "label": "illustrative and secondary",
     "sd_caveat": "the observed J3 between-form SD is from ISO-minus-FULL, not the real-minus-placebo estimand; use only as an illustrative sensitivity value, not a plug-in variance"
   },
-  "preregistration_hash": "2461f968291f870ead4c45e09c3b04347b5106a0b373e86679e7ab4e7c3bca2d",
+  "preregistration_hash": "3659b5fbb155a9e901a2441ee4319200c2f58c7165452cc38c4b6641b5c8d4fb",
   "preregistration_version": "stage2-jev-choice-replay-v1",
   "stage": "jev-choice-replay",
   "status": "draft_pending_review",

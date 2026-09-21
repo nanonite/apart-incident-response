@@ -71,8 +71,21 @@ property of the message, not of the model's distribution.
 
 ## Eligibility, identity, missingness
 
-- **Eligible real message**: exact owner claim (`holds_claim`), delivered via the
-  board, and exposed to the receiver (writer/reader/exposure provenance present).
+- **Instrument (frozen)**: one message envelope `peer_message from {writer}: {claim}` for
+  both the real and placebo arms; the placebo writer is the fixed controller-side label
+  `peer`. Each branch request is deterministically reconstructed as the frozen pre-read
+  body with `state.visible_messages` set to `[]` (null) or one peer message; each branch
+  `request_hash` is **recomputed** and must match the stored value, so arbitrary hashes
+  are rejected.
+- **Eligible real message (authoritative)**: resolved from the generated instance — the
+  writer provably owns the exact claim (`holds_claim`), the reader is the receiver, and
+  the recorded board event matches writer/reader/claim/message_id. Objective information
+  `I_m` is recomputed from the instance, never self-reported. If the retained evidence
+  cannot establish a property, validation fails closed (`unverified_real_evidence`);
+  self-reported `owner_exact` flags are not trusted.
+- **Eligible placebo (authoritative)**: the claim is one of the receiver's own pre-read
+  clues, its authoritative `I_m` against the receiver's pre-read feasible set is 0, and
+  the feasible set is unchanged; synthetic provenance stays controller-side.
 - **Identity**: all branches of an event must share the identical `C` and option
   set (same `prompt_form_id`). A branch whose state or options differ is rejected.
 - **Validity**: a branch must return a complete, normalized, exact-option-key
@@ -84,6 +97,7 @@ property of the message, not of the model's distribution.
 - **Mixed protocols, duplicates, answer-key leakage** fail closed: one Jev
   protocol key per analysis; no duplicate `(prompt_form_id, event_id, branch)`;
   no target value or answer key in any model-visible state.
+- **No exceptions on malformed input**: invalid records return problem codes.
 
 ## Claim scope
 

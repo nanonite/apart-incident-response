@@ -181,13 +181,32 @@ def build_replay_preregistration(*, journal_path: Path = DEFAULT_JOURNAL,
         },
         "placebo": {
             "construction": jr.PLACEBO_CONSTRUCTION,
-            "wording": jr.PLACEBO_WORDING_TEMPLATE,
+            "envelope": jr.MESSAGE_ENVELOPE_TEMPLATE,
+            "placebo_writer_id": jr.PLACEBO_WRITER_ID,
             "synthetic": jr.PLACEBO_SYNTHETIC,
-            "wording_hash": jr.placebo_wording_hash(),
-            "requirements": ["verified I_m = 0", "no feasible-set reduction",
-                             "synthetic origin recorded outside the model-visible message"],
+            "wording_hash": jr.message_wording_hash(),
+            "requirements": ["claim is one of the receiver's own pre-read private clues",
+                             "authoritative I_m against the receiver's pre-read feasible set is 0",
+                             "the pre-read feasible set is unchanged",
+                             "same message envelope as the real arm; synthetic provenance controller-side"],
             "note": "the current audited instances have no B-owned zero-information claim, so a naturally "
                     "B-owned placebo is not feasible without a generator change",
+        },
+        "message_envelope": {
+            "template": jr.MESSAGE_ENVELOPE_TEMPLATE,
+            "real_arm": "peer_message from <writer>: <claim>",
+            "placebo_arm": "peer_message from peer: <known receiver clue>",
+            "branch_request_rule": "each branch request = the frozen pre-read body with state.visible_messages "
+                                   "set to [] (null) or one peer message; branch request_hash is recomputed "
+                                   "and must match the stored value",
+        },
+        "eligibility": {
+            "real_message": "the writer provably owns the exact claim (instance.holds_claim), the reader is the "
+                            "receiver, and the recorded board event matches writer/reader/claim/message_id; I_m "
+                            "is recomputed from the generated instance, not self-reported. Missing evidence "
+                            "fails closed as unverified_real_evidence and owner_exact flags are not trusted.",
+            "placebo": "the claim is a receiver-already-known pre-read clue with authoritative I_m = 0 and an "
+                       "unchanged feasible set",
         },
         "frozen_forms": frozen_forms(),
         "decision_rule": {
