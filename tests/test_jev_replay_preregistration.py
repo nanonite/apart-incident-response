@@ -81,6 +81,16 @@ class DraftAndLockTests(unittest.TestCase):
     def test_locked_hash_reproduces(self):
         self.assertEqual(locked()["preregistration_hash"], self.doc["preregistration_hash"])
 
+    def test_ling_contract_is_frozen(self):
+        ling = self.doc["ling_contract"]
+        self.assertTrue(ling["model"])
+        self.assertEqual(ling["endpoint"], pr.LING_ENDPOINT)
+        self.assertEqual(ling["max_tokens"], 64)
+        self.assertEqual(ling["temperature"], 0.0)
+        self.assertEqual(ling["backoff_initial_seconds"], 0.5)
+        self.assertEqual(ling["backoff_max_seconds"], 5.0)
+        self.assertEqual(len(ling["contract_hash"]), 64)
+
 
 class VerifierTests(unittest.TestCase):
     def setUp(self):

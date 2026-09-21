@@ -173,7 +173,7 @@
       "src/apart_incident_response/jev_replay_inference.py",
       "src/apart_incident_response/jev_choice_pilot.py"
     ],
-    "source_files_hash": "e7eb192655a42b5a88d843f97c870d0ea323758aa36b23c6f6a2778009033eb9",
+    "source_files_hash": "9705bb17201dc69eaf60e5ba2a9d6e6a3ddbcf00f798275c81f4c18bf5e933ae",
     "treatment_hash": "ae6ff9e7fee8dc9428938c062e4296e551456605e2c5879594e38b35208852a5"
   },
   "guards": {
@@ -254,6 +254,29 @@
     "unverified_real_evidence",
     "wrong_answer_kind"
   ],
+  "ling_contract": {
+    "backoff_initial_seconds": 0.5,
+    "backoff_max_seconds": 5.0,
+    "contract_hash": "28c819f2c651c4a1bdeb36dc650224123ae27d10dd67d7a39ad6882fb4866aa1",
+    "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+    "max_retries": 2,
+    "max_tokens": 64,
+    "model": "inclusionai/ling-3.0-flash-vl:free",
+    "prompt_template": "You may send at most one exact private clue to a peer, or stay silent. Private clues: {clues}. Reply with MESSAGE: <exact clue> or SILENCE.",
+    "provider": "openrouter",
+    "provider_version": "behavioral-discovery-v1",
+    "retryable_statuses": [
+      408,
+      429,
+      500,
+      502,
+      503,
+      504,
+      529
+    ],
+    "seed_behavior": "not_requested",
+    "temperature": 0.0
+  },
   "manifest": {
     "complexity": "low",
     "family": "planning",
@@ -322,7 +345,7 @@
     "label": "illustrative and secondary",
     "sd_caveat": "the observed J3 between-form SD is from ISO-minus-FULL, not the real-minus-placebo estimand; use only as an illustrative sensitivity value, not a plug-in variance"
   },
-  "preregistration_hash": "55c952ec7c8272aa68a1e3928456c42b70ccd5d5e6fa2cd15d01f51b4c92a79e",
+  "preregistration_hash": "9e0388e134e576f37b9f5d2a2007cbe42c69bcff2d928c9612e97c7e10cde03f",
   "preregistration_version": "stage2-jev-choice-replay-v1",
   "retry_policy": {
     "backoff_max_seconds": 5.0,

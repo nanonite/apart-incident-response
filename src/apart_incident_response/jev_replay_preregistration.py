@@ -20,6 +20,7 @@ import math
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from . import behavioral_discovery as bd
 from . import jev_choice as jc
 from . import jev_preregistration as jp
 from . import jev_replay as jr
@@ -76,6 +77,33 @@ JEV_REPLAY_SOURCE_FILES = (
 
 DEFAULT_JOURNAL = Path("runs/epic-126/jev-choice-capability.jsonl")
 DEFAULT_OUTPUT = Path("runs/epic-126/jev-choice-replay-preregistration.json")
+
+#: Frozen Ling writer contract. Literal values are single-sourced here and bound
+#: into the registration content, so a change forces re-registration.
+LING_MODEL = bd.DEFAULT_FREE_MODEL
+LING_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
+LING_PROMPT_TEMPLATE = ("You may send at most one exact private clue to a peer, or stay silent. "
+                        "Private clues: {clues}. Reply with MESSAGE: <exact clue> or SILENCE.")
+LING_MAX_TOKENS = 64
+LING_TEMPERATURE = 0.0
+LING_SEED_BEHAVIOR = "not_requested"
+LING_PROVIDER_VERSION = bd.BEHAVIORAL_VERSION
+LING_BACKOFF_INITIAL = 0.5
+LING_BACKOFF_MAX = 5.0
+LING_MAX_RETRIES = JEV_REPLAY_MAX_RETRIES
+
+
+def ling_contract() -> dict[str, Any]:
+    contract = {
+        "provider": "openrouter", "model": LING_MODEL, "endpoint": LING_ENDPOINT,
+        "prompt_template": LING_PROMPT_TEMPLATE, "max_tokens": LING_MAX_TOKENS,
+        "temperature": LING_TEMPERATURE, "seed_behavior": LING_SEED_BEHAVIOR,
+        "provider_version": LING_PROVIDER_VERSION, "max_retries": LING_MAX_RETRIES,
+        "backoff_initial_seconds": LING_BACKOFF_INITIAL, "backoff_max_seconds": LING_BACKOFF_MAX,
+        "retryable_statuses": JEV_REPLAY_RETRYABLE,
+    }
+    contract["contract_hash"] = hashlib.sha256(json.dumps(contract, sort_keys=True).encode()).hexdigest()
+    return contract
 
 
 class _NoopClient:
@@ -349,6 +377,7 @@ def build_replay_preregistration(*, journal_path: Path = DEFAULT_JOURNAL,
                                                        question_id=jc.JEV_QUESTION_ID),
             "ling": "pinned free Ling writer on OpenRouter free quota",
         },
+        "ling_contract": ling_contract(),
         "retry_policy": {
             "max_retries": JEV_REPLAY_MAX_RETRIES,
             "retryable_statuses": JEV_REPLAY_RETRYABLE,
@@ -515,6 +544,8 @@ __all__ = [
     "JEV_REPLAY_SEED_BASE", "JEV_REPLAY_REQUEST_CAP", "JEV_REPLAY_COST_CAP_USD",
     "JEV_REPLAY_JEV_REQUEST_CAP", "JEV_REPLAY_LING_REQUEST_CAP",
     "JEV_REPLAY_PLANNED_CALLS", "JEV_REPLAY_PLANNED_REQUESTS", "JEV_REPLAY_TURNS",
+    "LING_MODEL", "LING_ENDPOINT", "LING_PROMPT_TEMPLATE", "LING_MAX_TOKENS", "LING_TEMPERATURE",
+    "LING_BACKOFF_INITIAL", "LING_BACKOFF_MAX", "ling_contract",
     "audit_form_capacity", "frozen_forms", "treatment_hash", "between_form_sd",
     "illustrative_required_forms", "build_replay_preregistration",
     "verify_against_jev_replay_preregistration", "main",
