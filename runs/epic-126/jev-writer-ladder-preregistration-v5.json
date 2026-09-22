@@ -12,9 +12,25 @@
     "COMM_CONTROL (turn-matched, never writes)"
   ],
   "caps": {
+    "bridge_partition": {
+      "cost_cap_usd": 0.5,
+      "jev": 34,
+      "ling": 80,
+      "note": "bridge sub-partition; sums with the ladder sub-partition equal the combined cap",
+      "planned_requests": 85,
+      "total": 114
+    },
     "cost_cap_usd": 1.0,
     "input_token_ceiling": 8192,
     "input_usd_per_mtok": 0.042,
+    "ladder_partition": {
+      "cost_cap_usd": 0.5,
+      "jev": 216,
+      "ling": 220,
+      "note": "ladder sub-partition; sums with the bridge sub-partition equal the combined cap",
+      "planned_requests": 408,
+      "total": 436
+    },
     "physical_requests": 550,
     "planned_bridge_requests": 85,
     "planned_by_provider": {
@@ -27,7 +43,7 @@
     "provider_partition": {
       "jev": 250,
       "ling": 300,
-      "note": "per-provider partition per physical attempt, retries included",
+      "note": "combined ceiling; ladder and bridge use non-overlapping sub-partitions whose sums equal this ceiling, each per physical attempt with retries included",
       "total": 550
     },
     "retry_reserve": 57,
@@ -51,9 +67,9 @@
       "B"
     ],
     "cost_cap_usd": 0.5,
-    "jev_partition": 60,
-    "ling_partition": 120,
-    "physical_requests": 180,
+    "jev_partition": 34,
+    "ling_partition": 80,
+    "physical_requests": 114,
     "planned_requests": 85,
     "seed_algorithm": "sha256-truncated-signed31-v1",
     "token_budget": 1024,
@@ -88,7 +104,7 @@
       "src/apart_incident_response/jev_writer_ladder_pilot_v5.py",
       "src/apart_incident_response/jev_writer_ladder_preregistration_v5.py"
     ],
-    "source_files_hash": "7b15360945dbfb8d86dac5b246ce452e4e8c65f2049f88fbf461b9537e7a8d39",
+    "source_files_hash": "38c879fccc4785932e678f4eb7b3ce21db8f1b8b6957c6694f83cb010afa5c26",
     "treatment_hash": "0d400fc3b434f1f6648966fc5d616300123e38d2dbeaf1e58025564e393c2f97",
     "writer_schema_hash": "4576d8b82ad24444714a814e3b01cd47368cf6b3bddd9969435fc78ed6b38335"
   },
@@ -210,7 +226,7 @@
     "treatment_audit": "runs/epic-126/jev-writer-treatment-audit-v4.json"
   },
   "pending_decisions": [],
-  "preregistration_hash": "26944aafa98ebb7e1e06a509cbe3294e2b8dd428e6243c2547b6901c6ce8dc54",
+  "preregistration_hash": "bc44ca29e99138ca68a88f96eba553609ba4a738209b6ad167e5e7858d62c412",
   "preregistration_version": "stage2-jev-writer-ladder-v5",
   "purpose": "resolve why the paced v3 standalone writer produced 17/17 COMM silence by measuring an observable writer ladder over the same instances and forms, holding the Jev receiver fixed",
   "stage": "planning-low-writer-ladder",

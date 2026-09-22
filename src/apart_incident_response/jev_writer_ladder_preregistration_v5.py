@@ -33,10 +33,16 @@ DEFAULT_OUTPUT_V5 = Path("runs/epic-126/jev-writer-ladder-preregistration-v5.jso
 DEFAULT_REPORT_V5 = Path("runs/epic-126/jev-writer-ladder-report-v5.json")
 DEFAULT_AUDIT_V4 = Path("runs/epic-126/jev-writer-treatment-audit-v4.json")
 
-JEV_LADDER_REQUEST_CAP = 250
-LING_LADDER_REQUEST_CAP = 300
+# Non-overlapping sub-partitions: ladder + bridge sum to the combined cap.
+JEV_LADDER_REQUEST_CAP = 216
+LING_LADDER_REQUEST_CAP = 220
 LADDER_REQUEST_CAP = JEV_LADDER_REQUEST_CAP + LING_LADDER_REQUEST_CAP
-LADDER_COST_CAP_USD = 1.0
+LADDER_COST_CAP_USD = 0.5
+JEV_BRIDGE_REQUEST_CAP = 34
+LING_BRIDGE_REQUEST_CAP = 80
+COMBINED_JEV_REQUEST_CAP = JEV_LADDER_REQUEST_CAP + JEV_BRIDGE_REQUEST_CAP
+COMBINED_LING_REQUEST_CAP = LING_LADDER_REQUEST_CAP + LING_BRIDGE_REQUEST_CAP
+COMBINED_REQUEST_CAP = COMBINED_JEV_REQUEST_CAP + COMBINED_LING_REQUEST_CAP
 LADDER_INPUT_TOKEN_CEILING = pr.JEV_REPLAY_INPUT_TOKEN_CEILING
 LADDER_INPUT_USD_PER_MTOK = pr.JEV_REPLAY_INPUT_USD_PER_MTOK
 LADDER_LIVE_RUNGS = [rung for rung in ladder.LADDER_RUNGS if not rung.bridge]
@@ -46,10 +52,14 @@ LADDER_PLANNED_PER_RUNG = LADDER_INSTANCE_COUNT * 2 * 2  # 2 arms x (writer + re
 LADDER_PLANNED_REQUESTS = LADDER_RUNG_COUNT * LADDER_PLANNED_PER_RUNG
 BRIDGE_PLANNED_PER_INSTANCE = len(ladder.EXACT_BRIDGE_AGENTS) * ladder.EXACT_BRIDGE_TURNS + 1
 BRIDGE_PLANNED_REQUESTS = LADDER_INSTANCE_COUNT * BRIDGE_PLANNED_PER_INSTANCE
+LADDER_PLANNED_JEV = LADDER_RUNG_COUNT * LADDER_INSTANCE_COUNT * 2
+LADDER_PLANNED_LING = LADDER_RUNG_COUNT * LADDER_INSTANCE_COUNT * 2
+BRIDGE_PLANNED_JEV = LADDER_INSTANCE_COUNT
+BRIDGE_PLANNED_LING = LADDER_INSTANCE_COUNT * len(ladder.EXACT_BRIDGE_AGENTS) * ladder.EXACT_BRIDGE_TURNS
 TOTAL_PLANNED_REQUESTS = LADDER_PLANNED_REQUESTS + BRIDGE_PLANNED_REQUESTS
-BRIDGE_REQUEST_CAP = 180
-BRIDGE_JEV_CAP = 60
-BRIDGE_LING_CAP = 120
+BRIDGE_REQUEST_CAP = JEV_BRIDGE_REQUEST_CAP + LING_BRIDGE_REQUEST_CAP
+BRIDGE_JEV_CAP = JEV_BRIDGE_REQUEST_CAP
+BRIDGE_LING_CAP = LING_BRIDGE_REQUEST_CAP
 BRIDGE_COST_CAP_USD = 0.5
 
 OLD_OUTPUT_PATHS_V5 = (
@@ -121,7 +131,7 @@ def output_paths() -> dict[str, str]:
 
 
 def _worst_case_cost_usd() -> float:
-    return round(LADDER_REQUEST_CAP * LADDER_INPUT_TOKEN_CEILING * LADDER_INPUT_USD_PER_MTOK / 1_000_000, 9)
+    return round(COMBINED_REQUEST_CAP * LADDER_INPUT_TOKEN_CEILING * LADDER_INPUT_USD_PER_MTOK / 1_000_000, 9)
 
 
 def treatment_hash_v5() -> str:
@@ -220,24 +230,35 @@ def build_writer_ladder_preregistration_v5(*, approved: bool = False,
                               "not_normalized_hard", "argmax_shifted_on_renormalization",
                               "output_exists", "report_exists"}),
         "caps": {
-            "physical_requests": LADDER_REQUEST_CAP,
-            "cost_cap_usd": LADDER_COST_CAP_USD,
+            "physical_requests": COMBINED_REQUEST_CAP,
+            "cost_cap_usd": LADDER_COST_CAP_USD + BRIDGE_COST_CAP_USD,
             "input_token_ceiling": LADDER_INPUT_TOKEN_CEILING,
             "input_usd_per_mtok": LADDER_INPUT_USD_PER_MTOK,
             "worst_case_cost_usd": _worst_case_cost_usd(),
-            "provider_partition": {"jev": JEV_LADDER_REQUEST_CAP, "ling": LING_LADDER_REQUEST_CAP,
-                                   "total": LADDER_REQUEST_CAP,
-                                   "note": "per-provider partition per physical attempt, retries included"},
+            "provider_partition": {
+                "jev": COMBINED_JEV_REQUEST_CAP, "ling": COMBINED_LING_REQUEST_CAP,
+                "total": COMBINED_REQUEST_CAP,
+                "note": "combined ceiling; ladder and bridge use non-overlapping sub-partitions whose "
+                        "sums equal this ceiling, each per physical attempt with retries included"},
+            "ladder_partition": {
+                "jev": JEV_LADDER_REQUEST_CAP, "ling": LING_LADDER_REQUEST_CAP,
+                "total": LADDER_REQUEST_CAP, "cost_cap_usd": LADDER_COST_CAP_USD,
+                "planned_requests": LADDER_PLANNED_REQUESTS,
+                "note": "ladder sub-partition; sums with the bridge sub-partition equal the combined cap"},
+            "bridge_partition": {
+                "jev": JEV_BRIDGE_REQUEST_CAP, "ling": LING_BRIDGE_REQUEST_CAP,
+                "total": BRIDGE_REQUEST_CAP, "cost_cap_usd": BRIDGE_COST_CAP_USD,
+                "planned_requests": BRIDGE_PLANNED_REQUESTS,
+                "note": "bridge sub-partition; sums with the ladder sub-partition equal the combined cap"},
             "planned_requests": TOTAL_PLANNED_REQUESTS,
             "planned_ladder_requests": LADDER_PLANNED_REQUESTS,
             "planned_bridge_requests": BRIDGE_PLANNED_REQUESTS,
             "planned_per_rung": LADDER_PLANNED_PER_RUNG,
-            "planned_by_provider": {"jev": LADDER_RUNG_COUNT * LADDER_INSTANCE_COUNT * 2 + LADDER_INSTANCE_COUNT,
-                                    "ling": LADDER_RUNG_COUNT * LADDER_INSTANCE_COUNT * 2
-                                            + LADDER_INSTANCE_COUNT * len(ladder.EXACT_BRIDGE_AGENTS)
-                                            * ladder.EXACT_BRIDGE_TURNS},
-            "retry_reserve": LADDER_REQUEST_CAP - TOTAL_PLANNED_REQUESTS,
-            "status": ("locked; live_collection_authorized=false" if approved else "draft; not authorized"),
+            "planned_by_provider": {"jev": LADDER_PLANNED_JEV + BRIDGE_PLANNED_JEV,
+                                    "ling": LADDER_PLANNED_LING + BRIDGE_PLANNED_LING},
+            "retry_reserve": COMBINED_REQUEST_CAP - TOTAL_PLANNED_REQUESTS,
+            "status": ("locked; live_collection_authorized=false" if approved
+                       else "draft; not authorized"),
         },
         "missingness_and_reporting": {
             "per_rung": ["planned_cases", "planned_provider_calls", "attempted_cases", "writer_valid",
@@ -341,14 +362,37 @@ def verify_against_writer_ladder_preregistration_v5(document: Mapping[str, Any],
         errors.append("manifest hash mismatch")
 
     caps = document.get("caps", {})
-    if caps.get("physical_requests") != LADDER_REQUEST_CAP:
-        errors.append("request cap drift")
+    if caps.get("physical_requests") != COMBINED_REQUEST_CAP:
+        errors.append("combined request cap drift")
     if planned_requests is not None and planned_requests > caps.get("physical_requests", 0):
         errors.append("planned requests exceed the cap")
-    if caps.get("cost_cap_usd") != LADDER_COST_CAP_USD:
-        errors.append("cost cap drift")
+    if caps.get("cost_cap_usd") != LADDER_COST_CAP_USD + BRIDGE_COST_CAP_USD:
+        errors.append("combined cost cap drift")
     if float(caps.get("worst_case_cost_usd", 0.0)) > float(caps.get("cost_cap_usd", 0.0)):
         errors.append("worst-case cost exceeds the cap")
+    partition = caps.get("provider_partition", {})
+    ladder_cap = caps.get("ladder_partition", {})
+    bridge_cap = caps.get("bridge_partition", {})
+    bridge_block = document.get("exact_bridge", {})
+    if (ladder_cap.get("jev", -1) + bridge_cap.get("jev", -1) != partition.get("jev")
+            or ladder_cap.get("ling", -1) + bridge_cap.get("ling", -1) != partition.get("ling")):
+        errors.append("ladder and bridge sub-partitions overlap or do not sum to the combined partition")
+    if partition.get("jev") != COMBINED_JEV_REQUEST_CAP or partition.get("ling") != COMBINED_LING_REQUEST_CAP:
+        errors.append("combined provider partition drift")
+    if (bridge_block.get("jev_partition") != bridge_cap.get("jev")
+            or bridge_block.get("ling_partition") != bridge_cap.get("ling")
+            or bridge_block.get("physical_requests") != bridge_cap.get("total")
+            or bridge_block.get("cost_cap_usd") != bridge_cap.get("cost_cap_usd")):
+        errors.append("exact_bridge caps differ from the bridge sub-partition")
+    if bridge_block.get("token_budget") != ladder.EXACT_BRIDGE_TOKEN_BUDGET \
+            or bridge_block.get("turns") != ladder.EXACT_BRIDGE_TURNS \
+            or list(bridge_block.get("agents", [])) != list(ladder.EXACT_BRIDGE_AGENTS) \
+            or bridge_block.get("seed_algorithm") != ladder.EXACT_BRIDGE_SEED_ALGORITHM:
+        errors.append("exact_bridge prompt/seed/turn settings drift")
+    planned_jev = LADDER_PLANNED_JEV + BRIDGE_PLANNED_JEV
+    planned_ling = LADDER_PLANNED_LING + BRIDGE_PLANNED_LING
+    if planned_jev > partition.get("jev", 0) or planned_ling > partition.get("ling", 0):
+        errors.append("planned calls exceed the combined partition")
     return {"ok": not errors, "errors": errors, "registration_hash": document.get("preregistration_hash"),
             "planned_requests": planned_requests, "request_cap": caps.get("physical_requests"),
             "ladder_hash": ladder.ladder_hash(), "writer_schema_hash": writer_v5.writer_schema_hash()}
@@ -390,6 +434,9 @@ __all__ = [
     "BRIDGE_PLANNED_REQUESTS", "TOTAL_PLANNED_REQUESTS", "BRIDGE_REQUEST_CAP", "BRIDGE_JEV_CAP",
     "BRIDGE_LING_CAP", "BRIDGE_COST_CAP_USD",
     "JEV_LADDER_REQUEST_CAP", "LING_LADDER_REQUEST_CAP", "LADDER_REQUEST_CAP", "LADDER_COST_CAP_USD",
+    "JEV_BRIDGE_REQUEST_CAP", "LING_BRIDGE_REQUEST_CAP", "COMBINED_JEV_REQUEST_CAP",
+    "COMBINED_LING_REQUEST_CAP", "COMBINED_REQUEST_CAP", "LADDER_PLANNED_JEV", "LADDER_PLANNED_LING",
+    "BRIDGE_PLANNED_JEV", "BRIDGE_PLANNED_LING",
     "LADDER_PLANNED_REQUESTS", "OLD_OUTPUT_PATHS_V5", "JEV_WRITER_LADDER_SOURCE_FILES",
     "output_paths", "treatment_hash_v5", "build_writer_ladder_preregistration_v5",
     "verify_against_writer_ladder_preregistration_v5", "main",

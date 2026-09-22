@@ -64,6 +64,21 @@ class DraftAndLockV4Tests(unittest.TestCase):
         self.assertEqual(caps["physical_requests"], 550)
         self.assertEqual(caps["provider_partition"]["jev"], 250)
         self.assertEqual(caps["provider_partition"]["ling"], 300)
+        self.assertEqual(caps["ladder_partition"]["jev"], 216)
+        self.assertEqual(caps["ladder_partition"]["ling"], 220)
+        self.assertEqual(caps["ladder_partition"]["total"], 436)
+        self.assertEqual(caps["bridge_partition"]["jev"], 34)
+        self.assertEqual(caps["bridge_partition"]["ling"], 80)
+        self.assertEqual(caps["bridge_partition"]["total"], 114)
+        # non-overlapping sub-partitions sum exactly to the combined ceiling
+        self.assertEqual(caps["ladder_partition"]["jev"] + caps["bridge_partition"]["jev"],
+                         caps["provider_partition"]["jev"])
+        self.assertEqual(caps["ladder_partition"]["ling"] + caps["bridge_partition"]["ling"],
+                         caps["provider_partition"]["ling"])
+        self.assertLessEqual(caps["planned_by_provider"]["jev"], caps["provider_partition"]["jev"])
+        self.assertLessEqual(caps["planned_by_provider"]["ling"], caps["provider_partition"]["ling"])
+        self.assertEqual(caps["cost_cap_usd"],
+                         caps["ladder_partition"]["cost_cap_usd"] + caps["bridge_partition"]["cost_cap_usd"])
         self.assertEqual(caps["cost_cap_usd"], 1.0)
         self.assertLessEqual(caps["worst_case_cost_usd"], caps["cost_cap_usd"])
 
@@ -112,6 +127,19 @@ class VerifierV4Tests(unittest.TestCase):
         result = verify(tampered)
         self.assertFalse(result["ok"])
         self.assertTrue(any("old v1/v2/v3/v4 output path" in error for error in result["errors"]))
+
+    def test_rejects_overlapping_or_drifted_partitions(self):
+        for mutate in (
+            lambda d: d["caps"]["bridge_partition"].__setitem__("jev", 60),
+            lambda d: d["caps"]["ladder_partition"].__setitem__("ling", 300),
+            lambda d: d["caps"]["provider_partition"].__setitem__("jev", 999),
+            lambda d: d["exact_bridge"].__setitem__("jev_partition", 60),
+            lambda d: d["exact_bridge"].__setitem__("token_budget", 96),
+            lambda d: d["exact_bridge"].__setitem__("seed_algorithm", "none"),
+        ):
+            tampered = copy.deepcopy(self.doc)
+            mutate(tampered)
+            self.assertFalse(verify(tampered)["ok"])
 
     def test_rejects_ladder_and_timing_drift(self):
         for mutate in (

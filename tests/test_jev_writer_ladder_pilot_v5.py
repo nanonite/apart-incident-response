@@ -108,7 +108,7 @@ def error_side_effect(request, timeout=None):
     raise urllib.error.HTTPError("https://openrouter.ai/api/v1/chat/completions", 429, "e", {}, None)
 
 
-def setup(side_effect, *, receiver_cap=250, writer_cap=300):
+def setup(side_effect, *, receiver_cap=216, writer_cap=220):
     instances = pilot.ladder_instances()
     receiver = jc2.JevChoiceAdapterV2(FakeReceiverClient(max_physical_requests=receiver_cap),
                                       model=pr.JEV_REPLAY_MODEL)

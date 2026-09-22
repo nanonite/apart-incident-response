@@ -65,24 +65,62 @@ required.
 
 - Version `stage2-jev-writer-ladder-v5`, status `locked_for_jev_writer_ladder_v5`,
   `live_collection_authorized: false`
-- Hash `26944aafa98ebb7e1e06a509cbe3294e2b8dd428e6243c2547b6901c6ce8dc54`
+- Hash `bc44ca29e99138ca68a88f96eba553609ba4a738209b6ad167e5e7858d62c412`
 - Paths: `runs/epic-126/jev-writer-ladder-preregistration-v5.json`,
   `jev-writer-ladder-v5.jsonl`, `jev-writer-ladder-report-v5.json`,
   `jev-writer-exact-bridge-v5.jsonl`, `jev-writer-exact-bridge-report-v5.json`
 - Caps: planned **493** (ladder 408 + bridge 85); combined **550**; Jev **250**,
-  Ling **300**; cost cap **$1** (worst case `$0.1892352`); bridge sub-caps 180 /
-  60 / 120 / $0.5
+  Ling **300**; cost cap **$1** (worst case `$0.1892352`). Non-overlapping
+  sub-partitions (retries included): **ladder Jev 216 / Ling 220 (total 436,
+  $0.5)** and **bridge Jev 34 / Ling 80 (total 114, $0.5)**; ladder+bridge sums
+  equal 250 / 300, so the two commands cannot jointly exceed the combined cap.
 - Jev protocol unchanged `jev-choice-wire-v2|75190e25…`
 - Verifier rejects v1 protocol keys, old v1/v2/v3/v4 output paths, and ladder,
   timing, retry, model, endpoint, manifest, cap or hash drift.
 
-## 5. Preflight and tests
+## 5. Exact bridge (repaired)
 
-Offline preflights: ladder **ok 29/29**, exact bridge preflight ok; zero provider
-calls. Focused v5 suites 63 passed; full offline suite 770 passed, 4 skipped, 74
-subtests, with only the known environment-only bubblewrap failures.
+`src/apart_incident_response/jev_writer_exact_bridge_v5.py`:
 
-## 6. Future live commands (NOT RUN; each requires separate authorization)
+- **Real preflight** (`verify_bridge_preflight`, 38 named checks): canonical
+  registration content/hash, locked v5 status, `live_collection_authorized`
+  false, source/treatment hashes, the 17-instance/six-form manifest, model,
+  endpoint, codec, v2 protocol key, writer model/endpoint/pacing/retries/parser
+  version/seed algorithm/1024-token budget, actual Jev and Ling partitions,
+  bridge caps, non-overlapping combined partitions, fresh journal/report paths,
+  redacted credential presence and prior v1-v4 artifact presence. It returns
+  `ok`, named `checks` and `failed`; a failed preflight or missing approval
+  yields zero provider calls and no output creation.
+- **Original prompt path**: `agent_context_and_prompt` builds the same
+  `AgentContext` as the original runner and serializes
+  `json.dumps(behavioral_discovery.treatment_prompt(context), sort_keys=True)`
+  (no second hand-built schema). Regression tests compare every generated prompt
+  byte-for-byte with the original path.
+- **Visibility**: each Ling agent sees only peer-authored board rows in the
+  original row schema (`message_id, author, receiver, text, status,
+  delta_i_bits, message_tokens`); the Jev receiver A sees only accepted
+  B-authored claims; rejected writes never become visible.
+- **Caps and guards**: the CLI constructs the transports from the registered
+  bridge partitions (Jev 34 / Ling 80) and `execute_bridge` independently
+  re-verifies them and applies request and worst-case-next-call cost guards
+  before every writer and receiver operation (retries counted), preserving a
+  durable partial journal on a registered stop.
+- **Jev evidence**: each case persists receiver attempted/valid/invalid, request
+  and state hashes, protocol key, resolved model, option/target IDs, selected
+  option, normalized and raw vectors, diagnostics and tier, confidence, usage,
+  per-agent/turn writer outcomes, board log and verified exposure provenance,
+  provider attempt counters, and `raw_response_retained=false` /
+  `credentials_retained=false`. Invalid vectors, model drift, protocol mismatch,
+  malformed usage, request/state drift and hard normalization failures stop the
+  run; `completed` requires a valid receiver result for every planned instance.
+
+## 6. Preflight and tests
+
+Offline preflights: ladder **ok 29/29**, exact bridge **ok 38/38**; zero provider
+calls. Focused v5 suites **77 passed**; full offline suite **784 passed**, 4
+skipped, 74 subtests, with only the known environment-only bubblewrap failures.
+
+## 7. Future live commands (NOT RUN; each requires separate authorization)
 
 ```
 UV_CACHE_DIR=.uv-cache uv run env PYTHONPATH=src \

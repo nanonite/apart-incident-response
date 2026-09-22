@@ -106,15 +106,15 @@ def build_ladder_plan(instances: Sequence[Any], registration: Mapping[str, Any],
                 cases.append(LadderCase(instance.instance_id, instance.seed, rung.rung_id, arm,
                                         "COMM", form, rung.induced))
     caps = registration.get("caps", {})
-    partition = caps.get("provider_partition") or {}
+    partition = caps.get("ladder_partition") or {}
     ling = registration.get("ling_contract") or {}
     transport = registration.get("writer_transport") or {}
     return LadderPlan(cases=tuple(cases), planned_cases=len(cases),
                       planned_provider_calls=2 * len(cases),
-                      request_cap=int(caps.get("physical_requests", 0)),
+                      request_cap=int(partition.get("total", 0)),
                       jev_request_cap=int(partition.get("jev", 0)),
                       ling_request_cap=int(partition.get("ling", 0)),
-                      cost_cap_usd=float(caps.get("cost_cap_usd", 0.0)),
+                      cost_cap_usd=float(partition.get("cost_cap_usd", caps.get("cost_cap_usd", 0.0))),
                       input_token_ceiling=int(caps.get("input_token_ceiling", 0)),
                       worst_case_call_cost_usd=estimate_cost_usd(int(caps.get("input_token_ceiling", 0))),
                       registration_hash=str(registration.get("preregistration_hash", "")),
