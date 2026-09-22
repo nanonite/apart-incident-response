@@ -1,0 +1,3004 @@
+{
+  "agents": [
+    "A",
+    "B"
+  ],
+  "approval": "reviewer-approved-2026-09-22-l4x-exact-bridge-v5",
+  "attempted_cases": 17,
+  "authoritative_i_m": 14,
+  "board_messages": 14,
+  "cases": [
+    {
+      "agents": [
+        "A",
+        "B"
+      ],
+      "board": [
+        {
+          "author": "B",
+          "delta_i_bits": 1.584962500721156,
+          "message_id": "message-B-0",
+          "message_tokens": 1,
+          "receiver": "A",
+          "status": "accepted",
+          "text": "precedes=deploy>stage"
+        }
+      ],
+      "board_log": [
+        {
+          "agent_id": "B",
+          "delta_i_bits": 1.584962500721156,
+          "event_id": "c828468e24bb41a49ff34ff9cf9ee2a8",
+          "kind": "board_write",
+          "message_id": "message-B-0",
+          "message_tokens": 1,
+          "monotonic_ns": 23552369818030,
+          "output_id": null,
+          "payload": {
+            "information_perspective": "receiver",
+            "normalized_claim": "precedes=deploy>stage",
+            "raw_text": "precedes=deploy>stage",
+            "receiver_id": "A"
+          },
+          "run_id": "bridge-planning-00011940",
+          "sequence": 0,
+          "status": "accepted",
+          "useful": true
+        },
+        {
+          "agent_id": "A",
+          "delta_i_bits": 1.584962500721156,
+          "event_id": "f97aafdccbaf43b6988d97ca1ca5c4e1",
+          "kind": "peer_read_exposure",
+          "message_id": "message-B-0",
+          "message_tokens": null,
+          "monotonic_ns": 23552369836981,
+          "output_id": null,
+          "payload": {
+            "exposure_id": "turn-1"
+          },
+          "run_id": "bridge-planning-00011940",
+          "sequence": 1,
+          "status": "accepted",
+          "useful": null
+        }
+      ],
+      "confidence": 0.91,
+      "credentials_retained": false,
+      "eligible_exposure": true,
+      "i_m_bits": 1.584962500721156,
+      "instance_id": "planning-00011940",
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.92,
+        "inspect>stage>deploy": 0.02,
+        "stage>deploy>inspect": 0.01,
+        "stage>inspect>deploy": 0.04
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 0.5421791902022728,
+        "entropy_raw_bits": 0.5421791902022728,
+        "invalid_classes": [],
+        "maximum_probability": 0.92,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "inspect>deploy>stage"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 1
+      },
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "provider_attempts": {
+        "combined": 5,
+        "jev": 1,
+        "ling": 4
+      },
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.92,
+        "inspect>stage>deploy": 0.02,
+        "stage>deploy>inspect": 0.01,
+        "stage>inspect>deploy": 0.04
+      },
+      "raw_response_retained": false,
+      "receiver_attempted": true,
+      "receiver_error_class": null,
+      "receiver_status": "complete",
+      "receiver_valid": true,
+      "rejected": [],
+      "renormalized": true,
+      "request_hash": "e0b47cca22d5beab1c34ecd74fc7694fe64995fb25407081c33d2637fd81c107",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "inspect>deploy>stage",
+      "state_hash": "418a62b200c98d50b46dcb2769bc85bc6dd5d2a536f863c19ca19dd77a67d216",
+      "target_id": "inspect>deploy>stage",
+      "turns": 2,
+      "usage": {
+        "input_tokens": 448,
+        "output_tokens": 96
+      },
+      "writer_outcomes": [
+        {
+          "agent": "A",
+          "answer": "stage>inspect>deploy",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 1,
+          "seed_sent": 43536650,
+          "turn": 0
+        },
+        {
+          "agent": "B",
+          "answer": null,
+          "content_length": 59,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "message_candidate",
+          "physical_attempts": 2,
+          "seed_sent": 530774203,
+          "turn": 0
+        },
+        {
+          "agent": "A",
+          "answer": "inspect>deploy>stage",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 3,
+          "seed_sent": 434908653,
+          "turn": 1
+        },
+        {
+          "agent": "B",
+          "answer": "deploy>inspect>stage",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 4,
+          "seed_sent": 875540383,
+          "turn": 1
+        }
+      ]
+    },
+    {
+      "agents": [
+        "A",
+        "B"
+      ],
+      "board": [],
+      "board_log": [],
+      "confidence": 0.51,
+      "credentials_retained": false,
+      "eligible_exposure": false,
+      "i_m_bits": null,
+      "instance_id": "planning-00011941",
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.01,
+        "inspect>stage>deploy": 0.11,
+        "stage>deploy>inspect": 0.59,
+        "stage>inspect>deploy": 0.28
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.4464999344250065,
+        "entropy_raw_bits": 1.4464999344250065,
+        "invalid_classes": [],
+        "maximum_probability": 0.59,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>deploy>inspect"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 1
+      },
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "provider_attempts": {
+        "combined": 10,
+        "jev": 2,
+        "ling": 8
+      },
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.01,
+        "inspect>stage>deploy": 0.11,
+        "stage>deploy>inspect": 0.59,
+        "stage>inspect>deploy": 0.28
+      },
+      "raw_response_retained": false,
+      "receiver_attempted": true,
+      "receiver_error_class": null,
+      "receiver_status": "complete",
+      "receiver_valid": true,
+      "rejected": [],
+      "renormalized": true,
+      "request_hash": "6f4fa879d50f221c6a4cf4f55d256518c1e3d800ed79ecaefc8898d9fbbc900a",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>deploy>inspect",
+      "state_hash": "7e0f81b0d10c659bf8ef65e0427c1b09b60302c46b776dd155483f78406925a8",
+      "target_id": "stage>deploy>inspect",
+      "turns": 2,
+      "usage": {
+        "input_tokens": 428,
+        "output_tokens": 97
+      },
+      "writer_outcomes": [
+        {
+          "agent": "A",
+          "answer": "stage>deploy>inspect",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 5,
+          "seed_sent": 350821597,
+          "turn": 0
+        },
+        {
+          "agent": "B",
+          "answer": "stage>deploy>inspect",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 6,
+          "seed_sent": 987293536,
+          "turn": 0
+        },
+        {
+          "agent": "A",
+          "answer": "stage>inspect>deploy",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 7,
+          "seed_sent": 482980640,
+          "turn": 1
+        },
+        {
+          "agent": "B",
+          "answer": "deploy>inspect>stage",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 8,
+          "seed_sent": 1717188564,
+          "turn": 1
+        }
+      ]
+    },
+    {
+      "agents": [
+        "A",
+        "B"
+      ],
+      "board": [
+        {
+          "author": "A",
+          "delta_i_bits": 1.584962500721156,
+          "message_id": "message-A-0",
+          "message_tokens": 1,
+          "receiver": "B",
+          "status": "accepted",
+          "text": "precedes=inspect>deploy"
+        }
+      ],
+      "board_log": [
+        {
+          "agent_id": "A",
+          "delta_i_bits": 1.584962500721156,
+          "event_id": "183edf5f223e43739e0de4e6d9b83293",
+          "kind": "board_write",
+          "message_id": "message-A-0",
+          "message_tokens": 1,
+          "monotonic_ns": 23600061666639,
+          "output_id": null,
+          "payload": {
+            "information_perspective": "receiver",
+            "normalized_claim": "precedes=inspect>deploy",
+            "raw_text": "precedes=inspect>deploy",
+            "receiver_id": "B"
+          },
+          "run_id": "bridge-planning-00011942",
+          "sequence": 0,
+          "status": "accepted",
+          "useful": true
+        },
+        {
+          "agent_id": "B",
+          "delta_i_bits": 1.584962500721156,
+          "event_id": "26b70461c4424b4bb5f778044bdd1023",
+          "kind": "peer_read_exposure",
+          "message_id": "message-A-0",
+          "message_tokens": null,
+          "monotonic_ns": 23600061680767,
+          "output_id": null,
+          "payload": {
+            "exposure_id": "turn-0"
+          },
+          "run_id": "bridge-planning-00011942",
+          "sequence": 1,
+          "status": "accepted",
+          "useful": null
+        },
+        {
+          "agent_id": "A",
+          "delta_i_bits": null,
+          "event_id": "cb316f790ba041f39e435720e24cfeb3",
+          "kind": "board_write_rejected",
+          "message_id": null,
+          "message_tokens": null,
+          "monotonic_ns": 23610349598214,
+          "output_id": null,
+          "payload": {
+            "raw_text": "precedes=inspect>deploy; budget=valid",
+            "reason": "claim_not_owned_by_writer"
+          },
+          "run_id": "bridge-planning-00011942",
+          "sequence": 2,
+          "status": "rejected",
+          "useful": null
+        }
+      ],
+      "confidence": 0.56,
+      "credentials_retained": false,
+      "eligible_exposure": false,
+      "i_m_bits": null,
+      "instance_id": "planning-00011942",
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.22,
+        "inspect>stage>deploy": 0.14,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.64
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.289751544586455,
+        "entropy_raw_bits": 1.289751544586455,
+        "invalid_classes": [],
+        "maximum_probability": 0.64,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>inspect>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 3
+      },
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "provider_attempts": {
+        "combined": 15,
+        "jev": 3,
+        "ling": 12
+      },
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.22,
+        "inspect>stage>deploy": 0.14,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.64
+      },
+      "raw_response_retained": false,
+      "receiver_attempted": true,
+      "receiver_error_class": null,
+      "receiver_status": "complete",
+      "receiver_valid": true,
+      "rejected": [
+        {
+          "agent": "A",
+          "claim": "precedes=inspect>deploy; budget=valid",
+          "turn": 1
+        }
+      ],
+      "renormalized": true,
+      "request_hash": "2ba516131bdb635c3fe972dbe2c017fd512bbd2727c054eb84bc8530cab403c1",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "state_hash": "7424bdc3e576fca3c2f93f94aa46f0b7af7c8b542107947d8c51d8cc0c7dfd0f",
+      "target_id": "inspect>deploy>stage",
+      "turns": 2,
+      "usage": {
+        "input_tokens": 429,
+        "output_tokens": 97
+      },
+      "writer_outcomes": [
+        {
+          "agent": "A",
+          "answer": null,
+          "content_length": 61,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "message_candidate",
+          "physical_attempts": 9,
+          "seed_sent": 959610716,
+          "turn": 0
+        },
+        {
+          "agent": "B",
+          "answer": "inspect>deploy>stage",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 10,
+          "seed_sent": 499529442,
+          "turn": 0
+        },
+        {
+          "agent": "A",
+          "answer": null,
+          "content_length": 75,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "non_owned_claim",
+          "physical_attempts": 11,
+          "seed_sent": 1250159047,
+          "turn": 1
+        },
+        {
+          "agent": "B",
+          "answer": "inspect>deploy>stage",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 12,
+          "seed_sent": 975607627,
+          "turn": 1
+        }
+      ]
+    },
+    {
+      "agents": [
+        "A",
+        "B"
+      ],
+      "board": [
+        {
+          "author": "B",
+          "delta_i_bits": 1.584962500721156,
+          "message_id": "message-B-0",
+          "message_tokens": 1,
+          "receiver": "A",
+          "status": "accepted",
+          "text": "precedes=deploy>inspect"
+        },
+        {
+          "author": "B",
+          "delta_i_bits": 1.584962500721156,
+          "message_id": "message-B-1",
+          "message_tokens": 1,
+          "receiver": "A",
+          "status": "accepted",
+          "text": "precedes=deploy>inspect"
+        }
+      ],
+      "board_log": [
+        {
+          "agent_id": "B",
+          "delta_i_bits": 1.584962500721156,
+          "event_id": "76e98e4c986b4d099e1fcf6707040fc1",
+          "kind": "board_write",
+          "message_id": "message-B-0",
+          "message_tokens": 1,
+          "monotonic_ns": 23631213855898,
+          "output_id": null,
+          "payload": {
+            "information_perspective": "receiver",
+            "normalized_claim": "precedes=deploy>inspect",
+            "raw_text": "precedes=deploy>inspect",
+            "receiver_id": "A"
+          },
+          "run_id": "bridge-planning-00011943",
+          "sequence": 0,
+          "status": "accepted",
+          "useful": true
+        },
+        {
+          "agent_id": "A",
+          "delta_i_bits": 1.584962500721156,
+          "event_id": "37e31e7345a6488c94ca397acc6d18fc",
+          "kind": "peer_read_exposure",
+          "message_id": "message-B-0",
+          "message_tokens": null,
+          "monotonic_ns": 23631213877612,
+          "output_id": null,
+          "payload": {
+            "exposure_id": "turn-1"
+          },
+          "run_id": "bridge-planning-00011943",
+          "sequence": 1,
+          "status": "accepted",
+          "useful": null
+        },
+        {
+          "agent_id": "B",
+          "delta_i_bits": 1.584962500721156,
+          "event_id": "b42c78765f124d33ba8944039dfcaf9f",
+          "kind": "board_write",
+          "message_id": "message-B-1",
+          "message_tokens": 1,
+          "monotonic_ns": 23639019371323,
+          "output_id": null,
+          "payload": {
+            "information_perspective": "receiver",
+            "normalized_claim": "precedes=deploy>inspect",
+            "raw_text": "precedes=deploy>inspect",
+            "receiver_id": "A"
+          },
+          "run_id": "bridge-planning-00011943",
+          "sequence": 2,
+          "status": "accepted",
+          "useful": true
+        },
+        {
+          "agent_id": "A",
+          "delta_i_bits": 1.584962500721156,
+          "event_id": "ef6b76cf1fd04217ad7c9e14e076bbe3",
+          "kind": "peer_read_exposure",
+          "message_id": "message-B-1",
+          "message_tokens": null,
+          "monotonic_ns": 23639019489382,
+          "output_id": null,
+          "payload": {
+            "exposure_id": "jev-finalizer"
+          },
+          "run_id": "bridge-planning-00011943",
+          "sequence": 3,
+          "status": "accepted",
+          "useful": null
+        }
+      ],
+      "confidence": 0.86,
+      "credentials_retained": false,
+      "eligible_exposure": true,
+      "i_m_bits": 3.169925001442312,
+      "instance_id": "planning-00011943",
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.01,
+        "inspect>stage>deploy": 0.02,
+        "stage>deploy>inspect": 0.88,
+        "stage>inspect>deploy": 0.07
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 0.7430415208298708,
+        "entropy_raw_bits": 0.7430415208298708,
+        "invalid_classes": [],
+        "maximum_probability": 0.88,
+        "minimum_probability": 0.01,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>deploy>inspect"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 0
+      },
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "provider_attempts": {
+        "combined": 20,
+        "jev": 4,
+        "ling": 16
+      },
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.01,
+        "inspect>stage>deploy": 0.02,
+        "stage>deploy>inspect": 0.88,
+        "stage>inspect>deploy": 0.07
+      },
+      "raw_response_retained": false,
+      "receiver_attempted": true,
+      "receiver_error_class": null,
+      "receiver_status": "complete",
+      "receiver_valid": true,
+      "rejected": [],
+      "renormalized": true,
+      "request_hash": "72c8ab0efbc40b31c58fbc212c089803cb12b9553005a40779bc264531da7a77",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>deploy>inspect",
+      "state_hash": "9d8c404927127760cca4e46de0258f12b5ec811f7af16d9e891bafca412d0bdd",
+      "target_id": "stage>deploy>inspect",
+      "turns": 2,
+      "usage": {
+        "input_tokens": 469,
+        "output_tokens": 97
+      },
+      "writer_outcomes": [
+        {
+          "agent": "A",
+          "answer": "stage>deploy>inspect",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 13,
+          "seed_sent": 2069571505,
+          "turn": 0
+        },
+        {
+          "agent": "B",
+          "answer": null,
+          "content_length": 61,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "message_candidate",
+          "physical_attempts": 14,
+          "seed_sent": 1172750001,
+          "turn": 0
+        },
+        {
+          "agent": "A",
+          "answer": "stage>deploy>inspect",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 15,
+          "seed_sent": 1686799556,
+          "turn": 1
+        },
+        {
+          "agent": "B",
+          "answer": null,
+          "content_length": 61,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "message_candidate",
+          "physical_attempts": 16,
+          "seed_sent": 2078754832,
+          "turn": 1
+        }
+      ]
+    },
+    {
+      "agents": [
+        "A",
+        "B"
+      ],
+      "board": [
+        {
+          "author": "B",
+          "delta_i_bits": 1.584962500721156,
+          "message_id": "message-B-0",
+          "message_tokens": 1,
+          "receiver": "A",
+          "status": "accepted",
+          "text": "precedes=inspect>deploy"
+        },
+        {
+          "author": "B",
+          "delta_i_bits": 1.584962500721156,
+          "message_id": "message-B-1",
+          "message_tokens": 1,
+          "receiver": "A",
+          "status": "accepted",
+          "text": "precedes=inspect>deploy"
+        }
+      ],
+      "board_log": [
+        {
+          "agent_id": "B",
+          "delta_i_bits": 1.584962500721156,
+          "event_id": "34a2a722b7b14886b15fa0d7dc9e77e7",
+          "kind": "board_write",
+          "message_id": "message-B-0",
+          "message_tokens": 1,
+          "monotonic_ns": 23651306106579,
+          "output_id": null,
+          "payload": {
+            "information_perspective": "receiver",
+            "normalized_claim": "precedes=inspect>deploy",
+            "raw_text": "precedes=inspect>deploy",
+            "receiver_id": "A"
+          },
+          "run_id": "bridge-planning-00011944",
+          "sequence": 0,
+          "status": "accepted",
+          "useful": true
+        },
+        {
+          "agent_id": "A",
+          "delta_i_bits": 1.584962500721156,
+          "event_id": "6390bdc1b3c3492aaf873a0985d93a84",
+          "kind": "peer_read_exposure",
+          "message_id": "message-B-0",
+          "message_tokens": null,
+          "monotonic_ns": 23651306120960,
+          "output_id": null,
+          "payload": {
+            "exposure_id": "turn-1"
+          },
+          "run_id": "bridge-planning-00011944",
+          "sequence": 1,
+          "status": "accepted",
+          "useful": null
+        },
+        {
+          "agent_id": "B",
+          "delta_i_bits": 1.584962500721156,
+          "event_id": "176e331f836f473b81a9c441fddda5d7",
+          "kind": "board_write",
+          "message_id": "message-B-1",
+          "message_tokens": 1,
+          "monotonic_ns": 23665695987607,
+          "output_id": null,
+          "payload": {
+            "information_perspective": "receiver",
+            "normalized_claim": "precedes=inspect>deploy",
+            "raw_text": "precedes=inspect>deploy",
+            "receiver_id": "A"
+          },
+          "run_id": "bridge-planning-00011944",
+          "sequence": 2,
+          "status": "accepted",
+          "useful": true
+        },
+        {
+          "agent_id": "A",
+          "delta_i_bits": 1.584962500721156,
+          "event_id": "859e5642e5cd4be29cce7f15283bc784",
+          "kind": "peer_read_exposure",
+          "message_id": "message-B-1",
+          "message_tokens": null,
+          "monotonic_ns": 23665696108068,
+          "output_id": null,
+          "payload": {
+            "exposure_id": "jev-finalizer"
+          },
+          "run_id": "bridge-planning-00011944",
+          "sequence": 3,
+          "status": "accepted",
+          "useful": null
+        }
+      ],
+      "confidence": 0.94,
+      "credentials_retained": false,
+      "eligible_exposure": true,
+      "i_m_bits": 3.169925001442312,
+      "instance_id": "planning-00011944",
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.03,
+        "stage>inspect>deploy": 0.96
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 0.2747433140607801,
+        "entropy_raw_bits": 0.2747433140607801,
+        "invalid_classes": [],
+        "maximum_probability": 0.96,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>inspect>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 3
+      },
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "provider_attempts": {
+        "combined": 25,
+        "jev": 5,
+        "ling": 20
+      },
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.03,
+        "stage>inspect>deploy": 0.96
+      },
+      "raw_response_retained": false,
+      "receiver_attempted": true,
+      "receiver_error_class": null,
+      "receiver_status": "complete",
+      "receiver_valid": true,
+      "rejected": [],
+      "renormalized": true,
+      "request_hash": "17785901cd86e0eb719ab3ab9b970acaceb4ff7b81b44129518d0156516c155a",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "state_hash": "5df18122b0cb35cce4c22dd91d9a10d8157f2864ba6236c653f852278b0b86d2",
+      "target_id": "stage>inspect>deploy",
+      "turns": 2,
+      "usage": {
+        "input_tokens": 469,
+        "output_tokens": 97
+      },
+      "writer_outcomes": [
+        {
+          "agent": "A",
+          "answer": "stage>deploy>inspect",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 17,
+          "seed_sent": 171056269,
+          "turn": 0
+        },
+        {
+          "agent": "B",
+          "answer": null,
+          "content_length": 61,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "message_candidate",
+          "physical_attempts": 18,
+          "seed_sent": 1154413212,
+          "turn": 0
+        },
+        {
+          "agent": "A",
+          "answer": "stage>inspect>deploy",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 19,
+          "seed_sent": 175298440,
+          "turn": 1
+        },
+        {
+          "agent": "B",
+          "answer": null,
+          "content_length": 61,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "message_candidate",
+          "physical_attempts": 20,
+          "seed_sent": 68290484,
+          "turn": 1
+        }
+      ]
+    },
+    {
+      "agents": [
+        "A",
+        "B"
+      ],
+      "board": [
+        {
+          "author": "B",
+          "delta_i_bits": 1.584962500721156,
+          "message_id": "message-B-1",
+          "message_tokens": 1,
+          "receiver": "A",
+          "status": "accepted",
+          "text": "precedes=deploy>inspect"
+        }
+      ],
+      "board_log": [
+        {
+          "agent_id": "B",
+          "delta_i_bits": 1.584962500721156,
+          "event_id": "8991c0042b454e6ba0540b34d6a1dfb9",
+          "kind": "board_write",
+          "message_id": "message-B-1",
+          "message_tokens": 1,
+          "monotonic_ns": 23685695476584,
+          "output_id": null,
+          "payload": {
+            "information_perspective": "receiver",
+            "normalized_claim": "precedes=deploy>inspect",
+            "raw_text": "precedes=deploy>inspect",
+            "receiver_id": "A"
+          },
+          "run_id": "bridge-planning-00011945",
+          "sequence": 0,
+          "status": "accepted",
+          "useful": true
+        },
+        {
+          "agent_id": "A",
+          "delta_i_bits": 1.584962500721156,
+          "event_id": "c116ba55856445d58748ad5e17d401b2",
+          "kind": "peer_read_exposure",
+          "message_id": "message-B-1",
+          "message_tokens": null,
+          "monotonic_ns": 23685695641595,
+          "output_id": null,
+          "payload": {
+            "exposure_id": "jev-finalizer"
+          },
+          "run_id": "bridge-planning-00011945",
+          "sequence": 1,
+          "status": "accepted",
+          "useful": null
+        }
+      ],
+      "confidence": 0.88,
+      "credentials_retained": false,
+      "eligible_exposure": true,
+      "i_m_bits": 1.584962500721156,
+      "instance_id": "planning-00011945",
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.01,
+        "inspect>stage>deploy": 0.02,
+        "stage>deploy>inspect": 0.9,
+        "stage>inspect>deploy": 0.06
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 0.626090653034748,
+        "entropy_raw_bits": 0.626090653034748,
+        "invalid_classes": [],
+        "maximum_probability": 0.9,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>deploy>inspect"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 1
+      },
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "provider_attempts": {
+        "combined": 30,
+        "jev": 6,
+        "ling": 24
+      },
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.01,
+        "inspect>stage>deploy": 0.02,
+        "stage>deploy>inspect": 0.9,
+        "stage>inspect>deploy": 0.06
+      },
+      "raw_response_retained": false,
+      "receiver_attempted": true,
+      "receiver_error_class": null,
+      "receiver_status": "complete",
+      "receiver_valid": true,
+      "rejected": [],
+      "renormalized": true,
+      "request_hash": "4a13a7910bb6fe4e590f0a33865be0ffa188ea0ca1ec4ae5c0aeeb806f3d6a59",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>deploy>inspect",
+      "state_hash": "0d6e2341f463de52baf304c187fa6ba852198adf4d01fdfa18fe417198310065",
+      "target_id": "stage>deploy>inspect",
+      "turns": 2,
+      "usage": {
+        "input_tokens": 448,
+        "output_tokens": 97
+      },
+      "writer_outcomes": [
+        {
+          "agent": "A",
+          "answer": "stage>deploy>inspect",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 21,
+          "seed_sent": 739516910,
+          "turn": 0
+        },
+        {
+          "agent": "B",
+          "answer": "deploy>inspect>stage",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 22,
+          "seed_sent": 2047374152,
+          "turn": 0
+        },
+        {
+          "agent": "A",
+          "answer": "stage>deploy>inspect",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 23,
+          "seed_sent": 904345866,
+          "turn": 1
+        },
+        {
+          "agent": "B",
+          "answer": null,
+          "content_length": 61,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "message_candidate",
+          "physical_attempts": 24,
+          "seed_sent": 1583916718,
+          "turn": 1
+        }
+      ]
+    },
+    {
+      "agents": [
+        "A",
+        "B"
+      ],
+      "board": [],
+      "board_log": [],
+      "confidence": 0.49,
+      "credentials_retained": false,
+      "eligible_exposure": false,
+      "i_m_bits": null,
+      "instance_id": "planning-00011946",
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.27,
+        "inspect>stage>deploy": 0.15,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.58
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.3763739976753187,
+        "entropy_raw_bits": 1.3763739976753187,
+        "invalid_classes": [],
+        "maximum_probability": 0.58,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>inspect>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 3
+      },
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "provider_attempts": {
+        "combined": 35,
+        "jev": 7,
+        "ling": 28
+      },
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.0,
+        "inspect>deploy>stage": 0.27,
+        "inspect>stage>deploy": 0.15,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.58
+      },
+      "raw_response_retained": false,
+      "receiver_attempted": true,
+      "receiver_error_class": null,
+      "receiver_status": "complete",
+      "receiver_valid": true,
+      "rejected": [],
+      "renormalized": true,
+      "request_hash": "2ba516131bdb635c3fe972dbe2c017fd512bbd2727c054eb84bc8530cab403c1",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "state_hash": "7424bdc3e576fca3c2f93f94aa46f0b7af7c8b542107947d8c51d8cc0c7dfd0f",
+      "target_id": "inspect>deploy>stage",
+      "turns": 2,
+      "usage": {
+        "input_tokens": 429,
+        "output_tokens": 97
+      },
+      "writer_outcomes": [
+        {
+          "agent": "A",
+          "answer": "inspect>stage>deploy",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 25,
+          "seed_sent": 2016844282,
+          "turn": 0
+        },
+        {
+          "agent": "B",
+          "answer": "deploy>stage>inspect",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 26,
+          "seed_sent": 1091261593,
+          "turn": 0
+        },
+        {
+          "agent": "A",
+          "answer": "inspect>stage>deploy",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 27,
+          "seed_sent": 1662496868,
+          "turn": 1
+        },
+        {
+          "agent": "B",
+          "answer": "deploy>inspect>stage",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 28,
+          "seed_sent": 1733083540,
+          "turn": 1
+        }
+      ]
+    },
+    {
+      "agents": [
+        "A",
+        "B"
+      ],
+      "board": [
+        {
+          "author": "B",
+          "delta_i_bits": 1.584962500721156,
+          "message_id": "message-B-1",
+          "message_tokens": 1,
+          "receiver": "A",
+          "status": "accepted",
+          "text": "precedes=stage>deploy"
+        }
+      ],
+      "board_log": [
+        {
+          "agent_id": "B",
+          "delta_i_bits": 1.584962500721156,
+          "event_id": "3acf0aaaf7214e28a5e7620c4ece6571",
+          "kind": "board_write",
+          "message_id": "message-B-1",
+          "message_tokens": 1,
+          "monotonic_ns": 23740950237973,
+          "output_id": null,
+          "payload": {
+            "information_perspective": "receiver",
+            "normalized_claim": "precedes=stage>deploy",
+            "raw_text": "precedes=stage>deploy",
+            "receiver_id": "A"
+          },
+          "run_id": "bridge-planning-00011947",
+          "sequence": 0,
+          "status": "accepted",
+          "useful": true
+        },
+        {
+          "agent_id": "A",
+          "delta_i_bits": 1.584962500721156,
+          "event_id": "a9f1eec1bde0418ea9cd3796f136f100",
+          "kind": "peer_read_exposure",
+          "message_id": "message-B-1",
+          "message_tokens": null,
+          "monotonic_ns": 23740950350408,
+          "output_id": null,
+          "payload": {
+            "exposure_id": "jev-finalizer"
+          },
+          "run_id": "bridge-planning-00011947",
+          "sequence": 1,
+          "status": "accepted",
+          "useful": null
+        }
+      ],
+      "confidence": 0.84,
+      "credentials_retained": false,
+      "eligible_exposure": true,
+      "i_m_bits": 1.584962500721156,
+      "instance_id": "planning-00011947",
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.06,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.04,
+        "inspect>stage>deploy": 0.87,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.02
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 0.7833975983430617,
+        "entropy_raw_bits": 0.7833975983430617,
+        "invalid_classes": [],
+        "maximum_probability": 0.87,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "inspect>stage>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 1
+      },
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "provider_attempts": {
+        "combined": 40,
+        "jev": 8,
+        "ling": 32
+      },
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.06,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.04,
+        "inspect>stage>deploy": 0.87,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.02
+      },
+      "raw_response_retained": false,
+      "receiver_attempted": true,
+      "receiver_error_class": null,
+      "receiver_status": "complete",
+      "receiver_valid": true,
+      "rejected": [],
+      "renormalized": true,
+      "request_hash": "d2c5cbaad20a30ccf1110e12130e2f67355c6a83f91eb797399d4a27af1f8dec",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "inspect>stage>deploy",
+      "state_hash": "1a4abfb98c9133c29c006bfb9d512485579e371b82286f12a4a9e1155e653deb",
+      "target_id": "inspect>stage>deploy",
+      "turns": 2,
+      "usage": {
+        "input_tokens": 447,
+        "output_tokens": 96
+      },
+      "writer_outcomes": [
+        {
+          "agent": "A",
+          "answer": "inspect>stage>deploy",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 29,
+          "seed_sent": 1335243654,
+          "turn": 0
+        },
+        {
+          "agent": "B",
+          "answer": "stage>deploy>inspect",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 30,
+          "seed_sent": 1456965200,
+          "turn": 0
+        },
+        {
+          "agent": "A",
+          "answer": "inspect>stage>deploy",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 31,
+          "seed_sent": 2014108276,
+          "turn": 1
+        },
+        {
+          "agent": "B",
+          "answer": null,
+          "content_length": 59,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "message_candidate",
+          "physical_attempts": 32,
+          "seed_sent": 1752572884,
+          "turn": 1
+        }
+      ]
+    },
+    {
+      "agents": [
+        "A",
+        "B"
+      ],
+      "board": [],
+      "board_log": [],
+      "confidence": 0.79,
+      "credentials_retained": false,
+      "eligible_exposure": false,
+      "i_m_bits": null,
+      "instance_id": "planning-00011948",
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.11,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.01,
+        "stage>deploy>inspect": 0.05,
+        "stage>inspect>deploy": 0.82
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 0.9340296631934253,
+        "entropy_raw_bits": 0.9340296631934253,
+        "invalid_classes": [],
+        "maximum_probability": 0.82,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>inspect>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 1
+      },
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "provider_attempts": {
+        "combined": 45,
+        "jev": 9,
+        "ling": 36
+      },
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.01,
+        "deploy>stage>inspect": 0.11,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.01,
+        "stage>deploy>inspect": 0.05,
+        "stage>inspect>deploy": 0.82
+      },
+      "raw_response_retained": false,
+      "receiver_attempted": true,
+      "receiver_error_class": null,
+      "receiver_status": "complete",
+      "receiver_valid": true,
+      "rejected": [],
+      "renormalized": true,
+      "request_hash": "9c148bc03b18fc5f4c0e9125e96be06048c024f1bb6d666400b2f298a060c786",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "state_hash": "1d792cbdedad01c31acdd2f98ce856ce486c88e9e76f80fc77cd9f6d35fcfeb3",
+      "target_id": "stage>inspect>deploy",
+      "turns": 2,
+      "usage": {
+        "input_tokens": 428,
+        "output_tokens": 97
+      },
+      "writer_outcomes": [
+        {
+          "agent": "A",
+          "answer": "stage>deploy>inspect",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 33,
+          "seed_sent": 52978046,
+          "turn": 0
+        },
+        {
+          "agent": "B",
+          "answer": "inspect>deploy>stage",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 34,
+          "seed_sent": 429870410,
+          "turn": 0
+        },
+        {
+          "agent": "A",
+          "answer": "stage>deploy>inspect",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 35,
+          "seed_sent": 1068427634,
+          "turn": 1
+        },
+        {
+          "agent": "B",
+          "answer": "inspect>deploy>stage",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 36,
+          "seed_sent": 1584852530,
+          "turn": 1
+        }
+      ]
+    },
+    {
+      "agents": [
+        "A",
+        "B"
+      ],
+      "board": [],
+      "board_log": [],
+      "confidence": 0.6,
+      "credentials_retained": false,
+      "eligible_exposure": false,
+      "i_m_bits": null,
+      "instance_id": "planning-00011949",
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.2,
+        "deploy>stage>inspect": 0.12,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.67,
+        "stage>inspect>deploy": 0.01
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.284995313104006,
+        "entropy_raw_bits": 1.284995313104006,
+        "invalid_classes": [],
+        "maximum_probability": 0.67,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>deploy>inspect"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 2
+      },
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "provider_attempts": {
+        "combined": 50,
+        "jev": 10,
+        "ling": 40
+      },
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.2,
+        "deploy>stage>inspect": 0.12,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.67,
+        "stage>inspect>deploy": 0.01
+      },
+      "raw_response_retained": false,
+      "receiver_attempted": true,
+      "receiver_error_class": null,
+      "receiver_status": "complete",
+      "receiver_valid": true,
+      "rejected": [],
+      "renormalized": true,
+      "request_hash": "40f9a6c24d02149c02ca0acf7e3d057d56194c9c8e6a0b367fa7e6afee6a3804",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>deploy>inspect",
+      "state_hash": "a5fc3bb5eb0b309cdbfe300d0264199cd61012e89e067a81649b7c53e7be8ba7",
+      "target_id": "deploy>inspect>stage",
+      "turns": 2,
+      "usage": {
+        "input_tokens": 429,
+        "output_tokens": 97
+      },
+      "writer_outcomes": [
+        {
+          "agent": "A",
+          "answer": "stage>deploy>inspect",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 37,
+          "seed_sent": 674362175,
+          "turn": 0
+        },
+        {
+          "agent": "B",
+          "answer": "inspect>stage>deploy",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 38,
+          "seed_sent": 1399639738,
+          "turn": 0
+        },
+        {
+          "agent": "A",
+          "answer": "deploy>inspect>stage",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 39,
+          "seed_sent": 676464860,
+          "turn": 1
+        },
+        {
+          "agent": "B",
+          "answer": "inspect>stage>deploy",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 40,
+          "seed_sent": 1844225277,
+          "turn": 1
+        }
+      ]
+    },
+    {
+      "agents": [
+        "A",
+        "B"
+      ],
+      "board": [],
+      "board_log": [],
+      "confidence": 0.59,
+      "credentials_retained": false,
+      "eligible_exposure": false,
+      "i_m_bits": null,
+      "instance_id": "planning-0001194a",
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.24,
+        "deploy>stage>inspect": 0.1,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.65,
+        "stage>inspect>deploy": 0.01
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.2967333016444156,
+        "entropy_raw_bits": 1.2967333016444156,
+        "invalid_classes": [],
+        "maximum_probability": 0.65,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>deploy>inspect"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 2
+      },
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "provider_attempts": {
+        "combined": 55,
+        "jev": 11,
+        "ling": 44
+      },
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.24,
+        "deploy>stage>inspect": 0.1,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.65,
+        "stage>inspect>deploy": 0.01
+      },
+      "raw_response_retained": false,
+      "receiver_attempted": true,
+      "receiver_error_class": null,
+      "receiver_status": "complete",
+      "receiver_valid": true,
+      "rejected": [],
+      "renormalized": true,
+      "request_hash": "40f9a6c24d02149c02ca0acf7e3d057d56194c9c8e6a0b367fa7e6afee6a3804",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>deploy>inspect",
+      "state_hash": "a5fc3bb5eb0b309cdbfe300d0264199cd61012e89e067a81649b7c53e7be8ba7",
+      "target_id": "deploy>inspect>stage",
+      "turns": 2,
+      "usage": {
+        "input_tokens": 429,
+        "output_tokens": 97
+      },
+      "writer_outcomes": [
+        {
+          "agent": "A",
+          "answer": "stage>deploy>inspect",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 41,
+          "seed_sent": 1564562049,
+          "turn": 0
+        },
+        {
+          "agent": "B",
+          "answer": "inspect>stage>deploy",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 42,
+          "seed_sent": 202071719,
+          "turn": 0
+        },
+        {
+          "agent": "A",
+          "answer": "deploy>inspect>stage",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 43,
+          "seed_sent": 500314357,
+          "turn": 1
+        },
+        {
+          "agent": "B",
+          "answer": "inspect>stage>deploy",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 44,
+          "seed_sent": 997662705,
+          "turn": 1
+        }
+      ]
+    },
+    {
+      "agents": [
+        "A",
+        "B"
+      ],
+      "board": [
+        {
+          "author": "B",
+          "delta_i_bits": 1.584962500721156,
+          "message_id": "message-B-1",
+          "message_tokens": 1,
+          "receiver": "A",
+          "status": "accepted",
+          "text": "precedes=stage>deploy"
+        }
+      ],
+      "board_log": [
+        {
+          "agent_id": "B",
+          "delta_i_bits": 1.584962500721156,
+          "event_id": "f6379f2ba9904379bc80ac656afb73d2",
+          "kind": "board_write",
+          "message_id": "message-B-1",
+          "message_tokens": 1,
+          "monotonic_ns": 23841037710838,
+          "output_id": null,
+          "payload": {
+            "information_perspective": "receiver",
+            "normalized_claim": "precedes=stage>deploy",
+            "raw_text": "precedes=stage>deploy",
+            "receiver_id": "A"
+          },
+          "run_id": "bridge-planning-0001194b",
+          "sequence": 0,
+          "status": "accepted",
+          "useful": true
+        },
+        {
+          "agent_id": "A",
+          "delta_i_bits": 1.584962500721156,
+          "event_id": "7a510fe58b624ac8a76a19b14d5e111e",
+          "kind": "peer_read_exposure",
+          "message_id": "message-B-1",
+          "message_tokens": null,
+          "monotonic_ns": 23841037805698,
+          "output_id": null,
+          "payload": {
+            "exposure_id": "jev-finalizer"
+          },
+          "run_id": "bridge-planning-0001194b",
+          "sequence": 1,
+          "status": "accepted",
+          "useful": null
+        }
+      ],
+      "confidence": 0.86,
+      "credentials_retained": false,
+      "eligible_exposure": true,
+      "i_m_bits": 1.584962500721156,
+      "instance_id": "planning-0001194b",
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.05,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.02,
+        "inspect>stage>deploy": 0.89,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.03
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 0.6968081564486279,
+        "entropy_raw_bits": 0.6968081564486279,
+        "invalid_classes": [],
+        "maximum_probability": 0.89,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "inspect>stage>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 1
+      },
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "provider_attempts": {
+        "combined": 60,
+        "jev": 12,
+        "ling": 48
+      },
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.05,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.02,
+        "inspect>stage>deploy": 0.89,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.03
+      },
+      "raw_response_retained": false,
+      "receiver_attempted": true,
+      "receiver_error_class": null,
+      "receiver_status": "complete",
+      "receiver_valid": true,
+      "rejected": [],
+      "renormalized": true,
+      "request_hash": "d2c5cbaad20a30ccf1110e12130e2f67355c6a83f91eb797399d4a27af1f8dec",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "inspect>stage>deploy",
+      "state_hash": "1a4abfb98c9133c29c006bfb9d512485579e371b82286f12a4a9e1155e653deb",
+      "target_id": "inspect>stage>deploy",
+      "turns": 2,
+      "usage": {
+        "input_tokens": 447,
+        "output_tokens": 96
+      },
+      "writer_outcomes": [
+        {
+          "agent": "A",
+          "answer": "deploy>inspect>stage",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 45,
+          "seed_sent": 248963665,
+          "turn": 0
+        },
+        {
+          "agent": "B",
+          "answer": "stage>deploy>inspect",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 46,
+          "seed_sent": 864275463,
+          "turn": 0
+        },
+        {
+          "agent": "A",
+          "answer": "inspect>stage>deploy",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 47,
+          "seed_sent": 1742589401,
+          "turn": 1
+        },
+        {
+          "agent": "B",
+          "answer": null,
+          "content_length": 59,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "message_candidate",
+          "physical_attempts": 48,
+          "seed_sent": 1916539179,
+          "turn": 1
+        }
+      ]
+    },
+    {
+      "agents": [
+        "A",
+        "B"
+      ],
+      "board": [
+        {
+          "author": "B",
+          "delta_i_bits": 1.584962500721156,
+          "message_id": "message-B-0",
+          "message_tokens": 1,
+          "receiver": "A",
+          "status": "accepted",
+          "text": "precedes=inspect>deploy"
+        }
+      ],
+      "board_log": [
+        {
+          "agent_id": "B",
+          "delta_i_bits": 1.584962500721156,
+          "event_id": "699e7c11041d4746a8c06a33c9ea443a",
+          "kind": "board_write",
+          "message_id": "message-B-0",
+          "message_tokens": 1,
+          "monotonic_ns": 23854241327778,
+          "output_id": null,
+          "payload": {
+            "information_perspective": "receiver",
+            "normalized_claim": "precedes=inspect>deploy",
+            "raw_text": "precedes=inspect>deploy",
+            "receiver_id": "A"
+          },
+          "run_id": "bridge-planning-0001194c",
+          "sequence": 0,
+          "status": "accepted",
+          "useful": true
+        },
+        {
+          "agent_id": "A",
+          "delta_i_bits": 1.584962500721156,
+          "event_id": "49321662db0c483a9042b918a4f7951c",
+          "kind": "peer_read_exposure",
+          "message_id": "message-B-0",
+          "message_tokens": null,
+          "monotonic_ns": 23854241341059,
+          "output_id": null,
+          "payload": {
+            "exposure_id": "turn-1"
+          },
+          "run_id": "bridge-planning-0001194c",
+          "sequence": 1,
+          "status": "accepted",
+          "useful": null
+        }
+      ],
+      "confidence": 0.94,
+      "credentials_retained": false,
+      "eligible_exposure": true,
+      "i_m_bits": 1.584962500721156,
+      "instance_id": "planning-0001194c",
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.01,
+        "stage>deploy>inspect": 0.03,
+        "stage>inspect>deploy": 0.95
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 0.3549444868386896,
+        "entropy_raw_bits": 0.3549444868386896,
+        "invalid_classes": [],
+        "maximum_probability": 0.95,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>inspect>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 2
+      },
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "provider_attempts": {
+        "combined": 65,
+        "jev": 13,
+        "ling": 52
+      },
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.01,
+        "stage>deploy>inspect": 0.03,
+        "stage>inspect>deploy": 0.95
+      },
+      "raw_response_retained": false,
+      "receiver_attempted": true,
+      "receiver_error_class": null,
+      "receiver_status": "complete",
+      "receiver_valid": true,
+      "rejected": [],
+      "renormalized": true,
+      "request_hash": "d55b2f55ac0d91e014190fda63dbdfc35072f8b1866d056893712fc60f6398cd",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "state_hash": "3651ca7b8b56f5c8a804db055ab63f9427c6b6b40ef79345af52cca696d15345",
+      "target_id": "stage>inspect>deploy",
+      "turns": 2,
+      "usage": {
+        "input_tokens": 448,
+        "output_tokens": 97
+      },
+      "writer_outcomes": [
+        {
+          "agent": "A",
+          "answer": "stage>deploy>inspect",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 49,
+          "seed_sent": 2020509428,
+          "turn": 0
+        },
+        {
+          "agent": "B",
+          "answer": null,
+          "content_length": 61,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "message_candidate",
+          "physical_attempts": 50,
+          "seed_sent": 1829163013,
+          "turn": 0
+        },
+        {
+          "agent": "A",
+          "answer": "stage>inspect>deploy",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 51,
+          "seed_sent": 1402327113,
+          "turn": 1
+        },
+        {
+          "agent": "B",
+          "answer": "inspect>deploy>stage",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 52,
+          "seed_sent": 475102962,
+          "turn": 1
+        }
+      ]
+    },
+    {
+      "agents": [
+        "A",
+        "B"
+      ],
+      "board": [],
+      "board_log": [],
+      "confidence": 0.64,
+      "credentials_retained": false,
+      "eligible_exposure": false,
+      "i_m_bits": null,
+      "instance_id": "planning-0001194d",
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.23,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.06,
+        "inspect>stage>deploy": 0.69,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.01
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.2334573146614058,
+        "entropy_raw_bits": 1.2334573146614058,
+        "invalid_classes": [],
+        "maximum_probability": 0.69,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "inspect>stage>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 1
+      },
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "provider_attempts": {
+        "combined": 70,
+        "jev": 14,
+        "ling": 56
+      },
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.23,
+        "deploy>stage>inspect": 0.01,
+        "inspect>deploy>stage": 0.06,
+        "inspect>stage>deploy": 0.69,
+        "stage>deploy>inspect": 0.0,
+        "stage>inspect>deploy": 0.01
+      },
+      "raw_response_retained": false,
+      "receiver_attempted": true,
+      "receiver_error_class": null,
+      "receiver_status": "complete",
+      "receiver_valid": true,
+      "rejected": [],
+      "renormalized": true,
+      "request_hash": "47c58af68377f6ac46c557f02f49a7e52d4f5231afccc7157a2fb2f4ed47351c",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "inspect>stage>deploy",
+      "state_hash": "9668770b2ba00919db2cb3fac6bfab977d754d917a9f8d9148d7ed64af2b2f3f",
+      "target_id": "inspect>stage>deploy",
+      "turns": 2,
+      "usage": {
+        "input_tokens": 428,
+        "output_tokens": 96
+      },
+      "writer_outcomes": [
+        {
+          "agent": "A",
+          "answer": "inspect>stage>deploy",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 53,
+          "seed_sent": 1635775829,
+          "turn": 0
+        },
+        {
+          "agent": "B",
+          "answer": "stage>deploy>inspect",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 54,
+          "seed_sent": 22252330,
+          "turn": 0
+        },
+        {
+          "agent": "A",
+          "answer": "inspect>stage>deploy",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 55,
+          "seed_sent": 246136908,
+          "turn": 1
+        },
+        {
+          "agent": "B",
+          "answer": "stage>deploy>inspect",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 56,
+          "seed_sent": 1272898025,
+          "turn": 1
+        }
+      ]
+    },
+    {
+      "agents": [
+        "A",
+        "B"
+      ],
+      "board": [
+        {
+          "author": "A",
+          "delta_i_bits": 1.584962500721156,
+          "message_id": "message-A-0",
+          "message_tokens": 1,
+          "receiver": "B",
+          "status": "accepted",
+          "text": "precedes=deploy>inspect"
+        }
+      ],
+      "board_log": [
+        {
+          "agent_id": "A",
+          "delta_i_bits": 1.584962500721156,
+          "event_id": "e38c43e4df734a03be784dfa87f85bf1",
+          "kind": "board_write",
+          "message_id": "message-A-0",
+          "message_tokens": 1,
+          "monotonic_ns": 23896896751116,
+          "output_id": null,
+          "payload": {
+            "information_perspective": "receiver",
+            "normalized_claim": "precedes=deploy>inspect",
+            "raw_text": "precedes=deploy>inspect",
+            "receiver_id": "B"
+          },
+          "run_id": "bridge-planning-0001194e",
+          "sequence": 0,
+          "status": "accepted",
+          "useful": true
+        },
+        {
+          "agent_id": "B",
+          "delta_i_bits": 1.584962500721156,
+          "event_id": "48d0a85977e1429caa574fc20f116788",
+          "kind": "peer_read_exposure",
+          "message_id": "message-A-0",
+          "message_tokens": null,
+          "monotonic_ns": 23896896765160,
+          "output_id": null,
+          "payload": {
+            "exposure_id": "turn-0"
+          },
+          "run_id": "bridge-planning-0001194e",
+          "sequence": 1,
+          "status": "accepted",
+          "useful": null
+        }
+      ],
+      "confidence": 0.56,
+      "credentials_retained": false,
+      "eligible_exposure": false,
+      "i_m_bits": null,
+      "instance_id": "planning-0001194e",
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.24,
+        "deploy>stage>inspect": 0.12,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.63,
+        "stage>inspect>deploy": 0.01
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.3475833377101611,
+        "entropy_raw_bits": 1.3475833377101611,
+        "invalid_classes": [],
+        "maximum_probability": 0.63,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>deploy>inspect"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 2
+      },
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "provider_attempts": {
+        "combined": 75,
+        "jev": 15,
+        "ling": 60
+      },
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.24,
+        "deploy>stage>inspect": 0.12,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.0,
+        "stage>deploy>inspect": 0.63,
+        "stage>inspect>deploy": 0.01
+      },
+      "raw_response_retained": false,
+      "receiver_attempted": true,
+      "receiver_error_class": null,
+      "receiver_status": "complete",
+      "receiver_valid": true,
+      "rejected": [],
+      "renormalized": true,
+      "request_hash": "40f9a6c24d02149c02ca0acf7e3d057d56194c9c8e6a0b367fa7e6afee6a3804",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>deploy>inspect",
+      "state_hash": "a5fc3bb5eb0b309cdbfe300d0264199cd61012e89e067a81649b7c53e7be8ba7",
+      "target_id": "deploy>inspect>stage",
+      "turns": 2,
+      "usage": {
+        "input_tokens": 429,
+        "output_tokens": 97
+      },
+      "writer_outcomes": [
+        {
+          "agent": "A",
+          "answer": null,
+          "content_length": 61,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "message_candidate",
+          "physical_attempts": 57,
+          "seed_sent": 615178740,
+          "turn": 0
+        },
+        {
+          "agent": "B",
+          "answer": "deploy>inspect>stage",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 58,
+          "seed_sent": 860506110,
+          "turn": 0
+        },
+        {
+          "agent": "A",
+          "answer": "deploy>inspect>stage",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 59,
+          "seed_sent": 1993163789,
+          "turn": 1
+        },
+        {
+          "agent": "B",
+          "answer": "deploy>inspect>stage",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 60,
+          "seed_sent": 917402013,
+          "turn": 1
+        }
+      ]
+    },
+    {
+      "agents": [
+        "A",
+        "B"
+      ],
+      "board": [
+        {
+          "author": "B",
+          "delta_i_bits": 1.584962500721156,
+          "message_id": "message-B-1",
+          "message_tokens": 1,
+          "receiver": "A",
+          "status": "accepted",
+          "text": "precedes=inspect>deploy"
+        }
+      ],
+      "board_log": [
+        {
+          "agent_id": "B",
+          "delta_i_bits": 1.584962500721156,
+          "event_id": "7d9363f5953f4a769c8977bd79bbbaf2",
+          "kind": "board_write",
+          "message_id": "message-B-1",
+          "message_tokens": 1,
+          "monotonic_ns": 23936020780807,
+          "output_id": null,
+          "payload": {
+            "information_perspective": "receiver",
+            "normalized_claim": "precedes=inspect>deploy",
+            "raw_text": "precedes=inspect>deploy",
+            "receiver_id": "A"
+          },
+          "run_id": "bridge-planning-0001194f",
+          "sequence": 0,
+          "status": "accepted",
+          "useful": true
+        },
+        {
+          "agent_id": "A",
+          "delta_i_bits": 1.584962500721156,
+          "event_id": "67f66b58c83647e2a574366150f7aec6",
+          "kind": "peer_read_exposure",
+          "message_id": "message-B-1",
+          "message_tokens": null,
+          "monotonic_ns": 23936020880466,
+          "output_id": null,
+          "payload": {
+            "exposure_id": "jev-finalizer"
+          },
+          "run_id": "bridge-planning-0001194f",
+          "sequence": 1,
+          "status": "accepted",
+          "useful": null
+        }
+      ],
+      "confidence": 0.92,
+      "credentials_retained": false,
+      "eligible_exposure": true,
+      "i_m_bits": 1.584962500721156,
+      "instance_id": "planning-0001194f",
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.02,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.01,
+        "stage>deploy>inspect": 0.04,
+        "stage>inspect>deploy": 0.93
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 0.4624384954442554,
+        "entropy_raw_bits": 0.4624384954442554,
+        "invalid_classes": [],
+        "maximum_probability": 0.93,
+        "minimum_probability": 0.0,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "stage>inspect>deploy"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 2
+      },
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "provider_attempts": {
+        "combined": 80,
+        "jev": 16,
+        "ling": 64
+      },
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.0,
+        "deploy>stage>inspect": 0.02,
+        "inspect>deploy>stage": 0.0,
+        "inspect>stage>deploy": 0.01,
+        "stage>deploy>inspect": 0.04,
+        "stage>inspect>deploy": 0.93
+      },
+      "raw_response_retained": false,
+      "receiver_attempted": true,
+      "receiver_error_class": null,
+      "receiver_status": "complete",
+      "receiver_valid": true,
+      "rejected": [],
+      "renormalized": true,
+      "request_hash": "d55b2f55ac0d91e014190fda63dbdfc35072f8b1866d056893712fc60f6398cd",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "stage>inspect>deploy",
+      "state_hash": "3651ca7b8b56f5c8a804db055ab63f9427c6b6b40ef79345af52cca696d15345",
+      "target_id": "stage>inspect>deploy",
+      "turns": 2,
+      "usage": {
+        "input_tokens": 448,
+        "output_tokens": 97
+      },
+      "writer_outcomes": [
+        {
+          "agent": "A",
+          "answer": "stage>deploy>inspect",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 61,
+          "seed_sent": 1650401912,
+          "turn": 0
+        },
+        {
+          "agent": "B",
+          "answer": "inspect>deploy>stage",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 62,
+          "seed_sent": 660480411,
+          "turn": 0
+        },
+        {
+          "agent": "A",
+          "answer": "stage>deploy>inspect",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 63,
+          "seed_sent": 1637876678,
+          "turn": 1
+        },
+        {
+          "agent": "B",
+          "answer": null,
+          "content_length": 62,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "message_candidate",
+          "physical_attempts": 64,
+          "seed_sent": 1291559981,
+          "turn": 1
+        }
+      ]
+    },
+    {
+      "agents": [
+        "A",
+        "B"
+      ],
+      "board": [
+        {
+          "author": "B",
+          "delta_i_bits": 1.584962500721156,
+          "message_id": "message-B-0",
+          "message_tokens": 1,
+          "receiver": "A",
+          "status": "accepted",
+          "text": "precedes=stage>inspect"
+        },
+        {
+          "author": "B",
+          "delta_i_bits": 1.584962500721156,
+          "message_id": "message-B-1",
+          "message_tokens": 1,
+          "receiver": "A",
+          "status": "accepted",
+          "text": "precedes=stage>inspect"
+        }
+      ],
+      "board_log": [
+        {
+          "agent_id": "B",
+          "delta_i_bits": 1.584962500721156,
+          "event_id": "408dc56cf11742a2af4ae4f8fc3f1535",
+          "kind": "board_write",
+          "message_id": "message-B-0",
+          "message_tokens": 1,
+          "monotonic_ns": 23948482478584,
+          "output_id": null,
+          "payload": {
+            "information_perspective": "receiver",
+            "normalized_claim": "precedes=stage>inspect",
+            "raw_text": "precedes=stage>inspect",
+            "receiver_id": "A"
+          },
+          "run_id": "bridge-planning-00011950",
+          "sequence": 0,
+          "status": "accepted",
+          "useful": true
+        },
+        {
+          "agent_id": "A",
+          "delta_i_bits": 1.584962500721156,
+          "event_id": "4bc10192d2c6492eb677350e0f0ec3a1",
+          "kind": "peer_read_exposure",
+          "message_id": "message-B-0",
+          "message_tokens": null,
+          "monotonic_ns": 23948482492562,
+          "output_id": null,
+          "payload": {
+            "exposure_id": "turn-1"
+          },
+          "run_id": "bridge-planning-00011950",
+          "sequence": 1,
+          "status": "accepted",
+          "useful": null
+        },
+        {
+          "agent_id": "B",
+          "delta_i_bits": 1.584962500721156,
+          "event_id": "360d12414fed44cba436ff990f2631f5",
+          "kind": "board_write",
+          "message_id": "message-B-1",
+          "message_tokens": 1,
+          "monotonic_ns": 23955481702335,
+          "output_id": null,
+          "payload": {
+            "information_perspective": "receiver",
+            "normalized_claim": "precedes=stage>inspect",
+            "raw_text": "precedes=stage>inspect",
+            "receiver_id": "A"
+          },
+          "run_id": "bridge-planning-00011950",
+          "sequence": 2,
+          "status": "accepted",
+          "useful": true
+        },
+        {
+          "agent_id": "A",
+          "delta_i_bits": 1.584962500721156,
+          "event_id": "925e0ece0ecc46c791c91e47e26449ae",
+          "kind": "peer_read_exposure",
+          "message_id": "message-B-1",
+          "message_tokens": null,
+          "monotonic_ns": 23955481800253,
+          "output_id": null,
+          "payload": {
+            "exposure_id": "jev-finalizer"
+          },
+          "run_id": "bridge-planning-00011950",
+          "sequence": 3,
+          "status": "accepted",
+          "useful": null
+        }
+      ],
+      "confidence": 0.79,
+      "credentials_retained": false,
+      "eligible_exposure": true,
+      "i_m_bits": 3.169925001442312,
+      "instance_id": "planning-00011950",
+      "normalization_tier": "exact",
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {
+        "deploy>inspect>stage": 0.08,
+        "deploy>stage>inspect": 0.82,
+        "inspect>deploy>stage": 0.06,
+        "inspect>stage>deploy": 0.02,
+        "stage>deploy>inspect": 0.01,
+        "stage>inspect>deploy": 0.01
+      },
+      "probability_diagnostics": {
+        "absolute_normalization_deviation": 0.0,
+        "all_finite": true,
+        "all_nonnegative": true,
+        "argmax_preserved": true,
+        "entropy_normalized_bits": 1.0155657959446267,
+        "entropy_raw_bits": 1.0155657959446267,
+        "invalid_classes": [],
+        "maximum_probability": 0.82,
+        "minimum_probability": 0.01,
+        "normalization_adjustment": 0.0,
+        "normalization_tier": "exact",
+        "option_count": 6,
+        "raw_argmax_set": [
+          "deploy>stage>inspect"
+        ],
+        "raw_probability_sum": 1.0,
+        "renormalized": true,
+        "shape_valid": true,
+        "signed_normalization_deviation": 0.0,
+        "zero_count": 0
+      },
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "provider_attempts": {
+        "combined": 85,
+        "jev": 17,
+        "ling": 68
+      },
+      "raw_probabilities": {
+        "deploy>inspect>stage": 0.08,
+        "deploy>stage>inspect": 0.82,
+        "inspect>deploy>stage": 0.06,
+        "inspect>stage>deploy": 0.02,
+        "stage>deploy>inspect": 0.01,
+        "stage>inspect>deploy": 0.01
+      },
+      "raw_response_retained": false,
+      "receiver_attempted": true,
+      "receiver_error_class": null,
+      "receiver_status": "complete",
+      "receiver_valid": true,
+      "rejected": [],
+      "renormalized": true,
+      "request_hash": "029ec56f10b6489e2af3c3fcf79ea81c852f06b3f1b172794fd69bba290ca71e",
+      "resolved_model": "jev-1.13.0",
+      "selected_option_id": "deploy>stage>inspect",
+      "state_hash": "369877028daf8ff62ec212ca97e6c9b15ad9f2944462ec5d4e3bf0a17b720103",
+      "target_id": "deploy>stage>inspect",
+      "turns": 2,
+      "usage": {
+        "input_tokens": 467,
+        "output_tokens": 96
+      },
+      "writer_outcomes": [
+        {
+          "agent": "A",
+          "answer": "deploy>stage>inspect",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 65,
+          "seed_sent": 920809168,
+          "turn": 0
+        },
+        {
+          "agent": "B",
+          "answer": null,
+          "content_length": 60,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "message_candidate",
+          "physical_attempts": 66,
+          "seed_sent": 1819761201,
+          "turn": 0
+        },
+        {
+          "agent": "A",
+          "answer": "deploy>stage>inspect",
+          "content_length": 28,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "deliberate_silence",
+          "physical_attempts": 67,
+          "seed_sent": 996370052,
+          "turn": 1
+        },
+        {
+          "agent": "B",
+          "answer": null,
+          "content_length": 60,
+          "error_class": null,
+          "finish_reason": "stop",
+          "max_tokens": 1024,
+          "outcome": "message_candidate",
+          "physical_attempts": 68,
+          "seed_sent": 2032327637,
+          "turn": 1
+        }
+      ]
+    }
+  ],
+  "codec_version": "jev-choice-wire-v2",
+  "cost_cap_usd": 0.5,
+  "credentials_retained": false,
+  "distinct_forms": 6,
+  "estimated_cost_usd": 0.000859236,
+  "i_m_bits": 22.18947501,
+  "input_tokens": 20458,
+  "max_physical_requests": 114,
+  "mode": "exact-original-comm-bridge-v5",
+  "output_tokens": 36543,
+  "physical_attempts": 85,
+  "pinned_registration_hash": "7e8debef89015736aeaf7276998cf67bafa67f75b8e0b465e20d1259c3330333",
+  "planned_cases": 17,
+  "planned_requests": 85,
+  "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+  "provider_attempts": {
+    "combined": 85,
+    "jev": 17,
+    "jev_partition": 34,
+    "ling": 68,
+    "ling_partition": 80
+  },
+  "raw_response_retained": false,
+  "receiver_invalid_cases": 0,
+  "receiver_unattempted_cases": 0,
+  "receiver_valid_cases": 17,
+  "registration_hash": "7e8debef89015736aeaf7276998cf67bafa67f75b8e0b465e20d1259c3330333",
+  "rejected_writes": 1,
+  "resolved_models": [
+    "jev-1.13.0"
+  ],
+  "seed_algorithm": "sha256-truncated-signed31-v1",
+  "status": "completed",
+  "stop_reason": null,
+  "token_budget": 1024,
+  "turns": 2,
+  "verified_read_exposures": 14,
+  "writes_by_agent": {
+    "A": 2,
+    "B": 12
+  }
+}

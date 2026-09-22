@@ -19,6 +19,16 @@ from apart_incident_response.communication_protocol import BatteryCondition
 from apart_incident_response.communication_runner import AgentContext
 
 
+_ISOLATION_DIR = tempfile.mkdtemp(prefix="bridge-test-")
+
+
+def setUpModule():
+    # Keep the preflight freshness checks independent of any real bridge run
+    # artifacts: point the module defaults at a fresh temporary directory.
+    bridge.DEFAULT_BRIDGE_JOURNAL = Path(_ISOLATION_DIR) / "bridge.jsonl"
+    bridge.DEFAULT_BRIDGE_REPORT = Path(_ISOLATION_DIR) / "bridge-report.json"
+
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REGISTRATION = json.loads((REPO_ROOT / "runs" / "epic-126"
                            / "jev-writer-ladder-preregistration-v5.json").read_text())
