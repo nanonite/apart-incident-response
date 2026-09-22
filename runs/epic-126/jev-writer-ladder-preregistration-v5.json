@@ -1,0 +1,516 @@
+{
+  "analysis_boundary": null,
+  "approval": {
+    "approved": true,
+    "approved_by": "reviewer",
+    "live_collection_authorized": false,
+    "scope": "v5_registration_lock_only"
+  },
+  "approval_required": false,
+  "arms": [
+    "COMM (writer turn + Jev receiver)",
+    "COMM_CONTROL (turn-matched, never writes)"
+  ],
+  "caps": {
+    "cost_cap_usd": 1.0,
+    "input_token_ceiling": 8192,
+    "input_usd_per_mtok": 0.042,
+    "physical_requests": 550,
+    "planned_bridge_requests": 85,
+    "planned_by_provider": {
+      "jev": 221,
+      "ling": 272
+    },
+    "planned_ladder_requests": 408,
+    "planned_per_rung": 68,
+    "planned_requests": 493,
+    "provider_partition": {
+      "jev": 250,
+      "ling": 300,
+      "note": "per-provider partition per physical attempt, retries included",
+      "total": 550
+    },
+    "retry_reserve": 57,
+    "status": "locked; live_collection_authorized=false",
+    "worst_case_cost_usd": 0.1892352
+  },
+  "claim_scope": {
+    "forms": 6,
+    "statement": "emission, exposure, post-read correlation and causal uptake are separate; a rung that writes is not causal uptake and no rung may be selected post hoc for a confirmatory claim",
+    "type": "writer-emission instrumentation ladder"
+  },
+  "deviation_record": {
+    "L4": "renamed to the full-context standalone writer (approximate original schema); it is single-turn B and is not claimed to reproduce the original protocol.",
+    "L4X": "exact original COMM bridge: two agents x two turns, provider_seed, 1024 max tokens, evolving visible-message state and the original ANSWER/optional-MESSAGE grammar.",
+    "grammar": "L0-L3 and L5 use the explicit `MESSAGE: <clue> or SILENCE` grammar; L4/L4X use the original `ANSWER: <label>` + optional `message:` grammar with answer-only silence.",
+    "seed_behavior": "L4X sends provider_seed(instance|condition|turn|agent) and 1024 tokens exactly as the original treatment; the standalone rungs send no seed and use 64 tokens."
+  },
+  "exact_bridge": {
+    "agents": [
+      "A",
+      "B"
+    ],
+    "cost_cap_usd": 0.5,
+    "jev_partition": 60,
+    "ling_partition": 120,
+    "physical_requests": 180,
+    "planned_requests": 85,
+    "seed_algorithm": "sha256-truncated-signed31-v1",
+    "token_budget": 1024,
+    "turns": 2
+  },
+  "generator": {
+    "checker_version": "oracle-v2",
+    "generator_version": "six-family-clue-consistent-v2",
+    "ladder_hash": "e6b8aa32b02459935af4732862359ac20fc9101d99c2a4cc90f5ea973a83e787",
+    "manifest_treatment_hash": "ae6ff9e7fee8dc9428938c062e4296e551456605e2c5879594e38b35208852a5",
+    "source_files": [
+      "src/apart_incident_response/task_families.py",
+      "src/apart_incident_response/communication_protocol.py",
+      "src/apart_incident_response/communication_runner.py",
+      "src/apart_incident_response/behavioral_discovery.py",
+      "src/apart_incident_response/jev_protocol.py",
+      "src/apart_incident_response/jev_choice.py",
+      "src/apart_incident_response/jev_choice_v2.py",
+      "src/apart_incident_response/jev_choice_smoke.py",
+      "src/apart_incident_response/jev_replay.py",
+      "src/apart_incident_response/jev_replay_inference.py",
+      "src/apart_incident_response/jev_normalization_sensitivity.py",
+      "src/apart_incident_response/jev_choice_pilot.py",
+      "src/apart_incident_response/jev_replay_preregistration.py",
+      "src/apart_incident_response/jev_replay_preregistration_v2.py",
+      "src/apart_incident_response/jev_replay_preregistration_v3.py",
+      "src/apart_incident_response/jev_ling_writer_v3.py",
+      "src/apart_incident_response/jev_ling_writer_v5.py",
+      "src/apart_incident_response/jev_writer_treatment_audit.py",
+      "src/apart_incident_response/jev_writer_exact_bridge_v5.py",
+      "src/apart_incident_response/jev_writer_ladder_v5.py",
+      "src/apart_incident_response/jev_writer_ladder_pilot_v5.py",
+      "src/apart_incident_response/jev_writer_ladder_preregistration_v5.py"
+    ],
+    "source_files_hash": "7b15360945dbfb8d86dac5b246ce452e4e8c65f2049f88fbf461b9537e7a8d39",
+    "treatment_hash": "0d400fc3b434f1f6648966fc5d616300123e38d2dbeaf1e58025564e393c2f97",
+    "writer_schema_hash": "4576d8b82ad24444714a814e3b01cd47368cf6b3bddd9969435fc78ed6b38335"
+  },
+  "interpretation_rules": {
+    "demote_planning_low": "If all voluntary rungs return deliberate_silence, demote planning-low and propose a separately preregistered six-family Jev-in-loop discovery screen.",
+    "emission_prompt_dependent": "If L4 or L5 writes while L0 remains silent, emission is prompt/role dependent; the reproducing rung must be registered as part of the communication treatment before replay.",
+    "l5_gate": "Every L5 call must produce an exact-owned message (fraction >= 1.0); otherwise the ladder is uninterpretable: status becomes inconclusive and no voluntary-rung interpretation is emitted.",
+    "l5_transport_validation": "If L5 fails to produce an exact-owned accepted write, the transport/parser is not validated and the ladder is not interpretable.",
+    "no_post_hoc": "Do not select a successful rung post hoc and call it confirmatory.",
+    "repair_instrumentation": "Any empty_output, truncated_output or unparsed_output outcomes mean instrumentation or token budget must be repaired before scientific interpretation.",
+    "separate_concepts": "Emission, exposure, post-read correlation and causal uptake remain separate; emission is not causal uptake and requires matched real/placebo/null replay.",
+    "three_gates": "Three distinct gates remain required: structural necessity, inducement through an owned informative message, and causal uptake through matched real/placebo/null replay."
+  },
+  "ling_contract": {
+    "backoff_initial_seconds": 0.5,
+    "backoff_max_seconds": 5.0,
+    "contract_hash": "28c819f2c651c4a1bdeb36dc650224123ae27d10dd67d7a39ad6882fb4866aa1",
+    "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+    "max_retries": 2,
+    "max_tokens": 64,
+    "model": "inclusionai/ling-3.0-flash-vl:free",
+    "prompt_template": "You may send at most one exact private clue to a peer, or stay silent. Private clues: {clues}. Reply with MESSAGE: <exact clue> or SILENCE.",
+    "provider": "openrouter",
+    "provider_version": "behavioral-discovery-v1",
+    "retryable_statuses": [
+      408,
+      429,
+      500,
+      502,
+      503,
+      504,
+      529
+    ],
+    "seed_behavior": "not_requested",
+    "temperature": 0.0
+  },
+  "live_collection_authorized": false,
+  "manifest": {
+    "complexity": "low",
+    "family": "planning",
+    "instance_ids": [
+      "planning-00011940",
+      "planning-00011941",
+      "planning-00011942",
+      "planning-00011943",
+      "planning-00011944",
+      "planning-00011945",
+      "planning-00011946",
+      "planning-00011947",
+      "planning-00011948",
+      "planning-00011949",
+      "planning-0001194a",
+      "planning-0001194b",
+      "planning-0001194c",
+      "planning-0001194d",
+      "planning-0001194e",
+      "planning-0001194f",
+      "planning-00011950"
+    ],
+    "iso_form_ids": [
+      "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+      "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+      "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+      "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+      "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222"
+    ],
+    "manifest_hash": "27e0c9faeec47979e44f480af648cd0b37751a8c529d0ab91ba4f32b7b3b2390",
+    "paired_forms": 6,
+    "per_block": 17,
+    "regime": "N",
+    "seed_base": 72000
+  },
+  "missingness_and_reporting": {
+    "concepts_separate": [
+      "emission",
+      "exposure",
+      "post_read_correlation",
+      "causal_uptake"
+    ],
+    "fullness": "partial and missing rows are reported, never dropped or substituted",
+    "induced_excluded_from_voluntary": true,
+    "per_rung": [
+      "planned_cases",
+      "planned_provider_calls",
+      "attempted_cases",
+      "writer_valid",
+      "writer_invalid",
+      "receiver_valid",
+      "receiver_invalid",
+      "receiver_unattempted",
+      "joint_valid",
+      "writer_outcome_counts_by_arm",
+      "exact_owned_accepted_writes",
+      "rejected_claims",
+      "verified_read_exposures",
+      "authoritative_i_m",
+      "i_m_bits",
+      "distinct_forms",
+      "provider_requests",
+      "tokens",
+      "cost",
+      "missingness"
+    ]
+  },
+  "model_and_protocol": {
+    "codec_version": "jev-choice-wire-v2",
+    "endpoint": "https://api.typesafe.ai/v1/systemone",
+    "model": "jev-1.13.0",
+    "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+    "provider": "jev"
+  },
+  "outputs": {
+    "bridge_journal": "runs/epic-126/jev-writer-exact-bridge-v5.jsonl",
+    "bridge_report": "runs/epic-126/jev-writer-exact-bridge-report-v5.json",
+    "journal": "runs/epic-126/jev-writer-ladder-v5.jsonl",
+    "registration": "runs/epic-126/jev-writer-ladder-preregistration-v5.json",
+    "report": "runs/epic-126/jev-writer-ladder-report-v5.json",
+    "treatment_audit": "runs/epic-126/jev-writer-treatment-audit-v4.json"
+  },
+  "pending_decisions": [],
+  "preregistration_hash": "26944aafa98ebb7e1e06a509cbe3294e2b8dd428e6243c2547b6901c6ce8dc54",
+  "preregistration_version": "stage2-jev-writer-ladder-v5",
+  "purpose": "resolve why the paced v3 standalone writer produced 17/17 COMM silence by measuring an observable writer ladder over the same instances and forms, holding the Jev receiver fixed",
+  "stage": "planning-low-writer-ladder",
+  "status": "locked_for_jev_writer_ladder_v5",
+  "stop_rules": [
+    "argmax_shifted_on_renormalization",
+    "contract_mismatch",
+    "cost_cap",
+    "empty_output",
+    "invalid_answer",
+    "missing_checker_evidence",
+    "model_drift",
+    "not_normalized_hard",
+    "output_exists",
+    "repeated_http_failure",
+    "report_exists",
+    "request_cap",
+    "truncated_output",
+    "unparsed_output",
+    "writer_error_terminal",
+    "writer_rate_limited_terminal"
+  ],
+  "successor_of": {
+    "immutable": true,
+    "note": "v1-v3 are not modified, resumed, pooled with, or reinterpreted; v4 is preserved",
+    "stopped_v3_commit": "e6d9630",
+    "stopped_v3_result": "runs/epic-126/jev-choice-pilot-report-v3.json",
+    "superseded_v4": "runs/epic-126/jev-writer-ladder-preregistration-v4.json",
+    "v1": "runs/epic-126/jev-choice-replay-preregistration.json",
+    "v2": "runs/epic-126/jev-choice-replay-preregistration-v2.json",
+    "v3": "runs/epic-126/jev-choice-replay-preregistration-v3.json",
+    "v4_note": "v4 was never live-approved and is superseded by this repaired v5"
+  },
+  "writer_ladder": {
+    "bridge_rungs": [
+      "L4X"
+    ],
+    "exact_bridge": {
+      "agents": [
+        "A",
+        "B"
+      ],
+      "grammar": "original_ling_v5",
+      "seed_algorithm": "sha256-truncated-signed31-v1",
+      "seed_basis": "sha256(instance_id|condition|turn|agent_id)[:8] masked to 0..2^31-1",
+      "token_budget": 1024,
+      "turns": 2
+    },
+    "induced_rungs": [
+      "L5"
+    ],
+    "interpretation_rules": {
+      "demote_planning_low": "If all voluntary rungs return deliberate_silence, demote planning-low and propose a separately preregistered six-family Jev-in-loop discovery screen.",
+      "emission_prompt_dependent": "If L4 or L5 writes while L0 remains silent, emission is prompt/role dependent; the reproducing rung must be registered as part of the communication treatment before replay.",
+      "l5_gate": "Every L5 call must produce an exact-owned message (fraction >= 1.0); otherwise the ladder is uninterpretable: status becomes inconclusive and no voluntary-rung interpretation is emitted.",
+      "l5_transport_validation": "If L5 fails to produce an exact-owned accepted write, the transport/parser is not validated and the ladder is not interpretable.",
+      "no_post_hoc": "Do not select a successful rung post hoc and call it confirmatory.",
+      "repair_instrumentation": "Any empty_output, truncated_output or unparsed_output outcomes mean instrumentation or token budget must be repaired before scientific interpretation.",
+      "separate_concepts": "Emission, exposure, post-read correlation and causal uptake remain separate; emission is not causal uptake and requires matched real/placebo/null replay.",
+      "three_gates": "Three distinct gates remain required: structural necessity, inducement through an owned informative message, and causal uptake through matched real/placebo/null replay."
+    },
+    "l5_required_owned_fraction": 1.0,
+    "ladder_version": "planning-low-writer-ladder-v5",
+    "rungs": [
+      {
+        "bridge": false,
+        "grammar": "explicit_silence_v5",
+        "induced": false,
+        "name": "current private-clues-only writer",
+        "rung_id": "L0",
+        "visible_fields": [
+          "private_clues"
+        ],
+        "voluntary": true
+      },
+      {
+        "bridge": false,
+        "grammar": "explicit_silence_v5",
+        "induced": false,
+        "name": "L0 plus task instruction",
+        "rung_id": "L1",
+        "visible_fields": [
+          "private_clues",
+          "instruction"
+        ],
+        "voluntary": true
+      },
+      {
+        "bridge": false,
+        "grammar": "explicit_silence_v5",
+        "induced": false,
+        "name": "L1 plus candidate labels",
+        "rung_id": "L2",
+        "visible_fields": [
+          "private_clues",
+          "instruction",
+          "candidate_labels"
+        ],
+        "voluntary": true
+      },
+      {
+        "bridge": false,
+        "grammar": "explicit_silence_v5",
+        "induced": false,
+        "name": "L2 plus condition, turn and role",
+        "rung_id": "L3",
+        "visible_fields": [
+          "private_clues",
+          "instruction",
+          "candidate_labels",
+          "condition",
+          "turn",
+          "role"
+        ],
+        "voluntary": true
+      },
+      {
+        "bridge": false,
+        "grammar": "original_ling_v5",
+        "induced": false,
+        "name": "full-context standalone writer (approximate original schema)",
+        "rung_id": "L4",
+        "visible_fields": [
+          "instruction",
+          "family",
+          "complexity",
+          "condition",
+          "turn",
+          "is_finalizer",
+          "finalizing_agent",
+          "candidate_labels",
+          "joint_clues",
+          "private_clues",
+          "visible_messages"
+        ],
+        "voluntary": true
+      },
+      {
+        "bridge": false,
+        "grammar": "explicit_silence_v5",
+        "induced": true,
+        "name": "required exact-owned-claim positive control (INDUCED)",
+        "rung_id": "L5",
+        "visible_fields": [
+          "private_clues"
+        ],
+        "voluntary": false
+      },
+      {
+        "bridge": true,
+        "grammar": "original_ling_v5",
+        "induced": false,
+        "name": "exact original COMM bridge (two agents x two turns, seed, 1024 tokens)",
+        "rung_id": "L4X",
+        "visible_fields": [
+          "instruction",
+          "family",
+          "complexity",
+          "condition",
+          "turn",
+          "is_finalizer",
+          "finalizing_agent",
+          "candidate_labels",
+          "joint_clues",
+          "private_clues",
+          "visible_messages"
+        ],
+        "voluntary": false
+      }
+    ],
+    "templates": {
+      "L0": "You may send at most one exact private clue to a peer, or stay silent. Private clues: {clues}. Reply with MESSAGE: <exact clue> or SILENCE.",
+      "L1": "Task: {instruction}\nYou may send at most one exact private clue to a peer, or stay silent. Private clues: {clues}. Reply with MESSAGE: <exact clue> or SILENCE.",
+      "L2": "Task: {instruction}\nYou may send at most one exact private clue to a peer, or stay silent. Private clues: {clues}. Reply with MESSAGE: <exact clue> or SILENCE.\nCandidates: {candidate_labels}",
+      "L3": "Task: {instruction}\nYou may send at most one exact private clue to a peer, or stay silent. Private clues: {clues}. Reply with MESSAGE: <exact clue> or SILENCE.\nCandidates: {candidate_labels}\nCondition: {condition}; turn: {turn}; role: {role}",
+      "L4": "json.dumps({instruction,family,complexity,condition,turn,is_finalizer,finalizing_agent,candidate_labels,joint_clues,private_clues,visible_messages})",
+      "L5": "INDUCED positive control. You must send exactly one message using MESSAGE: <exact clue>. Choose one of your private clues verbatim. Private clues: {clues}. Reply with MESSAGE: <exact clue>."
+    },
+    "voluntary_rungs": [
+      "L0",
+      "L1",
+      "L2",
+      "L3",
+      "L4"
+    ],
+    "writer_schema_hash": "4576d8b82ad24444714a814e3b01cd47368cf6b3bddd9969435fc78ed6b38335"
+  },
+  "writer_observability": {
+    "classification_order": [
+      "empty_output",
+      "truncated_output",
+      "deliberate_silence",
+      "message_candidate",
+      "non_owned_claim",
+      "invalid_answer",
+      "unparsed_output",
+      "writer_error"
+    ],
+    "grammars": {
+      "explicit_silence_v5": "exact SILENCE token, or MESSAGE: <claim>",
+      "original_ling_v5": "ANSWER: <label> with optional MESSAGE: <claim>; no MESSAGE is silence"
+    },
+    "message_prefix": "MESSAGE:",
+    "outcomes": [
+      "deliberate_silence",
+      "message_candidate",
+      "empty_output",
+      "truncated_output",
+      "unparsed_output",
+      "non_owned_claim",
+      "invalid_answer",
+      "writer_error"
+    ],
+    "pacing": {
+      "backoff_initial_seconds": 0.5,
+      "backoff_max_seconds": 5.0,
+      "max_retries": 2,
+      "max_server_requested_delay_seconds": 10.0,
+      "min_attempt_interval_seconds": 3.25,
+      "monotonic_clock": "time.monotonic",
+      "pacing_algorithm": "monotonic_min_interval_between_physical_attempt_starts",
+      "provenance_fields": [
+        "logical_call_id",
+        "physical_attempt",
+        "retry_ordinal",
+        "status",
+        "delay_seconds",
+        "delay_source",
+        "delay_sources",
+        "retry_after_present",
+        "retry_after_valid",
+        "retry_after_ms_present",
+        "retry_after_ms_valid",
+        "error_class"
+      ],
+      "retryable_statuses": [
+        408,
+        429,
+        500,
+        502,
+        503,
+        504,
+        529
+      ],
+      "supported_retry_headers": [
+        "retry-after",
+        "retry-after-ms"
+      ]
+    },
+    "raw_response_retained": false,
+    "retains_content_length": true,
+    "retains_raw_content": false,
+    "silence_rule": "deliberate_silence only for an exact registered SILENCE response (or, for the original-grammar rung, a valid ANSWER with no MESSAGE); empty or truncated output is never silence",
+    "silence_token": "SILENCE",
+    "writer_outcomes_version": "ling-writer-outcomes-v5",
+    "writer_parser_version": "ling-writer-parser-v5"
+  },
+  "writer_transport": {
+    "backoff_formula": "min(initial * 2**(retry_ordinal - 1), backoff_max)",
+    "backoff_initial_seconds": 0.5,
+    "backoff_max_seconds": 5.0,
+    "backoff_ordinal_convention": "retry_ordinal=1 for the first retry",
+    "delay_rule": "max(remaining_min_interval, exponential_backoff, valid_server_requested_delay)",
+    "max_retries": 2,
+    "max_server_requested_delay_seconds": 10.0,
+    "min_attempt_interval_seconds": 3.25,
+    "monotonic_clock": "time.monotonic",
+    "pacing_algorithm": "monotonic_min_interval_between_physical_attempt_starts",
+    "pacing_scope": "every physical attempt, across logical calls and retries; Ling only",
+    "provenance_fields": [
+      "logical_call_id",
+      "physical_attempt",
+      "retry_ordinal",
+      "status",
+      "delay_seconds",
+      "delay_source",
+      "delay_sources",
+      "retry_after_present",
+      "retry_after_valid",
+      "retry_after_ms_present",
+      "retry_after_ms_valid",
+      "error_class"
+    ],
+    "provider": "openrouter",
+    "retains_credentials": false,
+    "retains_response_bodies": false,
+    "retry_header_parsing": "numeric_only; no HTTP-date parsing; malformed/negative/non-finite/excessive ignored",
+    "retryable_statuses": [
+      408,
+      429,
+      500,
+      502,
+      503,
+      504,
+      529
+    ],
+    "supported_retry_headers": [
+      "retry-after",
+      "retry-after-ms"
+    ],
+    "writer_transport_version": "ling-writer-openrouter-pacing-v3"
+  }
+}

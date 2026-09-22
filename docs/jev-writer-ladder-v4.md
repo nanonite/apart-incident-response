@@ -114,3 +114,13 @@ UV_CACHE_DIR=.uv-cache uv run env PYTHONPATH=src \
 
 #159 remains blocked until a ladder run yields verified eligible exposure and a
 reviewer explicitly approves replay.
+
+## 10. Superseded by v5 (#187 review)
+
+The v4 runner had contract breaks: writer-invalid outcomes still called Jev and
+counted as valid, L4 did not reproduce the original treatment exactly, the
+original-grammar classifier accepted unknown answers as silence, the L5 gate was
+not enforced, and denominators were inconsistent. v4 is preserved but superseded
+by the repaired **v5** (see [`docs/jev-writer-ladder-v5.md`](jev-writer-ladder-v5.md)),
+which adds an exact original COMM bridge (`L4X`), an `invalid_answer` outcome, an
+enforced L5 gate, and separated by-rung/by-arm denominators. No live calls.
