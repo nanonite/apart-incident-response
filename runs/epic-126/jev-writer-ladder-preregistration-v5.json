@@ -104,7 +104,7 @@
       "src/apart_incident_response/jev_writer_ladder_pilot_v5.py",
       "src/apart_incident_response/jev_writer_ladder_preregistration_v5.py"
     ],
-    "source_files_hash": "38c879fccc4785932e678f4eb7b3ce21db8f1b8b6957c6694f83cb010afa5c26",
+    "source_files_hash": "1fd50506b06024601a99238165b45a2730edc1c90d0ac97f40550571acd25d33",
     "treatment_hash": "0d400fc3b434f1f6648966fc5d616300123e38d2dbeaf1e58025564e393c2f97",
     "writer_schema_hash": "4576d8b82ad24444714a814e3b01cd47368cf6b3bddd9969435fc78ed6b38335"
   },
@@ -226,7 +226,7 @@
     "treatment_audit": "runs/epic-126/jev-writer-treatment-audit-v4.json"
   },
   "pending_decisions": [],
-  "preregistration_hash": "bc44ca29e99138ca68a88f96eba553609ba4a738209b6ad167e5e7858d62c412",
+  "preregistration_hash": "7e8debef89015736aeaf7276998cf67bafa67f75b8e0b465e20d1259c3330333",
   "preregistration_version": "stage2-jev-writer-ladder-v5",
   "purpose": "resolve why the paced v3 standalone writer produced 17/17 COMM silence by measuring an observable writer ladder over the same instances and forms, holding the Jev receiver fixed",
   "stage": "planning-low-writer-ladder",

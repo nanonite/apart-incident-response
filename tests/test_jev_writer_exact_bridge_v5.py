@@ -10,6 +10,7 @@ from unittest.mock import patch
 from apart_incident_response import behavioral_discovery as bd
 from apart_incident_response import jev_choice as jc
 from apart_incident_response import jev_choice_v2 as jc2
+from apart_incident_response import jev_ling_writer_v3 as writer_v3
 from apart_incident_response import jev_ling_writer_v5 as writer_v5
 from apart_incident_response import jev_writer_exact_bridge_v5 as bridge
 from apart_incident_response import jev_writer_ladder_v5 as ladder
@@ -409,6 +410,109 @@ class ReceiverEvidenceTests(unittest.TestCase):
         self.assertEqual(report["stop_reason"], "empty_output")
         self.assertEqual(receiver.client.calls, 0)
         self.assertEqual(report["receiver_unattempted_cases"], 1)
+
+
+class FakeBigWriter:
+    model = pr.LING_MODEL
+    endpoint = pr.LING_ENDPOINT
+    transport_version = writer_v3.LING_WRITER_TRANSPORT_VERSION
+
+    def __init__(self, cap):
+        self.max_physical_requests = cap
+        self.physical_attempts = 0
+
+    def write_outcome(self, context):
+        self.physical_attempts += 1
+        clues = list(context.get("private_clues", ()))
+        claim = clues[0] if clues else "x"
+        return {"outcome": "message_candidate", "claim": claim, "error_class": None,
+                "input_tokens": 8192, "output_tokens": 2, "finish_reason": None, "content_length": 10,
+                "answer": None, "seed_sent": 1, "max_tokens": 1024,
+                "physical_attempts": self.physical_attempts}
+
+
+class ExposureProvenanceTests(unittest.TestCase):
+    def test_every_b_message_has_a_jev_finalizer_read(self):
+        report, receiver, writer, plan, verification = run(owned_side_effect())
+        self.assertEqual(report["status"], "completed")
+        saw_finalizer = False
+        for case in report["cases"]:
+            reads = [event for event in case["board_log"]
+                     if event["kind"] == "peer_read_exposure" and event["agent_id"] == "A"]
+            read_ids = {event["message_id"] for event in reads}
+            b_rows = [row for row in case["board"] if row["author"] == "B" and row["status"] == "accepted"]
+            self.assertTrue(b_rows)
+            for row in b_rows:
+                self.assertIn(row["message_id"], read_ids)
+            final_b = [row for row in b_rows if row["message_id"].endswith("-1")]
+            self.assertTrue(final_b)
+            read = next(event for event in reads if event["message_id"] == final_b[-1]["message_id"]
+                        and event["payload"].get("exposure_id") == bridge.JEV_FINALIZER_EXPOSURE_ID)
+            saw_finalizer = True
+            if case["eligible_exposure"]:
+                self.assertTrue(b_rows)
+        self.assertTrue(saw_finalizer)
+
+
+class ProviderCounterTests(unittest.TestCase):
+    def test_per_case_counters_are_cumulative_through_the_case(self):
+        report, receiver, writer, plan, verification = run(owned_side_effect())
+        first = report["cases"][0]["provider_attempts"]
+        self.assertEqual((first["jev"], first["ling"], first["combined"]), (1, 4, 5))
+        last = report["cases"][-1]["provider_attempts"]
+        self.assertEqual((last["jev"], last["ling"]), (17, 68))
+        self.assertEqual(report["cases"][0]["receiver_attempted"], True)
+
+
+class MissingnessTests(unittest.TestCase):
+    def _runtime(self, adapter_cls, writer=None):
+        instances = bridge.bridge_instances()
+        plan = bridge.build_bridge_plan(instances, REGISTRATION)
+        receiver = adapter_cls(FakeReceiverClient(max_physical_requests=plan.jev_request_cap),
+                               model=pr.JEV_REPLAY_MODEL)
+        used_writer = writer or writer_v5.LingWriterClientV5(
+            api_key=KEY, max_physical_requests=plan.ling_request_cap,
+            clock=FakeClock().now, sleep_fn=lambda _: None)
+        return instances, receiver, plan, used_writer
+
+    def test_receiver_transport_exception_is_attempted_invalid(self):
+        class RaisingAdapter(jc2.JevChoiceAdapterV2):
+            def complete_with_raw(self, state):
+                raise OSError("boom")
+
+        instances, receiver, plan, writer = self._runtime(RaisingAdapter)
+        verification = {"ok": True, "checks": [], "failed": []}
+        with patch.object(writer_v5.urllib.request, "urlopen", side_effect=owned_side_effect()):
+            report = bridge.execute_bridge(plan, receiver, writer, verification, instances,
+                                           approval="test", pinned_hash=PIN, sleep_fn=lambda _: None)
+        self.assertEqual(report["status"], "stopped")
+        self.assertEqual(report["stop_reason"], "jev_OSError")
+        row = report["cases"][0]
+        self.assertTrue(row["receiver_attempted"])
+        self.assertFalse(row["receiver_valid"])
+        self.assertEqual(row["receiver_error_class"], "jev_OSError")
+        self.assertEqual(report["receiver_invalid_cases"], 1)
+        self.assertEqual(report["receiver_unattempted_cases"], 0)
+
+    def test_receiver_cost_guard_is_unattempted(self):
+        tampered = copy.deepcopy(REGISTRATION)
+        tampered["exact_bridge"]["cost_cap_usd"] = 0.0043
+        instances = bridge.bridge_instances()
+        plan = bridge.build_bridge_plan(instances, tampered)
+        receiver = jc2.JevChoiceAdapterV2(FakeReceiverClient(max_physical_requests=plan.jev_request_cap),
+                                          model=pr.JEV_REPLAY_MODEL)
+        writer = FakeBigWriter(plan.ling_request_cap)
+        report = bridge.execute_bridge(plan, receiver, writer, {"ok": True}, instances, approval="test",
+                                       pinned_hash=PIN, sleep_fn=lambda _: None)
+        self.assertEqual(report["status"], "stopped")
+        self.assertEqual(report["stop_reason"], "cost_cap")
+        row = report["cases"][0]
+        self.assertFalse(row["receiver_attempted"])
+        self.assertFalse(row["receiver_valid"])
+        self.assertEqual(row["receiver_error_class"], "cost_cap")
+        self.assertEqual(report["receiver_unattempted_cases"], 1)
+        self.assertEqual(report["receiver_invalid_cases"], 0)
+        self.assertEqual(receiver.client.calls, 0)
 
 
 if __name__ == "__main__":

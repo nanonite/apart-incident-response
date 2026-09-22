@@ -65,7 +65,7 @@ required.
 
 - Version `stage2-jev-writer-ladder-v5`, status `locked_for_jev_writer_ladder_v5`,
   `live_collection_authorized: false`
-- Hash `bc44ca29e99138ca68a88f96eba553609ba4a738209b6ad167e5e7858d62c412`
+- Hash `7e8debef89015736aeaf7276998cf67bafa67f75b8e0b465e20d1259c3330333`
 - Paths: `runs/epic-126/jev-writer-ladder-preregistration-v5.json`,
   `jev-writer-ladder-v5.jsonl`, `jev-writer-ladder-report-v5.json`,
   `jev-writer-exact-bridge-v5.jsonl`, `jev-writer-exact-bridge-report-v5.json`
@@ -113,11 +113,21 @@ required.
   `credentials_retained=false`. Invalid vectors, model drift, protocol mismatch,
   malformed usage, request/state drift and hard normalization failures stop the
   run; `completed` requires a valid receiver result for every planned instance.
+- **Finalizer exposure**: before the Jev call, A's exposure to every accepted
+  B-authored claim passed into `visible_messages` is recorded as a
+  `peer_read_exposure` event with the frozen `jev-finalizer` exposure id, so the
+  final-turn B message has matching read provenance for the replay validator.
+- **Accounting**: per-case `provider_attempts` is captured after the receiver
+  call (cumulative through that case); a receiver cost-guard stop is
+  `receiver_attempted=false` / `receiver_unattempted_cases++` with error class
+  `cost_cap`, while a transport/provider exception after attempting is
+  `receiver_attempted=true`, `receiver_valid=false` /
+  `receiver_invalid_cases++` with the sanitized error class.
 
 ## 6. Preflight and tests
 
 Offline preflights: ladder **ok 29/29**, exact bridge **ok 38/38**; zero provider
-calls. Focused v5 suites **77 passed**; full offline suite **784 passed**, 4
+calls. Focused v5 suites **81 passed**; full offline suite **788 passed**, 4
 skipped, 74 subtests, with only the known environment-only bubblewrap failures.
 
 ## 7. Future live commands (NOT RUN; each requires separate authorization)

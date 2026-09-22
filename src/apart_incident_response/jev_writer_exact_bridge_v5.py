@@ -54,6 +54,9 @@ STOP_WRITER_OUTCOMES = frozenset({
     writer_v5.OUTCOME_WRITER_ERROR,
 })
 
+#: Frozen exposure id for the Jev finalizer read of the bridge board.
+JEV_FINALIZER_EXPOSURE_ID = "jev-finalizer"
+
 PRIOR_REGISTRATION_ARTIFACTS = (
     "runs/epic-126/jev-choice-replay-preregistration.json",
     "runs/epic-126/jev-choice-replay-preregistration-v2.json",
@@ -390,14 +393,16 @@ def execute_bridge(plan: BridgePlan, receiver: jc2.JevChoiceAdapterV2, writer: A
                 if invalid is not None:
                     break
 
-            receiver_attempted = invalid is None
+            receiver_attempted = False
+            receiver_valid = False
+            receiver_error_class: str | None = None
             receiver_row: dict[str, Any] = {
                 "instance_id": instance.instance_id, "turns": ladder.EXACT_BRIDGE_TURNS,
                 "agents": list(ladder.EXACT_BRIDGE_AGENTS),
                 "board": list(board), "rejected": rejected,
-                "board_log": [event.to_dict() for event in log.events],
+                "board_log": [],
                 "writer_outcomes": writer_outcomes,
-                "receiver_attempted": receiver_attempted,
+                "receiver_attempted": False,
                 "receiver_valid": False, "receiver_status": None, "receiver_error_class": None,
                 "normalization_tier": None, "renormalized": None, "request_hash": None,
                 "state_hash": None, "protocol_key": plan.protocol_key, "resolved_model": None,
@@ -405,23 +410,33 @@ def execute_bridge(plan: BridgePlan, receiver: jc2.JevChoiceAdapterV2, writer: A
                 "selected_option_id": None, "confidence": None,
                 "probabilities": {}, "raw_probabilities": {}, "probability_diagnostics": None,
                 "usage": {}, "i_m_bits": None, "eligible_exposure": False,
-                "provider_attempts": {"jev": int(getattr(receiver.client, "physical_attempts", 0) or 0),
-                                      "ling": int(getattr(writer, "physical_attempts", 0) or 0)},
+                "provider_attempts": {},
                 "raw_response_retained": False, "credentials_retained": False,
             }
-            if receiver_attempted:
+            response = None
+            if invalid is None:
                 b_rows = [row for row in board if row["author"] == "B" and row["status"] == "accepted"]
                 visible = [{"text": jr.serialize_message(str(row["text"]))} for row in b_rows]
                 state = receiver.build_state(instance, RECEIVER_AGENT, "COMM", visible_messages=visible)
                 receiver_row["request_hash"] = state.request_hash
                 receiver_row["state_hash"] = jr.canonical_hash(state.state)
                 if not cost_ok(1 + pr.JEV_REPLAY_MAX_RETRIES):
+                    receiver_error_class = "cost_cap"
                     report["status"], report["stop_reason"] = "stopped", "cost_cap"
                 else:
+                    receiver_attempted = True
+                    # Record A's exposure to every B-authored message passed into
+                    # visible_messages, using the frozen finalizer exposure id.
+                    for row in b_rows:
+                        read = log.peer_read(RECEIVER_AGENT, board_info[row["message_id"]],
+                                             exposure_id=JEV_FINALIZER_EXPOSURE_ID)
+                        if read is not None:
+                            report["verified_read_exposures"] += 1
                     try:
                         response, _ = receiver.complete_with_raw(state)
                     except Exception as exc:
-                        report["status"], report["stop_reason"] = "stopped", f"jev_{type(exc).__name__}"
+                        receiver_error_class = f"jev_{type(exc).__name__}"
+                        report["status"], report["stop_reason"] = "stopped", receiver_error_class
                         response = None
                     if response is not None:
                         usage = dict(response.usage)
@@ -430,11 +445,11 @@ def execute_bridge(plan: BridgePlan, receiver: jc2.JevChoiceAdapterV2, writer: A
                         report["estimated_cost_usd"] = estimate_cost_usd(report["input_tokens"])
                         if response.model:
                             report["resolved_models"] = sorted(set(report["resolved_models"]) | {response.model})
-                        valid = response.status == "complete"
+                        receiver_valid = response.status == "complete"
                         receiver_row.update({
                             "receiver_status": response.status,
                             "receiver_error_class": response.error_class,
-                            "receiver_valid": valid,
+                            "receiver_valid": receiver_valid,
                             "normalization_tier": response.normalization_tier,
                             "renormalized": response.renormalized,
                             "resolved_model": response.model,
@@ -446,21 +461,36 @@ def execute_bridge(plan: BridgePlan, receiver: jc2.JevChoiceAdapterV2, writer: A
                                                          if response.diagnostics is not None else None),
                             "usage": usage,
                         })
-                        if valid and response.request_hash != state.request_hash:
+                        if receiver_valid and response.request_hash != state.request_hash:
+                            receiver_valid = False
+                            receiver_error_class = "request_hash_drift"
                             report["status"], report["stop_reason"] = "stopped", "request_hash_drift"
-                            valid = False
-                        if valid:
-                            report["receiver_valid_cases"] += 1
-                            receiver_row["eligible_exposure"] = bool(b_rows)
-                            if b_rows:
-                                receiver_row["i_m_bits"] = sum(float(row["delta_i_bits"] or 0.0)
-                                                               for row in b_rows)
-                        else:
-                            report["receiver_invalid_cases"] += 1
+                        if not receiver_valid:
+                            receiver_error_class = receiver_error_class or response.error_class
                             if report["status"] == "completed":
-                                report["status"], report["stop_reason"] = "stopped", response.error_class
+                                report["status"], report["stop_reason"] = "stopped", receiver_error_class
+            # Freeze receiver missingness exactly once.
+            if receiver_attempted:
+                if receiver_valid:
+                    report["receiver_valid_cases"] += 1
+                    b_accepted = [row for row in board if row["author"] == "B" and row["status"] == "accepted"]
+                    receiver_row["eligible_exposure"] = bool(b_accepted)
+                    if b_accepted:
+                        receiver_row["i_m_bits"] = sum(float(row["delta_i_bits"] or 0.0) for row in b_accepted)
+                else:
+                    report["receiver_invalid_cases"] += 1
             else:
                 report["receiver_unattempted_cases"] += 1
+            receiver_row["receiver_attempted"] = receiver_attempted
+            receiver_row["receiver_valid"] = receiver_valid
+            receiver_row["receiver_error_class"] = receiver_error_class
+            receiver_row["provider_attempts"] = {
+                "jev": int(getattr(receiver.client, "physical_attempts", 0) or 0),
+                "ling": int(getattr(writer, "physical_attempts", 0) or 0),
+                "combined": int(getattr(receiver.client, "physical_attempts", 0) or 0)
+                + int(getattr(writer, "physical_attempts", 0) or 0)}
+            # Snapshot the provenance log after the finalizer exposure events.
+            receiver_row["board_log"] = [event.to_dict() for event in log.events]
             journal(receiver_row)
             if report["status"] == "stopped":
                 break
@@ -525,7 +555,7 @@ if __name__ == "__main__":
 
 __all__ = [
     "BRIDGE_VERSION", "STOP_WRITER_OUTCOMES", "DEFAULT_BRIDGE_JOURNAL", "DEFAULT_BRIDGE_REPORT",
-    "PRIOR_REGISTRATION_ARTIFACTS", "BridgePlan", "bridge_instances", "build_bridge_plan",
+    "PRIOR_REGISTRATION_ARTIFACTS", "JEV_FINALIZER_EXPOSURE_ID", "BridgePlan", "bridge_instances", "build_bridge_plan",
     "construct_bridge_runtime", "agent_context_and_prompt", "verify_bridge_preflight",
     "execute_bridge", "main",
 ]
