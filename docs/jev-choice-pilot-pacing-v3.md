@@ -122,3 +122,12 @@ UV_CACHE_DIR=.uv-cache uv run env PYTHONPATH=src \
 ```
 
 #159 remains blocked until verified real-message exposure exists.
+
+## 9. Successor: writer observability and ladder (v4, #187)
+
+The paced v3 run completed without a rate limit but produced all-silence COMM,
+so #187 repairs writer observability (mutually exclusive outcomes, sanitized
+finish_reason/token/content-length provenance) and freezes an offline
+planning-low writer ladder L0–L5 plus a treatment-equivalence audit. See
+[`docs/jev-writer-ladder-v4.md`](jev-writer-ladder-v4.md). The v3 journal/report
+and every v1–v3 artifact remain immutable; #159 stays blocked.

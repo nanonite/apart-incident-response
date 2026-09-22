@@ -1,0 +1,167 @@
+{
+  "audit_version": "jev-writer-treatment-audit-v4",
+  "conclusion": "The v3 standalone writer is not treatment-equivalent to the original Ling solver: it drops the objective, candidate labels, family/complexity, condition/turn/role, joint clues and visible messages, sends no seed, uses a 64- vs 96-token budget, and replaces the original grammar with an explicit SILENCE token. Only private clues, temperature and model family/endpoint are shared.",
+  "divergent_fields": [
+    "objective/instruction",
+    "candidates",
+    "family and complexity",
+    "condition and turn",
+    "agent/finalizer role",
+    "joint clues",
+    "visible messages",
+    "seed behavior",
+    "token budget",
+    "output grammar"
+  ],
+  "equivalent_fields": [
+    "private clues",
+    "temperature"
+  ],
+  "field_diff": [
+    {
+      "equivalent": false,
+      "field": "objective/instruction",
+      "original_ling": "instruction (task_instruction)",
+      "v3_standalone_writer": "not visible"
+    },
+    {
+      "equivalent": false,
+      "field": "candidates",
+      "original_ling": "candidate_labels (public option set)",
+      "v3_standalone_writer": "not visible"
+    },
+    {
+      "equivalent": false,
+      "field": "family and complexity",
+      "original_ling": "family, complexity",
+      "v3_standalone_writer": "not visible"
+    },
+    {
+      "equivalent": false,
+      "field": "condition and turn",
+      "original_ling": "condition, turn",
+      "v3_standalone_writer": "not visible"
+    },
+    {
+      "equivalent": false,
+      "field": "agent/finalizer role",
+      "original_ling": "is_finalizer, finalizing_agent",
+      "v3_standalone_writer": "not visible"
+    },
+    {
+      "equivalent": true,
+      "field": "private clues",
+      "original_ling": "private_clues",
+      "v3_standalone_writer": "private_clues"
+    },
+    {
+      "equivalent": false,
+      "field": "joint clues",
+      "original_ling": "joint_clues (pooled task constraints)",
+      "v3_standalone_writer": "not visible"
+    },
+    {
+      "equivalent": false,
+      "field": "visible messages",
+      "original_ling": "visible_messages",
+      "v3_standalone_writer": "not visible"
+    },
+    {
+      "equivalent": false,
+      "field": "seed behavior",
+      "original_ling": "seed sent",
+      "v3_standalone_writer": "no seed"
+    },
+    {
+      "equivalent": true,
+      "field": "temperature",
+      "original_ling": "0.0",
+      "v3_standalone_writer": "0.0"
+    },
+    {
+      "equivalent": false,
+      "field": "token budget",
+      "original_ling": "96",
+      "v3_standalone_writer": "64"
+    },
+    {
+      "equivalent": false,
+      "field": "output grammar",
+      "original_ling": "ANSWER + optional MESSAGE; absent MESSAGE = silence",
+      "v3_standalone_writer": "MESSAGE or SILENCE"
+    }
+  ],
+  "hash": "16cf4632fdbf2382b588dd6b734ed60416c8f665dd74cfaa2c603a06b5192350",
+  "jev_downstream_note": "Jev is the receiver and runs after the writer decision, so the v3 all-silence result cannot be attributed to Jev; it is a property of the writer treatment.",
+  "original_ling": {
+    "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+    "max_tokens": 96,
+    "model": "inclusionai/ling-3.0-flash-vl:free",
+    "output_grammar": "free text; parser reads `answer: <label>` and optional `message: <text>`",
+    "parser_regex": {
+      "answer": "answer\\\\s*:\\\\s*([^\\\\n.]+)",
+      "message": "message\\\\s*:\\\\s*([^\\\\n]+)"
+    },
+    "prompt_example": {
+      "candidate_labels": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "complexity": "low",
+      "condition": "COMM",
+      "family": "planning",
+      "finalizing_agent": "A",
+      "instruction": "Choose one candidate and reply exactly as ANSWER: <candidate label>. In COMM only, you may optionally add MESSAGE: <exact private clue>; silence is allowed. Do not invent a label or claim message use.",
+      "is_finalizer": false,
+      "joint_clues": [],
+      "private_clues": [
+        "precedes=deploy>inspect"
+      ],
+      "turn": 1,
+      "visible_messages": []
+    },
+    "prompt_fields": [
+      "instruction",
+      "family",
+      "complexity",
+      "condition",
+      "turn",
+      "is_finalizer",
+      "finalizing_agent",
+      "candidate_labels",
+      "joint_clues",
+      "private_clues",
+      "visible_messages"
+    ],
+    "prompt_schema_version": "treatment-prompt-v2",
+    "prompt_serialization": "json.dumps(treatment_prompt(context), sort_keys=True)",
+    "seed_behavior": "provider_seed(instance_id|condition|turn|agent_id) sha256-masked to 0..2^31-1, sent as `seed`",
+    "seed_field_sent": true,
+    "silence_semantics": "absence of a MESSAGE line in a valid ANSWER response",
+    "source": "behavioral_discovery.treatment_prompt + OpenRouterBehavioralProvider",
+    "temperature": 0.0
+  },
+  "sample_seed": 72000,
+  "v3_standalone_writer": {
+    "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+    "max_tokens": 64,
+    "model": "inclusionai/ling-3.0-flash-vl:free",
+    "output_grammar": "MESSAGE: <exact clue> or SILENCE",
+    "parser": "message-or-None (v3); ambiguous",
+    "prompt_fields": [
+      "private_clues",
+      "silence_option"
+    ],
+    "prompt_template": "You may send at most one exact private clue to a peer, or stay silent. Private clues: {clues}. Reply with MESSAGE: <exact clue> or SILENCE.",
+    "seed_behavior": "no seed field sent",
+    "seed_field_sent": false,
+    "silence_semantics": "any non-MESSAGE result was recorded as None/silence",
+    "source": "jev_choice_pilot.LingWriterClient.write (LING_PROMPT_TEMPLATE)",
+    "temperature": 0.0,
+    "writer_transport_version": "ling-writer-openrouter-pacing-v3"
+  }
+}
