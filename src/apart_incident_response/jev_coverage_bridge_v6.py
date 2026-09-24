@@ -397,6 +397,20 @@ def verify_coverage_bridge_preflight(plan: CoveragePlan,
             "frozen_inputs": frozen}
 
 
+def material_correction(response: Any) -> bool:
+    """True only when v2 normalization changed the vector beyond exact tolerance.
+
+    v2 normalizes every accepted vector, so ``renormalized`` alone is not a
+    material correction; a correction is material only when the accepted
+    vector's tier shows a deviation above ``EXACT_DEVIATION_TOLERANCE``.
+    """
+
+    tier = getattr(response, "normalization_tier", None)
+    if not tier or tier == "malformed":
+        return False
+    return bool(getattr(response, "renormalized", False)) and tier != "exact"
+
+
 def _blocked(reason: str, approval: str | None, plan: CoveragePlan | None) -> dict[str, Any]:
     return {"mode": COVERAGE_BRIDGE_VERSION, "status": "blocked", "stop_reason": reason,
             "approval": approval,
@@ -419,7 +433,8 @@ def summarize_coverage(cases: Sequence[Mapping[str, Any]], *,
     writer_totals: dict[str, int] = {}
     writer_by_agent_turn: dict[str, int] = {}
     tiers: dict[str, int] = {}
-    renormalized = 0
+    normalized_rows = 0
+    material_rows = 0
     writes_by_author: dict[str, int] = {"A": 0, "B": 0}
     authoritative = 0
     gross_bits = 0.0
@@ -445,8 +460,9 @@ def summarize_coverage(cases: Sequence[Mapping[str, Any]], *,
                 block["b_writer_opportunities"] += 1
             if name == "deliberate_silence":
                 block["deliberate_silence_outcomes"] += 1
-            if name == "non_owned_claim":
-                block["rejected_write_attempts"] += 1
+        # Single authoritative representation: the journaled case["rejected"]
+        # rows (one per rejected write). Non-owned writer outcomes are counted
+        # separately in writer_outcome_totals, never added again here.
         block["rejected_write_attempts"] += len(case.get("rejected") or ())
         for row in case.get("board") or ():
             if row.get("status") == "accepted":
@@ -463,7 +479,9 @@ def summarize_coverage(cases: Sequence[Mapping[str, Any]], *,
         tier = str(case.get("normalization_tier") or "missing")
         tiers[tier] = tiers.get(tier, 0) + 1
         if case.get("renormalized"):
-            renormalized += 1
+            normalized_rows += 1
+        if case.get("material_correction"):
+            material_rows += 1
         if case.get("replay_eligible"):
             eligible_events += 1
             eligible_claims += len((case.get("replay_selection") or {}).get("selected") or ())
@@ -485,7 +503,8 @@ def summarize_coverage(cases: Sequence[Mapping[str, Any]], *,
             if any(str(outcome.get("outcome")) in bridge.STOP_WRITER_OUTCOMES
                    for outcome in case.get("writer_outcomes") or ())),
         "normalization": {"tiers": dict(sorted(tiers.items())),
-                          "renormalized_cases": renormalized},
+                          "normalized_rows": normalized_rows,
+                          "materially_renormalized_rows": material_rows},
         "messages_by_direction": {"b_to_a": writes_by_author.get("B", 0),
                                   "a_to_b": writes_by_author.get("A", 0)},
         "writes_by_agent": dict(sorted(writes_by_author.items())),
@@ -577,18 +596,25 @@ def execute_coverage_bridge(plan: CoveragePlan, receiver: Any, writer: Any,
             handle.flush()
             os.fsync(handle.fileno())
 
-    def guards_ok(extra_calls: int, *, ling: bool) -> bool:
+    def guards_ok(extra_physical: int, *, ling: bool) -> bool:
+        """Reserve partition headroom for the next logical call's physical
+
+        attempts (1 + registered max retries), and reserve the registered
+        retry-inclusive worst-case next-call cost exactly once - it already
+        includes the retry reserve for that logical call.
+        """
+
         ling_attempts = int(getattr(writer, "physical_attempts", 0) or 0)
         jev_attempts = int(getattr(receiver.client, "physical_attempts", 0) or 0)
         combined = ling_attempts + jev_attempts
-        if ling and ling_attempts + extra_calls > plan.ling_request_cap:
+        if ling and ling_attempts + extra_physical > plan.ling_request_cap:
             return False
-        if not ling and jev_attempts + extra_calls > plan.jev_request_cap:
+        if not ling and jev_attempts + extra_physical > plan.jev_request_cap:
             return False
-        if combined + extra_calls > plan.request_cap:
+        if combined + extra_physical > plan.request_cap:
             return False
         return (report["estimated_cost_usd"]
-                + plan.worst_case_next_call_cost_usd * extra_calls <= plan.cost_cap_usd)
+                + plan.worst_case_next_call_cost_usd <= plan.cost_cap_usd)
 
     counted_exposures = 0
     try:
@@ -692,6 +718,7 @@ def execute_coverage_bridge(plan: CoveragePlan, receiver: Any, writer: Any,
                 "probabilities": {}, "raw_probabilities": {},
                 "probability_diagnostics": None, "usage": {},
                 "i_m_bits": None, "eligible_exposure": False,
+                "accepted_b_message_present": False,
                 "replay_selection": None, "replay_eligible": False,
                 "provider_attempts": {},
                 "raw_response_retained": False, "credentials_retained": False,
@@ -735,6 +762,7 @@ def execute_coverage_bridge(plan: CoveragePlan, receiver: Any, writer: Any,
                             "receiver_valid": receiver_valid,
                             "normalization_tier": response.normalization_tier,
                             "renormalized": response.renormalized,
+                            "material_correction": material_correction(response),
                             "resolved_model": response.model,
                             "selected_option_id": response.selected_option_id,
                             "confidence": response.confidence,
@@ -759,7 +787,6 @@ def execute_coverage_bridge(plan: CoveragePlan, receiver: Any, writer: Any,
                     report["receiver_valid_cases"] += 1
                     b_accepted = [row for row in board
                                   if row["author"] == "B" and row["status"] == "accepted"]
-                    receiver_row["eligible_exposure"] = bool(b_accepted)
                     if b_accepted:
                         receiver_row["i_m_bits"] = sum(
                             float(row["delta_i_bits"] or 0.0) for row in b_accepted)
@@ -778,9 +805,15 @@ def execute_coverage_bridge(plan: CoveragePlan, receiver: Any, writer: Any,
                 "combined": int(getattr(receiver.client, "physical_attempts", 0) or 0)
                 + int(getattr(writer, "physical_attempts", 0) or 0)}
             receiver_row["board_log"] = [event.to_dict() for event in log.events]
+            receiver_row["accepted_b_message_present"] = any(
+                row.get("author") == "B" and row.get("status") == "accepted"
+                for row in board)
             selection = audit.select_replay_claims(receiver_row, instance)
             receiver_row["replay_selection"] = selection
             receiver_row["replay_eligible"] = bool(selection["eligible"] and receiver_valid)
+            # eligible_exposure is authoritative: it mirrors the #189 selector
+            # result gated on a valid receiver, never mere message presence.
+            receiver_row["eligible_exposure"] = receiver_row["replay_eligible"]
             journal(receiver_row)
             if report["status"] == "stopped":
                 break
@@ -813,8 +846,6 @@ def main(argv: Sequence[str] | None = None) -> int:
                         help="execute collection (requires --approval; never run offline)")
     parser.add_argument("--approval", help="reviewer authorization reference for live collection")
     parser.add_argument("--repo-root", type=Path, default=None)
-    parser.add_argument("--journal", type=Path, default=None)
-    parser.add_argument("--report", type=Path, default=None)
     args = parser.parse_args(argv)
     root = Path(args.repo_root) if args.repo_root is not None else _repo_root()
     try:
@@ -852,10 +883,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(json.dumps(_blocked("missing_approval", args.approval, plan), indent=2,
                          sort_keys=True))
         return 2
-    journal_path = args.journal if args.journal is not None else root / str(
-        registration["outputs"]["journal"])
-    report_target = args.report if args.report is not None else root / str(
-        registration["outputs"]["report"])
+    # Outputs are always the registered paths; the CLI has no path overrides.
+    journal_path = root / str(registration["outputs"]["journal"])
+    report_target = root / str(registration["outputs"]["report"])
     report = execute_coverage_bridge(
         plan, receiver, writer, verification, instances, approval=args.approval,
         registration=registration, pinned_hash=registration_hash,
@@ -881,6 +911,6 @@ __all__ = [
     "COVERAGE_BRIDGE_VERSION", "RECEIVER_AGENT", "CASE_PACE_SECONDS",
     "FROZEN_INPUT_SHA256", "CoveragePlan", "load_locked_registration",
     "build_coverage_plan", "construct_coverage_runtime",
-    "verify_coverage_bridge_preflight", "summarize_coverage",
+    "verify_coverage_bridge_preflight", "summarize_coverage", "material_correction",
     "execute_coverage_bridge", "main",
 ]

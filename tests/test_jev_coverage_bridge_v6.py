@@ -116,11 +116,11 @@ def empty_side_effect(request, timeout=None):
 
 
 def build(side_effect=None, *, registration=None, receiver_cap=108, writer_cap=432,
-          check_credentials=False, approval="test"):
+          check_credentials=False, approval="test", receiver_client=None):
     registration = registration or REGISTRATION
+    client = receiver_client or FakeReceiverClient(max_physical_requests=receiver_cap)
     receiver = jc2.JevChoiceAdapterV2(
-        FakeReceiverClient(max_physical_requests=receiver_cap),
-        model=registration["model_and_protocol"]["model"])
+        client, model=registration["model_and_protocol"]["model"])
     clock = FakeClock()
     writer = writer_v5.LingWriterClientV5(
         api_key=KEY, max_physical_requests=writer_cap,
@@ -540,6 +540,10 @@ class FixedNRunTests(unittest.TestCase):
         self.assertEqual(report["seeds_replaced"], 0)
         self.assertEqual(report["verified_read_exposures"],
                          report["verified_read_exposures_counted"])
+        normalization = report["normalization"]
+        self.assertEqual(normalization["tiers"], {"exact": 36})
+        self.assertEqual(normalization["normalized_rows"], 36)
+        self.assertEqual(normalization["materially_renormalized_rows"], 0)
         self.assertGreater(report["i_m_bits"], 0.0)
         self.assertEqual(report["messages_by_direction"]["b_to_a"] > 0, True)
 
@@ -553,7 +557,8 @@ class FixedNRunTests(unittest.TestCase):
             "raw_probabilities", "probability_diagnostics", "normalization_tier",
             "renormalized", "request_hash", "state_hash", "protocol_key",
             "resolved_model", "confidence", "usage", "provider_attempts",
-            "replay_selection", "replay_eligible",
+            "replay_selection", "replay_eligible", "eligible_exposure",
+            "accepted_b_message_present", "material_correction",
             "raw_response_retained", "credentials_retained",
         }
         for row in rows:
@@ -588,6 +593,88 @@ class FixedNRunTests(unittest.TestCase):
         for row in report["cases"]:
             self.assertFalse(row["raw_response_retained"])
             self.assertFalse(row["credentials_retained"])
+
+
+class AuthoritativeEligibilityTests(unittest.TestCase):
+    def test_eligible_exposure_mirrors_selector_for_every_row(self):
+        report, receiver, writer, plan, instances, rows, _ = run(owned_side_effect())
+        for row in rows:
+            self.assertEqual(row["eligible_exposure"], row["replay_eligible"])
+            self.assertTrue(row["accepted_b_message_present"])
+            self.assertTrue(row["eligible_exposure"])
+
+    def test_message_presence_does_not_imply_eligibility(self):
+        class DriftReceiverClient(FakeReceiverClient):
+            def complete(self, request):
+                payload = super().complete(request)
+                payload["model"] = "jev-9.9.9"
+                return payload
+
+        report, receiver, writer, plan, instances, rows, _ = run(
+            owned_side_effect(), receiver_client=DriftReceiverClient(
+                max_physical_requests=108))
+        self.assertEqual(report["status"], "stopped")
+        self.assertEqual(report["stop_reason"], "model_drift")
+        self.assertEqual(len(rows), 1)
+        row = rows[0]
+        self.assertTrue(row["accepted_b_message_present"])
+        self.assertFalse(row["receiver_valid"])
+        self.assertFalse(row["replay_eligible"])
+        self.assertFalse(row["eligible_exposure"])
+        self.assertEqual(row["receiver_error_class"], "model_drift")
+
+    def test_rejected_write_counted_once(self):
+        form = prv6.FROZEN_FORM_IDS[0]
+        case = {"prompt_form_id": form, "receiver_valid": True, "receiver_attempted": True,
+                "writer_outcomes": [{"agent": "B", "turn": 0, "outcome": "non_owned_claim"}],
+                "board": [], "board_log": [],
+                "rejected": [{"agent": "B", "turn": 0, "claim": "invented"}],
+                "normalization_tier": "exact", "renormalized": True,
+                "material_correction": False, "replay_eligible": False,
+                "replay_selection": {"selected": []}}
+        summary = run6.summarize_coverage([case], counted_exposures=0)
+        self.assertEqual(summary["per_form"][form]["rejected_write_attempts"], 1)
+        self.assertEqual(summary["writer_outcome_totals"]["non_owned_claim"], 1)
+
+    def test_rejected_writes_not_double_counted_end_to_end(self):
+        report, receiver, writer, plan, instances, rows, _ = run(
+            owned_side_effect(reject_agent="B"))
+        self.assertEqual(report["status"], "completed")
+        non_owned = report["writer_outcome_totals"].get("non_owned_claim", 0)
+        self.assertEqual(non_owned, 36)
+        per_form_total = sum(block["rejected_write_attempts"]
+                             for block in report["per_form"].values())
+        self.assertEqual(per_form_total, 36)
+        journaled = sum(len(row["rejected"]) for row in rows)
+        self.assertEqual(journaled, 36)
+
+    def test_material_correction_literal_meaning(self):
+        def response(tier, renormalized):
+            return type("R", (), {"normalization_tier": tier,
+                                  "renormalized": renormalized})()
+
+        self.assertFalse(run6.material_correction(response("exact", True)))
+        self.assertFalse(run6.material_correction(response("exact", False)))
+        self.assertTrue(run6.material_correction(response("complete_renormalized", True)))
+        self.assertFalse(run6.material_correction(response("malformed", False)))
+        self.assertFalse(run6.material_correction(response(None, True)))
+
+    def test_cost_guard_reserves_single_retry_inclusive_call(self):
+        tampered = json.loads(json.dumps(REGISTRATION))
+        tampered["caps"]["cost_cap_usd"] = 0.002
+        report, receiver, writer, plan, instances, rows, _ = run(
+            owned_side_effect(), registration=tampered,
+            verification={"ok": True, "checks": [], "failed": []})
+        self.assertEqual(plan.worst_case_next_call_cost_usd, 0.001032192)
+        self.assertEqual(report["cost_cap_usd"], 0.002)
+        # One retry-inclusive reservation (0.001032192) fits under 0.002, so the
+        # full run completes; a triple-reserved 0.0030966 would stop immediately.
+        self.assertEqual(report["status"], "completed")
+        self.assertEqual(report["attempted_cases"], 36)
+        self.assertEqual(writer.physical_attempts, 144)
+        self.assertEqual(receiver.client.physical_attempts, 36)
+        self.assertLessEqual(report["estimated_cost_usd"] + plan.worst_case_next_call_cost_usd,
+                             0.002)
 
 
 class RegistrationAmendmentTests(unittest.TestCase):
@@ -632,6 +719,28 @@ class OfflineCliTests(unittest.TestCase):
                 patch.object(jc.JevChoiceClient, "complete", side_effect=explode):
             rc = run6.main(["--repo-root", str(REPO_ROOT)])
         self.assertEqual(rc, 0)
+        self.assertFalse((REPO_ROOT / prv6.DEFAULT_JOURNAL_V6).exists())
+        self.assertFalse((REPO_ROOT / prv6.DEFAULT_REPORT_V6).exists())
+
+    def test_cli_rejects_alternate_output_paths(self):
+        alternate_dir = tempfile.mkdtemp(prefix="alt-outputs-")
+        alternate_journal = Path(alternate_dir) / "alt.jsonl"
+        alternate_report = Path(alternate_dir) / "alt.json"
+
+        def explode(*args, **kwargs):
+            raise AssertionError("provider call after alternate-path rejection")
+
+        with patch.object(writer_v5.urllib.request, "urlopen", side_effect=explode), \
+                patch.object(jc.JevChoiceClient, "complete", side_effect=explode):
+            with self.assertRaises(SystemExit):
+                run6.main(["--repo-root", str(REPO_ROOT), "--live", "--approval", "x",
+                           "--journal", str(alternate_journal),
+                           "--report", str(alternate_report)])
+            with self.assertRaises(SystemExit):
+                run6.main(["--repo-root", str(REPO_ROOT), "--journal",
+                           str(alternate_journal)])
+        self.assertFalse(alternate_journal.exists())
+        self.assertFalse(alternate_report.exists())
         self.assertFalse((REPO_ROOT / prv6.DEFAULT_JOURNAL_V6).exists())
         self.assertFalse((REPO_ROOT / prv6.DEFAULT_REPORT_V6).exists())
 

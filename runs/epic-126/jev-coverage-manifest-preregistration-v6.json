@@ -127,7 +127,7 @@
       "src/apart_incident_response/jev_coverage_manifest_preregistration_v6.py",
       "src/apart_incident_response/jev_coverage_bridge_v6.py"
     ],
-    "source_files_hash": "ca663710d111017b6b8306d41df08778f9941f662798ca3a8d68ceff257faca9",
+    "source_files_hash": "889209bc74609081f709d2af75b38d3345d9eff2f168cece8164d7594b2a959c",
     "treatment_hash": "b352e4e5236b1a43d1759c985fbac4321227d351fbf48be60ecaffddd9389287"
   },
   "invalidity_classes": {
@@ -550,7 +550,7 @@
     "separate live authorization and a passing runner preflight are required before any provider call in #191",
     "confirm the 144/36/180 planned calls, the 432/108/540 physical partitions and the $1.00 cost ceiling"
   ],
-  "preregistration_hash": "6de00765a93b391ce70c5a9683975c5b8889e0b6794fab6e555a9415da118bd0",
+  "preregistration_hash": "628de6470751c4361a626de362796f6f08066ac9970224eeb688914b523c16dd",
   "preregistration_version": "stage2-jev-coverage-manifest-v6",
   "purpose": "collect one fresh, fixed-N, form-balanced planning-low L4X block (six known forms x six fresh instances, N=36) for the six-form coverage decision, without appending to the frozen 17-instance block",
   "runner_policy": {

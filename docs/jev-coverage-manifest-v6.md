@@ -11,7 +11,7 @@ or reinterpreted.
 - Module: `src/apart_incident_response/jev_coverage_manifest_preregistration_v6.py`
 - Artifact: `runs/epic-126/jev-coverage-manifest-preregistration-v6.json`
   (version `stage2-jev-coverage-manifest-v6`, status
-  `locked_for_jev_coverage_manifest_v6`, registration hash `6de00765…`)
+  `locked_for_jev_coverage_manifest_v6`, registration hash `628de647…`)
 - Tests: `tests/test_jev_coverage_manifest_preregistration_v6.py` (41 tests) and
   `tests/test_jev_coverage_bridge_v6.py` (30 runner tests)
 - Fresh outputs reserved for #191: `runs/epic-126/jev-coverage-manifest-v6.jsonl`
@@ -203,21 +203,34 @@ Runner behavior (offline-validated; no provider call made yet):
   (Ling 432 / Jev 108 / combined 540) and cost guard
   ($1.00 ceiling; per-next-call worst case $0.001032192 =
   $0.000344064 × (1 + max_retries)). Every request is guarded by provider
-  partition, combined cap and worst-case-next-call cost; no-retry execution
-  requires exactly 144 Ling + 36 Jev = 180 physical attempts.
+  partition, combined cap and worst-case-next-call cost — the retry-inclusive
+  next-call cost is reserved **exactly once** per next logical call (it already
+  contains the retry reserve; it is never multiplied again). No-retry
+  execution requires exactly 144 Ling + 36 Jev = 180 physical attempts.
 - Fixed N=36: deliberate silence and rejected non-owned claims continue;
   only the registered terminal stop rules stop the run; no seed replacement,
   no early stop after a message or exposure.
+- Outputs are always the registered journal/report paths (preflight-checked);
+  the CLI exposes **no path overrides**, so a run cannot pass preflight and
+  write unregistered artifacts.
 - Per-case rows carry `prompt_form_id`, registered membership, seeds, full
-  writer/receiver evidence, normalization diagnostics, cumulative provider
-  counters and `raw_response_retained=false` / `credentials_retained=false`;
-  eligibility is computed by calling the audited
+  writer/receiver evidence, normalization diagnostics including
+  `material_correction` (true only when v2 normalization changed the vector
+  beyond `EXACT_DEVIATION_TOLERANCE`; `renormalized` alone is not material),
+  cumulative provider counters and `raw_response_retained=false` /
+  `credentials_retained=false`.
+- Eligibility is computed by calling the audited
   `jev_six_form_coverage_audit.select_replay_claims` (#189 authoritative
-  selector), never a journal boolean.
-- The report aggregates per-form counts, gross-labeled `i_m_bits`, replay
+  selector), never a journal boolean: `replay_eligible` gates on a valid
+  receiver, `eligible_exposure` mirrors it exactly, and mere writer-side
+  message presence is recorded separately as `accepted_b_message_present`.
+- The report aggregates per-form counts (including rejected writes counted
+  once from the journaled `rejected` rows), gross-labeled `i_m_bits`, replay
   eligible events/claims (one deduplicated claim per pre-read state),
-  `coverage_decision_pending_192: true`, `replay_started: false` — collection
-  only; #192 owns the formal coverage decision.
+  normalization tiers with **total normalized rows separate from materially
+  renormalized rows**, `coverage_decision_pending_192: true`,
+  `replay_started: false` — collection only; #192 owns the formal coverage
+  decision.
 
 Handoff to **#191**: the runner exists and is source-bound; the remaining
 step is separate reviewer live authorization, then execution with a passing
