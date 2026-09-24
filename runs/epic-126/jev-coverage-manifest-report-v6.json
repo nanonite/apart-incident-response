@@ -1,0 +1,282 @@
+{
+  "agents": [
+    "A",
+    "B"
+  ],
+  "approval": "reviewer-approved-191-v6-lock-628de647-2026-09-24",
+  "attempted_cases": 1,
+  "authoritative_i_m": 0,
+  "cases": [
+    {
+      "accepted_b_message_present": false,
+      "agents": [
+        "A",
+        "B"
+      ],
+      "board": [],
+      "board_log": [],
+      "confidence": null,
+      "credentials_retained": false,
+      "eligible_exposure": false,
+      "i_m_bits": null,
+      "instance_id": "planning-000124f8",
+      "instance_seed": 75000,
+      "normalization_tier": null,
+      "option_ids": [
+        "deploy>inspect>stage",
+        "deploy>stage>inspect",
+        "inspect>deploy>stage",
+        "inspect>stage>deploy",
+        "stage>deploy>inspect",
+        "stage>inspect>deploy"
+      ],
+      "probabilities": {},
+      "probability_diagnostics": null,
+      "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "provider_attempts": {
+        "combined": 1,
+        "jev": 0,
+        "ling": 1
+      },
+      "raw_probabilities": {},
+      "raw_response_retained": false,
+      "receiver_attempted": false,
+      "receiver_error_class": null,
+      "receiver_invalid": false,
+      "receiver_status": null,
+      "receiver_unattempted": true,
+      "receiver_valid": false,
+      "registered_form_membership": true,
+      "rejected": [],
+      "renormalized": null,
+      "replay_eligible": false,
+      "replay_selection": {
+        "eligible": false,
+        "instance_id": "planning-000124f8",
+        "receiver_agent": "A",
+        "rejected": [],
+        "selected": []
+      },
+      "request_hash": null,
+      "resolved_model": null,
+      "selected_option_id": null,
+      "state_hash": null,
+      "target_id": "inspect>stage>deploy",
+      "turns": 2,
+      "usage": {},
+      "writer_outcomes": [
+        {
+          "agent": "A",
+          "answer": null,
+          "claim": null,
+          "completion_tokens": null,
+          "content_length": null,
+          "error_class": "writer_http_404_endpoint_or_model_unavailable",
+          "finish_reason": null,
+          "input_tokens": null,
+          "max_tokens": null,
+          "outcome": "writer_error",
+          "output_tokens": null,
+          "parser_classification": "writer_error",
+          "physical_attempts": 1,
+          "seed_sent": null,
+          "turn": 0
+        }
+      ]
+    }
+  ],
+  "codec_version": "jev-choice-wire-v2",
+  "cost_cap_usd": 1.0,
+  "coverage_decision_pending_192": true,
+  "coverage_note": "collection only: observed coverage is reported; the formal coverage decision belongs to #192 and this run does not start #159",
+  "credentials_retained": false,
+  "distinct_forms": 1,
+  "estimated_cost_usd": 0.0,
+  "forms_with_eligible_exposure": 0,
+  "forms_with_eligible_exposure_ids": [],
+  "i_m_bits": 0.0,
+  "i_m_bits_label": "gross transmitted bits over all accepted messages (both directions, with within-event repeats); not unique information delivered to A",
+  "input_tokens": 0,
+  "instance_ids": [
+    "planning-000124f8",
+    "planning-000124f9",
+    "planning-000124fa",
+    "planning-000124fb",
+    "planning-000124fc",
+    "planning-000124fd",
+    "planning-000124fe",
+    "planning-000124ff",
+    "planning-00012500",
+    "planning-00012501",
+    "planning-00012502",
+    "planning-00012503",
+    "planning-00012504",
+    "planning-00012505",
+    "planning-00012506",
+    "planning-00012507",
+    "planning-00012508",
+    "planning-00012509",
+    "planning-0001250a",
+    "planning-0001250b",
+    "planning-0001250c",
+    "planning-0001250d",
+    "planning-0001250e",
+    "planning-0001250f",
+    "planning-00012511",
+    "planning-00012514",
+    "planning-00012515",
+    "planning-00012517",
+    "planning-00012519",
+    "planning-0001251b",
+    "planning-0001251c",
+    "planning-0001251d",
+    "planning-0001251e",
+    "planning-00012522",
+    "planning-00012524",
+    "planning-00012530"
+  ],
+  "messages_by_direction": {
+    "a_to_b": 0,
+    "b_to_a": 0
+  },
+  "missing_forms": [
+    "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+    "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+    "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+    "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+    "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+    "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222"
+  ],
+  "mode": "exact-original-comm-bridge-v6",
+  "normalization": {
+    "materially_renormalized_rows": 0,
+    "normalized_rows": 0,
+    "tiers": {
+      "missing": 1
+    }
+  },
+  "one_deduplicated_claim_per_pre_read_state": true,
+  "output_tokens": 0,
+  "partitions": {
+    "combined": 540,
+    "jev": 108,
+    "ling": 432
+  },
+  "per_form": {
+    "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee": {
+      "accepted_b_messages": 0,
+      "attempted_cases": 0,
+      "b_writer_opportunities": 0,
+      "deliberate_silence_outcomes": 0,
+      "eligible_b_to_a_events": 0,
+      "planned_cases": 6,
+      "receiver_valid_cases": 0,
+      "rejected_write_attempts": 0
+    },
+    "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc": {
+      "accepted_b_messages": 0,
+      "attempted_cases": 1,
+      "b_writer_opportunities": 0,
+      "deliberate_silence_outcomes": 0,
+      "eligible_b_to_a_events": 0,
+      "planned_cases": 6,
+      "receiver_valid_cases": 0,
+      "rejected_write_attempts": 0
+    },
+    "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c": {
+      "accepted_b_messages": 0,
+      "attempted_cases": 0,
+      "b_writer_opportunities": 0,
+      "deliberate_silence_outcomes": 0,
+      "eligible_b_to_a_events": 0,
+      "planned_cases": 6,
+      "receiver_valid_cases": 0,
+      "rejected_write_attempts": 0
+    },
+    "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569": {
+      "accepted_b_messages": 0,
+      "attempted_cases": 0,
+      "b_writer_opportunities": 0,
+      "deliberate_silence_outcomes": 0,
+      "eligible_b_to_a_events": 0,
+      "planned_cases": 6,
+      "receiver_valid_cases": 0,
+      "rejected_write_attempts": 0
+    },
+    "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb": {
+      "accepted_b_messages": 0,
+      "attempted_cases": 0,
+      "b_writer_opportunities": 0,
+      "deliberate_silence_outcomes": 0,
+      "eligible_b_to_a_events": 0,
+      "planned_cases": 6,
+      "receiver_valid_cases": 0,
+      "rejected_write_attempts": 0
+    },
+    "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222": {
+      "accepted_b_messages": 0,
+      "attempted_cases": 0,
+      "b_writer_opportunities": 0,
+      "deliberate_silence_outcomes": 0,
+      "eligible_b_to_a_events": 0,
+      "planned_cases": 6,
+      "receiver_valid_cases": 0,
+      "rejected_write_attempts": 0
+    }
+  },
+  "physical_attempts": 1,
+  "planned_calls": {
+    "combined": 180,
+    "jev": 36,
+    "ling": 144
+  },
+  "planned_cases": 36,
+  "planned_requests": 180,
+  "prompt_forms": [
+    "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+    "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+    "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+    "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+    "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+    "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222"
+  ],
+  "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+  "provider_attempts": {
+    "combined": 1,
+    "jev": 0,
+    "jev_partition": 108,
+    "ling": 1,
+    "ling_partition": 432
+  },
+  "raw_response_retained": false,
+  "receiver_invalid_cases": 0,
+  "receiver_unattempted_cases": 1,
+  "receiver_valid_cases": 0,
+  "registration_hash": "628de6470751c4361a626de362796f6f08066ac9970224eeb688914b523c16dd",
+  "replay_eligibility_source": "apart_incident_response.jev_six_form_coverage_audit.select_replay_claims (#189 authoritative selector)",
+  "replay_eligible_claims": 0,
+  "replay_eligible_events": 0,
+  "replay_started": false,
+  "resolved_models": [],
+  "seed_algorithm": "sha256-truncated-signed31-v1",
+  "seeds_replaced": 0,
+  "status": "stopped",
+  "stop_reason": "writer_http_404_endpoint_or_model_unavailable",
+  "token_budget": 1024,
+  "turns": 2,
+  "verified_read_exposures": 0,
+  "verified_read_exposures_counted": 0,
+  "worst_case_next_call_cost_usd": 0.001032192,
+  "writer_invalid_cases": 1,
+  "writer_outcome_totals": {
+    "writer_error": 1
+  },
+  "writer_outcomes_by_agent_turn": {
+    "A|0|writer_error": 1
+  },
+  "writes_by_agent": {
+    "A": 0,
+    "B": 0
+  }
+}
