@@ -624,23 +624,37 @@ class LifecycleTests(unittest.TestCase):
     def test_registration_module_is_source_bound(self):
         module_path = "src/apart_incident_response/jev_coverage_manifest_preregistration_v6.py"
         self.assertIn(module_path, reg.COVERAGE_SOURCE_FILES)
-        self.assertEqual(len(reg.COVERAGE_SOURCE_FILES), 22)
+        self.assertIn(reg.RUNNER_SOURCE_REL, reg.COVERAGE_SOURCE_FILES)
+        self.assertEqual(len(reg.COVERAGE_SOURCE_FILES), 23)
         self.assertIn(module_path, self.document["generator"]["source_files"])
+        self.assertIn(reg.RUNNER_SOURCE_REL, self.document["generator"]["source_files"])
         self.assertEqual(self.document["generator"]["source_files_hash"],
                          reg._source_files_hash(REPO_ROOT))
 
     def test_runner_policy_frozen_for_191(self):
         policy = self.document["runner_policy"]
         self.assertTrue(policy["required_before_live"])
-        self.assertFalse(policy["runner_implemented"])
-        self.assertEqual(policy["runner_source_files"], [])
+        self.assertTrue(policy["runner_implemented"])
+        self.assertEqual(policy["runner_source_files"], [reg.RUNNER_SOURCE_REL])
+        self.assertTrue(policy["runner_source_bound"])
         self.assertFalse(policy["adding_runner_authorizes_collection"])
-        self.assertIn("#191", policy["policy"])
+        self.assertIn(reg.RUNNER_SOURCE_REL, policy["policy"])
         self.assertIn("COVERAGE_SOURCE_FILES", policy["policy"])
-        self.assertIn("amend/re-lock", policy["policy"])
+        self.assertIn("does not authorize collection", policy["policy"])
         self.assertIn("live execution is forbidden", policy["live_execution_rule"])
         self.assertIn("reviewed and separately live-authorized", policy["live_execution_rule"])
         self.assertIn("not live authorization", policy["live_execution_rule"])
+        superseded = policy["superseded_offline_lock"]
+        self.assertEqual(superseded["preregistration_hash"], reg.SUPERSEDED_OFFLINE_LOCK_HASH)
+        self.assertEqual(superseded["preregistration_hash"],
+                         "41c14acebba674180bf7878e519b53422513ae2612133cee03e94e3ca608ce5c")
+
+    def test_superseded_offline_lock_hash_rejected(self):
+        tampered = copy.deepcopy(self.document)
+        tampered["preregistration_hash"] = reg.SUPERSEDED_OFFLINE_LOCK_HASH
+        result = verify(tampered)
+        self.assertFalse(result["ok"])
+        self.assertIn("registration hash drift from the repository state", result["errors"])
 
     def test_runner_policy_tamper_rejected(self):
         tampered = copy.deepcopy(self.document)
@@ -649,11 +663,21 @@ class LifecycleTests(unittest.TestCase):
         self.assertFalse(result["ok"])
         self.assertIn("adding the runner must not authorize collection", result["errors"])
         tampered = copy.deepcopy(self.document)
-        tampered["runner_policy"]["runner_implemented"] = True
+        tampered["runner_policy"]["runner_implemented"] = False
         result = verify(tampered)
         self.assertFalse(result["ok"])
-        self.assertIn("runner must not be reported implemented before #191 amends the lock",
+        self.assertIn("runner must be implemented and source-bound in this lock",
                       result["errors"])
+        tampered = copy.deepcopy(self.document)
+        tampered["runner_policy"]["runner_source_files"] = ["src/apart_incident_response/x.py"]
+        result = verify(tampered)
+        self.assertFalse(result["ok"])
+        self.assertIn("runner source file mismatch", result["errors"])
+        tampered = copy.deepcopy(self.document)
+        tampered["runner_policy"]["superseded_offline_lock"]["preregistration_hash"] = "0" * 64
+        result = verify(tampered)
+        self.assertFalse(result["ok"])
+        self.assertIn("superseded offline lock hash missing or drifted", result["errors"])
         tampered = copy.deepcopy(self.document)
         del tampered["runner_policy"]
         result = verify(tampered)

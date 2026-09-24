@@ -124,9 +124,10 @@
       "src/apart_incident_response/jev_writer_exact_bridge_v5.py",
       "src/apart_incident_response/jev_writer_treatment_audit.py",
       "src/apart_incident_response/jev_six_form_coverage_audit.py",
-      "src/apart_incident_response/jev_coverage_manifest_preregistration_v6.py"
+      "src/apart_incident_response/jev_coverage_manifest_preregistration_v6.py",
+      "src/apart_incident_response/jev_coverage_bridge_v6.py"
     ],
-    "source_files_hash": "c50b2e9a99656bb76b312de5257ecce2a32cfd25d5b3f558f44a069570e7eb9d",
+    "source_files_hash": "ca663710d111017b6b8306d41df08778f9941f662798ca3a8d68ceff257faca9",
     "treatment_hash": "b352e4e5236b1a43d1759c985fbac4321227d351fbf48be60ecaffddd9389287"
   },
   "invalidity_classes": {
@@ -549,16 +550,23 @@
     "separate live authorization and a passing runner preflight are required before any provider call in #191",
     "confirm the 144/36/180 planned calls, the 432/108/540 physical partitions and the $1.00 cost ceiling"
   ],
-  "preregistration_hash": "41c14acebba674180bf7878e519b53422513ae2612133cee03e94e3ca608ce5c",
+  "preregistration_hash": "6de00765a93b391ce70c5a9683975c5b8889e0b6794fab6e555a9415da118bd0",
   "preregistration_version": "stage2-jev-coverage-manifest-v6",
   "purpose": "collect one fresh, fixed-N, form-balanced planning-low L4X block (six known forms x six fresh instances, N=36) for the six-form coverage decision, without appending to the frozen 17-instance block",
   "runner_policy": {
     "adding_runner_authorizes_collection": false,
     "live_execution_rule": "live execution is forbidden until the amended registration hash with the runner in the source binding has been reviewed and separately live-authorized; this lock is not live authorization",
-    "policy": "#191 must implement the v6 coverage runner (manifest, provider partitions, preflight and fresh v6 output paths over the bound exact-original-comm-bridge-v5 semantics), add that runner module to COVERAGE_SOURCE_FILES, and amend/re-lock this registration (new source_files_hash and preregistration_hash) before any live authorization",
+    "policy": "the v6 coverage runner is implemented in src/apart_incident_response/jev_coverage_bridge_v6.py and included in COVERAGE_SOURCE_FILES; this runner-bound lock still does not authorize collection - separate reviewer live authorization is required before any provider call, and the runner preflight must pass",
     "required_before_live": true,
-    "runner_implemented": false,
-    "runner_source_files": []
+    "runner_implemented": true,
+    "runner_source_bound": true,
+    "runner_source_files": [
+      "src/apart_incident_response/jev_coverage_bridge_v6.py"
+    ],
+    "superseded_offline_lock": {
+      "note": "runner-less offline lock superseded by this runner-bound amendment; the verifier rejects the superseded hash",
+      "preregistration_hash": "41c14acebba674180bf7878e519b53422513ae2612133cee03e94e3ca608ce5c"
+    }
   },
   "sizing_rationale": {
     "assumption": "simplifying constant-rate/independence assumption across instances and forms; this is an assumption-based sizing heuristic, not evidence that eligibility is independent or constant across forms",

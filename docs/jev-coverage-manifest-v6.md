@@ -11,8 +11,9 @@ or reinterpreted.
 - Module: `src/apart_incident_response/jev_coverage_manifest_preregistration_v6.py`
 - Artifact: `runs/epic-126/jev-coverage-manifest-preregistration-v6.json`
   (version `stage2-jev-coverage-manifest-v6`, status
-  `locked_for_jev_coverage_manifest_v6`, registration hash `41c14ace…`)
-- Tests: `tests/test_jev_coverage_manifest_preregistration_v6.py` (40 tests)
+  `locked_for_jev_coverage_manifest_v6`, registration hash `6de00765…`)
+- Tests: `tests/test_jev_coverage_manifest_preregistration_v6.py` (41 tests) and
+  `tests/test_jev_coverage_bridge_v6.py` (30 runner tests)
 - Fresh outputs reserved for #191: `runs/epic-126/jev-coverage-manifest-v6.jsonl`
   (journal), `runs/epic-126/jev-coverage-manifest-report-v6.json` (report);
   the verifier fails if either exists.
@@ -86,9 +87,10 @@ primary direction; final Jev receiver **A** with Choice wire v2
 `jev-finalizer`; durable per-case journal; `raw_response_retained=false`,
 `credentials_retained=false`.
 
-Bindings recorded and verified: `source_files_hash c50b2e9a…` (**22 files,
-including this registration module itself** — the hash lives in the JSON
-artifact, not in the Python source, so there is no recursion),
+Bindings recorded and verified: `source_files_hash ca663710…` (**23 files,
+including this registration module and the v6 runner itself** — the hash
+lives in the JSON artifact, not in the Python source, so there is no
+recursion),
 `manifest_treatment_hash b4d047b1…` (36-instance model-visible treatment),
 `information_geometry_hash d29c9e6f…` (per-instance B-claim records — all six
 forms retain the #189 log2(3)-bit geometry, 3→1), composite
@@ -163,30 +165,73 @@ protocol keys; missing credentials **only** when
 no request); and any attempt to treat the lock as live authorization.
 Default verification is offline and credential-free.
 
-### Runner policy for #191 (frozen)
+### Runner implementation and policy (frozen, amended)
 
-Execution semantics are delegated to the bound
-`exact-original-comm-bridge-v5`, but the v6 entrypoint does not exist yet.
-The registration freezes the **preferred** policy in `runner_policy`:
+The v6 runner is implemented in
+`src/apart_incident_response/jev_coverage_bridge_v6.py` (mode
+`exact-original-comm-bridge-v6`) and is source-bound: it is listed in
+`COVERAGE_SOURCE_FILES` and in the registration's `runner_policy`
+(`runner_implemented: true`, `runner_source_files` lists exactly that module,
+`runner_source_bound: true`). The prior runner-less offline lock
+**`41c14acebba674180bf7878e519b53422513ae2612133cee03e94e3ca608ce5c`** is
+recorded as the superseded lock and the verifier rejects it (accepting only
+the amended runner-bound hash `6de00765…`).
 
-- `#191` must implement the v6 coverage runner (36-instance manifest, the
-  432/108 provider partitions, the runner preflight and the fresh v6
-  journal/report paths), **add that runner module to
-  `COVERAGE_SOURCE_FILES`, and amend/re-lock this registration** (new
-  `source_files_hash` and `preregistration_hash`) **before any live
-  authorization**.
-- `adding_runner_authorizes_collection: false` — adding the runner to the
-  source binding does **not** authorize collection.
+Preserved policy:
+
+- `adding_runner_authorizes_collection: false` — binding the runner does
+  **not** authorize collection.
 - `live_execution_rule`: live execution is forbidden until the amended
   registration hash with the runner in the source binding has been reviewed
   and separately live-authorized; this lock is not live authorization.
 - The verifier fails closed if the policy block is missing, if the runner is
-  reported implemented before the amendment, or if the authorization
-  declarations are flipped.
+  not reported implemented/bound, if the source list drifts, if the
+  superseded hash drifts, or if the authorization declarations are flipped.
 
-Handoff to **#191**: build a fresh runner against this registration (fresh
-journal/report paths above), require a passing preflight plus separate live
-authorization, execute fixed N=36 with no outcome-dependent stopping, and
-persist the frozen evidence fields. #191 must not append to
-`jev-writer-exact-bridge-v5.jsonl`, must not modify v1–v5 artifacts, and must
-not start #159. #192 owns the coverage decision.
+Runner behavior (offline-validated; no provider call made yet):
+
+- Loads only the locked v6 registration, regenerates the exact 36-instance
+  manifest in registered order, and verifies six-per-form membership with the
+  #189 canonical `prompt_form_id`.
+- Reuses the reviewed v5 execution semantics: original
+  `AgentContext → treatment_prompt` prompt builder
+  (`jev_writer_exact_bridge_v5.agent_context_and_prompt`), Ling writer
+  outcomes v5 over the v3 3.25 s pacing/retry transport, Jev Choice wire v2
+  final read by A, `jev-finalizer` exposure provenance, fsync-backed durable
+  journal opened exclusively (`output_exists` refuses resume/overwrite).
+- Runtime transports are constructed with exactly the registered partitions
+  (Ling 432 / Jev 108 / combined 540) and cost guard
+  ($1.00 ceiling; per-next-call worst case $0.001032192 =
+  $0.000344064 × (1 + max_retries)). Every request is guarded by provider
+  partition, combined cap and worst-case-next-call cost; no-retry execution
+  requires exactly 144 Ling + 36 Jev = 180 physical attempts.
+- Fixed N=36: deliberate silence and rejected non-owned claims continue;
+  only the registered terminal stop rules stop the run; no seed replacement,
+  no early stop after a message or exposure.
+- Per-case rows carry `prompt_form_id`, registered membership, seeds, full
+  writer/receiver evidence, normalization diagnostics, cumulative provider
+  counters and `raw_response_retained=false` / `credentials_retained=false`;
+  eligibility is computed by calling the audited
+  `jev_six_form_coverage_audit.select_replay_claims` (#189 authoritative
+  selector), never a journal boolean.
+- The report aggregates per-form counts, gross-labeled `i_m_bits`, replay
+  eligible events/claims (one deduplicated claim per pre-read state),
+  `coverage_decision_pending_192: true`, `replay_started: false` — collection
+  only; #192 owns the formal coverage decision.
+
+Handoff to **#191**: the runner exists and is source-bound; the remaining
+step is separate reviewer live authorization, then execution with a passing
+preflight over fixed N=36 and no outcome-dependent stopping. #191 must not
+append to `jev-writer-exact-bridge-v5.jsonl`, must not modify v1–v5 or #189
+artifacts, and must not start #159. #192 owns the coverage decision.
+
+Future live command (**NOT RUN**; requires separate reviewer authorization):
+
+```
+UV_CACHE_DIR=.uv-cache uv run env PYTHONPATH=src \
+  python -m apart_incident_response.jev_coverage_bridge_v6 \
+  --live --approval "<reviewer reference>"
+```
+
+Without `--live`/`--approval` the CLI runs the named preflight only and makes
+zero provider calls.
