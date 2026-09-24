@@ -149,6 +149,18 @@ hash-pinned immutable L4X v5 inputs
 generator — not copied from issue prose. The audit makes zero provider calls
 and never writes to the frozen inputs; a hash mismatch fails closed.
 
+**Semantics binding (review hardening)**: the recomputation is bound
+fail-closed to the reviewer-approved generator/serializer
+`treatment_hash ae6ff9e7…` (equal to `generator.manifest_treatment_hash` in
+the locked v5 ladder registration) and to a frozen
+`information_geometry_hash 38ead165…` over the authoritative per-instance
+B-claim information records; both mismatches raise before any fact is
+reported. Every source file the recomputation depends on (generator,
+evaluator, provenance log, form serializer, replay/inference helpers) is
+recorded in the artifact by sha256 plus a combined `source_files_hash`, so a
+regeneration after any dependency change changes the artifact and cannot pass
+the byte-reproducibility test silently.
+
 ### Recomputed L4X v5 coverage (17-instance block)
 
 - **17/17 valid** Jev receiver cases (0 invalid, 0 unattempted; all
@@ -204,7 +216,13 @@ Primary replay direction is **one-way B→A**. Frozen rules:
 2. Exclude receiver-known or authoritative `I_m = 0` claims.
 3. Use at most one accepted, B-owned, informative claim per pre-read state.
 4. Require verified board-write and A-read provenance
-   (`CommunicationEventLog`, never the flattened board row alone).
+   (`CommunicationEventLog`, never the flattened board row alone), mirroring
+   the established replay validator: the write payload's `normalized_claim`
+   and `raw_text` must equal the selected board claim, the receiver's read
+   must be sequenced **after** the write, that read must carry a **nonempty**
+   exposure ID, and **no rejection evidence** (a `board_write_rejected` event
+   for the message, or a case-level rejected attempt by the same author on
+   the same claim) may exist.
 5. Deduplicate repeated identical B claims within an event.
 6. Report gross transmitted bits separately from replay-eligible information.
 7. Do not claim symmetry across agents.

@@ -1,3 +1,4 @@
+import hashlib
 import json
 import math
 import shutil
@@ -562,6 +563,162 @@ class FreshCoverageSizingTests(unittest.TestCase):
         self.assertIn("do not append to the frozen 17-instance artifact", joined)
         self.assertIn("form identity is deterministic", joined)
         self.assertIn("fixed N with no stopping after the first message", joined)
+
+
+class ProvenanceHardeningTests(unittest.TestCase):
+    """Adversarial provenance cases required by the #189 review findings."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.by_id = instances_by_id()
+
+    def _crafted(self, instance=None):
+        instance = instance or self.by_id["planning-00011940"]
+        b_clue = list(instance.private_clues["B"])[0]
+        case = craft_case([{"author": "B", "text": b_clue, "expose": True}], instance=instance)
+        return instance, case
+
+    def _event(self, case, kind):
+        return next(event for event in case["board_log"] if event["kind"] == kind)
+
+    def test_mismatched_payload_text_rejected(self):
+        instance, case = self._crafted()
+        write = self._event(case, "board_write")
+        write["payload"]["normalized_claim"] = "tampered-claim"
+        selection = audit.select_replay_claims(case, instance)
+        self.assertFalse(selection["eligible"])
+        self.assertEqual(selection["rejected"][0]["reason"], "board_write_claim_mismatch")
+
+        instance, case = self._crafted()
+        write = self._event(case, "board_write")
+        write["payload"]["raw_text"] = "tampered-claim"
+        selection = audit.select_replay_claims(case, instance)
+        self.assertFalse(selection["eligible"])
+        self.assertEqual(selection["rejected"][0]["reason"], "board_write_claim_mismatch")
+
+    def test_read_before_write_rejected(self):
+        instance, case = self._crafted()
+        write = self._event(case, "board_write")
+        read = self._event(case, "peer_read_exposure")
+        self.assertGreater(read["sequence"], write["sequence"])
+        read["sequence"] = write["sequence"]
+        selection = audit.select_replay_claims(case, instance)
+        self.assertFalse(selection["eligible"])
+        self.assertEqual(selection["rejected"][0]["reason"], "read_before_write")
+
+    def test_missing_exposure_id_rejected(self):
+        instance, case = self._crafted()
+        read = self._event(case, "peer_read_exposure")
+        read["payload"]["exposure_id"] = None
+        selection = audit.select_replay_claims(case, instance)
+        self.assertFalse(selection["eligible"])
+        self.assertEqual(selection["rejected"][0]["reason"], "missing_exposure_id")
+
+        instance, case = self._crafted()
+        read = self._event(case, "peer_read_exposure")
+        read["payload"]["exposure_id"] = "   "
+        selection = audit.select_replay_claims(case, instance)
+        self.assertFalse(selection["eligible"])
+        self.assertEqual(selection["rejected"][0]["reason"], "missing_exposure_id")
+
+    def test_rejected_then_accepted_log_evidence_rejected(self):
+        instance, case = self._crafted()
+        write = self._event(case, "board_write")
+        case["board_log"].append({
+            "event_id": "rejected-adversarial", "run_id": "craft-run",
+            "kind": "board_write_rejected", "agent_id": "B", "sequence": 99,
+            "monotonic_ns": 0, "message_id": write["message_id"], "delta_i_bits": None,
+            "message_tokens": None, "output_id": None, "status": "rejected", "useful": None,
+            "payload": {"reason": "claim_not_owned_by_writer",
+                        "raw_text": write["payload"]["raw_text"]},
+        })
+        selection = audit.select_replay_claims(case, instance)
+        self.assertFalse(selection["eligible"])
+        self.assertEqual(selection["rejected"][0]["reason"], "rejected_write_evidence")
+
+    def test_rejected_then_accepted_case_level_evidence_rejected(self):
+        instance, case = self._crafted()
+        b_clue = list(instance.private_clues["B"])[0]
+        case["rejected"] = [{"agent": "B", "turn": 1, "claim": b_clue}]
+        selection = audit.select_replay_claims(case, instance)
+        self.assertFalse(selection["eligible"])
+        self.assertEqual(selection["rejected"][0]["reason"], "rejected_write_evidence")
+
+    def test_real_records_pass_hardened_provenance(self):
+        case = case_map()["planning-00011940"]
+        instance = self.by_id["planning-00011940"]
+        write = self._event(case, "board_write")
+        read = self._event(case, "peer_read_exposure")
+        self.assertEqual(write["payload"]["normalized_claim"],
+                         write["payload"]["raw_text"])
+        self.assertGreater(read["sequence"], write["sequence"])
+        self.assertTrue(str(read["payload"].get("exposure_id") or "").strip())
+        selection = audit.select_replay_claims(case, instance)
+        self.assertTrue(selection["eligible"])
+        self.assertTrue(selection["selected"][0]["exposure_ids"])
+
+    def test_selection_reasons_match_frozen_order(self):
+        expected_prefix = [
+            "direction_not_b_to_a", "write_not_accepted", "rejected_write_evidence",
+            "missing_verified_board_write", "board_write_claim_mismatch",
+            "missing_verified_read_exposure", "read_before_write", "missing_exposure_id",
+        ]
+        self.assertEqual(list(audit.REJECTIONS[:len(expected_prefix)]), expected_prefix)
+
+
+class SourceBindingTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.audit = audit.build_audit(REPO_ROOT)
+        cls.binding = cls.audit["inputs"]["source_binding"]
+
+    def test_source_hashes_recorded_and_match_current_files(self):
+        self.assertTrue(self.binding["ok"])
+        self.assertEqual(self.binding["source_files"], list(audit.AUDIT_SOURCE_FILES))
+        combined = hashlib.sha256()
+        for relative in audit.AUDIT_SOURCE_FILES:
+            data = (REPO_ROOT / relative).read_bytes()
+            self.assertEqual(self.binding["source_files_sha256"][relative],
+                             hashlib.sha256(data).hexdigest())
+            combined.update(relative.encode("utf-8"))
+            combined.update(b"\0")
+            combined.update(data)
+        self.assertEqual(self.binding["source_files_hash"], combined.hexdigest())
+        self.assertEqual(len(self.binding["source_files_hash"]), 64)
+
+    def test_treatment_hash_matches_pinned_and_locked_registration(self):
+        self.assertEqual(self.binding["treatment_hash"], audit.EXPECTED_TREATMENT_HASH)
+        self.assertEqual(self.binding["expected_treatment_hash"], audit.EXPECTED_TREATMENT_HASH)
+        registration = json.loads(
+            (REPO_ROOT / audit.REGISTERED_TREATMENT_HASH_ARTIFACT).read_text(encoding="utf-8"))
+        self.assertEqual(registration["generator"]["manifest_treatment_hash"],
+                         self.binding["treatment_hash"])
+        self.assertEqual(pr.treatment_hash(), audit.EXPECTED_TREATMENT_HASH)
+
+    def test_information_geometry_hash_pinned_and_recomputes(self):
+        recomputed = audit.information_geometry_hash(pilot_instances())
+        self.assertEqual(recomputed, audit.EXPECTED_INFORMATION_GEOMETRY_HASH)
+        self.assertEqual(self.binding["information_geometry_hash"], recomputed)
+        self.assertEqual(self.binding["expected_information_geometry_hash"], recomputed)
+
+    def test_semantics_drift_fails_closed(self):
+        original = audit.EXPECTED_TREATMENT_HASH
+        try:
+            audit.EXPECTED_TREATMENT_HASH = "0" * 64
+            with self.assertRaises(ValueError) as caught:
+                audit.source_binding(REPO_ROOT, pilot_instances())
+            self.assertIn("treatment_hash", str(caught.exception))
+        finally:
+            audit.EXPECTED_TREATMENT_HASH = original
+
+        original_geometry = audit.EXPECTED_INFORMATION_GEOMETRY_HASH
+        try:
+            audit.EXPECTED_INFORMATION_GEOMETRY_HASH = "0" * 64
+            with self.assertRaises(ValueError) as caught:
+                audit.source_binding(REPO_ROOT, pilot_instances())
+            self.assertIn("information_geometry_hash", str(caught.exception))
+        finally:
+            audit.EXPECTED_INFORMATION_GEOMETRY_HASH = original_geometry
 
 
 if __name__ == "__main__":

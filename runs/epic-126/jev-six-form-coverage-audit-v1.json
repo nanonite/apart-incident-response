@@ -348,7 +348,7 @@
       "the primary replay direction is one-way B->A; A->B writes are excluded",
       "receiver-known claims and authoritative I_m = 0 claims are excluded",
       "at most one accepted, B-owned, informative claim per pre-read state",
-      "verified board-write and A-read provenance are required (CommunicationEventLog)",
+      "verified board-write and A-read provenance are required (CommunicationEventLog): payload normalized_claim and raw_text equal the selected board claim, the receiver read is sequenced after the write, that read carries a nonempty exposure id, and no rejection evidence exists for the message (mirrors jev_replay._real_message_problems)",
       "repeated identical B claims within an event are deduplicated to one claim",
       "gross transmitted bits are reported separately from replay-eligible information",
       "no symmetry across agents is claimed; A->B accounting is directional, not mirrored"
@@ -387,6 +387,38 @@
       "path": "runs/epic-126/jev-writer-exact-bridge-report-v5.json",
       "sha256": "325206d9c51a56c10195265e7f699e78b57b762b9d243160d52cdd63c58aef2d",
       "write_attempts_by_audit": 0
+    },
+    "source_binding": {
+      "binding": "generator/serializer semantics fail closed via the registered treatment hash; I_m evaluator semantics fail closed via the information-geometry hash; per-file source hashes are recorded so source drift cannot silently regenerate the artifact without changing it",
+      "expected_information_geometry_hash": "38ead165a95162d0d7d921a65d049381950279539061e1b83c0f1099633e1827",
+      "expected_treatment_hash": "ae6ff9e7fee8dc9428938c062e4296e551456605e2c5879594e38b35208852a5",
+      "information_geometry_hash": "38ead165a95162d0d7d921a65d049381950279539061e1b83c0f1099633e1827",
+      "ok": true,
+      "source_files": [
+        "src/apart_incident_response/task_families.py",
+        "src/apart_incident_response/communication_protocol.py",
+        "src/apart_incident_response/finite_information.py",
+        "src/apart_incident_response/communication_events.py",
+        "src/apart_incident_response/jev_choice.py",
+        "src/apart_incident_response/jev_replay.py",
+        "src/apart_incident_response/jev_choice_pilot.py",
+        "src/apart_incident_response/jev_replay_preregistration.py",
+        "src/apart_incident_response/jev_replay_inference.py"
+      ],
+      "source_files_hash": "09b6c7babc016184e6d9bd567a28582cd50d43cdfdfa6988bfd6feb4e8d87c27",
+      "source_files_sha256": {
+        "src/apart_incident_response/communication_events.py": "6f2b3eccca9497bff80d9a47af6a40e2938834b2d4b0830e1d20ce358b318bbc",
+        "src/apart_incident_response/communication_protocol.py": "4efd8249491abcbdac4a48b6212b9e1eaf9dda98fe5fac7762a8669c531456c9",
+        "src/apart_incident_response/finite_information.py": "86ab9adadbd5038fd1e4931862c50a77e7c274dd1ad5041abecf497f9afc0a09",
+        "src/apart_incident_response/jev_choice.py": "9ce9920e5b902e4f68b5723a70f61f4cc8765c4d4fdae557ed93fbf7d3fb3695",
+        "src/apart_incident_response/jev_choice_pilot.py": "36dfea9aebee57a445bdab7cbe8a3c2b309c32082ab3e70583beedcaed04c8b3",
+        "src/apart_incident_response/jev_replay.py": "5c1c2dfd68beb75e1ccdbbe281c88f879b4b34c98109d003ac3547c6c9d8a862",
+        "src/apart_incident_response/jev_replay_inference.py": "f7001d4f5fff45867b120dc4292158f6bba6ac6a4ddb6462a46999240f5108ab",
+        "src/apart_incident_response/jev_replay_preregistration.py": "c4a6978d0efd63e18cc53a10f806de030f7e4f3d2da13a37672999749fb405c0",
+        "src/apart_incident_response/task_families.py": "b399bb15c96be98d2c4c7e00012448d9a3df9f1cd7deac0ff1375ecb3e1ea6c4"
+      },
+      "treatment_hash": "ae6ff9e7fee8dc9428938c062e4296e551456605e2c5879594e38b35208852a5",
+      "treatment_hash_registration": "runs/epic-126/jev-writer-ladder-preregistration-v5.json"
     },
     "task_generator": {
       "checker_version": "oracle-v2",

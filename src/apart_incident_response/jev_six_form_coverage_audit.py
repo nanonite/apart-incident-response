@@ -7,6 +7,13 @@ one-way B->A replay-eligibility rules, and freezes the equal-form estimand,
 inference limits, sensitivity calculation and the #190 fresh-coverage sizing
 handoff.
 
+Claim selection enforces the same event-provenance conditions as the
+established replay validator (payload text match, read after write, nonempty
+exposure id, no rejection evidence for the message). The recomputation
+semantics are bound fail-closed to the registered treatment hash and a frozen
+information-geometry hash, and every source file the recomputation depends on
+is recorded by sha256 in the artifact.
+
 No provider calls. The L4X v5 artifacts are read-only, hash-pinned inputs.
 """
 
@@ -43,6 +50,30 @@ ILLUSTRATIVE_SD_JOURNAL_REL = "runs/epic-126/jev-choice-capability.jsonl"
 EXPECTED_JOURNAL_SHA256 = "4ea9f91decba5c504bb2726e178f36ed6cd845bba635876c822aa72d53c9a5de"
 EXPECTED_REPORT_SHA256 = "325206d9c51a56c10195265e7f699e78b57b762b9d243160d52cdd63c58aef2d"
 
+#: Reviewer-approved generator/serializer treatment hash: equals
+#: ``generator.manifest_treatment_hash`` in the locked v5 ladder registration.
+EXPECTED_TREATMENT_HASH = "ae6ff9e7fee8dc9428938c062e4296e551456605e2c5879594e38b35208852a5"
+REGISTERED_TREATMENT_HASH_ARTIFACT = "runs/epic-126/jev-writer-ladder-preregistration-v5.json"
+
+#: Frozen information-geometry hash over the authoritative per-instance
+#: B-claim information records (status, before/after counts, delta bits).
+EXPECTED_INFORMATION_GEOMETRY_HASH = \
+    "38ead165a95162d0d7d921a65d049381950279539061e1b83c0f1099633e1827"
+
+#: Source files the offline recomputation depends on; recorded by sha256 in
+#: the artifact so regeneration cannot silently use changed task semantics.
+AUDIT_SOURCE_FILES = (
+    "src/apart_incident_response/task_families.py",
+    "src/apart_incident_response/communication_protocol.py",
+    "src/apart_incident_response/finite_information.py",
+    "src/apart_incident_response/communication_events.py",
+    "src/apart_incident_response/jev_choice.py",
+    "src/apart_incident_response/jev_replay.py",
+    "src/apart_incident_response/jev_choice_pilot.py",
+    "src/apart_incident_response/jev_replay_preregistration.py",
+    "src/apart_incident_response/jev_replay_inference.py",
+)
+
 #: Writer outcomes that would invalidate coverage if present.
 FORBIDDEN_WRITER_OUTCOMES = frozenset({
     "empty_output", "truncated_output", "unparsed_output", "invalid_answer", "writer_error",
@@ -57,8 +88,12 @@ ILLUSTRATIVE_BETWEEN_FORM_SD_BITS = 0.1933
 REJECTIONS = (
     "direction_not_b_to_a",
     "write_not_accepted",
+    "rejected_write_evidence",
     "missing_verified_board_write",
+    "board_write_claim_mismatch",
     "missing_verified_read_exposure",
+    "read_before_write",
+    "missing_exposure_id",
     "receiver_known_claim",
     "zero_or_uninformative_claim",
     "claim_not_owned_by_writer",
@@ -105,6 +140,87 @@ def verify_pinned_inputs(repo_root: Path | None = None) -> dict[str, Any]:
         failed = [row["input"] for row in rows if not row["ok"]]
         raise ValueError(f"pinned_input_hash_mismatch: {failed}")
     return {"ok": ok, "inputs": rows, "inputs_modified_by_audit": False}
+
+
+def information_geometry_hash(instances: Sequence[Any], *,
+                              receiver_agent: str = RECEIVER_AGENT) -> str:
+    """Hash the authoritative per-instance B-claim information records.
+
+    Binds the I_m evaluator semantics (status, feasible-set counts, delta
+    bits) that back the log2(3)-per-clue claim, independently of source text.
+    """
+
+    rows = []
+    for instance in instances:
+        b_clues = sorted(str(clue) for clue in (instance.private_clues.get("B") or ()))
+        for index, clue in enumerate(b_clues):
+            info = instance.information(receiver_agent, clue, f"m-geometry-{index}")
+            rows.append({
+                "instance_id": instance.instance_id,
+                "claim": clue,
+                "receiver": receiver_agent,
+                "status": info.status,
+                "before_count": info.before_count,
+                "after_count": info.after_count,
+                "delta_i_bits": info.delta_i_bits,
+            })
+    payload = json.dumps(rows, sort_keys=True, allow_nan=False)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def source_binding(repo_root: Path | None = None,
+                   instances: Sequence[Any] | None = None) -> dict[str, Any]:
+    """Bind the recomputation to reviewed semantics; fail closed on drift.
+
+    ``treatment_hash`` is the registered generator/serializer output and
+    ``information_geometry_hash`` the frozen I_m output; both are pinned.
+    Per-file source hashes are recorded so regeneration after any dependency
+    change is visible and cannot pass byte-reproducibility unnoticed.
+    """
+
+    root = Path(repo_root) if repo_root is not None else REPO_ROOT
+    if instances is None:
+        instances = pilot_instances()
+    per_file: dict[str, str] = {}
+    missing: list[str] = []
+    combined = hashlib.sha256()
+    for relative in AUDIT_SOURCE_FILES:
+        path = root / relative
+        if not path.is_file():
+            missing.append(relative)
+            continue
+        data = path.read_bytes()
+        per_file[relative] = hashlib.sha256(data).hexdigest()
+        combined.update(relative.encode("utf-8"))
+        combined.update(b"\0")
+        combined.update(data)
+    if missing:
+        raise ValueError(f"missing audit source files: {missing}")
+    treatment_hash = pr.treatment_hash()
+    geometry_hash = information_geometry_hash(instances)
+    drift: list[str] = []
+    if treatment_hash != EXPECTED_TREATMENT_HASH:
+        drift.append("treatment_hash")
+    if geometry_hash != EXPECTED_INFORMATION_GEOMETRY_HASH:
+        drift.append("information_geometry_hash")
+    if drift:
+        raise ValueError(f"recomputation_semantics_drift: {sorted(drift)}")
+    return {
+        "ok": not drift,
+        "source_files": list(AUDIT_SOURCE_FILES),
+        "source_files_sha256": dict(sorted(per_file.items())),
+        "source_files_hash": combined.hexdigest(),
+        "treatment_hash": treatment_hash,
+        "expected_treatment_hash": EXPECTED_TREATMENT_HASH,
+        "treatment_hash_registration": REGISTERED_TREATMENT_HASH_ARTIFACT,
+        "information_geometry_hash": geometry_hash,
+        "expected_information_geometry_hash": EXPECTED_INFORMATION_GEOMETRY_HASH,
+        "binding": (
+            "generator/serializer semantics fail closed via the registered treatment hash; "
+            "I_m evaluator semantics fail closed via the information-geometry hash; per-file "
+            "source hashes are recorded so source drift cannot silently regenerate the "
+            "artifact without changing it"),
+    }
 
 
 def pre_read_form_ids(instances: Sequence[Any], *,
@@ -160,21 +276,31 @@ def select_replay_claims(case: Mapping[str, Any], instance: Any, *,
                          receiver_agent: str = RECEIVER_AGENT) -> dict[str, Any]:
     """Apply the frozen one-way B->A replay-eligibility rules to one pre-read state.
 
-    Rules, in order: direction (peer B->A only, never A->B), accepted board
-    write, verified write-to-read provenance from the CommunicationEventLog,
+    Rules, in order: direction (peer B->A only, never A->A/A->B), accepted
+    board write, no rejection evidence for the message, verified write-to-read
+    provenance from the CommunicationEventLog with payload ``normalized_claim``
+    and ``raw_text`` equal to the selected board claim, the receiver's read
+    sequenced after the write, a nonempty exposure id on that read,
     receiver-known rejection, authoritative recomputed I_m > 0 (never trusted
     from the flattened row), writer ownership, deduplication of repeated
     identical claims within the event, and at most one selected claim per
-    pre-read state.
+    pre-read state. These provenance conditions mirror the established replay
+    validator (``jev_replay._real_message_problems``).
     """
 
     board = list(case.get("board") or ())
     log_rows = list(case.get("board_log") or ())
+    case_rejected = list(case.get("rejected") or ())
     writes: dict[str, Mapping[str, Any]] = {}
     reads: dict[str, list[Mapping[str, Any]]] = defaultdict(list)
+    rejected_message_ids: set[str] = set()
     for event in log_rows:
         kind = event.get("kind")
         message_id = event.get("message_id")
+        if kind == "board_write_rejected":
+            if message_id:
+                rejected_message_ids.add(str(message_id))
+            continue
         if not message_id:
             continue
         if kind == "board_write" and event.get("status") == "accepted":
@@ -184,7 +310,7 @@ def select_replay_claims(case: Mapping[str, Any], instance: Any, *,
 
     receiver_clues = {str(clue).strip().casefold()
                       for clue in (instance.private_clues.get(receiver_agent) or ())}
-    accepted: list[tuple[Mapping[str, Any], Any, Mapping[str, Any]]] = []
+    accepted: list[tuple[Mapping[str, Any], Any, Mapping[str, Any], list[str]]] = []
     rejected: list[dict[str, str]] = []
 
     def reject(message_id: Any, claim: Any, reason: str) -> None:
@@ -201,15 +327,39 @@ def select_replay_claims(case: Mapping[str, Any], instance: Any, *,
         if row.get("status") != "accepted":
             reject(message_id, text, "write_not_accepted")
             continue
+        claim_key = text.strip().casefold()
+        if message_id in rejected_message_ids or any(
+                str(entry.get("agent")) == author
+                and str(entry.get("claim") or "").strip().casefold() == claim_key
+                for entry in case_rejected):
+            reject(message_id, text, "rejected_write_evidence")
+            continue
         write_event = writes.get(message_id)
         payload = dict((write_event or {}).get("payload") or {})
         if (write_event is None or str(write_event.get("agent_id")) != author
                 or str(payload.get("receiver_id")) != receiver_agent):
             reject(message_id, text, "missing_verified_board_write")
             continue
-        if not any(str(event.get("agent_id")) == receiver_agent
-                   for event in reads.get(message_id, ())):
+        if str(payload.get("normalized_claim")) != text or str(payload.get("raw_text")) != text:
+            reject(message_id, text, "board_write_claim_mismatch")
+            continue
+        receiver_reads = [event for event in reads.get(message_id, ())
+                          if str(event.get("agent_id")) == receiver_agent]
+        if not receiver_reads:
             reject(message_id, text, "missing_verified_read_exposure")
+            continue
+        read = min(receiver_reads,
+                   key=lambda event: event.get("sequence")
+                   if isinstance(event.get("sequence"), int) else -1)
+        write_sequence = write_event.get("sequence")
+        read_sequence = read.get("sequence")
+        if (not isinstance(write_sequence, int) or not isinstance(read_sequence, int)
+                or read_sequence <= write_sequence):
+            reject(message_id, text, "read_before_write")
+            continue
+        validated_exposure_id = (dict(read.get("payload") or {})).get("exposure_id")
+        if not isinstance(validated_exposure_id, str) or not validated_exposure_id.strip():
+            reject(message_id, text, "missing_exposure_id")
             continue
         if text.strip().casefold() in receiver_clues:
             reject(message_id, text, "receiver_known_claim")
@@ -222,11 +372,16 @@ def select_replay_claims(case: Mapping[str, Any], instance: Any, *,
         if not instance.holds_claim(author, text):
             reject(message_id, text, "claim_not_owned_by_writer")
             continue
-        accepted.append((row, info, write_event))
+        exposure_ids = sorted({str((dict(event.get("payload") or {})).get("exposure_id"))
+                               for event in receiver_reads
+                               if isinstance((dict(event.get("payload") or {})).get("exposure_id"),
+                                             str)
+                               and (dict(event.get("payload") or {})).get("exposure_id").strip()})
+        accepted.append((row, info, write_event, exposure_ids))
 
     selected: list[dict[str, Any]] = []
     seen_claims: set[str] = set()
-    for row, info, write_event in accepted:
+    for row, info, write_event, exposure_ids in accepted:
         message_id = str(row.get("message_id"))
         text = str(row.get("text"))
         claim_key = text.strip().casefold()
@@ -237,10 +392,6 @@ def select_replay_claims(case: Mapping[str, Any], instance: Any, *,
         if selected:
             reject(message_id, text, "second_claim_same_pre_read_state")
             continue
-        exposure_ids = sorted({str((dict(event.get("payload") or {})).get("exposure_id"))
-                               for event in reads.get(message_id, ())
-                               if str(event.get("agent_id")) == receiver_agent
-                               and (event.get("payload") or {}).get("exposure_id")})
         selected.append({
             "message_id": message_id,
             "claim": text,
@@ -486,7 +637,10 @@ def information_accounting(cases: Sequence[Mapping[str, Any]],
         "the primary replay direction is one-way B->A; A->B writes are excluded",
         "receiver-known claims and authoritative I_m = 0 claims are excluded",
         "at most one accepted, B-owned, informative claim per pre-read state",
-        "verified board-write and A-read provenance are required (CommunicationEventLog)",
+        "verified board-write and A-read provenance are required (CommunicationEventLog): "
+        "payload normalized_claim and raw_text equal the selected board claim, the receiver "
+        "read is sequenced after the write, that read carries a nonempty exposure id, and no "
+        "rejection evidence exists for the message (mirrors jev_replay._real_message_problems)",
         "repeated identical B claims within an event are deduplicated to one claim",
         "gross transmitted bits are reported separately from replay-eligible information",
         "no symmetry across agents is claimed; A->B accounting is directional, not mirrored",
@@ -775,6 +929,7 @@ def build_audit(repo_root: Path | None = None) -> dict[str, Any]:
     registered_forms = set(pr.frozen_forms()["iso_form_ids"])
     if set(form_ids.values()) != registered_forms:
         raise ValueError("prompt_form_set_mismatch_vs_registered_manifest")
+    binding = source_binding(root, instances)
 
     by_id = {instance.instance_id: instance for instance in instances}
     selections = {str(case["instance_id"]): select_replay_claims(case, by_id[str(case["instance_id"])])
@@ -797,6 +952,7 @@ def build_audit(repo_root: Path | None = None) -> dict[str, Any]:
         "report": {"path": DEFAULT_REPORT_REL, "sha256": EXPECTED_REPORT_SHA256,
                    "immutable": True, "write_attempts_by_audit": 0},
         "verification": inputs,
+        "source_binding": binding,
         "task_generator": {
             "module": "apart_incident_response.task_families",
             "generator_version": tf.GENERATOR_VERSION,
@@ -881,8 +1037,11 @@ if __name__ == "__main__":
 __all__ = [
     "AUDIT_VERSION", "ISSUE_ID", "DEFAULT_JOURNAL_REL", "DEFAULT_REPORT_REL",
     "DEFAULT_OUTPUT_REL", "EXPECTED_JOURNAL_SHA256", "EXPECTED_REPORT_SHA256",
+    "EXPECTED_TREATMENT_HASH", "EXPECTED_INFORMATION_GEOMETRY_HASH",
+    "REGISTERED_TREATMENT_HASH_ARTIFACT", "AUDIT_SOURCE_FILES",
     "FORBIDDEN_WRITER_OUTCOMES", "ILLUSTRATIVE_BETWEEN_FORM_SD_BITS", "LOG2_3", "REJECTIONS",
     "sha256_file", "load_journal", "load_report", "verify_pinned_inputs",
+    "information_geometry_hash", "source_binding",
     "pre_read_form_ids", "writer_outcome_census", "select_replay_claims",
     "form_audit_table", "form_geometry", "uncovered_form_record", "coverage_facts",
     "information_accounting", "frozen_estimand", "inference_limits", "sensitivity_scale",
