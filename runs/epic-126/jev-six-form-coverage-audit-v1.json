@@ -1,0 +1,591 @@
+{
+  "audit_version": "jev-six-form-coverage-audit-v1",
+  "claim_scope": "coverage and accounting audit of the frozen 17-instance L4X v5 block, conditional on the six known prompt forms; no causal, calibration, or held-out claim",
+  "coverage_facts": {
+    "accepted_messages": {
+      "by_author": {
+        "A": 2,
+        "B": 12
+      },
+      "total": 14
+    },
+    "all_receiver_cases_valid": true,
+    "authoritative_information_records": 14,
+    "cases_total": 17,
+    "distinct_pre_read_prompt_forms": 6,
+    "eligible_b_to_a_cases": 9,
+    "eligible_b_to_a_rate": 0.5294117647058824,
+    "eligible_definition": "receiver_valid case with >=1 replay-selected B->A claim (accepted B-owned board write, verified A read provenance, recomputed I_m > 0, deduplicated)",
+    "exactly_five_of_six_forms_covered": true,
+    "forbidden_writer_outcomes": [],
+    "forms_total": 6,
+    "forms_with_eligible_exposure": 5,
+    "gross_i_m_bits_from_board": 22.18947501009618,
+    "invalid_writer_output_affected_result": false,
+    "normalization_tiers": [
+      "exact"
+    ],
+    "receiver_invalid_cases": 0,
+    "receiver_unattempted_cases": 0,
+    "receiver_valid_cases": 17,
+    "resolved_models": [
+      "jev-1.13.0"
+    ],
+    "status_reported": "completed",
+    "stop_reason_reported": null,
+    "uncovered_form_id": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+    "verified_read_exposures": 14
+  },
+  "estimand": {
+    "branches": {
+      "H_null": "H(Y | C)",
+      "H_placebo": "H(Y | C, M_placebo)",
+      "H_real": "H(Y | C, M_real)"
+    },
+    "claim_limits": [
+      "instance-weighted analyses are secondary only",
+      "no instance-level t-test or Wilcoxon as primary",
+      "emission and exposure are not causal uptake"
+    ],
+    "event_contrast": "d_i = H_real - H_placebo for replay event i in form f",
+    "experimental_unit": "the distinct model-visible pre-read prompt form (prompt_form_id), not the instance ID",
+    "form_contrast": "d_f = mean(d_i) within form f over complete real/placebo pairs",
+    "guards": "p_target and feasible-set mass are guard metrics reported separately and must not filter observations from the primary entropy estimate",
+    "missingness": "missing real/placebo pairs are not imputed; branch missingness and complete pairs are reported by form",
+    "null_branch": "retained and necessary for real-minus-null, placebo-minus-null and manipulation checks even though it cancels from the primary real-minus-placebo contrast",
+    "primary_direction": "one-way B->A",
+    "primary_estimand": "equal-weight mean of d_f across the six forms"
+  },
+  "forms": [
+    {
+      "accepted_a_messages": 0,
+      "accepted_b_messages": 4,
+      "authoritative_information": {
+        "claim": "precedes=inspect>deploy",
+        "delivered_to": "A",
+        "i_m_bits": 1.584962500721156,
+        "receiver_feasible_after": 1,
+        "receiver_feasible_before": 3,
+        "status": "accepted"
+      },
+      "b_owned_clue": "precedes=inspect>deploy",
+      "b_owned_clues": [
+        "precedes=inspect>deploy"
+      ],
+      "b_writer_opportunities": 8,
+      "covered": true,
+      "eligible_b_to_a_exposures": 3,
+      "instance_count": 4,
+      "instance_ids": [
+        "planning-00011944",
+        "planning-00011948",
+        "planning-0001194c",
+        "planning-0001194f"
+      ],
+      "prompt_form_id": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+      "replay_selected_claims": 3,
+      "single_b_owned_clue": true
+    },
+    {
+      "accepted_a_messages": 0,
+      "accepted_b_messages": 2,
+      "authoritative_information": {
+        "claim": "precedes=stage>deploy",
+        "delivered_to": "A",
+        "i_m_bits": 1.584962500721156,
+        "receiver_feasible_after": 1,
+        "receiver_feasible_before": 3,
+        "status": "accepted"
+      },
+      "b_owned_clue": "precedes=stage>deploy",
+      "b_owned_clues": [
+        "precedes=stage>deploy"
+      ],
+      "b_writer_opportunities": 6,
+      "covered": true,
+      "eligible_b_to_a_exposures": 2,
+      "instance_count": 3,
+      "instance_ids": [
+        "planning-00011947",
+        "planning-0001194b",
+        "planning-0001194d"
+      ],
+      "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+      "replay_selected_claims": 2,
+      "single_b_owned_clue": true
+    },
+    {
+      "accepted_a_messages": 0,
+      "accepted_b_messages": 2,
+      "authoritative_information": {
+        "claim": "precedes=stage>inspect",
+        "delivered_to": "A",
+        "i_m_bits": 1.584962500721156,
+        "receiver_feasible_after": 1,
+        "receiver_feasible_before": 3,
+        "status": "accepted"
+      },
+      "b_owned_clue": "precedes=stage>inspect",
+      "b_owned_clues": [
+        "precedes=stage>inspect"
+      ],
+      "b_writer_opportunities": 2,
+      "covered": true,
+      "eligible_b_to_a_exposures": 1,
+      "instance_count": 1,
+      "instance_ids": [
+        "planning-00011950"
+      ],
+      "prompt_form_id": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+      "replay_selected_claims": 1,
+      "single_b_owned_clue": true
+    },
+    {
+      "accepted_a_messages": 1,
+      "accepted_b_messages": 1,
+      "authoritative_information": {
+        "claim": "precedes=deploy>stage",
+        "delivered_to": "A",
+        "i_m_bits": 1.584962500721156,
+        "receiver_feasible_after": 1,
+        "receiver_feasible_before": 3,
+        "status": "accepted"
+      },
+      "b_owned_clue": "precedes=deploy>stage",
+      "b_owned_clues": [
+        "precedes=deploy>stage"
+      ],
+      "b_writer_opportunities": 6,
+      "covered": true,
+      "eligible_b_to_a_exposures": 1,
+      "instance_count": 3,
+      "instance_ids": [
+        "planning-00011940",
+        "planning-00011942",
+        "planning-00011946"
+      ],
+      "prompt_form_id": "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+      "replay_selected_claims": 1,
+      "single_b_owned_clue": true
+    },
+    {
+      "accepted_a_messages": 1,
+      "accepted_b_messages": 0,
+      "authoritative_information": {
+        "claim": "precedes=inspect>stage",
+        "delivered_to": "A",
+        "i_m_bits": 1.584962500721156,
+        "receiver_feasible_after": 1,
+        "receiver_feasible_before": 3,
+        "status": "accepted"
+      },
+      "b_owned_clue": "precedes=inspect>stage",
+      "b_owned_clues": [
+        "precedes=inspect>stage"
+      ],
+      "b_writer_opportunities": 6,
+      "covered": false,
+      "eligible_b_to_a_exposures": 0,
+      "instance_count": 3,
+      "instance_ids": [
+        "planning-00011949",
+        "planning-0001194a",
+        "planning-0001194e"
+      ],
+      "prompt_form_id": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "replay_selected_claims": 0,
+      "single_b_owned_clue": true
+    },
+    {
+      "accepted_a_messages": 0,
+      "accepted_b_messages": 3,
+      "authoritative_information": {
+        "claim": "precedes=deploy>inspect",
+        "delivered_to": "A",
+        "i_m_bits": 1.584962500721156,
+        "receiver_feasible_after": 1,
+        "receiver_feasible_before": 3,
+        "status": "accepted"
+      },
+      "b_owned_clue": "precedes=deploy>inspect",
+      "b_owned_clues": [
+        "precedes=deploy>inspect"
+      ],
+      "b_writer_opportunities": 6,
+      "covered": true,
+      "eligible_b_to_a_exposures": 2,
+      "instance_count": 3,
+      "instance_ids": [
+        "planning-00011941",
+        "planning-00011943",
+        "planning-00011945"
+      ],
+      "prompt_form_id": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+      "replay_selected_claims": 2,
+      "single_b_owned_clue": true
+    }
+  ],
+  "fresh_coverage_handoff": {
+    "assumption": "simplifying independent-rate assumption; this calculation is a sizing heuristic, not evidence that instance eligibility is independent",
+    "handoff_to": "#190",
+    "observed_eligible_instance_rate": {
+      "denominator": 17,
+      "expression": "9/17",
+      "numerator": 9,
+      "rounded": 0.529,
+      "value": 0.5294117647058824
+    },
+    "probability_all_forms_have_at_least_one": {
+      "expression": "[1 - (1 - 9/17)^6]^6",
+      "rounded": 0.937,
+      "value": 0.9365813314322443
+    },
+    "probability_one_form_has_at_least_one": {
+      "expression": "1 - (1 - 9/17)^6",
+      "rounded": 0.989,
+      "value": 0.9891395856807287
+    },
+    "requirements": [
+      "a new registration and manifest; do not append to the frozen 17-instance artifact",
+      "seed-to-form selection may happen offline because form identity is deterministic",
+      "the future collection uses fixed N with no stopping after the first message"
+    ],
+    "status": "documented only; #189 does not implement #190",
+    "target": {
+      "N": 36,
+      "forms": 6,
+      "fresh_instances_per_form": 6
+    }
+  },
+  "generated_by": "src/apart_incident_response/jev_six_form_coverage_audit.py",
+  "inference_limits": {
+    "form_space_limit": "the known form space contains only six forms, so adding duplicate instance IDs cannot increase k",
+    "guards_rule": "p_target and feasible-set mass are reported separately and never filter the primary entropy estimate",
+    "interval": "form-mean t interval with df = k - 1",
+    "missingness_rule": "missing real/placebo pairs are not imputed; report branch missingness and complete pairs by form",
+    "not_primary": [
+      "instance-level t-test",
+      "instance-level Wilcoxon"
+    ],
+    "primary_test": "exact two-sided cluster sign-flip test on form means",
+    "secondary_only": [
+      "instance-weighted analyses"
+    ],
+    "sign_flip_floor": {
+      "five_form_rule": "a five-form result is interval-only and descriptive; it cannot satisfy a two-sided alpha = 0.05 sign-flip gate because 2/32 = 0.0625",
+      "k_5": {
+        "exact_min_p": 0.0625,
+        "expression": "2/32",
+        "min_two_sided_p": 0.0625,
+        "permutations": 32
+      },
+      "k_6": {
+        "exact_min_p": 0.03125,
+        "expression": "2/64",
+        "min_two_sided_p": 0.03125,
+        "permutations": 64
+      }
+    }
+  },
+  "information_accounting": {
+    "b_to_a_duplicates_removed": {
+      "i_m_bits": 4.754887502163468,
+      "messages": 3
+    },
+    "by_direction": {
+      "a_to_b_excluded": {
+        "i_m_bits": 3.169925001442312,
+        "messages": 2
+      },
+      "b_to_a": {
+        "i_m_bits": 19.019550008653873,
+        "messages": 12
+      }
+    },
+    "gross_reported": {
+      "authoritative_records": 14,
+      "i_m_bits": 22.18947501,
+      "source": "immutable report field i_m_bits (gross, both directions, with repeats)",
+      "warning": "the gross report total is NOT unique information delivered to Jev A: it includes A->B messages and repeated identical B claims"
+    },
+    "no_agent_symmetry_claim": "A->B writes are recorded as gross transmission only; nothing here mirrors the B->A estimand, guards, or eligibility onto agent A",
+    "primary_replay_direction": "one-way B->A",
+    "recomputed_gross": {
+      "authoritative_records": 14,
+      "i_m_bits": 22.189475010096185
+    },
+    "replay_eligible": {
+      "claims": 9,
+      "distinct_form_claim_i_m_bits": 7.92481250360578,
+      "distinct_form_claim_list": [
+        {
+          "claim": "precedes=inspect>deploy",
+          "prompt_form_id": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee"
+        },
+        {
+          "claim": "precedes=stage>deploy",
+          "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc"
+        },
+        {
+          "claim": "precedes=stage>inspect",
+          "prompt_form_id": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c"
+        },
+        {
+          "claim": "precedes=deploy>stage",
+          "prompt_form_id": "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569"
+        },
+        {
+          "claim": "precedes=deploy>inspect",
+          "prompt_form_id": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222"
+        }
+      ],
+      "distinct_form_claims": 5,
+      "events": 9,
+      "i_m_bits": 14.264662506490405,
+      "note": "each eligible event carries at most one claim; distinct model-visible (form, claim) content is counted separately because instances within a form repeat the same pre-read state and B clue"
+    },
+    "rules": [
+      "the primary replay direction is one-way B->A; A->B writes are excluded",
+      "receiver-known claims and authoritative I_m = 0 claims are excluded",
+      "at most one accepted, B-owned, informative claim per pre-read state",
+      "verified board-write and A-read provenance are required (CommunicationEventLog)",
+      "repeated identical B claims within an event are deduplicated to one claim",
+      "gross transmitted bits are reported separately from replay-eligible information",
+      "no symmetry across agents is claimed; A->B accounting is directional, not mirrored"
+    ]
+  },
+  "information_geometry": {
+    "distinct_b_clues": 6,
+    "distinct_forms": 6,
+    "each_b_clue_carries_log2_3_bits": true,
+    "expected_bits": 1.584962500721156,
+    "form_to_b_clue_bijective": true,
+    "geometries": [
+      {
+        "i_m_bits": 1.584962500721,
+        "receiver_feasible_after": 1,
+        "receiver_feasible_before": 3,
+        "status": "accepted"
+      }
+    ],
+    "geometry_equivalent_across_forms": true,
+    "note": "the pre-read form fixes A's private clues, and claims are partitioned, so the form determines B's single owned clue and vice versa"
+  },
+  "inputs": {
+    "journal": {
+      "immutable": true,
+      "path": "runs/epic-126/jev-writer-exact-bridge-v5.jsonl",
+      "sha256": "4ea9f91decba5c504bb2726e178f36ed6cd845bba635876c822aa72d53c9a5de",
+      "write_attempts_by_audit": 0
+    },
+    "registered_manifest": {
+      "paired_forms": 6,
+      "source": "jev_replay_preregistration.frozen_forms"
+    },
+    "report": {
+      "immutable": true,
+      "path": "runs/epic-126/jev-writer-exact-bridge-report-v5.json",
+      "sha256": "325206d9c51a56c10195265e7f699e78b57b762b9d243160d52cdd63c58aef2d",
+      "write_attempts_by_audit": 0
+    },
+    "task_generator": {
+      "checker_version": "oracle-v2",
+      "complexity": "low",
+      "family": "planning",
+      "generator_version": "six-family-clue-consistent-v2",
+      "instance_count": 17,
+      "module": "apart_incident_response.task_families",
+      "per_block": 17,
+      "regime": "N",
+      "seed_base": 72000
+    },
+    "verification": {
+      "inputs": [
+        {
+          "actual_sha256": "4ea9f91decba5c504bb2726e178f36ed6cd845bba635876c822aa72d53c9a5de",
+          "expected_sha256": "4ea9f91decba5c504bb2726e178f36ed6cd845bba635876c822aa72d53c9a5de",
+          "input": "journal",
+          "ok": true,
+          "path": "runs/epic-126/jev-writer-exact-bridge-v5.jsonl"
+        },
+        {
+          "actual_sha256": "325206d9c51a56c10195265e7f699e78b57b762b9d243160d52cdd63c58aef2d",
+          "expected_sha256": "325206d9c51a56c10195265e7f699e78b57b762b9d243160d52cdd63c58aef2d",
+          "input": "report",
+          "ok": true,
+          "path": "runs/epic-126/jev-writer-exact-bridge-report-v5.json"
+        }
+      ],
+      "inputs_modified_by_audit": false,
+      "ok": true
+    }
+  },
+  "issue": "#189",
+  "mode": "offline-analysis-only",
+  "prior_artifacts_modified": [],
+  "provider_calls": 0,
+  "report_crosscheck": {
+    "checks": [
+      {
+        "check": "status_completed",
+        "ok": true,
+        "recomputed": "completed",
+        "reported": "completed"
+      },
+      {
+        "check": "stop_reason_none",
+        "ok": true,
+        "recomputed": null,
+        "reported": null
+      },
+      {
+        "check": "receiver_valid_cases",
+        "ok": true,
+        "recomputed": 17,
+        "reported": 17
+      },
+      {
+        "check": "receiver_invalid_cases",
+        "ok": true,
+        "recomputed": 0,
+        "reported": 0
+      },
+      {
+        "check": "receiver_unattempted_cases",
+        "ok": true,
+        "recomputed": 0,
+        "reported": 0
+      },
+      {
+        "check": "writes_by_agent",
+        "ok": true,
+        "recomputed": {
+          "A": 2,
+          "B": 12
+        },
+        "reported": {
+          "A": 2,
+          "B": 12
+        }
+      },
+      {
+        "check": "board_messages",
+        "ok": true,
+        "recomputed": 14,
+        "reported": 14
+      },
+      {
+        "check": "authoritative_i_m",
+        "ok": true,
+        "recomputed": 14,
+        "reported": 14
+      },
+      {
+        "check": "i_m_bits",
+        "ok": true,
+        "recomputed": 22.18947501,
+        "reported": 22.18947501
+      },
+      {
+        "check": "verified_read_exposures",
+        "ok": true,
+        "recomputed": 14,
+        "reported": 14
+      },
+      {
+        "check": "distinct_forms",
+        "ok": true,
+        "recomputed": 6,
+        "reported": 6
+      },
+      {
+        "check": "eligible_cases_match_journal_flag",
+        "ok": true,
+        "recomputed": 9,
+        "reported": 9
+      },
+      {
+        "check": "rejected_writes",
+        "ok": true,
+        "recomputed": 1,
+        "reported": 1
+      },
+      {
+        "check": "forbidden_writer_outcomes_absent",
+        "ok": true,
+        "recomputed": [],
+        "reported": []
+      },
+      {
+        "check": "planned_cases_equal_journal_rows",
+        "ok": true,
+        "recomputed": 17,
+        "reported": 17
+      }
+    ],
+    "failed": [],
+    "ok": true
+  },
+  "sensitivity": {
+    "df": 5,
+    "expression": "t(0.975,5) * 0.1933 / sqrt(6)",
+    "form_space_note": "the known form space contains only six forms; duplicate instance IDs cannot increase k",
+    "half_width_bits": 0.20288890837947504,
+    "half_width_recomputed_sd_bits": 0.20290785033682407,
+    "half_width_rounded_bits": 0.203,
+    "illustrative_between_form_sd_bits": 0.1933,
+    "illustrative_sd_recomputed_bits": 0.19331804672510103,
+    "illustrative_sd_source": "between-form SD of the J3 ISO-FULL form-mean entropy differences (method demonstration only; not a real-placebo effect or power estimate)",
+    "illustrative_sd_source_path": "runs/epic-126/jev-choice-capability.jsonl",
+    "illustrative_sd_source_sha256": "5f598997f0a8bd760d58cb73ae156757ed171905a7375722b749f06837163600",
+    "interpretation": "planning/sensitivity context, not a guaranteed powered effect threshold: a null result cannot rule out effects smaller than roughly 0.2 bits",
+    "k": 6,
+    "t_critical_975": 2.571
+  },
+  "uncovered_form": {
+    "accepted_b_messages": 0,
+    "authoritative_information": {
+      "claim": "precedes=inspect>stage",
+      "delivered_to": "A",
+      "i_m_bits": 1.584962500721156,
+      "receiver_feasible_after": 1,
+      "receiver_feasible_before": 3,
+      "status": "accepted"
+    },
+    "b_owned_clue": "precedes=inspect>stage",
+    "b_writer_opportunities": 6,
+    "classification": "writer/seed coverage event: the uncovered form's information geometry is equivalent to the covered forms (same log2(3)-bit B clue to A), so the gap is an observed writer/seed emission outcome, not an information-geometry difference",
+    "eligible_b_to_a_exposures": 0,
+    "geometry_equivalent_to_covered_forms": true,
+    "instance_count": 3,
+    "instance_ids": [
+      "planning-00011949",
+      "planning-0001194a",
+      "planning-0001194e"
+    ],
+    "not_proven": "this does not prove the form will emit under new seeds, nor that it cannot; emission under fresh seeds is an empirical question for #190",
+    "prompt_form_id": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb"
+  },
+  "writer_outcome_census": {
+    "by_agent_turn_outcome": {
+      "A|0|deliberate_silence": 15,
+      "A|0|message_candidate": 2,
+      "A|1|deliberate_silence": 16,
+      "A|1|non_owned_claim": 1,
+      "B|0|deliberate_silence": 12,
+      "B|0|message_candidate": 5,
+      "B|1|deliberate_silence": 10,
+      "B|1|message_candidate": 7
+    },
+    "forbidden_outcome_count": 0,
+    "forbidden_outcomes_present": [],
+    "forbidden_writer_output_affected_result": false,
+    "interpretation": "empty/truncated/unparsed/invalid-answer/writer-error outcomes never reached the receiver and never contributed to coverage; deliberate_silence, owned message_candidate and classified non_owned_claim are the only outcomes present",
+    "total_writer_attempts": 68,
+    "totals_by_outcome": {
+      "deliberate_silence": 53,
+      "message_candidate": 14,
+      "non_owned_claim": 1
+    }
+  }
+}
