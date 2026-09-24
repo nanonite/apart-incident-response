@@ -11,8 +11,8 @@ or reinterpreted.
 - Module: `src/apart_incident_response/jev_coverage_manifest_preregistration_v6.py`
 - Artifact: `runs/epic-126/jev-coverage-manifest-preregistration-v6.json`
   (version `stage2-jev-coverage-manifest-v6`, status
-  `locked_for_jev_coverage_manifest_v6`, registration hash `0961f404…`)
-- Tests: `tests/test_jev_coverage_manifest_preregistration_v6.py` (36 tests)
+  `locked_for_jev_coverage_manifest_v6`, registration hash `41c14ace…`)
+- Tests: `tests/test_jev_coverage_manifest_preregistration_v6.py` (40 tests)
 - Fresh outputs reserved for #191: `runs/epic-126/jev-coverage-manifest-v6.jsonl`
   (journal), `runs/epic-126/jev-coverage-manifest-report-v6.json` (report);
   the verifier fails if either exists.
@@ -55,8 +55,14 @@ registration.)
   41000–41001, 70000–70016, 71000–71016, 72000–72016, 73000–73016,
   74000–74016, 80000–80016 → 489 prior IDs, evidence hash
   `442572b537dbfaa8172ebc55cef17a3655aacaeb90a3e049929e424779101f2b`.
-  The v6 registration itself is excluded from the scan so the evidence is
-  stable before and after it is written.
+  **All three v6-owned paths** — the registration, the future journal and the
+  future report — are excluded from both the ID collection and the recorded
+  source list, so the scan can never ingest the manifest it is checking
+  against: the evidence is stable before collection, after #191 writes its
+  outputs, and across re-verification (a lifecycle test creates representative
+  v6 journal/report files, proves the prior-ID evidence and registration hash
+  are unchanged, and proves verification then fails *only* for the two
+  `output_exists`/`report_exists` collisions).
 
 Fresh IDs are **replicates within the existing six forms**; they do not
 increase k beyond six.
@@ -80,7 +86,9 @@ primary direction; final Jev receiver **A** with Choice wire v2
 `jev-finalizer`; durable per-case journal; `raw_response_retained=false`,
 `credentials_retained=false`.
 
-Bindings recorded and verified: `source_files_hash d9f8bfc4…` (21 files),
+Bindings recorded and verified: `source_files_hash c50b2e9a…` (**22 files,
+including this registration module itself** — the hash lives in the JSON
+artifact, not in the Python source, so there is no recursion),
 `manifest_treatment_hash b4d047b1…` (36-instance model-visible treatment),
 `information_geometry_hash d29c9e6f…` (per-instance B-claim records — all six
 forms retain the #189 log2(3)-bit geometry, 3→1), composite
@@ -154,6 +162,27 @@ protocol keys; missing credentials **only** when
 `check_credentials=True` (proposed live preflight; local env/file reads,
 no request); and any attempt to treat the lock as live authorization.
 Default verification is offline and credential-free.
+
+### Runner policy for #191 (frozen)
+
+Execution semantics are delegated to the bound
+`exact-original-comm-bridge-v5`, but the v6 entrypoint does not exist yet.
+The registration freezes the **preferred** policy in `runner_policy`:
+
+- `#191` must implement the v6 coverage runner (36-instance manifest, the
+  432/108 provider partitions, the runner preflight and the fresh v6
+  journal/report paths), **add that runner module to
+  `COVERAGE_SOURCE_FILES`, and amend/re-lock this registration** (new
+  `source_files_hash` and `preregistration_hash`) **before any live
+  authorization**.
+- `adding_runner_authorizes_collection: false` — adding the runner to the
+  source binding does **not** authorize collection.
+- `live_execution_rule`: live execution is forbidden until the amended
+  registration hash with the runner in the source binding has been reviewed
+  and separately live-authorized; this lock is not live authorization.
+- The verifier fails closed if the policy block is missing, if the runner is
+  reported implemented before the amendment, or if the authorization
+  declarations are flipped.
 
 Handoff to **#191**: build a fresh runner against this registration (fresh
 journal/report paths above), require a passing preflight plus separate live

@@ -576,5 +576,91 @@ class VerifierTests(unittest.TestCase):
         self.assertTrue(result["ok"], result["errors"])
 
 
+class LifecycleTests(unittest.TestCase):
+    """Review #190 findings: self-scan exclusion, self source-binding, runner policy."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.document = load_locked()
+
+    def test_v6_outputs_excluded_and_only_collision_fails(self):
+        evidence_before = reg.prior_instance_ids(REPO_ROOT)
+        ids_before = reg._prior_id_set(REPO_ROOT)
+        self.assertEqual(sorted(evidence_before["excluded"]), sorted(reg.V6_OWNED_PATHS))
+        self.assertEqual(len(reg.V6_OWNED_FILE_NAMES), 3)
+        journal = REPO_ROOT / reg.DEFAULT_JOURNAL_V6
+        report = REPO_ROOT / reg.DEFAULT_REPORT_V6
+        self.assertFalse(journal.exists())
+        self.assertFalse(report.exists())
+        manifest_ids = self.document["manifest"]["instance_ids"]
+        # representative future outputs embedding the 36 manifest ids
+        journal.write_text("\n".join(json.dumps({"instance_id": instance_id,
+                                                 "status": "complete"})
+                                     for instance_id in manifest_ids) + "\n",
+                           encoding="utf-8")
+        report.write_text(json.dumps({"status": "completed",
+                                      "cases": [{"instance_id": instance_id}
+                                                for instance_id in manifest_ids]}),
+                          encoding="utf-8")
+        try:
+            evidence_during = reg.prior_instance_ids(REPO_ROOT)
+            ids_during = reg._prior_id_set(REPO_ROOT)
+            self.assertEqual(ids_during, ids_before)
+            self.assertEqual(evidence_during, evidence_before)
+            self.assertEqual(
+                reg.build_coverage_manifest_preregistration_v6(approved=True), self.document)
+            result = verify(self.document)
+            self.assertFalse(result["ok"])
+            self.assertEqual(result["errors"], ["future coverage journal already exists",
+                                               "future coverage report already exists"])
+        finally:
+            journal.unlink(missing_ok=True)
+            report.unlink(missing_ok=True)
+        self.assertFalse(journal.exists())
+        self.assertFalse(report.exists())
+        clean = verify(self.document)
+        self.assertTrue(clean["ok"], clean["errors"])
+
+    def test_registration_module_is_source_bound(self):
+        module_path = "src/apart_incident_response/jev_coverage_manifest_preregistration_v6.py"
+        self.assertIn(module_path, reg.COVERAGE_SOURCE_FILES)
+        self.assertEqual(len(reg.COVERAGE_SOURCE_FILES), 22)
+        self.assertIn(module_path, self.document["generator"]["source_files"])
+        self.assertEqual(self.document["generator"]["source_files_hash"],
+                         reg._source_files_hash(REPO_ROOT))
+
+    def test_runner_policy_frozen_for_191(self):
+        policy = self.document["runner_policy"]
+        self.assertTrue(policy["required_before_live"])
+        self.assertFalse(policy["runner_implemented"])
+        self.assertEqual(policy["runner_source_files"], [])
+        self.assertFalse(policy["adding_runner_authorizes_collection"])
+        self.assertIn("#191", policy["policy"])
+        self.assertIn("COVERAGE_SOURCE_FILES", policy["policy"])
+        self.assertIn("amend/re-lock", policy["policy"])
+        self.assertIn("live execution is forbidden", policy["live_execution_rule"])
+        self.assertIn("reviewed and separately live-authorized", policy["live_execution_rule"])
+        self.assertIn("not live authorization", policy["live_execution_rule"])
+
+    def test_runner_policy_tamper_rejected(self):
+        tampered = copy.deepcopy(self.document)
+        tampered["runner_policy"]["adding_runner_authorizes_collection"] = True
+        result = verify(tampered)
+        self.assertFalse(result["ok"])
+        self.assertIn("adding the runner must not authorize collection", result["errors"])
+        tampered = copy.deepcopy(self.document)
+        tampered["runner_policy"]["runner_implemented"] = True
+        result = verify(tampered)
+        self.assertFalse(result["ok"])
+        self.assertIn("runner must not be reported implemented before #191 amends the lock",
+                      result["errors"])
+        tampered = copy.deepcopy(self.document)
+        del tampered["runner_policy"]
+        result = verify(tampered)
+        self.assertFalse(result["ok"])
+        self.assertTrue(any("runner policy missing" in error for error in result["errors"]),
+                        result["errors"])
+
+
 if __name__ == "__main__":
     unittest.main()

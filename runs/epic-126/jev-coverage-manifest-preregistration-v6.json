@@ -123,9 +123,10 @@
       "src/apart_incident_response/jev_writer_ladder_v5.py",
       "src/apart_incident_response/jev_writer_exact_bridge_v5.py",
       "src/apart_incident_response/jev_writer_treatment_audit.py",
-      "src/apart_incident_response/jev_six_form_coverage_audit.py"
+      "src/apart_incident_response/jev_six_form_coverage_audit.py",
+      "src/apart_incident_response/jev_coverage_manifest_preregistration_v6.py"
     ],
-    "source_files_hash": "d9f8bfc4571fa1be069e40227615185eb30668568454d68b4c5a242f70fed3e7",
+    "source_files_hash": "c50b2e9a99656bb76b312de5257ecce2a32cfd25d5b3f558f44a069570e7eb9d",
     "treatment_hash": "b352e4e5236b1a43d1759c985fbac4321227d351fbf48be60ecaffddd9389287"
   },
   "invalidity_classes": {
@@ -192,11 +193,13 @@
       "overlap": [],
       "prior_instance_ids": {
         "excluded": [
-          "runs/epic-126/jev-coverage-manifest-preregistration-v6.json"
+          "runs/epic-126/jev-coverage-manifest-preregistration-v6.json",
+          "runs/epic-126/jev-coverage-manifest-v6.jsonl",
+          "runs/epic-126/jev-coverage-manifest-report-v6.json"
         ],
         "instance_id_count": 489,
         "instance_ids_sha256": "442572b537dbfaa8172ebc55cef17a3655aacaeb90a3e049929e424779101f2b",
-        "note": "the v6 registration itself is excluded so this evidence is stable before and after the registration is written",
+        "note": "the v6 registration and the future v6 journal/report are excluded so this evidence is stable before collection, after #191 writes its outputs, and across re-verification",
         "seed_ranges": [
           {
             "high": 16419,
@@ -546,9 +549,17 @@
     "separate live authorization and a passing runner preflight are required before any provider call in #191",
     "confirm the 144/36/180 planned calls, the 432/108/540 physical partitions and the $1.00 cost ceiling"
   ],
-  "preregistration_hash": "0961f4044ebb4183d359aa52f741432fd5f4ee82bc1c7f8835c7e068f324d92e",
+  "preregistration_hash": "41c14acebba674180bf7878e519b53422513ae2612133cee03e94e3ca608ce5c",
   "preregistration_version": "stage2-jev-coverage-manifest-v6",
   "purpose": "collect one fresh, fixed-N, form-balanced planning-low L4X block (six known forms x six fresh instances, N=36) for the six-form coverage decision, without appending to the frozen 17-instance block",
+  "runner_policy": {
+    "adding_runner_authorizes_collection": false,
+    "live_execution_rule": "live execution is forbidden until the amended registration hash with the runner in the source binding has been reviewed and separately live-authorized; this lock is not live authorization",
+    "policy": "#191 must implement the v6 coverage runner (manifest, provider partitions, preflight and fresh v6 output paths over the bound exact-original-comm-bridge-v5 semantics), add that runner module to COVERAGE_SOURCE_FILES, and amend/re-lock this registration (new source_files_hash and preregistration_hash) before any live authorization",
+    "required_before_live": true,
+    "runner_implemented": false,
+    "runner_source_files": []
+  },
   "sizing_rationale": {
     "assumption": "simplifying constant-rate/independence assumption across instances and forms; this is an assumption-based sizing heuristic, not evidence that eligibility is independent or constant across forms",
     "historical_eligible_rate": {

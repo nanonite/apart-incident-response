@@ -45,6 +45,15 @@ DEFAULT_JOURNAL_V6 = Path("runs/epic-126/jev-coverage-manifest-v6.jsonl")
 DEFAULT_REPORT_V6 = Path("runs/epic-126/jev-coverage-manifest-report-v6.json")
 DEFAULT_AUDIT_V1 = Path("runs/epic-126/jev-six-form-coverage-audit-v1.json")
 
+#: All three v6-owned paths are excluded from the prior-ID scan: the
+#: registration itself, and the future journal/report #191 will write. Without
+#: this the scan would ingest its own outputs and the manifest would appear to
+#: overlap itself once collection starts.
+V6_OWNED_FILE_NAMES = frozenset({
+    DEFAULT_OUTPUT_V6.name, DEFAULT_JOURNAL_V6.name, DEFAULT_REPORT_V6.name,
+})
+V6_OWNED_PATHS = (str(DEFAULT_OUTPUT_V6), str(DEFAULT_JOURNAL_V6), str(DEFAULT_REPORT_V6))
+
 #: Fixed offline seed scan window. Selection consults form identity only.
 SEED_SCAN_BASE = 75000
 SEED_SCAN_WINDOW = 256
@@ -140,11 +149,18 @@ COVERAGE_SOURCE_FILES = (
     "src/apart_incident_response/jev_writer_exact_bridge_v5.py",
     "src/apart_incident_response/jev_writer_treatment_audit.py",
     "src/apart_incident_response/jev_six_form_coverage_audit.py",
+    "src/apart_incident_response/jev_coverage_manifest_preregistration_v6.py",
 )
 
 RECEIVER_AGENT = "A"
 WRITER_AGENTS = tuple(ladder.EXACT_BRIDGE_AGENTS)
 _INSTANCE_ID_RE = re.compile(r"^planning-([0-9a-f]{8})$")
+
+
+def _is_v6_owned(path: Path) -> bool:
+    """True for the registration and the future journal/report this lock owns."""
+
+    return path.name in V6_OWNED_FILE_NAMES
 
 
 def _repo_root() -> Path:
@@ -205,11 +221,17 @@ def protocol_key_v6() -> str:
 
 
 def _collect_prior_ids(root: Path) -> set[str]:
+    """Union of artifact-recorded instance ids and documented seed ranges.
+
+    All three v6-owned paths (registration, future journal, future report) are
+    skipped so the scan can never ingest the manifest it is checking against.
+    """
+
     found: set[str] = set()
     id_pattern = re.compile(r'"instance_id":\s*"([^"]+)"')
     for pattern in PRIOR_SCAN_PATTERNS:
         for path in sorted(root.glob(pattern)):
-            if path.name == DEFAULT_OUTPUT_V6.name:
+            if _is_v6_owned(path):
                 continue
             if path.suffix == ".jsonl":
                 try:
@@ -249,15 +271,17 @@ def prior_instance_ids(repo_root: Path | None = None) -> dict[str, Any]:
 
     Sources: all instance ids recorded in epic-126 JSON/JSONL artifacts (wire
     smoke, capability, planning-low manifests, pilots, ladders, bridge, audits)
-    plus the documented prior seed ranges. The v6 registration itself is
-    excluded so the evidence is stable before and after it is written.
+    plus the documented prior seed ranges. All three v6-owned paths
+    (registration, future journal, future report) are excluded from both the
+    id set and this source list, so the evidence is stable before collection,
+    after #191 writes its outputs, and across re-verification.
     """
 
     root = Path(repo_root) if repo_root is not None else _repo_root()
     sources: list[str] = []
     for pattern in PRIOR_SCAN_PATTERNS:
         for path in sorted(root.glob(pattern)):
-            if path.name == DEFAULT_OUTPUT_V6.name:
+            if _is_v6_owned(path):
                 continue
             sources.append(path.relative_to(root).as_posix())
     ordered = sorted(_collect_prior_ids(root))
@@ -266,9 +290,10 @@ def prior_instance_ids(repo_root: Path | None = None) -> dict[str, Any]:
                 json.dumps(ordered, sort_keys=True).encode("utf-8")).hexdigest(),
             "sources": sorted(set(sources)),
             "seed_ranges": [{"low": low, "high": high} for low, high in PRIOR_SEED_RANGES],
-            "excluded": [str(DEFAULT_OUTPUT_V6)],
-            "note": "the v6 registration itself is excluded so this evidence is stable "
-                    "before and after the registration is written"}
+            "excluded": list(V6_OWNED_PATHS),
+            "note": ("the v6 registration and the future v6 journal/report are excluded so this "
+                     "evidence is stable before collection, after #191 writes its outputs, and "
+                     "across re-verification")}
 
 
 def scan_window() -> list[tuple[int, Any, str]]:
@@ -555,6 +580,22 @@ def build_coverage_manifest_preregistration_v6(*, approved: bool = False,
                              "contains only six forms, so fresh IDs cannot increase k"),
         },
         "sizing_rationale": sizing_rationale(),
+        "runner_policy": {
+            "required_before_live": True,
+            "runner_implemented": False,
+            "runner_source_files": [],
+            "policy": ("#191 must implement the v6 coverage runner (manifest, provider "
+                       "partitions, preflight and fresh v6 output paths over the bound "
+                       "exact-original-comm-bridge-v5 semantics), add that runner module to "
+                       "COVERAGE_SOURCE_FILES, and amend/re-lock this registration (new "
+                       "source_files_hash and preregistration_hash) before any live "
+                       "authorization"),
+            "adding_runner_authorizes_collection": False,
+            "live_execution_rule": ("live execution is forbidden until the amended "
+                                    "registration hash with the runner in the source binding "
+                                    "has been reviewed and separately live-authorized; this "
+                                    "lock is not live authorization"),
+        },
         "evidence_requirements": [
             "writer outcomes by agent and turn",
             "accepted/rejected board writes",
@@ -843,6 +884,16 @@ def verify_against_coverage_manifest_preregistration_v6(
     if document.get("coverage_design", {}).get("no_seed_replacement") is None:
         errors.append("no-seed-replacement contract missing")
 
+    runner_policy = document.get("runner_policy", {})
+    if runner_policy.get("required_before_live") is not True:
+        errors.append("runner policy missing: the #191 runner must be source-bound before live")
+    if runner_policy.get("runner_implemented") is not False:
+        errors.append("runner must not be reported implemented before #191 amends the lock")
+    if runner_policy.get("adding_runner_authorizes_collection") is not False:
+        errors.append("adding the runner must not authorize collection")
+    if "live execution is forbidden" not in str(runner_policy.get("live_execution_rule", "")):
+        errors.append("live-execution rule for the amended runner lock is missing")
+
     caps = document.get("caps", {})
     planned = caps.get("planned_calls", {})
     partition = caps.get("provider_partition", {})
@@ -961,7 +1012,7 @@ __all__ = [
     "PLANNED_REQUESTS", "RETRY_RESERVE_FACTOR", "LING_REQUEST_CAP", "JEV_REQUEST_CAP",
     "COMBINED_REQUEST_CAP", "COST_CAP_USD", "WORST_CASE_CALL_COST_USD",
     "WORST_CASE_COST_USD", "PRIOR_SEED_RANGES", "PRIOR_SCAN_PATTERNS",
-    "OLD_OUTPUT_PATHS_V6", "COVERAGE_SOURCE_FILES",
+    "OLD_OUTPUT_PATHS_V6", "COVERAGE_SOURCE_FILES", "V6_OWNED_FILE_NAMES", "V6_OWNED_PATHS",
     "output_paths", "prompt_binding", "protocol_key_v6", "prior_instance_ids",
     "scan_window", "select_form_balanced_manifest", "manifest_treatment_hash",
     "treatment_hash_v6", "sizing_rationale", "eligibility_rule",
