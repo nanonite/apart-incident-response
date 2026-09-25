@@ -37,6 +37,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix board IPC integration and CLI tool wiring (#58)
 
 ### Changed
+- Reconcile and publish the final planning-low Jev replay result (#199)
 - Planning-low six-form coverage and causal Jev replay (#188)
 - Prepare a fresh replay-v5 registration after the stopped v4 run (#197)
 - Run offline replay-v5 inference and publish the analysis artifact (#198)
