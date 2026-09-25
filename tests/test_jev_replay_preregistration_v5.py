@@ -34,6 +34,18 @@ def v4_pins_on_disk() -> dict:
     return {name: sha256_of(REPO_ROOT / pin["path"]) for name, pin in prv5.V4_PINS.items()}
 
 
+def v5_output_snapshot() -> dict:
+    """sha256 of the live replay-v5 outputs (None until an authorized run)."""
+
+    out = {}
+    for name in ("journal", "report", "registration"):
+        path = REPO_ROOT / (prv5.DEFAULT_JOURNAL_V5 if name == "journal"
+                            else prv5.DEFAULT_REPORT_V5 if name == "report"
+                            else prv5.DEFAULT_OUTPUT_V5)
+        out[name] = sha256_of(path) if path.is_file() else None
+    return out
+
+
 def treatment_payload(*, runner_source_file: str, runner_source_delegate: str | None,
                       runner_version: str) -> dict:
     """The treatment payload documented by the builders, rebuilt here so the
@@ -109,14 +121,14 @@ class ArtifactIntegrityTestCase(unittest.TestCase):
     def setUp(self):
         self.v4 = v4_snapshot()
         self.pins = v4_pins_on_disk()
-        self.assertFalse((REPO_ROOT / prv5.DEFAULT_JOURNAL_V5).exists(),
-                         "v5 journal must not exist before the authorized run")
-        self.assertFalse((REPO_ROOT / prv5.DEFAULT_REPORT_V5).exists(),
-                         "v5 report must not exist before the authorized run")
+        self.v5 = v5_output_snapshot()
+        self.sandbox_root = v5_sandbox(self)
 
     def tearDown(self):
         self.assertEqual(v4_snapshot(), self.v4, "a superseded v4 artifact changed")
         self.assertEqual(v4_pins_on_disk(), self.pins, "a v4 pin drifted")
+        self.assertEqual(v5_output_snapshot(), self.v5,
+                         "a live replay-v5 artifact changed during the test")
 
 
 class ReproducibilityTests(ArtifactIntegrityTestCase):
@@ -138,7 +150,7 @@ class ReproducibilityTests(ArtifactIntegrityTestCase):
     def test_stale_registration_hash_rejected(self):
         tampered = copy.deepcopy(REGISTRATION)
         tampered["preregistration_hash"] = "0" * 64
-        result = verify(tampered)
+        result = verify(tampered, repo_root=self.sandbox_root)
         self.assertFalse(result["ok"])
         self.assertTrue([e for e in result["errors"]
                          if e.startswith("registration_hash_matches")])
@@ -146,13 +158,13 @@ class ReproducibilityTests(ArtifactIntegrityTestCase):
     def test_content_drift_rejected(self):
         tampered = copy.deepcopy(REGISTRATION)
         tampered["purpose"] = tampered["purpose"] + " tampered"
-        result = verify(tampered)
+        result = verify(tampered, repo_root=self.sandbox_root)
         self.assertFalse(result["ok"])
         self.assertTrue([e for e in result["errors"]
                          if e.startswith("registration_content_matches")])
 
     def test_verify_passes_on_the_locked_document(self):
-        result = verify()
+        result = verify(repo_root=self.sandbox_root)
         self.assertTrue(result["ok"], result["errors"])
         self.assertEqual(result["errors"], [])
         self.assertEqual(result["live_collection_authorized"], False)
@@ -311,10 +323,22 @@ class SupersessionTests(ArtifactIntegrityTestCase):
     def test_v5_outputs_are_fresh_and_disjoint_from_v4(self):
         outputs = REGISTRATION["outputs"]
         self.assertEqual(outputs, prv5.output_paths())
-        self.assertFalse((REPO_ROOT / outputs["journal"]).exists())
-        self.assertFalse((REPO_ROOT / outputs["report"]).exists())
         for value in outputs.values():
             self.assertNotIn(str(value), prv5.OLD_OUTPUT_PATHS_V5)
+        self.assertFalse((self.sandbox_root / outputs["journal"]).exists())
+        self.assertFalse((self.sandbox_root / outputs["report"]).exists())
+        self.assertTrue((self.sandbox_root / outputs["registration"]).is_file())
+
+    def test_production_rejects_occupied_v5_outputs(self):
+        """The real checkout now holds the run, so production fails closed."""
+
+        self.assertTrue((REPO_ROOT / prv5.DEFAULT_JOURNAL_V5).is_file())
+        self.assertTrue((REPO_ROOT / prv5.DEFAULT_REPORT_V5).is_file())
+        result = verify(repo_root=REPO_ROOT)
+        self.assertFalse(result["ok"])
+        failed = [error.split(":")[0] for error in result["errors"]]
+        self.assertIn("fresh_output_paths", failed)
+        self.assertIn("fresh_output_paths_report", failed)
 
     def test_build_fails_closed_on_v4_pin_drift(self):
         with tempfile.TemporaryDirectory(prefix="replay-v5-drift-") as directory:
@@ -400,7 +424,7 @@ class SourceBindingTests(ArtifactIntegrityTestCase):
 
 class OccupiedOutputTests(ArtifactIntegrityTestCase):
     def test_occupied_new_paths_fail_verification(self):
-        root = v5_sandbox(self)
+        root = self.sandbox_root
         journal = root / prv5.DEFAULT_JOURNAL_V5
         report = root / prv5.DEFAULT_REPORT_V5
         journal.parent.mkdir(parents=True, exist_ok=True)
@@ -414,8 +438,7 @@ class OccupiedOutputTests(ArtifactIntegrityTestCase):
         self.assertFalse(report.exists())
 
     def test_sandbox_verifies_clean(self):
-        root = v5_sandbox(self)
-        result = verify(repo_root=root)
+        result = verify(repo_root=self.sandbox_root)
         self.assertTrue(result["ok"], result["errors"])
 
 

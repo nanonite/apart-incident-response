@@ -1,0 +1,1270 @@
+{
+  "analysis_version": "jev-replay-inference-v5-v1",
+  "claim_scope": {
+    "events": 17,
+    "experimental_unit": "prompt form",
+    "k": 6,
+    "statement": "conditional on the six frozen planning-low forms and the paid Ling route that generated the messages; locking is not live authorization; fresh instance IDs never increase k",
+    "type": "matched real/placebo/null replay preregistration (offline lock)"
+  },
+  "decision": "Within the six frozen planning-low prompt forms and the paid Ling route that generated the messages: the equal-weight mean of the six within-form real-minus-placebo entropy differences is -0.777509 bits and all six form means are negative; the exact two-sided cluster sign-flip p-value is 0.03125 (the k = 6 floor of 2/64 = 0.03125, from 64 sign patterns); the form-mean t interval with df = 5 is [-1.172204, -0.382813] and excludes zero. The preregistered negative direction is met, so the registered primary inference criterion is met. Guards were evaluated separately and filtered nothing (0 pairs excluded); 17 of 17 events entered the estimate with no imputation. This is conditional, form-level evidence inside the registered scope only: not calibration, not a population-level causal claim, and not generalizable beyond the six frozen forms.",
+  "determinism": "byte-identical for identical inputs; no timestamp, no randomness and no provider call contributes to this artifact",
+  "estimand": {
+    "directional_prediction": "Delta < 0",
+    "event_contrast": "d_i = H_real,i - H_placebo,i",
+    "events": 17,
+    "events_are_independent_units": false,
+    "form_contrast": "mean of d_i within prompt form f",
+    "k": 6,
+    "primary": "equal-weight mean of the six within-form means of H_real - H_placebo"
+  },
+  "forest_table": [
+    {
+      "ci_high": null,
+      "ci_low": null,
+      "ci_note": "fewer than two pairs; no interval reported",
+      "d_f": -1.036554951204699,
+      "form": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+      "n_pairs": 1,
+      "sd": null
+    },
+    {
+      "ci_high": -0.7581935300041992,
+      "ci_low": -0.970276637091925,
+      "ci_note": "t interval on the within-form pairs",
+      "d_f": -0.8642350835480621,
+      "form": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+      "n_pairs": 4,
+      "sd": 0.06665088217716084
+    },
+    {
+      "ci_high": -0.4400250840998682,
+      "ci_low": -0.84727488015769,
+      "ci_note": "t interval on the within-form pairs",
+      "d_f": -0.6436499821287791,
+      "form": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+      "n_pairs": 4,
+      "sd": 0.12798547959076742
+    },
+    {
+      "ci_high": null,
+      "ci_low": null,
+      "ci_note": "fewer than two pairs; no interval reported",
+      "d_f": -0.8404057620820807,
+      "form": "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+      "n_pairs": 1,
+      "sd": null
+    },
+    {
+      "ci_high": 0.07655944825119526,
+      "ci_low": -0.286461112943206,
+      "ci_note": "t interval on the within-form pairs",
+      "d_f": -0.10495083234600536,
+      "form": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "n_pairs": 4,
+      "sd": 0.1140856571949721
+    },
+    {
+      "ci_high": -0.8794109560056729,
+      "ci_low": -1.4710979742518209,
+      "ci_note": "t interval on the within-form pairs",
+      "d_f": -1.1752544651287469,
+      "form": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+      "n_pairs": 3,
+      "sd": 0.11908342758322817
+    }
+  ],
+  "form_table": [
+    {
+      "d_f": -1.036554951204699,
+      "form": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+      "max": -1.036554951204699,
+      "min": -1.036554951204699,
+      "n_pairs": 1,
+      "negative_count": 1,
+      "sd": null
+    },
+    {
+      "d_f": -0.8642350835480621,
+      "form": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+      "max": -0.7803642604925032,
+      "min": -0.9193841452098166,
+      "n_pairs": 4,
+      "negative_count": 4,
+      "sd": 0.06665088217716084
+    },
+    {
+      "d_f": -0.6436499821287791,
+      "form": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+      "max": -0.4944759347609968,
+      "min": -0.7795702087700983,
+      "n_pairs": 4,
+      "negative_count": 4,
+      "sd": 0.12798547959076742
+    },
+    {
+      "d_f": -0.8404057620820807,
+      "form": "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+      "max": -0.8404057620820807,
+      "min": -0.8404057620820807,
+      "n_pairs": 1,
+      "negative_count": 1,
+      "sd": null
+    },
+    {
+      "d_f": -0.10495083234600536,
+      "form": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "max": 0.05193159297032768,
+      "min": -0.2214445488393263,
+      "n_pairs": 4,
+      "negative_count": 3,
+      "sd": 0.1140856571949721
+    },
+    {
+      "d_f": -1.1752544651287469,
+      "form": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+      "max": -1.1031291959638976,
+      "min": -1.3127040904244454,
+      "n_pairs": 3,
+      "negative_count": 3,
+      "sd": 0.11908342758322817
+    }
+  ],
+  "guards": {
+    "delta": 0.0,
+    "epsilon": 0.01,
+    "events": [
+      {
+        "delta_feasible_mass_i": -1.1102230246251565e-16,
+        "delta_p_target_i": 0.52,
+        "event_id": "planning-000124f8:message-B-1",
+        "form": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+        "mass_ok": true,
+        "target_ok": true,
+        "useful_uptake": true
+      },
+      {
+        "delta_feasible_mass_i": -0.010000000000000009,
+        "delta_p_target_i": 0.6799999999999999,
+        "event_id": "planning-000124f9:message-B-0",
+        "form": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+        "mass_ok": false,
+        "target_ok": true,
+        "useful_uptake": false
+      },
+      {
+        "delta_feasible_mass_i": 0.01000000000000012,
+        "delta_p_target_i": 0.5900000000000001,
+        "event_id": "planning-000124fb:message-B-0",
+        "form": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+        "mass_ok": true,
+        "target_ok": true,
+        "useful_uptake": true
+      },
+      {
+        "delta_feasible_mass_i": -1.1102230246251565e-16,
+        "delta_p_target_i": 0.73,
+        "event_id": "planning-000124fc:message-B-0",
+        "form": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+        "mass_ok": true,
+        "target_ok": true,
+        "useful_uptake": true
+      },
+      {
+        "delta_feasible_mass_i": -1.1102230246251565e-16,
+        "delta_p_target_i": 0.3999999999999999,
+        "event_id": "planning-000124fe:message-B-0",
+        "form": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+        "mass_ok": true,
+        "target_ok": true,
+        "useful_uptake": true
+      },
+      {
+        "delta_feasible_mass_i": 0.020000000000000018,
+        "delta_p_target_i": 0.53,
+        "event_id": "planning-00012501:message-B-0",
+        "form": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+        "mass_ok": true,
+        "target_ok": true,
+        "useful_uptake": true
+      },
+      {
+        "delta_feasible_mass_i": 1.1102230246251565e-16,
+        "delta_p_target_i": 0.5900000000000001,
+        "event_id": "planning-00012502:message-B-1",
+        "form": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+        "mass_ok": true,
+        "target_ok": true,
+        "useful_uptake": true
+      },
+      {
+        "delta_feasible_mass_i": -0.009999999999999898,
+        "delta_p_target_i": 0.64,
+        "event_id": "planning-00012503:message-B-1",
+        "form": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+        "mass_ok": true,
+        "target_ok": true,
+        "useful_uptake": true
+      },
+      {
+        "delta_feasible_mass_i": 0.02050505050505047,
+        "delta_p_target_i": 0.5774747474747475,
+        "event_id": "planning-00012504:message-B-1",
+        "form": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+        "mass_ok": true,
+        "target_ok": true,
+        "useful_uptake": true
+      },
+      {
+        "delta_feasible_mass_i": 0.020000000000000018,
+        "delta_p_target_i": 0.31999999999999995,
+        "event_id": "planning-00012507:message-B-0",
+        "form": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+        "mass_ok": true,
+        "target_ok": true,
+        "useful_uptake": true
+      },
+      {
+        "delta_feasible_mass_i": 0.020000000000000018,
+        "delta_p_target_i": 0.55,
+        "event_id": "planning-0001250d:message-B-1",
+        "form": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+        "mass_ok": true,
+        "target_ok": true,
+        "useful_uptake": true
+      },
+      {
+        "delta_feasible_mass_i": 1.1102230246251565e-16,
+        "delta_p_target_i": 0.51,
+        "event_id": "planning-0001250e:message-B-1",
+        "form": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+        "mass_ok": true,
+        "target_ok": true,
+        "useful_uptake": true
+      },
+      {
+        "delta_feasible_mass_i": 0.010000000000000009,
+        "delta_p_target_i": 0.46,
+        "event_id": "planning-0001250f:message-B-0",
+        "form": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+        "mass_ok": true,
+        "target_ok": true,
+        "useful_uptake": true
+      },
+      {
+        "delta_feasible_mass_i": -0.020000000000000018,
+        "delta_p_target_i": 0.75,
+        "event_id": "planning-00012511:message-B-0",
+        "form": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+        "mass_ok": false,
+        "target_ok": true,
+        "useful_uptake": false
+      },
+      {
+        "delta_feasible_mass_i": 0.010000000000000009,
+        "delta_p_target_i": 0.53,
+        "event_id": "planning-00012517:message-B-1",
+        "form": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+        "mass_ok": true,
+        "target_ok": true,
+        "useful_uptake": true
+      },
+      {
+        "delta_feasible_mass_i": 0.02000000000000013,
+        "delta_p_target_i": 0.5800000000000001,
+        "event_id": "planning-0001251b:message-B-1",
+        "form": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+        "mass_ok": true,
+        "target_ok": true,
+        "useful_uptake": true
+      },
+      {
+        "delta_feasible_mass_i": 0.0,
+        "delta_p_target_i": 0.75,
+        "event_id": "planning-0001251c:message-B-1",
+        "form": "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+        "mass_ok": true,
+        "target_ok": true,
+        "useful_uptake": true
+      }
+    ],
+    "excluded_from_primary": 0,
+    "filtered_primary_estimate": false,
+    "filtering": "never used to filter the primary estimate",
+    "mass_ok_events": 15,
+    "mass_violations": 2,
+    "per_form": {
+      "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee": {
+        "complete_pairs": 1,
+        "events": 1,
+        "mass_ok": 1,
+        "target_ok": 1,
+        "useful_uptake": 1
+      },
+      "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc": {
+        "complete_pairs": 4,
+        "events": 4,
+        "mass_ok": 4,
+        "target_ok": 4,
+        "useful_uptake": 4
+      },
+      "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c": {
+        "complete_pairs": 4,
+        "events": 4,
+        "mass_ok": 4,
+        "target_ok": 4,
+        "useful_uptake": 4
+      },
+      "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569": {
+        "complete_pairs": 1,
+        "events": 1,
+        "mass_ok": 1,
+        "target_ok": 1,
+        "useful_uptake": 1
+      },
+      "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb": {
+        "complete_pairs": 4,
+        "events": 4,
+        "mass_ok": 2,
+        "target_ok": 4,
+        "useful_uptake": 2
+      },
+      "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222": {
+        "complete_pairs": 3,
+        "events": 3,
+        "mass_ok": 3,
+        "target_ok": 3,
+        "useful_uptake": 3
+      }
+    },
+    "statement": "guards are reported per event and within form; they never remove a valid real/placebo pair from the primary entropy estimate, and an entropy reduction alone is never useful uptake when either guard fails",
+    "target_ok_events": 17,
+    "target_violations": 0,
+    "useful_uptake_events": 15
+  },
+  "information_accounting": {
+    "definitions": {
+      "entropy_change": "H_real - H_placebo is a change in the receiver's output distribution, not information delivered; it is always kept distinct from the objective message information I_m",
+      "gross": "sum of authoritative i_m_bits over replay-eligible events; includes repeated identical claims across events within a form and is never unique information delivered to receiver A",
+      "unique_delivered": "at most one deduplicated accepted B-owned informative claim per pre-read state with verified board-write and A-read provenance; A-to-B writes and receiver-known or I_m = 0 claims are excluded"
+    },
+    "distinct_form_claim_treatments": 6,
+    "gross_equals_unique": false,
+    "gross_replay_eligible_bits": 26.9443625123,
+    "placebo_inert_bits": 0.0,
+    "replay_eligible_events": 17,
+    "statement": "gross replay-eligible totals count within-form repeats and are never described as unique delivered information; the distinct form/claim treatments are the model-visible claim content actually varied",
+    "unique_delivered_bits_over_distinct_treatments": 9.5097750043
+  },
+  "inputs": {
+    "journal": {
+      "path": "runs/epic-126/replay-v5/jev-choice-replay-v5.jsonl",
+      "rows": 51,
+      "sha256": "5e9f7322bdb29baf16b18f9b4f4181e9a88ad454e0394ea379e4cdea29b1fede"
+    },
+    "registration": {
+      "path": "runs/epic-126/replay-v5/jev-choice-replay-preregistration-v5.json",
+      "preregistration_hash": "0a81e400f598d16742301d7c07cbaf5398fa861b4fa1701c15405391ab4f6d15",
+      "sha256": "3c02f8bb44c11d6edd050daf32950e3cf8365f79638e92d46181df764945ddd7"
+    },
+    "report": {
+      "path": "runs/epic-126/replay-v5/jev-choice-replay-report-v5.json",
+      "sha256": "0ec84446d697bca91c25e155b3cd61f43b4e7706e6df185ea08c3685a8f88310"
+    },
+    "run_commit": "3e678ac"
+  },
+  "issue": "#159",
+  "limitations": {
+    "conditional_on": [
+      "the six frozen planning-low prompt forms",
+      "the paid Ling route that generated the messages"
+    ],
+    "k_cap": "k is capped at six by the generator's closed form space; fresh instance IDs cannot increase k",
+    "mde_context": "the planning-context approximate detectable-effect / confidence-interval limitation is about 0.203 bits (t(0.975,5) x 0.1933 / sqrt(6))",
+    "mde_or_ci_bits": 0.203,
+    "null_result": "a null result cannot exclude effects smaller than roughly 0.2 bits"
+  },
+  "missingness": {
+    "by_branch": {
+      "null": {
+        "attempted": 17,
+        "invalid": 0,
+        "planned": 17,
+        "unattempted": 0,
+        "valid": 17
+      },
+      "placebo": {
+        "attempted": 17,
+        "invalid": 0,
+        "planned": 17,
+        "unattempted": 0,
+        "valid": 17
+      },
+      "real": {
+        "attempted": 17,
+        "invalid": 0,
+        "planned": 17,
+        "unattempted": 0,
+        "valid": 17
+      }
+    },
+    "complete_pairs": 17,
+    "complete_pairs_by_form": {
+      "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee": 1,
+      "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc": 4,
+      "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c": 4,
+      "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569": 1,
+      "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb": 4,
+      "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222": 3
+    },
+    "complete_triplets": 17,
+    "events": 17,
+    "forms_below_min_pairs": 0,
+    "forms_with_at_least_one_pair": 6,
+    "imputation": "none",
+    "incomplete_pairs": 0,
+    "partial_triplets": 0,
+    "primary_requirement": "at least one complete real/placebo pair in every one of the six frozen forms",
+    "primary_requirement_met": true
+  },
+  "model": "jev-1.13.0",
+  "non_claims": [
+    "no calibration claim about Jev Choice probability vectors",
+    "no population-level or cross-family causal claim",
+    "no generalization beyond the six frozen planning-low prompt forms",
+    "no instance-level inference; the 17 events are replicates within six forms",
+    "gross message information is never reported as unique delivered information"
+  ],
+  "normalization": {
+    "complete_renormalized_rows": 1,
+    "exact_rows": 50,
+    "hard_ceiling": 0.05,
+    "other_rows": 0,
+    "rule": "secondary sensitivity only; a secondary analysis never overrides the primary result",
+    "sensitivity": {
+      "conclusion_definition": "conclusion_changed is true when the registered decision (k = 6 with all six forms complete, negative direction and sign-flip p < 0.05) differs from the primary result; estimate_changed and k_changed are reported separately",
+      "grid": [
+        {
+          "accepted_pairs": 16,
+          "conclusion_changed": false,
+          "conclusion_note": "point estimate moved to -0.7735558739188962 (registered criterion remains met)",
+          "criterion_changed": false,
+          "criterion_met": true,
+          "direction_met": true,
+          "estimate": -0.7735558739188962,
+          "estimate_changed": true,
+          "excluded_event_count": 1,
+          "excluded_events": [
+            "planning-00012504:message-B-1"
+          ],
+          "k": 6,
+          "k_changed": false,
+          "sign_flip_p_value": 0.03125,
+          "t_interval_975": [
+            -1.1701499469859662,
+            -0.3769618008518263
+          ],
+          "threshold": 1e-06
+        },
+        {
+          "accepted_pairs": 17,
+          "conclusion_changed": false,
+          "conclusion_note": "no change: same k, same point estimate and same registered decision",
+          "criterion_changed": false,
+          "criterion_met": true,
+          "direction_met": true,
+          "estimate": -0.7775085127397289,
+          "estimate_changed": false,
+          "excluded_event_count": 0,
+          "excluded_events": [],
+          "k": 6,
+          "k_changed": false,
+          "sign_flip_p_value": 0.03125,
+          "t_interval_975": [
+            -1.1722041593435226,
+            -0.38281286613593507
+          ],
+          "threshold": 0.01
+        },
+        {
+          "accepted_pairs": 17,
+          "conclusion_changed": false,
+          "conclusion_note": "no change: same k, same point estimate and same registered decision",
+          "criterion_changed": false,
+          "criterion_met": true,
+          "direction_met": true,
+          "estimate": -0.7775085127397289,
+          "estimate_changed": false,
+          "excluded_event_count": 0,
+          "excluded_events": [],
+          "k": 6,
+          "k_changed": false,
+          "sign_flip_p_value": 0.03125,
+          "t_interval_975": [
+            -1.1722041593435226,
+            -0.38281286613593507
+          ],
+          "threshold": 0.03
+        },
+        {
+          "accepted_pairs": 17,
+          "conclusion_changed": false,
+          "conclusion_note": "no change: same k, same point estimate and same registered decision",
+          "criterion_changed": false,
+          "criterion_met": true,
+          "direction_met": true,
+          "estimate": -0.7775085127397289,
+          "estimate_changed": false,
+          "excluded_event_count": 0,
+          "excluded_events": [],
+          "k": 6,
+          "k_changed": false,
+          "sign_flip_p_value": 0.03125,
+          "t_interval_975": [
+            -1.1722041593435226,
+            -0.38281286613593507
+          ],
+          "threshold": 0.05
+        }
+      ],
+      "thresholds": [
+        1e-06,
+        0.01,
+        0.03,
+        0.05
+      ]
+    },
+    "thresholds": [
+      1e-06,
+      0.01,
+      0.03,
+      0.05
+    ],
+    "tiers": {
+      "complete_renormalized": 1,
+      "exact": 50
+    }
+  },
+  "null_manipulation_checks": {
+    "events_with_real_minus_null": 17,
+    "mean_placebo_minus_null": 0.08201015793583964,
+    "mean_real_minus_null": -0.6152879421091255,
+    "placebo_below_null_events": 6,
+    "real_below_null_events": 17,
+    "scope": "retained for real-minus-null and placebo-minus-null; null is excluded from the primary real-versus-placebo contrast"
+  },
+  "per_event": [
+    {
+      "H_null": 1.2076044179465724,
+      "H_placebo": 1.3274457006515066,
+      "H_real": 0.5470814401590034,
+      "complete_triplet": true,
+      "d_i": -0.7803642604925032,
+      "delta_feasible_mass_i": -1.1102230246251565e-16,
+      "delta_p_target_i": 0.52,
+      "event_id": "planning-000124f8:message-B-1",
+      "feasible_mass_placebo": 0.9800000000000001,
+      "feasible_mass_real": 0.98,
+      "guards": {
+        "entropy_drop_i": true,
+        "mass_ok_i": true,
+        "target_ok_i": true,
+        "useful_uptake_i": true
+      },
+      "instance_id": "planning-000124f8",
+      "p_target_placebo": 0.4,
+      "p_target_real": 0.92,
+      "placebo_minus_null": 0.11984128270493422,
+      "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+      "real_minus_null": -0.660522977787569,
+      "registered_placebo_i_m_bits": 0.0,
+      "registered_real_i_m_bits": 1.584962500721156
+    },
+    {
+      "H_null": 1.2766522953343749,
+      "H_placebo": 1.211717094654145,
+      "H_real": 0.9902725458148186,
+      "complete_triplet": true,
+      "d_i": -0.2214445488393263,
+      "delta_feasible_mass_i": -0.010000000000000009,
+      "delta_p_target_i": 0.6799999999999999,
+      "event_id": "planning-000124f9:message-B-0",
+      "feasible_mass_placebo": 0.98,
+      "feasible_mass_real": 0.97,
+      "guards": {
+        "entropy_drop_i": true,
+        "mass_ok_i": false,
+        "target_ok_i": true,
+        "useful_uptake_i": false
+      },
+      "instance_id": "planning-000124f9",
+      "p_target_placebo": 0.14,
+      "p_target_real": 0.82,
+      "placebo_minus_null": -0.06493520068022995,
+      "prompt_form_id": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "real_minus_null": -0.28637974951955625,
+      "registered_placebo_i_m_bits": 0.0,
+      "registered_real_i_m_bits": 1.584962500721156
+    },
+    {
+      "H_null": 1.1044654273959893,
+      "H_placebo": 1.4142737656324373,
+      "H_real": 0.49488962042262075,
+      "complete_triplet": true,
+      "d_i": -0.9193841452098166,
+      "delta_feasible_mass_i": 0.01000000000000012,
+      "delta_p_target_i": 0.5900000000000001,
+      "event_id": "planning-000124fb:message-B-0",
+      "feasible_mass_placebo": 0.97,
+      "feasible_mass_real": 0.9800000000000001,
+      "guards": {
+        "entropy_drop_i": true,
+        "mass_ok_i": true,
+        "target_ok_i": true,
+        "useful_uptake_i": true
+      },
+      "instance_id": "planning-000124fb",
+      "p_target_placebo": 0.34,
+      "p_target_real": 0.93,
+      "placebo_minus_null": 0.30980833823644804,
+      "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+      "real_minus_null": -0.6095758069733686,
+      "registered_placebo_i_m_bits": 0.0,
+      "registered_real_i_m_bits": 1.584962500721156
+    },
+    {
+      "H_null": 1.2036792088059676,
+      "H_placebo": 1.0092613912706998,
+      "H_real": 0.8792118045972968,
+      "complete_triplet": true,
+      "d_i": -0.13004958667340305,
+      "delta_feasible_mass_i": -1.1102230246251565e-16,
+      "delta_p_target_i": 0.73,
+      "event_id": "planning-000124fc:message-B-0",
+      "feasible_mass_placebo": 0.9800000000000001,
+      "feasible_mass_real": 0.98,
+      "guards": {
+        "entropy_drop_i": true,
+        "mass_ok_i": true,
+        "target_ok_i": true,
+        "useful_uptake_i": true
+      },
+      "instance_id": "planning-000124fc",
+      "p_target_placebo": 0.11,
+      "p_target_real": 0.84,
+      "placebo_minus_null": -0.19441781753526777,
+      "prompt_form_id": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "real_minus_null": -0.3244674042086708,
+      "registered_placebo_i_m_bits": 0.0,
+      "registered_real_i_m_bits": 1.584962500721156
+    },
+    {
+      "H_null": 0.9313243258853694,
+      "H_placebo": 1.3588136685058068,
+      "H_real": 0.44254266919774565,
+      "complete_triplet": true,
+      "d_i": -0.9162709993080611,
+      "delta_feasible_mass_i": -1.1102230246251565e-16,
+      "delta_p_target_i": 0.3999999999999999,
+      "event_id": "planning-000124fe:message-B-0",
+      "feasible_mass_placebo": 0.9800000000000001,
+      "feasible_mass_real": 0.98,
+      "guards": {
+        "entropy_drop_i": true,
+        "mass_ok_i": true,
+        "target_ok_i": true,
+        "useful_uptake_i": true
+      },
+      "instance_id": "planning-000124fe",
+      "p_target_placebo": 0.54,
+      "p_target_real": 0.94,
+      "placebo_minus_null": 0.42748934262043736,
+      "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+      "real_minus_null": -0.48878165668762374,
+      "registered_placebo_i_m_bits": 0.0,
+      "registered_real_i_m_bits": 1.584962500721156
+    },
+    {
+      "H_null": 1.6107969910333608,
+      "H_placebo": 1.6247790490693135,
+      "H_real": 1.1303031143083166,
+      "complete_triplet": true,
+      "d_i": -0.4944759347609968,
+      "delta_feasible_mass_i": 0.020000000000000018,
+      "delta_p_target_i": 0.53,
+      "event_id": "planning-00012501:message-B-0",
+      "feasible_mass_placebo": 0.95,
+      "feasible_mass_real": 0.97,
+      "guards": {
+        "entropy_drop_i": true,
+        "mass_ok_i": true,
+        "target_ok_i": true,
+        "useful_uptake_i": true
+      },
+      "instance_id": "planning-00012501",
+      "p_target_placebo": 0.24,
+      "p_target_real": 0.77,
+      "placebo_minus_null": 0.01398205803595265,
+      "prompt_form_id": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+      "real_minus_null": -0.4804938767250442,
+      "registered_placebo_i_m_bits": 0.0,
+      "registered_real_i_m_bits": 1.584962500721156
+    },
+    {
+      "H_null": 1.2124869096803426,
+      "H_placebo": 1.3433594246261231,
+      "H_real": 0.5024384954442555,
+      "complete_triplet": true,
+      "d_i": -0.8409209291818677,
+      "delta_feasible_mass_i": 1.1102230246251565e-16,
+      "delta_p_target_i": 0.5900000000000001,
+      "event_id": "planning-00012502:message-B-1",
+      "feasible_mass_placebo": 0.97,
+      "feasible_mass_real": 0.9700000000000001,
+      "guards": {
+        "entropy_drop_i": true,
+        "mass_ok_i": true,
+        "target_ok_i": true,
+        "useful_uptake_i": true
+      },
+      "instance_id": "planning-00012502",
+      "p_target_placebo": 0.34,
+      "p_target_real": 0.93,
+      "placebo_minus_null": 0.13087251494578056,
+      "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+      "real_minus_null": -0.7100484142360871,
+      "registered_placebo_i_m_bits": 0.0,
+      "registered_real_i_m_bits": 1.584962500721156
+    },
+    {
+      "H_null": 1.2670797300836738,
+      "H_placebo": 1.2070578629622981,
+      "H_real": 1.0868170761206783,
+      "complete_triplet": true,
+      "d_i": -0.12024078684161976,
+      "delta_feasible_mass_i": -0.009999999999999898,
+      "delta_p_target_i": 0.64,
+      "event_id": "planning-00012503:message-B-1",
+      "feasible_mass_placebo": 0.98,
+      "feasible_mass_real": 0.9700000000000001,
+      "guards": {
+        "entropy_drop_i": true,
+        "mass_ok_i": true,
+        "target_ok_i": true,
+        "useful_uptake_i": true
+      },
+      "instance_id": "planning-00012503",
+      "p_target_placebo": 0.15,
+      "p_target_real": 0.79,
+      "placebo_minus_null": -0.060021867121375694,
+      "prompt_form_id": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "real_minus_null": -0.18026265396299546,
+      "registered_placebo_i_m_bits": 0.0,
+      "registered_real_i_m_bits": 1.584962500721156
+    },
+    {
+      "H_null": 1.6452801522297442,
+      "H_placebo": 1.6659812877863687,
+      "H_real": 0.951183806882601,
+      "complete_triplet": true,
+      "d_i": -0.7147974809037677,
+      "delta_feasible_mass_i": 0.02050505050505047,
+      "delta_p_target_i": 0.5774747474747475,
+      "event_id": "planning-00012504:message-B-1",
+      "feasible_mass_placebo": 0.9494949494949495,
+      "feasible_mass_real": 0.97,
+      "guards": {
+        "entropy_drop_i": true,
+        "mass_ok_i": true,
+        "target_ok_i": true,
+        "useful_uptake_i": true
+      },
+      "instance_id": "planning-00012504",
+      "p_target_placebo": 0.2525252525252525,
+      "p_target_real": 0.83,
+      "placebo_minus_null": 0.02070113555662445,
+      "prompt_form_id": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+      "real_minus_null": -0.6940963453471433,
+      "registered_placebo_i_m_bits": 0.0,
+      "registered_real_i_m_bits": 1.584962500721156
+    },
+    {
+      "H_null": 0.9204680459013573,
+      "H_placebo": 1.4390976204024446,
+      "H_real": 0.4025426691977456,
+      "complete_triplet": true,
+      "d_i": -1.036554951204699,
+      "delta_feasible_mass_i": 0.020000000000000018,
+      "delta_p_target_i": 0.31999999999999995,
+      "event_id": "planning-00012507:message-B-0",
+      "feasible_mass_placebo": 0.97,
+      "feasible_mass_real": 0.99,
+      "guards": {
+        "entropy_drop_i": true,
+        "mass_ok_i": true,
+        "target_ok_i": true,
+        "useful_uptake_i": true
+      },
+      "instance_id": "planning-00012507",
+      "p_target_placebo": 0.62,
+      "p_target_real": 0.94,
+      "placebo_minus_null": 0.5186295745010873,
+      "prompt_form_id": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+      "real_minus_null": -0.5179253767036117,
+      "registered_placebo_i_m_bits": 0.0,
+      "registered_real_i_m_bits": 1.584962500721156
+    },
+    {
+      "H_null": 1.7007660094838002,
+      "H_placebo": 1.6977833586662963,
+      "H_real": 0.918213149896198,
+      "complete_triplet": true,
+      "d_i": -0.7795702087700983,
+      "delta_feasible_mass_i": 0.020000000000000018,
+      "delta_p_target_i": 0.55,
+      "event_id": "planning-0001250d:message-B-1",
+      "feasible_mass_placebo": 0.95,
+      "feasible_mass_real": 0.97,
+      "guards": {
+        "entropy_drop_i": true,
+        "mass_ok_i": true,
+        "target_ok_i": true,
+        "useful_uptake_i": true
+      },
+      "instance_id": "planning-0001250d",
+      "p_target_placebo": 0.29,
+      "p_target_real": 0.84,
+      "placebo_minus_null": -0.002982650817503929,
+      "prompt_form_id": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+      "real_minus_null": -0.7825528595876022,
+      "registered_placebo_i_m_bits": 0.0,
+      "registered_real_i_m_bits": 1.584962500721156
+    },
+    {
+      "H_null": 1.664629956646618,
+      "H_placebo": 1.664779458413083,
+      "H_real": 1.0790231543328292,
+      "complete_triplet": true,
+      "d_i": -0.5857563040802538,
+      "delta_feasible_mass_i": 1.1102230246251565e-16,
+      "delta_p_target_i": 0.51,
+      "event_id": "planning-0001250e:message-B-1",
+      "feasible_mass_placebo": 0.96,
+      "feasible_mass_real": 0.9600000000000001,
+      "guards": {
+        "entropy_drop_i": true,
+        "mass_ok_i": true,
+        "target_ok_i": true,
+        "useful_uptake_i": true
+      },
+      "instance_id": "planning-0001250e",
+      "p_target_placebo": 0.29,
+      "p_target_real": 0.8,
+      "placebo_minus_null": 0.0001495017664649989,
+      "prompt_form_id": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+      "real_minus_null": -0.5856068023137888,
+      "registered_placebo_i_m_bits": 0.0,
+      "registered_real_i_m_bits": 1.584962500721156
+    },
+    {
+      "H_null": 1.4132972428952584,
+      "H_placebo": 1.7292198489986454,
+      "H_real": 0.626090653034748,
+      "complete_triplet": true,
+      "d_i": -1.1031291959638976,
+      "delta_feasible_mass_i": 0.010000000000000009,
+      "delta_p_target_i": 0.46,
+      "event_id": "planning-0001250f:message-B-0",
+      "feasible_mass_placebo": 0.97,
+      "feasible_mass_real": 0.98,
+      "guards": {
+        "entropy_drop_i": true,
+        "mass_ok_i": true,
+        "target_ok_i": true,
+        "useful_uptake_i": true
+      },
+      "instance_id": "planning-0001250f",
+      "p_target_placebo": 0.44,
+      "p_target_real": 0.9,
+      "placebo_minus_null": 0.31592260610338707,
+      "prompt_form_id": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+      "real_minus_null": -0.7872065898605104,
+      "registered_placebo_i_m_bits": 0.0,
+      "registered_real_i_m_bits": 1.584962500721156
+    },
+    {
+      "H_null": 1.3496026725680754,
+      "H_placebo": 0.8707653670829367,
+      "H_real": 0.9226969600532644,
+      "complete_triplet": true,
+      "d_i": 0.05193159297032768,
+      "delta_feasible_mass_i": -0.020000000000000018,
+      "delta_p_target_i": 0.75,
+      "event_id": "planning-00012511:message-B-0",
+      "feasible_mass_placebo": 0.99,
+      "feasible_mass_real": 0.97,
+      "guards": {
+        "entropy_drop_i": false,
+        "mass_ok_i": false,
+        "target_ok_i": true,
+        "useful_uptake_i": false
+      },
+      "instance_id": "planning-00012511",
+      "p_target_placebo": 0.09,
+      "p_target_real": 0.84,
+      "placebo_minus_null": -0.4788373054851387,
+      "prompt_form_id": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "real_minus_null": -0.426905712514811,
+      "registered_placebo_i_m_bits": 0.0,
+      "registered_real_i_m_bits": 1.584962500721156
+    },
+    {
+      "H_null": 1.5522334760689873,
+      "H_placebo": 1.7738687006684961,
+      "H_real": 0.6639385916705984,
+      "complete_triplet": true,
+      "d_i": -1.1099301089978977,
+      "delta_feasible_mass_i": 0.010000000000000009,
+      "delta_p_target_i": 0.53,
+      "event_id": "planning-00012517:message-B-1",
+      "feasible_mass_placebo": 0.97,
+      "feasible_mass_real": 0.98,
+      "guards": {
+        "entropy_drop_i": true,
+        "mass_ok_i": true,
+        "target_ok_i": true,
+        "useful_uptake_i": true
+      },
+      "instance_id": "planning-00012517",
+      "p_target_placebo": 0.36,
+      "p_target_real": 0.89,
+      "placebo_minus_null": 0.2216352245995088,
+      "prompt_form_id": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+      "real_minus_null": -0.8882948843983889,
+      "registered_placebo_i_m_bits": 0.0,
+      "registered_real_i_m_bits": 1.584962500721156
+    },
+    {
+      "H_null": 1.4293778979285319,
+      "H_placebo": 1.7751425858687007,
+      "H_real": 0.4624384954442554,
+      "complete_triplet": true,
+      "d_i": -1.3127040904244454,
+      "delta_feasible_mass_i": 0.02000000000000013,
+      "delta_p_target_i": 0.5800000000000001,
+      "event_id": "planning-0001251b:message-B-1",
+      "feasible_mass_placebo": 0.97,
+      "feasible_mass_real": 0.9900000000000001,
+      "guards": {
+        "entropy_drop_i": true,
+        "mass_ok_i": true,
+        "target_ok_i": true,
+        "useful_uptake_i": true
+      },
+      "instance_id": "planning-0001251b",
+      "p_target_placebo": 0.35,
+      "p_target_real": 0.93,
+      "placebo_minus_null": 0.3457646879401688,
+      "prompt_form_id": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+      "real_minus_null": -0.9669394024842765,
+      "registered_placebo_i_m_bits": 0.0,
+      "registered_real_i_m_bits": 1.584962500721156
+    },
+    {
+      "H_null": 1.3445778166048652,
+      "H_placebo": 1.1151490761428609,
+      "H_real": 0.2747433140607801,
+      "complete_triplet": true,
+      "d_i": -0.8404057620820807,
+      "delta_feasible_mass_i": 0.0,
+      "delta_p_target_i": 0.75,
+      "event_id": "planning-0001251c:message-B-1",
+      "feasible_mass_placebo": 1.0,
+      "feasible_mass_real": 1.0,
+      "guards": {
+        "entropy_drop_i": true,
+        "mass_ok_i": true,
+        "target_ok_i": true,
+        "useful_uptake_i": true
+      },
+      "instance_id": "planning-0001251c",
+      "p_target_placebo": 0.21,
+      "p_target_real": 0.96,
+      "placebo_minus_null": -0.22942874046200434,
+      "prompt_form_id": "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+      "real_minus_null": -1.0698345025440852,
+      "registered_placebo_i_m_bits": 0.0,
+      "registered_real_i_m_bits": 1.584962500721156
+    }
+  ],
+  "primary": {
+    "alpha": 0.05,
+    "criterion_met": true,
+    "df": 5,
+    "direction_met": true,
+    "direction_required": "negative",
+    "estimate": -0.7775085127397289,
+    "form_means": {
+      "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee": -1.036554951204699,
+      "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc": -0.8642350835480621,
+      "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c": -0.6436499821287791,
+      "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569": -0.8404057620820807,
+      "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb": -0.10495083234600536,
+      "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222": -1.1752544651287469
+    },
+    "interval_excludes_zero": true,
+    "interval_name": "form-mean t interval with df = 5",
+    "k": 6,
+    "p_value_floor_k6": 0.03125,
+    "sign_flip": {
+      "k": 6,
+      "min_p_value": 0.03125,
+      "observed": -0.7775085127397289,
+      "p_value": 0.03125,
+      "permutations": 64
+    },
+    "t_interval_975": [
+      -1.1722041593435226,
+      -0.38281286613593507
+    ],
+    "test": "exhaustive two-sided cluster sign-flip over the form means",
+    "unit": "prompt form"
+  },
+  "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+  "registered_causal_uptake": {
+    "basis": "matched real/placebo/null replay on the frozen event set with the equal-weight form-level estimand, exact two-sided sign-flip and form-mean t interval, direction as preregistered",
+    "criterion_met": true,
+    "guards_filtered_primary": false,
+    "guards_reported_separately": true,
+    "scope": "registered conditional scope only (six frozen forms, paid Ling route)",
+    "statement": "the registered causal-uptake criterion is met within the registered conditional scope"
+  },
+  "registration_hash": "0a81e400f598d16742301d7c07cbaf5398fa861b4fa1701c15405391ab4f6d15",
+  "task": "#198",
+  "unit": "prompt form",
+  "verification": {
+    "hash_checks": [
+      {
+        "check": "journal_hash_matches_pinned",
+        "detail": "5e9f7322bdb29baf16b18f9b4f4181e9a88ad454e0394ea379e4cdea29b1fede",
+        "ok": true
+      },
+      {
+        "check": "report_hash_matches_pinned",
+        "detail": "0ec84446d697bca91c25e155b3cd61f43b4e7706e6df185ea08c3685a8f88310",
+        "ok": true
+      },
+      {
+        "check": "registration_file_hash_matches_pinned",
+        "detail": "3c02f8bb44c11d6edd050daf32950e3cf8365f79638e92d46181df764945ddd7",
+        "ok": true
+      },
+      {
+        "check": "registration_content_hash_matches_pinned",
+        "detail": {
+          "recomputed": "0a81e400f598d16742301d7c07cbaf5398fa861b4fa1701c15405391ab4f6d15",
+          "recorded": "0a81e400f598d16742301d7c07cbaf5398fa861b4fa1701c15405391ab4f6d15"
+        },
+        "ok": true
+      }
+    ],
+    "ok": true,
+    "structure_checks": [
+      {
+        "check": "report_status_completed",
+        "detail": "completed",
+        "ok": true
+      },
+      {
+        "check": "report_registration_hash_matches",
+        "detail": "0a81e400f598d16742301d7c07cbaf5398fa861b4fa1701c15405391ab4f6d15",
+        "ok": true
+      },
+      {
+        "check": "journal_row_count_matches_report",
+        "detail": {
+          "expected": 51,
+          "journal": 51,
+          "report": 51
+        },
+        "ok": true
+      },
+      {
+        "check": "no_duplicate_event_branch_records",
+        "detail": [],
+        "ok": true
+      },
+      {
+        "check": "no_duplicate_report_events",
+        "detail": {
+          "events": 17
+        },
+        "ok": true
+      },
+      {
+        "check": "all_three_branches_present_per_event",
+        "detail": {
+          "events": 17,
+          "incomplete": []
+        },
+        "ok": true
+      },
+      {
+        "check": "no_unknown_branches",
+        "detail": [],
+        "ok": true
+      },
+      {
+        "check": "all_branches_valid_and_complete",
+        "detail": [],
+        "ok": true
+      },
+      {
+        "check": "single_protocol_key_in_journal",
+        "detail": [
+          "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0"
+        ],
+        "ok": true
+      },
+      {
+        "check": "journal_protocol_matches_registration",
+        "detail": {
+          "journal": [
+            "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0"
+          ],
+          "registered": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0"
+        },
+        "ok": true
+      },
+      {
+        "check": "report_protocol_matches_registration",
+        "detail": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+        "ok": true
+      },
+      {
+        "check": "single_model_in_journal",
+        "detail": [
+          "jev-1.13.0"
+        ],
+        "ok": true
+      },
+      {
+        "check": "journal_model_matches_registration",
+        "detail": {
+          "journal": [
+            "jev-1.13.0"
+          ],
+          "registered": "jev-1.13.0"
+        },
+        "ok": true
+      },
+      {
+        "check": "report_model_matches_registration",
+        "detail": "jev-1.13.0",
+        "ok": true
+      },
+      {
+        "check": "registration_event_count",
+        "detail": 17,
+        "ok": true
+      },
+      {
+        "check": "branch_request_hashes_match_registration",
+        "detail": [],
+        "ok": true
+      },
+      {
+        "check": "branch_state_hashes_match_registration",
+        "detail": [],
+        "ok": true
+      },
+      {
+        "check": "six_required_forms_present",
+        "detail": [
+          "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+          "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+          "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+          "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+          "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+          "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222"
+        ],
+        "ok": true
+      },
+      {
+        "check": "form_event_distribution_matches",
+        "detail": {
+          "expected": [
+            1,
+            1,
+            3,
+            4,
+            4,
+            4
+          ],
+          "observed": [
+            1,
+            1,
+            3,
+            4,
+            4,
+            4
+          ]
+        },
+        "ok": true
+      },
+      {
+        "check": "report_forms_match_required",
+        "detail": [
+          "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+          "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+          "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+          "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+          "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+          "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222"
+        ],
+        "ok": true
+      },
+      {
+        "check": "malformed_vectors_rejected",
+        "detail": [],
+        "ok": true
+      },
+      {
+        "check": "metrics_present_and_finite",
+        "detail": [],
+        "ok": true
+      },
+      {
+        "check": "no_imputation_required",
+        "detail": "every analyzed field is present in the journal",
+        "ok": true
+      },
+      {
+        "check": "guard_thresholds_match_registration",
+        "detail": {
+          "delta": 0.0,
+          "epsilon": 0.01
+        },
+        "ok": true
+      },
+      {
+        "check": "registered_inference_rules_present",
+        "detail": null,
+        "ok": true
+      },
+      {
+        "check": "report_analysis_present",
+        "detail": null,
+        "ok": true
+      },
+      {
+        "check": "report_schedule_adherence",
+        "detail": {
+          "planned_equals_actual": true,
+          "rows": 51
+        },
+        "ok": true
+      }
+    ]
+  }
+}

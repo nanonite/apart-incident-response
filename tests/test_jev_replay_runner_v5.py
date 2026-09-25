@@ -51,6 +51,15 @@ def v4_snapshot() -> dict:
     return {str(path.relative_to(REPO_ROOT)): sha256_of(path) for path in V4_PATHS}
 
 
+def v5_output_snapshot() -> dict:
+    out = {}
+    for name, path in (("registration", REGISTRATION_PATH),
+                       ("journal", REPO_ROOT / prv5.DEFAULT_JOURNAL_V5),
+                       ("report", REPO_ROOT / prv5.DEFAULT_REPORT_V5)):
+        out[name] = sha256_of(path) if path.is_file() else None
+    return out
+
+
 class FakeReceiverClient:
     provider = "jev"
     endpoint = jc.JEV_SYSTEMONE_ENDPOINT
@@ -131,15 +140,13 @@ class V5TestCase(unittest.TestCase):
 
     def setUp(self):
         self.v4 = v4_snapshot()
-        self.assertFalse((REPO_ROOT / prv5.DEFAULT_JOURNAL_V5).exists(),
-                         "v5 journal must be absent until an authorized run")
-        self.assertFalse((REPO_ROOT / prv5.DEFAULT_REPORT_V5).exists(),
-                         "v5 report must be absent until an authorized run")
+        self.v5 = v5_output_snapshot()
+        self.sandbox_root = v5_sandbox(self)
 
     def tearDown(self):
         self.assertEqual(v4_snapshot(), self.v4, "a superseded v4 artifact changed")
-        self.assertFalse((REPO_ROOT / prv5.DEFAULT_JOURNAL_V5).exists())
-        self.assertFalse((REPO_ROOT / prv5.DEFAULT_REPORT_V5).exists())
+        self.assertEqual(v5_output_snapshot(), self.v5,
+                         "a live replay-v5 artifact changed during the test")
 
     def run_cli(self, argv, *, explode_message="provider call"):
         buffer = io.StringIO()
@@ -154,7 +161,7 @@ class V5TestCase(unittest.TestCase):
 
 class PreflightTests(V5TestCase):
     def test_offline_preflight_passes_with_named_checks(self):
-        rc, output = self.run_cli(["--repo-root", str(REPO_ROOT)])
+        rc, output = self.run_cli(["--repo-root", str(self.sandbox_root)])
         self.assertEqual(rc, 0)
         self.assertIn("preflight only", output)
         self.assertIn('"provider_calls": 0', output)
@@ -179,13 +186,25 @@ class PreflightTests(V5TestCase):
             self.assertIn(required, names)
 
     def test_live_without_approval_zero_provider_calls(self):
-        rc, output = self.run_cli(["--repo-root", str(REPO_ROOT), "--live"])
+        rc, output = self.run_cli(["--repo-root", str(self.sandbox_root), "--live"])
         self.assertEqual(rc, 2)
         verification = parse_docs(output)[0]
         self.assertFalse(verification["ok"])
         self.assertIn("runtime_approval_present", verification["failed"])
-        self.assertFalse((REPO_ROOT / prv5.DEFAULT_JOURNAL_V5).exists())
-        self.assertFalse((REPO_ROOT / prv5.DEFAULT_REPORT_V5).exists())
+        self.assertFalse((self.sandbox_root / prv5.DEFAULT_JOURNAL_V5).exists())
+        self.assertFalse((self.sandbox_root / prv5.DEFAULT_REPORT_V5).exists())
+
+    def test_production_preflight_rejects_occupied_v5_paths(self):
+        """The real checkout holds the completed run, so production fails closed."""
+
+        self.assertTrue((REPO_ROOT / prv5.DEFAULT_JOURNAL_V5).is_file())
+        self.assertTrue((REPO_ROOT / prv5.DEFAULT_REPORT_V5).is_file())
+        rc, output = self.run_cli(["--repo-root", str(REPO_ROOT), "--live",
+                                   "--approval", "ref"])
+        self.assertEqual(rc, 2)
+        verification = parse_docs(output)[0]
+        self.assertFalse(verification["ok"])
+        self.assertIn("fresh_output_paths", verification["failed"])
 
     def test_occupied_new_paths_block_execution(self):
         root = v5_sandbox(self)
