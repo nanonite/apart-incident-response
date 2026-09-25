@@ -37,6 +37,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix board IPC integration and CLI tool wiring (#58)
 
 ### Changed
+- J5d — Repair writer observability and test the planning-low prompt ladder (#187)
+- J5 — Test optional-board Ling-writer/Jev-receiver communication (#158)
 - Build replay-ready one-way event set and coverage decision (#192)
 - Repair and lock paid-route v7 six-form coverage collection (#194)
 - Collect the fresh six-form L4X coverage block (#191)
