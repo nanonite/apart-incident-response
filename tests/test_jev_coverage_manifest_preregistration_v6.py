@@ -12,6 +12,7 @@ from apart_incident_response import behavioral_discovery as bd
 from apart_incident_response import jev_choice as jc
 from apart_incident_response import jev_choice_v2 as jc2
 from apart_incident_response import jev_coverage_manifest_preregistration_v6 as reg
+from tests.v6_lifecycle_sandbox import build_v6_sandbox, destroy_sandbox
 from apart_incident_response import jev_ling_writer_v3 as writer_v3
 from apart_incident_response import jev_replay_preregistration as pr
 from apart_incident_response import jev_six_form_coverage_audit as audit
@@ -27,7 +28,20 @@ def load_locked() -> dict:
     return json.loads(ARTIFACT.read_text(encoding="utf-8"))
 
 
+def setUpModule():
+    # Lifecycle isolation: run against a sandbox that mirrors the lock-time
+    # file set (recorded sources present; v6 outputs absent), so committed
+    # collection outputs never break ordinary assertions.
+    global REPO_ROOT
+    REPO_ROOT = build_v6_sandbox(Path(__file__).resolve().parents[1])
+
+
+def tearDownModule():
+    destroy_sandbox(REPO_ROOT)
+
+
 def verify(document, **kwargs):
+    kwargs.setdefault("repo_root", REPO_ROOT)
     return reg.verify_against_coverage_manifest_preregistration_v6(document, **kwargs)
 
 
@@ -43,8 +57,8 @@ class ManifestSelectionTests(unittest.TestCase):
         self.assertEqual(first_meta, second_meta)
         self.assertEqual([i.instance_id for i in first_instances],
                          [i.instance_id for i in second_instances])
-        self.assertEqual(reg.build_coverage_manifest_preregistration_v6(approved=True),
-                         reg.build_coverage_manifest_preregistration_v6(approved=True))
+        self.assertEqual(reg.build_coverage_manifest_preregistration_v6(approved=True, repo_root=REPO_ROOT),
+                         reg.build_coverage_manifest_preregistration_v6(approved=True, repo_root=REPO_ROOT))
 
     def test_exactly_36_unique_ids(self):
         ids = self.manifest["instance_ids"]
@@ -120,7 +134,7 @@ class ManifestSelectionTests(unittest.TestCase):
         self.assertEqual(self.manifest["manifest_hash"], expected)
         self.assertEqual(self.manifest["form_manifest_hash"], hashlib.sha256(
             json.dumps(sorted(reg.FROZEN_FORM_IDS), sort_keys=True).encode()).hexdigest())
-        self.assertEqual(reg.build_coverage_manifest_preregistration_v6(approved=True)
+        self.assertEqual(reg.build_coverage_manifest_preregistration_v6(approved=True, repo_root=REPO_ROOT)
                          ["manifest"]["manifest_hash"], expected)
 
 
@@ -330,7 +344,7 @@ class ArtifactTests(unittest.TestCase):
 
     def test_committed_artifact_byte_reproducible(self):
         self.assertEqual(self.document,
-                         reg.build_coverage_manifest_preregistration_v6(approved=True))
+                         reg.build_coverage_manifest_preregistration_v6(approved=True, repo_root=REPO_ROOT))
 
     def test_locked_status_and_live_authorization_false(self):
         self.assertEqual(self.document["status"], reg.COVERAGE_LOCKED_STATUS)
@@ -373,7 +387,7 @@ class VerifierTests(unittest.TestCase):
         self.assertEqual(result["request_cap"], 540)
 
     def test_draft_status_rejected(self):
-        draft = reg.build_coverage_manifest_preregistration_v6(approved=False)
+        draft = reg.build_coverage_manifest_preregistration_v6(approved=False, repo_root=REPO_ROOT)
         result = verify(draft)
         self.assertFalse(result["ok"])
         self.assertTrue(any("not locked" in error for error in result["errors"]))
@@ -571,7 +585,7 @@ class VerifierTests(unittest.TestCase):
         for forbidden in ("JevChoiceClient(", "LingWriterClientV5(", "urlopen",
                           ".complete(", "requests.", "http"):
             self.assertNotIn(forbidden, source)
-        document = reg.build_coverage_manifest_preregistration_v6(approved=True)
+        document = reg.build_coverage_manifest_preregistration_v6(approved=True, repo_root=REPO_ROOT)
         result = verify(document, check_credentials=False)
         self.assertTrue(result["ok"], result["errors"])
 
@@ -608,7 +622,7 @@ class LifecycleTests(unittest.TestCase):
             self.assertEqual(ids_during, ids_before)
             self.assertEqual(evidence_during, evidence_before)
             self.assertEqual(
-                reg.build_coverage_manifest_preregistration_v6(approved=True), self.document)
+                reg.build_coverage_manifest_preregistration_v6(approved=True, repo_root=REPO_ROOT), self.document)
             result = verify(self.document)
             self.assertFalse(result["ok"])
             self.assertEqual(result["errors"], ["future coverage journal already exists",

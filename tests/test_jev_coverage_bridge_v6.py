@@ -11,6 +11,18 @@ from apart_incident_response import jev_coverage_manifest_preregistration_v6 as 
 from apart_incident_response import jev_ling_writer_v5 as writer_v5
 from apart_incident_response import jev_replay_preregistration as pr
 from apart_incident_response import jev_six_form_coverage_audit as audit
+from tests.v6_lifecycle_sandbox import build_v6_sandbox, destroy_sandbox
+
+
+def setUpModule():
+    # Lifecycle isolation: sandbox root mirroring the lock-time file set so
+    # committed v6 outputs never trip freshness/absence assertions.
+    global REPO_ROOT
+    REPO_ROOT = build_v6_sandbox(Path(__file__).resolve().parents[1])
+
+
+def tearDownModule():
+    destroy_sandbox(REPO_ROOT)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
