@@ -37,6 +37,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix board IPC integration and CLI tool wiring (#58)
 
 ### Changed
+- Bounded provider diagnostics for the stopped replay-v4 transport failure (#196)
 - J5d — Repair writer observability and test the planning-low prompt ladder (#187)
 - J5 — Test optional-board Ling-writer/Jev-receiver communication (#158)
 - Build replay-ready one-way event set and coverage decision (#192)
