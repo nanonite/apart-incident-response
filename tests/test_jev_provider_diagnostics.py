@@ -1,5 +1,7 @@
+import hashlib
 import io
 import json
+import os
 import shutil
 import tempfile
 import unittest
@@ -99,7 +101,89 @@ def _valid_outcome(**extra):
     return base
 
 
-class ClassificationTests(unittest.TestCase):
+#: Committed evidence from the authorized run (278db9d). Never moved, deleted,
+#: overwritten or rewritten by any test.
+PROBE_REGISTRATION = REPO_ROOT / diag.DEFAULT_REGISTRATION
+PROBE_JEV_ARTIFACT = REPO_ROOT / diag.DEFAULT_JEV_PROBE_OUTPUT
+PROBE_LING_ARTIFACT = REPO_ROOT / diag.DEFAULT_LING_PROBE_OUTPUT
+PROBE_ARTIFACTS = (PROBE_REGISTRATION, PROBE_JEV_ARTIFACT, PROBE_LING_ARTIFACT)
+#: sha256 of the probe artifacts as committed in 278db9d. Byte-identity of the
+#: evidence is asserted against these, not merely against the start of a run.
+COMMITTED_PROBE_SHA256 = {
+    str(PROBE_JEV_ARTIFACT.relative_to(REPO_ROOT)):
+        "5dc85056ac9525e7303ef9491dc6758f4c12fd2ce03139fa29cb46abb668876e",
+    str(PROBE_LING_ARTIFACT.relative_to(REPO_ROOT)):
+        "b82f09436f2272d6e392bb38efbcc999e7a2ef48eafbc179c9fde0e4b98eed95",
+}
+
+
+def _digest(path: Path) -> str | None:
+    return hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else None
+
+
+def diagnostics_snapshot() -> dict:
+    """sha256 of every committed diagnostics file (None when absent)."""
+
+    return {str(path.relative_to(REPO_ROOT)): _digest(path) for path in PROBE_ARTIFACTS}
+
+
+def diagnostics_listing() -> list:
+    return sorted(os.listdir(REPO_ROOT / "runs" / "epic-126" / "diagnostics"))
+
+
+def diagnostics_sandbox(test_case: unittest.TestCase) -> Path:
+    """Repo root presenting the checkout at registration-lock time.
+
+    The committed Jev/Ling probe artifacts occupy the registered diagnostic
+    output paths, so production freshness checks correctly fail against
+    ``REPO_ROOT``. This sandbox isolates those two outputs without touching
+    them: ``runs/epic-126/diagnostics`` is materialised as a real directory
+    holding only a byte-identical copy of the registration, while every other
+    path (``src/``, the replay-v4 pins that ``build_registration`` verifies,
+    and all other ``runs/epic-126`` entries) is symlinked back to the real
+    checkout so source and provenance hashes verify exactly as in production.
+    """
+
+    root = Path(tempfile.mkdtemp(prefix="diag-locktime-"))
+    test_case.addCleanup(shutil.rmtree, root, ignore_errors=True)
+    (root / "src").symlink_to(REPO_ROOT / "src")
+    runs = root / "runs"
+    runs.mkdir()
+    for entry in sorted(os.listdir(REPO_ROOT / "runs")):
+        if entry != "epic-126":
+            (runs / entry).symlink_to(REPO_ROOT / "runs" / entry)
+    epic = runs / "epic-126"
+    epic.mkdir()
+    for entry in sorted(os.listdir(REPO_ROOT / "runs" / "epic-126")):
+        if entry == "diagnostics":
+            continue
+        (epic / entry).symlink_to(REPO_ROOT / "runs" / "epic-126" / entry)
+    (epic / "diagnostics").mkdir()
+    shutil.copy2(PROBE_REGISTRATION, epic / "diagnostics" / PROBE_REGISTRATION.name)
+    return root
+
+
+class DiagnosticsSandboxTestCase(unittest.TestCase):
+    """Isolate every test from the committed diagnostics evidence.
+
+    ``setUp`` snapshots the real artifacts and directory listing; ``tearDown``
+    asserts both are unchanged, so any test that touched committed evidence
+    fails immediately instead of silently destroying it.
+    """
+
+    def setUp(self):
+        self.artifacts = diagnostics_snapshot()
+        self.diagnostics_dir = diagnostics_listing()
+        self.sandbox_root = diagnostics_sandbox(self)
+
+    def tearDown(self):
+        self.assertEqual(diagnostics_snapshot(), self.artifacts,
+                         "a committed diagnostics artifact changed during the test")
+        self.assertEqual(diagnostics_listing(), self.diagnostics_dir,
+                         "the diagnostics directory gained or lost a file")
+
+
+class ClassificationTests(DiagnosticsSandboxTestCase):
     def test_exactly_eight_classes(self):
         self.assertEqual(len(diag.ERROR_CLASSES), 8)
         self.assertEqual(len(set(diag.ERROR_CLASSES)), 8)
@@ -202,7 +286,7 @@ class ClassificationTests(unittest.TestCase):
                     expected)
 
 
-class RegistrationTests(unittest.TestCase):
+class RegistrationTests(DiagnosticsSandboxTestCase):
     def test_registration_is_locked_and_non_authorizing(self):
         registration = _registration()
         self.assertEqual(registration["status"], diag.DIAG_STATUS)
@@ -212,18 +296,19 @@ class RegistrationTests(unittest.TestCase):
         self.assertIs(registration["lock_is_not_execution_authorization"], True)
 
     def test_verify_registration_passes(self):
-        result = diag.verify_registration(_registration(), repo_root=REPO_ROOT,
+        result = diag.verify_registration(_registration(), repo_root=self.sandbox_root,
                                           approval=None, check_credentials=False,
                                           require_approval=False)
         self.assertTrue(result["ok"], result["failed"])
         self.assertEqual(result["failed"], [])
 
     def test_approval_required_only_for_live(self):
-        offline = diag.verify_registration(_registration(), repo_root=REPO_ROOT,
+        offline = diag.verify_registration(_registration(),
+                                           repo_root=self.sandbox_root,
                                            approval=None, require_approval=False,
                                            check_credentials=False)
         self.assertTrue(offline["ok"])
-        live = diag.verify_registration(_registration(), repo_root=REPO_ROOT,
+        live = diag.verify_registration(_registration(), repo_root=self.sandbox_root,
                                         approval=None, require_approval=True,
                                         check_credentials=False)
         self.assertFalse(live["ok"])
@@ -232,23 +317,45 @@ class RegistrationTests(unittest.TestCase):
     def test_registration_content_drift_fails_closed(self):
         tampered = _registration()
         tampered["live_collection_authorized"] = True
-        result = diag.verify_registration(tampered, repo_root=REPO_ROOT,
+        result = diag.verify_registration(tampered, repo_root=self.sandbox_root,
                                           check_credentials=False)
         self.assertFalse(result["ok"])
         self.assertTrue({"registration_hash_matches", "registration_content_matches"}
                         & set(result["failed"]))
 
     def test_occupied_probe_output_fails_preflight(self):
-        target = REPO_ROOT / diag.DEFAULT_JEV_PROBE_OUTPUT
+        """Occupancy is created inside the sandbox; real evidence is untouched."""
+
+        target = self.sandbox_root / diag.DEFAULT_JEV_PROBE_OUTPUT
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text("{}", encoding="utf-8")
-        try:
-            result = diag.verify_registration(_registration(), repo_root=REPO_ROOT,
-                                              check_credentials=False)
-            self.assertFalse(result["ok"])
-            self.assertIn("jev_probe_path_fresh", result["failed"])
-        finally:
-            target.unlink()
+        result = diag.verify_registration(_registration(),
+                                          repo_root=self.sandbox_root,
+                                          check_credentials=False)
+        self.assertFalse(result["ok"])
+        self.assertIn("jev_probe_path_fresh", result["failed"])
+        # no unlink of anything real: the sandbox is discarded by addCleanup
+        self.assertEqual(diagnostics_snapshot(), self.artifacts)
+
+    def test_production_preflight_rejects_occupied_probe_paths(self):
+        """The real checkout keeps its freshness gate on the committed probes."""
+
+        self.assertTrue(PROBE_JEV_ARTIFACT.is_file())
+        self.assertTrue(PROBE_LING_ARTIFACT.is_file())
+        result = diag.verify_registration(_registration(), repo_root=REPO_ROOT,
+                                          check_credentials=False)
+        self.assertFalse(result["ok"])
+        self.assertIn("jev_probe_path_fresh", result["failed"])
+        self.assertIn("ling_probe_path_fresh", result["failed"])
+
+    def test_sandbox_isolates_the_committed_probe_artifacts(self):
+        self.assertFalse((self.sandbox_root / diag.DEFAULT_JEV_PROBE_OUTPUT).exists())
+        self.assertFalse((self.sandbox_root / diag.DEFAULT_LING_PROBE_OUTPUT).exists())
+        copied = self.sandbox_root / diag.DEFAULT_REGISTRATION
+        self.assertTrue(copied.is_file())
+        self.assertEqual(copied.read_bytes(), PROBE_REGISTRATION.read_bytes())
+        self.assertTrue(PROBE_JEV_ARTIFACT.is_file())
+        self.assertTrue(PROBE_LING_ARTIFACT.is_file())
 
     def test_availability_evidence_is_non_authorizing(self):
         registration = _registration()
@@ -277,26 +384,26 @@ class RegistrationTests(unittest.TestCase):
         self.assertEqual(probes["jev"]["max_physical_attempts"], 1)
 
 
-class OfflineCliTests(unittest.TestCase):
+class OfflineCliTests(DiagnosticsSandboxTestCase):
     def test_offline_cli_makes_zero_calls(self):
         def explode(*args, **kwargs):
             raise AssertionError("provider call attempted during offline preflight")
 
         with patch("urllib.request.urlopen", explode):
-            rc = diag.main(["--repo-root", str(REPO_ROOT)])
+            rc = diag.main(["--repo-root", str(self.sandbox_root)])
         self.assertEqual(rc, 0)
 
     def test_live_without_approval_makes_zero_calls(self):
         def explode(*args, **kwargs):
             raise AssertionError("provider call attempted without approval")
 
-        self.assertFalse((REPO_ROOT / diag.DEFAULT_JEV_PROBE_OUTPUT).exists())
-        self.assertFalse((REPO_ROOT / diag.DEFAULT_LING_PROBE_OUTPUT).exists())
+        self.assertFalse((self.sandbox_root / diag.DEFAULT_JEV_PROBE_OUTPUT).exists())
+        self.assertFalse((self.sandbox_root / diag.DEFAULT_LING_PROBE_OUTPUT).exists())
         with patch("urllib.request.urlopen", explode):
-            rc = diag.main(["--repo-root", str(REPO_ROOT), "--live"])
+            rc = diag.main(["--repo-root", str(self.sandbox_root), "--live"])
         self.assertEqual(rc, 2)
-        self.assertFalse((REPO_ROOT / diag.DEFAULT_JEV_PROBE_OUTPUT).exists())
-        self.assertFalse((REPO_ROOT / diag.DEFAULT_LING_PROBE_OUTPUT).exists())
+        self.assertFalse((self.sandbox_root / diag.DEFAULT_JEV_PROBE_OUTPUT).exists())
+        self.assertFalse((self.sandbox_root / diag.DEFAULT_LING_PROBE_OUTPUT).exists())
 
     def test_failed_preflight_makes_zero_calls(self):
         with tempfile.TemporaryDirectory(prefix="diag-preflight-") as directory:
@@ -317,6 +424,21 @@ class OfflineCliTests(unittest.TestCase):
             self.assertFalse((root / diag.DEFAULT_JEV_PROBE_OUTPUT).exists())
             self.assertFalse((root / diag.DEFAULT_LING_PROBE_OUTPUT).exists())
 
+    def test_committed_probe_artifacts_stay_byte_identical(self):
+        before = diagnostics_snapshot()
+        with patch("urllib.request.urlopen",
+                   side_effect=AssertionError("provider call")):
+            rc = diag.main(["--repo-root", str(self.sandbox_root)])
+        self.assertEqual(rc, 0)
+        self.assertEqual(diag.verify_registration(_registration(),
+                                                  repo_root=self.sandbox_root,
+                                                  check_credentials=False)["failed"],
+                         [])
+        self.assertEqual(diagnostics_snapshot(), before)
+        for relative, digest in COMMITTED_PROBE_SHA256.items():
+            self.assertEqual(before[relative], digest,
+                             f"committed evidence drifted: {relative}")
+
     def test_missing_credentials_recorded_with_zero_calls(self):
         registration = _registration()
         with tempfile.TemporaryDirectory(prefix="diag-nocreds-") as directory:
@@ -329,7 +451,7 @@ class OfflineCliTests(unittest.TestCase):
             self.assertEqual(record["error_class"], diag.CLASS_CREDENTIAL_OR_CONFIGURATION)
 
 
-class ProbeCapTests(unittest.TestCase):
+class ProbeCapTests(DiagnosticsSandboxTestCase):
     def test_jev_probe_single_physical_attempt(self):
         registration = _registration()
         calls = []
@@ -418,7 +540,7 @@ class ProbeCapTests(unittest.TestCase):
         self.assertEqual(record["provider_calls"], 1)
 
 
-class RedactionTests(unittest.TestCase):
+class RedactionTests(DiagnosticsSandboxTestCase):
     def test_probe_records_carry_no_secret(self):
         registration = _registration()
         with patch.object(jc, "load_jev_credentials",
@@ -465,7 +587,7 @@ class RedactionTests(unittest.TestCase):
                 diag._assert_redacted(record)
 
 
-class ExecuteProbesTests(unittest.TestCase):
+class ExecuteProbesTests(DiagnosticsSandboxTestCase):
     def _summary(self, directory, *, approval="ref", ok=True, provider="both"):
         registration = _registration()
         root = Path(directory)
@@ -564,7 +686,7 @@ class ExecuteProbesTests(unittest.TestCase):
                 self.assertNotIn(pin["path"], written)
 
 
-class PreservationTests(unittest.TestCase):
+class PreservationTests(DiagnosticsSandboxTestCase):
     def test_replay_v4_pins_still_match(self):
         for name, pin in diag.REPLAY_V4_PINS.items():
             if not isinstance(pin, dict):
