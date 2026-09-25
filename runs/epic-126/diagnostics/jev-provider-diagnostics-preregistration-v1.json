@@ -1,0 +1,180 @@
+{
+  "approval_required": true,
+  "authorizes_replay": false,
+  "availability_evidence": [
+    {
+      "authorizes_replay": false,
+      "credential_state": "present and currently accepted",
+      "model": "jev-1.13.0",
+      "observation": "separate Jev probe succeeded with jev-1.13.0",
+      "provider": "jev",
+      "scope": "availability only",
+      "source": "task-provided evidence; no committed artifact exists in this repository"
+    },
+    {
+      "authorizes_replay": false,
+      "credential_state": "present and currently accepted",
+      "model": "inclusionai/ling-3.0-flash-vl",
+      "observation": "separate OpenRouter probe succeeded with HTTP 200 and one valid completion",
+      "provider": "openrouter",
+      "scope": "availability only",
+      "source": "task-provided evidence; no committed artifact exists in this repository"
+    }
+  ],
+  "availability_evidence_authorizes_replay": false,
+  "caps": {
+    "arithmetic": "1 logical request x (1 + max_retries 0) = 1 physical attempt per probe",
+    "jev_cost_ceiling_usd": 0.01,
+    "ling_cost_ceiling_usd": 0.01,
+    "logical_requests_per_probe": 1,
+    "max_retries_per_probe": 0,
+    "physical_attempts_per_probe": 1,
+    "total_physical_attempts_if_both_run": 2
+  },
+  "claim_scope": "transport and availability classification only; the recorded probe successes are availability evidence and never authorize replay; no causal, behavioral, coverage or uptake claim follows",
+  "issue": {
+    "parent": 159,
+    "task": 196,
+    "title": "Bounded provider diagnostics for the stopped replay-v4 transport failure"
+  },
+  "live_collection_authorized": false,
+  "lock_is_not_execution_authorization": true,
+  "not_claimed": [
+    "key expiry",
+    "model removal",
+    "quota exhaustion"
+  ],
+  "outputs": {
+    "fresh_paths_required": true,
+    "jev_probe": "runs/epic-126/diagnostics/jev-transport-probe-v1.json",
+    "ling_probe": "runs/epic-126/diagnostics/ling-transport-probe-v1.json",
+    "overwrite_forbidden": true,
+    "registration": "runs/epic-126/diagnostics/jev-provider-diagnostics-preregistration-v1.json"
+  },
+  "pending": "separate review authorization for any replay-v4 re-attempt",
+  "preregistration_hash": "6508b419e84ca0159b633aa8c0663280d96998950e54ef32159c12e91d9a5905",
+  "preregistration_version": "jev-provider-diagnostics-v1",
+  "preservation": {
+    "never_resume_or_rerun_replay_v4": true,
+    "replay_v4": {
+      "journal": {
+        "path": "runs/epic-126/replay-v4/jev-choice-replay-v4.jsonl",
+        "rows": 2,
+        "sha256": "5a870d5f643f3716c70b8350ab19ff256834f9079e6364931661630587b24b62"
+      },
+      "registration": {
+        "path": "runs/epic-126/replay-v4/jev-choice-replay-preregistration-v4.json",
+        "sha256": "5ea64f8218ed1ddabb2cab5a081dea666e686683a2a67ea9a186a9409ea40ee2"
+      },
+      "report": {
+        "path": "runs/epic-126/replay-v4/jev-choice-replay-report-v4.json",
+        "sha256": "71a7f2c401bb67d5db5d0758188531361ae42cd6aedd4de92d3100c727f3a8a2"
+      },
+      "rule": "never opened for write by this module; replay-v4 is not resumed, rerun, appended to, pooled or reinterpreted"
+    }
+  },
+  "probes": {
+    "jev": {
+      "cost_ceiling_usd": 0.01,
+      "endpoint": "https://api.typesafe.ai/v1/systemone",
+      "max_logical_requests": 1,
+      "max_physical_attempts": 1,
+      "max_retries": 0,
+      "model": "jev-1.13.0",
+      "output": "runs/epic-126/diagnostics/jev-transport-probe-v1.json",
+      "provider": "jev",
+      "request_source": "frozen pre-read ISO ChoiceState of the first registered replay event, rebuilt with jev_replay_preregistration_v4.pre_read_body; not any of the real/placebo/null replay branches",
+      "timeout_seconds": 60.0,
+      "transport": "apart_incident_response.jev_choice.JevChoiceClient",
+      "transport_contract": "identical endpoint, model and transport class as replay-v4; retries disabled and physical attempts capped at one"
+    },
+    "ling": {
+      "cost_ceiling_usd": 0.01,
+      "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+      "key_loader": "apart_incident_response.behavioral_discovery._api_key",
+      "key_loader_matches_v7_runner": true,
+      "max_logical_requests": 1,
+      "max_physical_attempts": 1,
+      "max_retries": 0,
+      "max_tokens": 16,
+      "model": "inclusionai/ling-3.0-flash-vl",
+      "output": "runs/epic-126/diagnostics/ling-transport-probe-v1.json",
+      "prompt": "Reply with exactly: SILENCE",
+      "prompt_format": "payload produced by LingWriterClientV5.write_outcome: model + messages[{role: user, content}] + max_tokens + temperature, the same request builder the v7 runner uses",
+      "provider": "openrouter",
+      "timeout_seconds": 60.0,
+      "transport": "apart_incident_response.jev_ling_writer_v5.LingWriterClientV5"
+    }
+  },
+  "probes_authorized": false,
+  "purpose": "separate credential, HTTP status, capacity, transport and payload failures for the Jev and Ling routes behind the replay-v4 transport_error stop",
+  "recording": {
+    "credentials_retained": false,
+    "fields": [
+      "status",
+      "http_status",
+      "error_class",
+      "model",
+      "provider",
+      "attempt_count",
+      "usage_present",
+      "retry_metadata"
+    ],
+    "raw_response_retained": false,
+    "retention": [
+      "no raw response body",
+      "no response headers",
+      "no keys",
+      "no authorization values",
+      "no provider envelopes"
+    ],
+    "retry_metadata": [
+      "max_retries",
+      "retries_performed",
+      "retryable_statuses",
+      "physical_attempts",
+      "cap",
+      "retry_after_present",
+      "retry_after_valid",
+      "delay_seconds"
+    ]
+  },
+  "source_files": [
+    "src/apart_incident_response/jev_provider_diagnostics.py",
+    "src/apart_incident_response/jev_choice.py",
+    "src/apart_incident_response/jev_choice_v2.py",
+    "src/apart_incident_response/jev_ling_writer_v3.py",
+    "src/apart_incident_response/jev_ling_writer_v5.py",
+    "src/apart_incident_response/behavioral_discovery.py",
+    "src/apart_incident_response/jev_coverage_manifest_preregistration_v7.py",
+    "src/apart_incident_response/jev_replay_preregistration.py",
+    "src/apart_incident_response/jev_replay_preregistration_v4.py"
+  ],
+  "source_files_hash": "d8f35ddcd752dc5df47fa76f786464bbc8eaa7b8f8d941858c7bc29df827dcec",
+  "stage": "offline_provider_diagnostics",
+  "status": "locked_for_jev_provider_diagnostics_v1",
+  "taxonomy": {
+    "classes": [
+      "credential_or_configuration_failure",
+      "http_401_403_auth_rejected",
+      "http_429_rate_or_quota_limited",
+      "http_404_model_or_endpoint_unavailable",
+      "http_408_5xx_529_provider_capacity",
+      "timeout_or_network_failure",
+      "malformed_response",
+      "valid_response"
+    ],
+    "classification_order": "credential check first, then non-2xx HTTP status, then parse failure, then success, then transport failure",
+    "definitions": {
+      "credential_or_configuration_failure": "credential missing or malformed, or a local refusal/cap before any request was sent, or a residual non-retryable HTTP status not otherwise classified (the exact sanitized status is retained)",
+      "http_401_403_auth_rejected": "HTTP 401 or HTTP 403",
+      "http_404_model_or_endpoint_unavailable": "HTTP 404 model or endpoint unavailable",
+      "http_408_5xx_529_provider_capacity": "HTTP 408, any 5xx, or HTTP 529 provider capacity",
+      "http_429_rate_or_quota_limited": "HTTP 429 quota or rate limiting",
+      "malformed_response": "HTTP success whose body could not be parsed into the expected shape",
+      "timeout_or_network_failure": "timeout, DNS, connection or other transport failure with no HTTP status",
+      "valid_response": "HTTP success with a parseable response body"
+    },
+    "exactly_one_class": true
+  }
+}
