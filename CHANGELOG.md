@@ -37,6 +37,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix board IPC integration and CLI tool wiring (#58)
 
 ### Changed
+- Repair and lock paid-route v7 six-form coverage collection (#194)
 - Collect the fresh six-form L4X coverage block (#191)
 - Register a fresh form-balanced L4X coverage manifest (#190)
 - Freeze six-form coverage estimand and information accounting (#189)
