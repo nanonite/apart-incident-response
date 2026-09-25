@@ -1,7 +1,10 @@
 import copy
+import hashlib
+import io
 import json
 import math
 import os
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -21,6 +24,53 @@ REGISTRATION = json.loads(
     .read_text(encoding="utf-8"))
 PIN = REGISTRATION["preregistration_hash"]
 FRESH = {"journal_exists": False, "report_exists": False}
+
+#: The committed stopped replay-v4 run. These are pinned project state: never
+#: moved, deleted, rewritten or reinterpreted by any test.
+REPLAY_REGISTRATION = REPO_ROOT / "runs/epic-126/replay-v4/jev-choice-replay-preregistration-v4.json"
+REPLAY_JOURNAL = REPO_ROOT / "runs/epic-126/replay-v4/jev-choice-replay-v4.jsonl"
+REPLAY_REPORT = REPO_ROOT / "runs/epic-126/replay-v4/jev-choice-replay-report-v4.json"
+REPLAY_ARTIFACTS = (REPLAY_REGISTRATION, REPLAY_JOURNAL, REPLAY_REPORT)
+
+
+def sha256_of(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def artifact_snapshot() -> dict[Path, str]:
+    return {path: sha256_of(path) for path in REPLAY_ARTIFACTS}
+
+
+def lock_time_sandbox(test_case: unittest.TestCase) -> Path:
+    """Repo root presenting the checkout as it was at registration lock time.
+
+    The stopped replay journal/report already exist in the real checkout, so a
+    CLI invocation against ``REPO_ROOT`` legitimately fails its freshness
+    checks. This sandbox isolates those outputs without touching them: it
+    materialises ``runs/epic-126/replay-v4`` as a real directory holding only a
+    byte-identical copy of the registration, and symlinks every other path back
+    to the real checkout so source hashes, the pinned decision artifact and all
+    upstream pins verify exactly as they do in production.
+    """
+
+    root = Path(tempfile.mkdtemp(prefix="replay-v4-locktime-"))
+    test_case.addCleanup(shutil.rmtree, root, ignore_errors=True)
+    (root / "src").symlink_to(REPO_ROOT / "src")
+    runs = root / "runs"
+    runs.mkdir()
+    for entry in sorted(os.listdir(REPO_ROOT / "runs")):
+        if entry != "epic-126":
+            (runs / entry).symlink_to(REPO_ROOT / "runs" / entry)
+    epic = runs / "epic-126"
+    epic.mkdir()
+    for entry in sorted(os.listdir(REPO_ROOT / "runs" / "epic-126")):
+        if entry == "replay-v4":
+            continue
+        (epic / entry).symlink_to(REPO_ROOT / "runs" / "epic-126" / entry)
+    (epic / "replay-v4").mkdir()
+    shutil.copy2(REPLAY_REGISTRATION,
+                 epic / "replay-v4" / REPLAY_REGISTRATION.name)
+    return root
 
 
 class FakeReceiverClient:
@@ -517,26 +567,84 @@ class FallbackBranchTests(unittest.TestCase):
 
 
 class OfflineCliTests(unittest.TestCase):
-    def test_offline_cli_zero_provider_calls(self):
-        stdout = []
+    """Offline CLI behaviour, isolated in a lock-time sandbox.
 
-        def explode(*args, **kwargs):
-            raise AssertionError("provider call during offline CLI")
+    The committed stopped replay journal/report occupy the registered output
+    paths, so production freshness checks must fail against ``REPO_ROOT``. Each
+    test therefore runs against :func:`lock_time_sandbox`, while ``setUp``/
+    ``tearDown`` prove the real replay artifacts stayed byte-identical.
+    """
 
-        import io
+    def setUp(self):
+        self.assertTrue(REPLAY_JOURNAL.is_file(),
+                        "stopped replay journal must exist for this suite")
+        self.assertTrue(REPLAY_REPORT.is_file(),
+                        "stopped replay report must exist for this suite")
+        self.artifacts = artifact_snapshot()
+        self.replay_dir_listing = sorted(
+            os.listdir(REPO_ROOT / "runs/epic-126/replay-v4"))
+        self.sandbox_root = lock_time_sandbox(self)
+
+    def tearDown(self):
+        self.assertEqual(artifact_snapshot(), self.artifacts,
+                         "a replay-v4 artifact changed during the test")
+        self.assertEqual(
+            sorted(os.listdir(REPO_ROOT / "runs/epic-126/replay-v4")),
+            self.replay_dir_listing,
+            "the replay-v4 output directory gained or lost a file")
+
+    def run_cli(self, argv, *, explode_message="provider call"):
+        """Run the offline CLI against the lock-time sandbox."""
+
         import contextlib
         buffer = io.StringIO()
-        with patch.object(jc.JevChoiceClient, "complete", side_effect=explode), \
-                patch("urllib.request.urlopen", side_effect=explode), \
+        with patch.object(jc.JevChoiceClient, "complete",
+                          side_effect=AssertionError(explode_message)), \
+                patch("urllib.request.urlopen",
+                      side_effect=AssertionError(explode_message)), \
                 contextlib.redirect_stdout(buffer):
-            rc = runner.main(["--repo-root", str(REPO_ROOT)])
+            rc = runner.main(argv)
+        return rc, buffer.getvalue()
+
+    def test_sandbox_isolates_the_stopped_replay_outputs(self):
+        sandbox_journal = (self.sandbox_root / REPLAY_JOURNAL.relative_to(REPO_ROOT))
+        sandbox_report = (self.sandbox_root / REPLAY_REPORT.relative_to(REPO_ROOT))
+        sandbox_registration = (
+            self.sandbox_root / REPLAY_REGISTRATION.relative_to(REPO_ROOT))
+        self.assertFalse(sandbox_journal.exists())
+        self.assertFalse(sandbox_report.exists())
+        self.assertTrue(sandbox_registration.is_file())
+        self.assertEqual(sandbox_registration.read_bytes(),
+                         REPLAY_REGISTRATION.read_bytes())
+        self.assertTrue(REPLAY_JOURNAL.is_file())
+        self.assertTrue(REPLAY_REPORT.is_file())
+
+    def test_offline_cli_zero_provider_calls(self):
+        rc, output = self.run_cli(["--repo-root", str(self.sandbox_root)],
+                                  explode_message="provider call during offline CLI")
         self.assertEqual(rc, 0)
-        output = buffer.getvalue()
         self.assertIn("preflight only", output)
         self.assertIn('"provider_calls": 0', output)
+        self.assertFalse(
+            (self.sandbox_root / REPLAY_JOURNAL.relative_to(REPO_ROOT)).exists())
+        self.assertFalse(
+            (self.sandbox_root / REPLAY_REPORT.relative_to(REPO_ROOT)).exists())
 
     def test_live_without_approval_zero_provider_calls(self):
-        import io
+        rc, output = self.run_cli(["--repo-root", str(self.sandbox_root), "--live"],
+                                  explode_message="provider call")
+        self.assertEqual(rc, 2)
+        verification = json.loads(output)
+        self.assertFalse(verification["ok"])
+        self.assertIn("approval_present", verification["failed"])
+        self.assertFalse(
+            (self.sandbox_root / REPLAY_JOURNAL.relative_to(REPO_ROOT)).exists())
+        self.assertFalse(
+            (self.sandbox_root / REPLAY_REPORT.relative_to(REPO_ROOT)).exists())
+
+    def test_production_preflight_rejects_occupied_registered_paths(self):
+        """The real checkout keeps its freshness gate: occupied paths fail closed."""
+
         import contextlib
         buffer = io.StringIO()
         with patch.object(jc.JevChoiceClient, "complete",
@@ -544,15 +652,28 @@ class OfflineCliTests(unittest.TestCase):
                 patch("urllib.request.urlopen",
                       side_effect=AssertionError("provider call")), \
                 contextlib.redirect_stdout(buffer):
-            rc = runner.main(["--repo-root", str(REPO_ROOT), "--live"])
+            rc = runner.main(["--repo-root", str(REPO_ROOT)])
         self.assertEqual(rc, 2)
+        verification = json.loads(buffer.getvalue())
+        self.assertFalse(verification["ok"])
+        self.assertIn("journal_path_fresh", verification["failed"])
+        self.assertIn("report_path_fresh", verification["failed"])
+        self.assertIn("registration_verifies", verification["failed"])
+        # failed preflight must not write anything
+        self.assertEqual(artifact_snapshot(), self.artifacts)
+        self.assertFalse(
+            (self.sandbox_root / REPLAY_JOURNAL.relative_to(REPO_ROOT)).exists())
+
+    def test_replay_artifacts_byte_identical_after_cli(self):
+        before = artifact_snapshot()
+        self.run_cli(["--repo-root", str(self.sandbox_root)])
+        self.run_cli(["--repo-root", str(REPO_ROOT)])
+        self.assertEqual(artifact_snapshot(), before)
 
     def test_cli_has_no_output_overrides(self):
-        import io
         import contextlib
-        buffer = io.StringIO()
         with self.assertRaises(SystemExit):
-            with contextlib.redirect_stdout(buffer):
+            with contextlib.redirect_stdout(io.StringIO()):
                 runner.main(["--repo-root", str(REPO_ROOT), "--journal", "/tmp/x.jsonl"])
 
 
