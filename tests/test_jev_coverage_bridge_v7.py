@@ -584,11 +584,17 @@ class OfflineCliTests(unittest.TestCase):
                 patch.object(jc.JevChoiceClient, "complete", side_effect=explode), \
                 contextlib.redirect_stdout(stdout):
             rc = run7.main(["--repo-root", str(REPO_ROOT)])
+        output = stdout.getvalue()
         if outputs_present:
+            # committed live outputs: the registered freshness refusal is the
+            # expected outcome (not a regression); explode patches prove that
+            # zero provider calls happened on either branch
             self.assertEqual(rc, 2)
+            self.assertIn("journal_path_fresh", output)
+            self.assertIn('"ok": false', output)
         else:
             self.assertEqual(rc, 0)
-        self.assertIn('"provider_calls": 0', stdout.getvalue())
+            self.assertIn('"provider_calls": 0', output)
 
     def test_live_without_approval_makes_zero_provider_calls(self):
         stdout = io.StringIO()
