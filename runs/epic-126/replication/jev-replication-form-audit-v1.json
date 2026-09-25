@@ -1,0 +1,1710 @@
+{
+  "audit_content_hash": "5242e9cfa35e3a77c54045475428dd617cf93cb16d464b55ad679adc35f80a83",
+  "audit_version": "jev-replication-form-audit-v1",
+  "blocks": {
+    "block_n": 16,
+    "confirmation": {
+      "form_membership": {
+        "57ee9880f18bff4971516f9db820fd96dfb9eb86dab29e166025625e88a7b0c9": [
+          "hypothesis-000153dd",
+          "hypothesis-000153e3",
+          "hypothesis-000153e8",
+          "hypothesis-000153e9"
+        ],
+        "a0e4ffd0c0b442207bf171422592a1f0b8f58556e2d44d8845d74ec23853f03d": [
+          "hypothesis-000153e2",
+          "hypothesis-000153e4",
+          "hypothesis-000153e6",
+          "hypothesis-000153f8"
+        ],
+        "a95806c84d3a722d0ae240c637277373526956b57051cf006e5430706bf6e94c": [
+          "hypothesis-000153d9",
+          "hypothesis-000153da",
+          "hypothesis-000153db",
+          "hypothesis-000153de"
+        ],
+        "fc05e96360fa58fd2398727a886654d27d87fe561b2160002bcc01511f322562": [
+          "hypothesis-000153d8",
+          "hypothesis-000153dc",
+          "hypothesis-000153e5",
+          "hypothesis-000153e7"
+        ]
+      },
+      "manifest": [
+        {
+          "instance_id": "hypothesis-000153dd",
+          "prompt_form_id": "57ee9880f18bff4971516f9db820fd96dfb9eb86dab29e166025625e88a7b0c9",
+          "seed": 87005
+        },
+        {
+          "instance_id": "hypothesis-000153e3",
+          "prompt_form_id": "57ee9880f18bff4971516f9db820fd96dfb9eb86dab29e166025625e88a7b0c9",
+          "seed": 87011
+        },
+        {
+          "instance_id": "hypothesis-000153e8",
+          "prompt_form_id": "57ee9880f18bff4971516f9db820fd96dfb9eb86dab29e166025625e88a7b0c9",
+          "seed": 87016
+        },
+        {
+          "instance_id": "hypothesis-000153e9",
+          "prompt_form_id": "57ee9880f18bff4971516f9db820fd96dfb9eb86dab29e166025625e88a7b0c9",
+          "seed": 87017
+        },
+        {
+          "instance_id": "hypothesis-000153e2",
+          "prompt_form_id": "a0e4ffd0c0b442207bf171422592a1f0b8f58556e2d44d8845d74ec23853f03d",
+          "seed": 87010
+        },
+        {
+          "instance_id": "hypothesis-000153e4",
+          "prompt_form_id": "a0e4ffd0c0b442207bf171422592a1f0b8f58556e2d44d8845d74ec23853f03d",
+          "seed": 87012
+        },
+        {
+          "instance_id": "hypothesis-000153e6",
+          "prompt_form_id": "a0e4ffd0c0b442207bf171422592a1f0b8f58556e2d44d8845d74ec23853f03d",
+          "seed": 87014
+        },
+        {
+          "instance_id": "hypothesis-000153f8",
+          "prompt_form_id": "a0e4ffd0c0b442207bf171422592a1f0b8f58556e2d44d8845d74ec23853f03d",
+          "seed": 87032
+        },
+        {
+          "instance_id": "hypothesis-000153d9",
+          "prompt_form_id": "a95806c84d3a722d0ae240c637277373526956b57051cf006e5430706bf6e94c",
+          "seed": 87001
+        },
+        {
+          "instance_id": "hypothesis-000153da",
+          "prompt_form_id": "a95806c84d3a722d0ae240c637277373526956b57051cf006e5430706bf6e94c",
+          "seed": 87002
+        },
+        {
+          "instance_id": "hypothesis-000153db",
+          "prompt_form_id": "a95806c84d3a722d0ae240c637277373526956b57051cf006e5430706bf6e94c",
+          "seed": 87003
+        },
+        {
+          "instance_id": "hypothesis-000153de",
+          "prompt_form_id": "a95806c84d3a722d0ae240c637277373526956b57051cf006e5430706bf6e94c",
+          "seed": 87006
+        },
+        {
+          "instance_id": "hypothesis-000153d8",
+          "prompt_form_id": "fc05e96360fa58fd2398727a886654d27d87fe561b2160002bcc01511f322562",
+          "seed": 87000
+        },
+        {
+          "instance_id": "hypothesis-000153dc",
+          "prompt_form_id": "fc05e96360fa58fd2398727a886654d27d87fe561b2160002bcc01511f322562",
+          "seed": 87004
+        },
+        {
+          "instance_id": "hypothesis-000153e5",
+          "prompt_form_id": "fc05e96360fa58fd2398727a886654d27d87fe561b2160002bcc01511f322562",
+          "seed": 87013
+        },
+        {
+          "instance_id": "hypothesis-000153e7",
+          "prompt_form_id": "fc05e96360fa58fd2398727a886654d27d87fe561b2160002bcc01511f322562",
+          "seed": 87015
+        }
+      ],
+      "manifest_hash": "b2293d7e6c6e3219b991e770f5cb5565beb8b8d585c3952911946c2106c86cff"
+    },
+    "instances_per_form": 4,
+    "primary": {
+      "form_membership": {
+        "57ee9880f18bff4971516f9db820fd96dfb9eb86dab29e166025625e88a7b0c9": [
+          "hypothesis-00014c0b",
+          "hypothesis-00014c11",
+          "hypothesis-00014c1f",
+          "hypothesis-00014c21"
+        ],
+        "a0e4ffd0c0b442207bf171422592a1f0b8f58556e2d44d8845d74ec23853f03d": [
+          "hypothesis-00014c0c",
+          "hypothesis-00014c0d",
+          "hypothesis-00014c0e",
+          "hypothesis-00014c10"
+        ],
+        "a95806c84d3a722d0ae240c637277373526956b57051cf006e5430706bf6e94c": [
+          "hypothesis-00014c0a",
+          "hypothesis-00014c14",
+          "hypothesis-00014c15",
+          "hypothesis-00014c19"
+        ],
+        "fc05e96360fa58fd2398727a886654d27d87fe561b2160002bcc01511f322562": [
+          "hypothesis-00014c08",
+          "hypothesis-00014c09",
+          "hypothesis-00014c0f",
+          "hypothesis-00014c13"
+        ]
+      },
+      "manifest": [
+        {
+          "instance_id": "hypothesis-00014c0b",
+          "prompt_form_id": "57ee9880f18bff4971516f9db820fd96dfb9eb86dab29e166025625e88a7b0c9",
+          "seed": 85003
+        },
+        {
+          "instance_id": "hypothesis-00014c11",
+          "prompt_form_id": "57ee9880f18bff4971516f9db820fd96dfb9eb86dab29e166025625e88a7b0c9",
+          "seed": 85009
+        },
+        {
+          "instance_id": "hypothesis-00014c1f",
+          "prompt_form_id": "57ee9880f18bff4971516f9db820fd96dfb9eb86dab29e166025625e88a7b0c9",
+          "seed": 85023
+        },
+        {
+          "instance_id": "hypothesis-00014c21",
+          "prompt_form_id": "57ee9880f18bff4971516f9db820fd96dfb9eb86dab29e166025625e88a7b0c9",
+          "seed": 85025
+        },
+        {
+          "instance_id": "hypothesis-00014c0c",
+          "prompt_form_id": "a0e4ffd0c0b442207bf171422592a1f0b8f58556e2d44d8845d74ec23853f03d",
+          "seed": 85004
+        },
+        {
+          "instance_id": "hypothesis-00014c0d",
+          "prompt_form_id": "a0e4ffd0c0b442207bf171422592a1f0b8f58556e2d44d8845d74ec23853f03d",
+          "seed": 85005
+        },
+        {
+          "instance_id": "hypothesis-00014c0e",
+          "prompt_form_id": "a0e4ffd0c0b442207bf171422592a1f0b8f58556e2d44d8845d74ec23853f03d",
+          "seed": 85006
+        },
+        {
+          "instance_id": "hypothesis-00014c10",
+          "prompt_form_id": "a0e4ffd0c0b442207bf171422592a1f0b8f58556e2d44d8845d74ec23853f03d",
+          "seed": 85008
+        },
+        {
+          "instance_id": "hypothesis-00014c0a",
+          "prompt_form_id": "a95806c84d3a722d0ae240c637277373526956b57051cf006e5430706bf6e94c",
+          "seed": 85002
+        },
+        {
+          "instance_id": "hypothesis-00014c14",
+          "prompt_form_id": "a95806c84d3a722d0ae240c637277373526956b57051cf006e5430706bf6e94c",
+          "seed": 85012
+        },
+        {
+          "instance_id": "hypothesis-00014c15",
+          "prompt_form_id": "a95806c84d3a722d0ae240c637277373526956b57051cf006e5430706bf6e94c",
+          "seed": 85013
+        },
+        {
+          "instance_id": "hypothesis-00014c19",
+          "prompt_form_id": "a95806c84d3a722d0ae240c637277373526956b57051cf006e5430706bf6e94c",
+          "seed": 85017
+        },
+        {
+          "instance_id": "hypothesis-00014c08",
+          "prompt_form_id": "fc05e96360fa58fd2398727a886654d27d87fe561b2160002bcc01511f322562",
+          "seed": 85000
+        },
+        {
+          "instance_id": "hypothesis-00014c09",
+          "prompt_form_id": "fc05e96360fa58fd2398727a886654d27d87fe561b2160002bcc01511f322562",
+          "seed": 85001
+        },
+        {
+          "instance_id": "hypothesis-00014c0f",
+          "prompt_form_id": "fc05e96360fa58fd2398727a886654d27d87fe561b2160002bcc01511f322562",
+          "seed": 85007
+        },
+        {
+          "instance_id": "hypothesis-00014c13",
+          "prompt_form_id": "fc05e96360fa58fd2398727a886654d27d87fe561b2160002bcc01511f322562",
+          "seed": 85011
+        }
+      ],
+      "manifest_hash": "60b31896734c5767910d0b72527f621c8f10c52aebd0359edcec23e8473ae4d5"
+    },
+    "selection_rule": "first INSTANCES_PER_FORM seeds per form in ascending seed order within the window; fixed N; no outcome-based stopping"
+  },
+  "disjointness": {
+    "disjoint_from_all_prior_artifacts": true,
+    "documented_seed_ranges": [
+      {
+        "high": 17104,
+        "low": 16000
+      },
+      {
+        "high": 39001,
+        "low": 39000
+      },
+      {
+        "high": 41001,
+        "low": 41000
+      },
+      {
+        "high": 70016,
+        "low": 70000
+      },
+      {
+        "high": 71016,
+        "low": 71000
+      },
+      {
+        "high": 72016,
+        "low": 72000
+      },
+      {
+        "high": 73016,
+        "low": 73000
+      },
+      {
+        "high": 74016,
+        "low": 74000
+      },
+      {
+        "high": 75255,
+        "low": 75000
+      },
+      {
+        "high": 80016,
+        "low": 80000
+      }
+    ],
+    "primary_vs_confirmation_overlap": [],
+    "prior_instance_id_count": 8945,
+    "prior_instance_ids_sha256": "429e8c54720d1a472d9e191fedc0510ade291680514f2dae4dff8c2a747607f9",
+    "prior_sources": [
+      "runs/container-isolation.json",
+      "runs/epic-126/channel-audit.json",
+      "runs/epic-126/cneed-fourfamilies-n9-diagnostic.json",
+      "runs/epic-126/cneed-fourfamilies-n9-report.json",
+      "runs/epic-126/cneed-fourfamilies-n9.jsonl",
+      "runs/epic-126/cneed-n20-diagnostic.json",
+      "runs/epic-126/cneed-n20-report.json",
+      "runs/epic-126/cneed-n20.jsonl",
+      "runs/epic-126/cneed-n9-diagnostic.json",
+      "runs/epic-126/cneed-n9-report.json",
+      "runs/epic-126/cneed-n9.jsonl",
+      "runs/epic-126/comm-n20-diagnostic.json",
+      "runs/epic-126/comm-n20-report.json",
+      "runs/epic-126/comm-n20.jsonl",
+      "runs/epic-126/comm-planning-n9-diagnostic.json",
+      "runs/epic-126/comm-planning-n9-report.json",
+      "runs/epic-126/comm-planning-n9.jsonl",
+      "runs/epic-126/confirmatory-v3-diagnostic.json",
+      "runs/epic-126/confirmatory-v3-report.json",
+      "runs/epic-126/confirmatory-v3.jsonl",
+      "runs/epic-126/decisions/jev-v7-coverage-decision.json",
+      "runs/epic-126/diagnostics/jev-provider-diagnostics-preregistration-v1.json",
+      "runs/epic-126/diagnostics/jev-transport-probe-v1.json",
+      "runs/epic-126/diagnostics/ling-transport-probe-v1.json",
+      "runs/epic-126/full-gate-1024-diagnostic.json",
+      "runs/epic-126/full-gate-1024-report.json",
+      "runs/epic-126/full-gate-1024.jsonl",
+      "runs/epic-126/full-gate-budget512-diagnostic.json",
+      "runs/epic-126/full-gate-budget512-report.json",
+      "runs/epic-126/full-gate-budget512.jsonl",
+      "runs/epic-126/full-gate-diagnostic.json",
+      "runs/epic-126/full-gate-hypmed-1024-diagnostic.json",
+      "runs/epic-126/full-gate-hypmed-1024-report.json",
+      "runs/epic-126/full-gate-hypmed-1024.jsonl",
+      "runs/epic-126/full-gate-repair-diagnostic.json",
+      "runs/epic-126/full-gate-repair-preflight.json",
+      "runs/epic-126/full-gate-repair-report.json",
+      "runs/epic-126/full-gate-repair.jsonl",
+      "runs/epic-126/full-gate-report.json",
+      "runs/epic-126/full-gate.jsonl",
+      "runs/epic-126/jev-board-necessity-selection.json",
+      "runs/epic-126/jev-cell-selection-v1.json",
+      "runs/epic-126/jev-choice-adapter-fixture.json",
+      "runs/epic-126/jev-choice-capability-preregistration.json",
+      "runs/epic-126/jev-choice-capability-report.json",
+      "runs/epic-126/jev-choice-capability.jsonl",
+      "runs/epic-126/jev-choice-normalization-diagnostics-v2.json",
+      "runs/epic-126/jev-choice-normalization-probe-report-v2.json",
+      "runs/epic-126/jev-choice-normalization-probe-v2.json",
+      "runs/epic-126/jev-choice-normalization-probe-v2.jsonl",
+      "runs/epic-126/jev-choice-pilot-report-v2.json",
+      "runs/epic-126/jev-choice-pilot-report-v3.json",
+      "runs/epic-126/jev-choice-pilot-report.json",
+      "runs/epic-126/jev-choice-pilot-v2.jsonl",
+      "runs/epic-126/jev-choice-pilot-v3.jsonl",
+      "runs/epic-126/jev-choice-pilot.jsonl",
+      "runs/epic-126/jev-choice-replay-preregistration-v2.json",
+      "runs/epic-126/jev-choice-replay-preregistration-v3.json",
+      "runs/epic-126/jev-choice-replay-preregistration.json",
+      "runs/epic-126/jev-choice-wire-smoke-golden.json",
+      "runs/epic-126/jev-choice-wire-smoke-report.json",
+      "runs/epic-126/jev-coverage-manifest-preregistration-v6.json",
+      "runs/epic-126/jev-coverage-manifest-preregistration-v7.json",
+      "runs/epic-126/jev-coverage-manifest-report-v6.json",
+      "runs/epic-126/jev-coverage-manifest-report-v7.json",
+      "runs/epic-126/jev-coverage-manifest-v6.jsonl",
+      "runs/epic-126/jev-coverage-manifest-v7.jsonl",
+      "runs/epic-126/jev-ling-transport-probe-v7.json",
+      "runs/epic-126/jev-planning-low-manifest.json",
+      "runs/epic-126/jev-six-form-coverage-audit-v1.json",
+      "runs/epic-126/jev-writer-exact-bridge-report-v5.json",
+      "runs/epic-126/jev-writer-exact-bridge-v5.jsonl",
+      "runs/epic-126/jev-writer-ladder-preregistration-v4.json",
+      "runs/epic-126/jev-writer-ladder-preregistration-v5.json",
+      "runs/epic-126/jev-writer-treatment-audit-v4.json",
+      "runs/epic-126/paired-analysis-n20.json",
+      "runs/epic-126/paired-analysis-planning.json",
+      "runs/epic-126/paired-screen-diagnostic.json",
+      "runs/epic-126/paired-screen-n5-diagnostic.json",
+      "runs/epic-126/paired-screen-n5-leakfree-diagnostic.json",
+      "runs/epic-126/paired-screen-n5-leakfree-report.json",
+      "runs/epic-126/paired-screen-n5-leakfree.jsonl",
+      "runs/epic-126/paired-screen-n5-report.json",
+      "runs/epic-126/paired-screen-n5.jsonl",
+      "runs/epic-126/paired-screen-report.json",
+      "runs/epic-126/paired-screen.jsonl",
+      "runs/epic-126/planning-high-v4-diagnostic.json",
+      "runs/epic-126/planning-high-v4-report.json",
+      "runs/epic-126/planning-high-v4.jsonl",
+      "runs/epic-126/preregistered-manifest.json",
+      "runs/epic-126/preregistration-planning-high-v4.json",
+      "runs/epic-126/preregistration-v1.json",
+      "runs/epic-126/preregistration-v2.json",
+      "runs/epic-126/preregistration-v3.json",
+      "runs/epic-126/replay-v4/jev-choice-replay-preregistration-v4.json",
+      "runs/epic-126/replay-v4/jev-choice-replay-report-v4.json",
+      "runs/epic-126/replay-v4/jev-choice-replay-v4.jsonl",
+      "runs/epic-126/replay-v5/jev-choice-replay-inference-v5.json",
+      "runs/epic-126/replay-v5/jev-choice-replay-preregistration-v5.json",
+      "runs/epic-126/replay-v5/jev-choice-replay-report-v5.json",
+      "runs/epic-126/replay-v5/jev-choice-replay-v5.jsonl",
+      "runs/epic-126/stage2-attempt-state.json",
+      "runs/epic-126/stage2-smoke-combined-analysis.json",
+      "runs/epic-126/stage2-smoke-diagnostic.json",
+      "runs/epic-126/stage2-smoke-report.json",
+      "runs/epic-126/stage2-smoke-resume1-diagnostic.json",
+      "runs/epic-126/stage2-smoke-resume1-report.json",
+      "runs/epic-126/stage2-smoke-v2-diagnostic.json",
+      "runs/epic-126/stage2-smoke-v2-report.json",
+      "runs/epic-126/stage2-smoke-v2.jsonl",
+      "runs/epic-126/stage2-smoke.jsonl",
+      "runs/epic-126/t1-pressure-catalog.json",
+      "runs/epic-126/t1-retained-pilot-audit.json",
+      "runs/epic-126/t1-screen-report.json",
+      "runs/epic-126/t1-screen-retry-report.json",
+      "runs/epic-126/t1-screen-retry.jsonl",
+      "runs/epic-126/t1-screen.jsonl",
+      "runs/epic-126/t2-capability-report.json",
+      "runs/epic-126/treatment-schema.json"
+    ],
+    "selected_ids_overlapping_prior": [],
+    "selected_seeds": [
+      85000,
+      85001,
+      85002,
+      85003,
+      85004,
+      85005,
+      85006,
+      85007,
+      85008,
+      85009,
+      85011,
+      85012,
+      85013,
+      85017,
+      85023,
+      85025,
+      87000,
+      87001,
+      87002,
+      87003,
+      87004,
+      87005,
+      87006,
+      87010,
+      87011,
+      87012,
+      87013,
+      87014,
+      87015,
+      87016,
+      87017,
+      87032
+    ]
+  },
+  "family_selection": {
+    "anti_prior_statement": "no prior live result (L4X bridge, v6/v7 coverage, pilots, normalization probe, the selection screen or the planning-low replay) was consulted, and the planning-low estimate and p-value are not used as a prior, an expectation or an effect-size guarantee anywhere in this registration",
+    "candidates_in_rule_order": [
+      "hypothesis",
+      "legal",
+      "lexicon",
+      "poetry",
+      "reference"
+    ],
+    "consulted_prior_live_outcomes": [],
+    "evaluations": [
+      {
+        "a_clues_per_instance": 2,
+        "b_clues_per_instance": 1,
+        "b_to_a_information_bits": [
+          1.0
+        ],
+        "closed_finite_solution_set": true,
+        "eligible": true,
+        "family": "hypothesis",
+        "finalizer_needs_peer": true,
+        "informative_b_owned_claims": 512
+      },
+      {
+        "a_clues_per_instance": 2,
+        "b_clues_per_instance": 1,
+        "b_to_a_information_bits": [
+          1.0
+        ],
+        "closed_finite_solution_set": true,
+        "eligible": true,
+        "family": "legal",
+        "finalizer_needs_peer": true,
+        "informative_b_owned_claims": 512
+      },
+      {
+        "a_clues_per_instance": 2,
+        "b_clues_per_instance": 1,
+        "b_to_a_information_bits": [
+          1.0
+        ],
+        "closed_finite_solution_set": true,
+        "eligible": true,
+        "family": "lexicon",
+        "finalizer_needs_peer": true,
+        "informative_b_owned_claims": 512
+      },
+      {
+        "a_clues_per_instance": 2,
+        "b_clues_per_instance": 1,
+        "b_to_a_information_bits": [
+          1.0
+        ],
+        "closed_finite_solution_set": true,
+        "eligible": true,
+        "family": "poetry",
+        "finalizer_needs_peer": true,
+        "informative_b_owned_claims": 512
+      },
+      {
+        "a_clues_per_instance": 2,
+        "b_clues_per_instance": 2,
+        "b_to_a_information_bits": [
+          1.0
+        ],
+        "closed_finite_solution_set": true,
+        "eligible": true,
+        "family": "reference",
+        "finalizer_needs_peer": true,
+        "informative_b_owned_claims": 1024
+      }
+    ],
+    "excluded_families": [
+      "planning"
+    ],
+    "exclusion_reason": "planning is excluded by requirement; this must be a new family",
+    "outcome_blind": true,
+    "preconditions": [
+      "closed finite solution set",
+      "A-finalizer structurally needs the peer clue",
+      "at least one B-owned claim that is informative for A"
+    ],
+    "rationale": "the rule is fixed in advance and cannot encode a preference, so the choice carries no information about favourability; it is evaluated on generator structure only, before any live outcome exists for this family",
+    "rule": "alphabetically first (bytewise ascending) non-planning family that passes the offline structural preconditions",
+    "selected_evaluation": {
+      "a_clues_per_instance": 2,
+      "b_clues_per_instance": 1,
+      "b_to_a_information_bits": [
+        1.0
+      ],
+      "closed_finite_solution_set": true,
+      "eligible": true,
+      "family": "hypothesis",
+      "finalizer_needs_peer": true,
+      "informative_b_owned_claims": 512
+    },
+    "selected_family": "hypothesis"
+  },
+  "form_capacity": {
+    "closed": true,
+    "closure_probe_distinct_forms": 4,
+    "closure_probe_growth_checkpoints": [
+      [
+        32,
+        4
+      ],
+      [
+        64,
+        4
+      ],
+      [
+        128,
+        4
+      ],
+      [
+        256,
+        4
+      ],
+      [
+        512,
+        4
+      ]
+    ],
+    "family": "hypothesis",
+    "form_ids": [
+      "57ee9880f18bff4971516f9db820fd96dfb9eb86dab29e166025625e88a7b0c9",
+      "a0e4ffd0c0b442207bf171422592a1f0b8f58556e2d44d8845d74ec23853f03d",
+      "a95806c84d3a722d0ae240c637277373526956b57051cf006e5430706bf6e94c",
+      "fc05e96360fa58fd2398727a886654d27d87fe561b2160002bcc01511f322562"
+    ],
+    "form_set_hash": "010c5812c17723ee617dac4039b021fb363c2ab61932f46092cb30ec02dc6480",
+    "k_max": 4,
+    "new_forms_in_closure_probe": 0,
+    "per_form_seed_counts": {
+      "57ee9880f18bff4971516f9db820fd96dfb9eb86dab29e166025625e88a7b0c9": 118,
+      "a0e4ffd0c0b442207bf171422592a1f0b8f58556e2d44d8845d74ec23853f03d": 129,
+      "a95806c84d3a722d0ae240c637277373526956b57051cf006e5430706bf6e94c": 133,
+      "fc05e96360fa58fd2398727a886654d27d87fe561b2160002bcc01511f322562": 132
+    },
+    "primary_distinct_forms": 4,
+    "primary_growth_checkpoints": [
+      [
+        32,
+        4
+      ],
+      [
+        64,
+        4
+      ],
+      [
+        128,
+        4
+      ],
+      [
+        256,
+        4
+      ],
+      [
+        512,
+        4
+      ]
+    ],
+    "space": "closed"
+  },
+  "instance_geometry": {
+    "distinct_a_private_sizes": [
+      2
+    ],
+    "distinct_real_i_m_bits": [
+      1.0
+    ],
+    "distinct_solution_counts": [
+      8
+    ],
+    "information_geometry_hash": "e263b4f0bf1a3086b73d5ee858f7ee9c17ba5847b9bcc5a84ad8ccdff6ac22c2",
+    "rows": [
+      {
+        "a_private_size": 2,
+        "b_private_size": 4,
+        "instance_id": "hypothesis-00014c08",
+        "joint_solutions": [
+          "candidate-2"
+        ],
+        "option_ids": [
+          "candidate-0",
+          "candidate-1",
+          "candidate-2",
+          "candidate-3",
+          "candidate-4",
+          "candidate-5",
+          "candidate-6",
+          "candidate-7"
+        ],
+        "placebo_claim": "bit0=0",
+        "placebo_i_m_bits": 0.0,
+        "private_clues": {
+          "A": [
+            "bit0=0",
+            "bit2=0"
+          ],
+          "B": [
+            "bit1=1"
+          ]
+        },
+        "real_claim": "bit1=1",
+        "real_i_m_bits": 1.0,
+        "seed": 85000,
+        "solution_count": 8
+      },
+      {
+        "a_private_size": 2,
+        "b_private_size": 4,
+        "instance_id": "hypothesis-00014c09",
+        "joint_solutions": [
+          "candidate-0"
+        ],
+        "option_ids": [
+          "candidate-0",
+          "candidate-1",
+          "candidate-2",
+          "candidate-3",
+          "candidate-4",
+          "candidate-5",
+          "candidate-6",
+          "candidate-7"
+        ],
+        "placebo_claim": "bit0=0",
+        "placebo_i_m_bits": 0.0,
+        "private_clues": {
+          "A": [
+            "bit0=0",
+            "bit2=0"
+          ],
+          "B": [
+            "bit1=0"
+          ]
+        },
+        "real_claim": "bit1=0",
+        "real_i_m_bits": 1.0,
+        "seed": 85001,
+        "solution_count": 8
+      },
+      {
+        "a_private_size": 2,
+        "b_private_size": 4,
+        "instance_id": "hypothesis-00014c0a",
+        "joint_solutions": [
+          "candidate-5"
+        ],
+        "option_ids": [
+          "candidate-0",
+          "candidate-1",
+          "candidate-2",
+          "candidate-3",
+          "candidate-4",
+          "candidate-5",
+          "candidate-6",
+          "candidate-7"
+        ],
+        "placebo_claim": "bit0=1",
+        "placebo_i_m_bits": 0.0,
+        "private_clues": {
+          "A": [
+            "bit0=1",
+            "bit2=1"
+          ],
+          "B": [
+            "bit1=0"
+          ]
+        },
+        "real_claim": "bit1=0",
+        "real_i_m_bits": 1.0,
+        "seed": 85002,
+        "solution_count": 8
+      },
+      {
+        "a_private_size": 2,
+        "b_private_size": 4,
+        "instance_id": "hypothesis-00014c0b",
+        "joint_solutions": [
+          "candidate-6"
+        ],
+        "option_ids": [
+          "candidate-0",
+          "candidate-1",
+          "candidate-2",
+          "candidate-3",
+          "candidate-4",
+          "candidate-5",
+          "candidate-6",
+          "candidate-7"
+        ],
+        "placebo_claim": "bit0=0",
+        "placebo_i_m_bits": 0.0,
+        "private_clues": {
+          "A": [
+            "bit0=0",
+            "bit2=1"
+          ],
+          "B": [
+            "bit1=1"
+          ]
+        },
+        "real_claim": "bit1=1",
+        "real_i_m_bits": 1.0,
+        "seed": 85003,
+        "solution_count": 8
+      },
+      {
+        "a_private_size": 2,
+        "b_private_size": 4,
+        "instance_id": "hypothesis-00014c0c",
+        "joint_solutions": [
+          "candidate-1"
+        ],
+        "option_ids": [
+          "candidate-0",
+          "candidate-1",
+          "candidate-2",
+          "candidate-3",
+          "candidate-4",
+          "candidate-5",
+          "candidate-6",
+          "candidate-7"
+        ],
+        "placebo_claim": "bit0=1",
+        "placebo_i_m_bits": 0.0,
+        "private_clues": {
+          "A": [
+            "bit0=1",
+            "bit2=0"
+          ],
+          "B": [
+            "bit1=0"
+          ]
+        },
+        "real_claim": "bit1=0",
+        "real_i_m_bits": 1.0,
+        "seed": 85004,
+        "solution_count": 8
+      },
+      {
+        "a_private_size": 2,
+        "b_private_size": 4,
+        "instance_id": "hypothesis-00014c0d",
+        "joint_solutions": [
+          "candidate-1"
+        ],
+        "option_ids": [
+          "candidate-0",
+          "candidate-1",
+          "candidate-2",
+          "candidate-3",
+          "candidate-4",
+          "candidate-5",
+          "candidate-6",
+          "candidate-7"
+        ],
+        "placebo_claim": "bit0=1",
+        "placebo_i_m_bits": 0.0,
+        "private_clues": {
+          "A": [
+            "bit0=1",
+            "bit2=0"
+          ],
+          "B": [
+            "bit1=0"
+          ]
+        },
+        "real_claim": "bit1=0",
+        "real_i_m_bits": 1.0,
+        "seed": 85005,
+        "solution_count": 8
+      },
+      {
+        "a_private_size": 2,
+        "b_private_size": 4,
+        "instance_id": "hypothesis-00014c0e",
+        "joint_solutions": [
+          "candidate-1"
+        ],
+        "option_ids": [
+          "candidate-0",
+          "candidate-1",
+          "candidate-2",
+          "candidate-3",
+          "candidate-4",
+          "candidate-5",
+          "candidate-6",
+          "candidate-7"
+        ],
+        "placebo_claim": "bit0=1",
+        "placebo_i_m_bits": 0.0,
+        "private_clues": {
+          "A": [
+            "bit0=1",
+            "bit2=0"
+          ],
+          "B": [
+            "bit1=0"
+          ]
+        },
+        "real_claim": "bit1=0",
+        "real_i_m_bits": 1.0,
+        "seed": 85006,
+        "solution_count": 8
+      },
+      {
+        "a_private_size": 2,
+        "b_private_size": 4,
+        "instance_id": "hypothesis-00014c0f",
+        "joint_solutions": [
+          "candidate-0"
+        ],
+        "option_ids": [
+          "candidate-0",
+          "candidate-1",
+          "candidate-2",
+          "candidate-3",
+          "candidate-4",
+          "candidate-5",
+          "candidate-6",
+          "candidate-7"
+        ],
+        "placebo_claim": "bit0=0",
+        "placebo_i_m_bits": 0.0,
+        "private_clues": {
+          "A": [
+            "bit0=0",
+            "bit2=0"
+          ],
+          "B": [
+            "bit1=0"
+          ]
+        },
+        "real_claim": "bit1=0",
+        "real_i_m_bits": 1.0,
+        "seed": 85007,
+        "solution_count": 8
+      },
+      {
+        "a_private_size": 2,
+        "b_private_size": 4,
+        "instance_id": "hypothesis-00014c10",
+        "joint_solutions": [
+          "candidate-1"
+        ],
+        "option_ids": [
+          "candidate-0",
+          "candidate-1",
+          "candidate-2",
+          "candidate-3",
+          "candidate-4",
+          "candidate-5",
+          "candidate-6",
+          "candidate-7"
+        ],
+        "placebo_claim": "bit0=1",
+        "placebo_i_m_bits": 0.0,
+        "private_clues": {
+          "A": [
+            "bit0=1",
+            "bit2=0"
+          ],
+          "B": [
+            "bit1=0"
+          ]
+        },
+        "real_claim": "bit1=0",
+        "real_i_m_bits": 1.0,
+        "seed": 85008,
+        "solution_count": 8
+      },
+      {
+        "a_private_size": 2,
+        "b_private_size": 4,
+        "instance_id": "hypothesis-00014c11",
+        "joint_solutions": [
+          "candidate-6"
+        ],
+        "option_ids": [
+          "candidate-0",
+          "candidate-1",
+          "candidate-2",
+          "candidate-3",
+          "candidate-4",
+          "candidate-5",
+          "candidate-6",
+          "candidate-7"
+        ],
+        "placebo_claim": "bit0=0",
+        "placebo_i_m_bits": 0.0,
+        "private_clues": {
+          "A": [
+            "bit0=0",
+            "bit2=1"
+          ],
+          "B": [
+            "bit1=1"
+          ]
+        },
+        "real_claim": "bit1=1",
+        "real_i_m_bits": 1.0,
+        "seed": 85009,
+        "solution_count": 8
+      },
+      {
+        "a_private_size": 2,
+        "b_private_size": 4,
+        "instance_id": "hypothesis-00014c13",
+        "joint_solutions": [
+          "candidate-0"
+        ],
+        "option_ids": [
+          "candidate-0",
+          "candidate-1",
+          "candidate-2",
+          "candidate-3",
+          "candidate-4",
+          "candidate-5",
+          "candidate-6",
+          "candidate-7"
+        ],
+        "placebo_claim": "bit0=0",
+        "placebo_i_m_bits": 0.0,
+        "private_clues": {
+          "A": [
+            "bit0=0",
+            "bit2=0"
+          ],
+          "B": [
+            "bit1=0"
+          ]
+        },
+        "real_claim": "bit1=0",
+        "real_i_m_bits": 1.0,
+        "seed": 85011,
+        "solution_count": 8
+      },
+      {
+        "a_private_size": 2,
+        "b_private_size": 4,
+        "instance_id": "hypothesis-00014c14",
+        "joint_solutions": [
+          "candidate-7"
+        ],
+        "option_ids": [
+          "candidate-0",
+          "candidate-1",
+          "candidate-2",
+          "candidate-3",
+          "candidate-4",
+          "candidate-5",
+          "candidate-6",
+          "candidate-7"
+        ],
+        "placebo_claim": "bit0=1",
+        "placebo_i_m_bits": 0.0,
+        "private_clues": {
+          "A": [
+            "bit0=1",
+            "bit2=1"
+          ],
+          "B": [
+            "bit1=1"
+          ]
+        },
+        "real_claim": "bit1=1",
+        "real_i_m_bits": 1.0,
+        "seed": 85012,
+        "solution_count": 8
+      },
+      {
+        "a_private_size": 2,
+        "b_private_size": 4,
+        "instance_id": "hypothesis-00014c15",
+        "joint_solutions": [
+          "candidate-7"
+        ],
+        "option_ids": [
+          "candidate-0",
+          "candidate-1",
+          "candidate-2",
+          "candidate-3",
+          "candidate-4",
+          "candidate-5",
+          "candidate-6",
+          "candidate-7"
+        ],
+        "placebo_claim": "bit0=1",
+        "placebo_i_m_bits": 0.0,
+        "private_clues": {
+          "A": [
+            "bit0=1",
+            "bit2=1"
+          ],
+          "B": [
+            "bit1=1"
+          ]
+        },
+        "real_claim": "bit1=1",
+        "real_i_m_bits": 1.0,
+        "seed": 85013,
+        "solution_count": 8
+      },
+      {
+        "a_private_size": 2,
+        "b_private_size": 4,
+        "instance_id": "hypothesis-00014c19",
+        "joint_solutions": [
+          "candidate-7"
+        ],
+        "option_ids": [
+          "candidate-0",
+          "candidate-1",
+          "candidate-2",
+          "candidate-3",
+          "candidate-4",
+          "candidate-5",
+          "candidate-6",
+          "candidate-7"
+        ],
+        "placebo_claim": "bit0=1",
+        "placebo_i_m_bits": 0.0,
+        "private_clues": {
+          "A": [
+            "bit0=1",
+            "bit2=1"
+          ],
+          "B": [
+            "bit1=1"
+          ]
+        },
+        "real_claim": "bit1=1",
+        "real_i_m_bits": 1.0,
+        "seed": 85017,
+        "solution_count": 8
+      },
+      {
+        "a_private_size": 2,
+        "b_private_size": 4,
+        "instance_id": "hypothesis-00014c1f",
+        "joint_solutions": [
+          "candidate-6"
+        ],
+        "option_ids": [
+          "candidate-0",
+          "candidate-1",
+          "candidate-2",
+          "candidate-3",
+          "candidate-4",
+          "candidate-5",
+          "candidate-6",
+          "candidate-7"
+        ],
+        "placebo_claim": "bit0=0",
+        "placebo_i_m_bits": 0.0,
+        "private_clues": {
+          "A": [
+            "bit0=0",
+            "bit2=1"
+          ],
+          "B": [
+            "bit1=1"
+          ]
+        },
+        "real_claim": "bit1=1",
+        "real_i_m_bits": 1.0,
+        "seed": 85023,
+        "solution_count": 8
+      },
+      {
+        "a_private_size": 2,
+        "b_private_size": 4,
+        "instance_id": "hypothesis-00014c21",
+        "joint_solutions": [
+          "candidate-6"
+        ],
+        "option_ids": [
+          "candidate-0",
+          "candidate-1",
+          "candidate-2",
+          "candidate-3",
+          "candidate-4",
+          "candidate-5",
+          "candidate-6",
+          "candidate-7"
+        ],
+        "placebo_claim": "bit0=0",
+        "placebo_i_m_bits": 0.0,
+        "private_clues": {
+          "A": [
+            "bit0=0",
+            "bit2=1"
+          ],
+          "B": [
+            "bit1=1"
+          ]
+        },
+        "real_claim": "bit1=1",
+        "real_i_m_bits": 1.0,
+        "seed": 85025,
+        "solution_count": 8
+      },
+      {
+        "a_private_size": 2,
+        "b_private_size": 4,
+        "instance_id": "hypothesis-000153d8",
+        "joint_solutions": [
+          "candidate-2"
+        ],
+        "option_ids": [
+          "candidate-0",
+          "candidate-1",
+          "candidate-2",
+          "candidate-3",
+          "candidate-4",
+          "candidate-5",
+          "candidate-6",
+          "candidate-7"
+        ],
+        "placebo_claim": "bit0=0",
+        "placebo_i_m_bits": 0.0,
+        "private_clues": {
+          "A": [
+            "bit0=0",
+            "bit2=0"
+          ],
+          "B": [
+            "bit1=1"
+          ]
+        },
+        "real_claim": "bit1=1",
+        "real_i_m_bits": 1.0,
+        "seed": 87000,
+        "solution_count": 8
+      },
+      {
+        "a_private_size": 2,
+        "b_private_size": 4,
+        "instance_id": "hypothesis-000153d9",
+        "joint_solutions": [
+          "candidate-5"
+        ],
+        "option_ids": [
+          "candidate-0",
+          "candidate-1",
+          "candidate-2",
+          "candidate-3",
+          "candidate-4",
+          "candidate-5",
+          "candidate-6",
+          "candidate-7"
+        ],
+        "placebo_claim": "bit0=1",
+        "placebo_i_m_bits": 0.0,
+        "private_clues": {
+          "A": [
+            "bit0=1",
+            "bit2=1"
+          ],
+          "B": [
+            "bit1=0"
+          ]
+        },
+        "real_claim": "bit1=0",
+        "real_i_m_bits": 1.0,
+        "seed": 87001,
+        "solution_count": 8
+      },
+      {
+        "a_private_size": 2,
+        "b_private_size": 4,
+        "instance_id": "hypothesis-000153da",
+        "joint_solutions": [
+          "candidate-5"
+        ],
+        "option_ids": [
+          "candidate-0",
+          "candidate-1",
+          "candidate-2",
+          "candidate-3",
+          "candidate-4",
+          "candidate-5",
+          "candidate-6",
+          "candidate-7"
+        ],
+        "placebo_claim": "bit0=1",
+        "placebo_i_m_bits": 0.0,
+        "private_clues": {
+          "A": [
+            "bit0=1",
+            "bit2=1"
+          ],
+          "B": [
+            "bit1=0"
+          ]
+        },
+        "real_claim": "bit1=0",
+        "real_i_m_bits": 1.0,
+        "seed": 87002,
+        "solution_count": 8
+      },
+      {
+        "a_private_size": 2,
+        "b_private_size": 4,
+        "instance_id": "hypothesis-000153db",
+        "joint_solutions": [
+          "candidate-7"
+        ],
+        "option_ids": [
+          "candidate-0",
+          "candidate-1",
+          "candidate-2",
+          "candidate-3",
+          "candidate-4",
+          "candidate-5",
+          "candidate-6",
+          "candidate-7"
+        ],
+        "placebo_claim": "bit0=1",
+        "placebo_i_m_bits": 0.0,
+        "private_clues": {
+          "A": [
+            "bit0=1",
+            "bit2=1"
+          ],
+          "B": [
+            "bit1=1"
+          ]
+        },
+        "real_claim": "bit1=1",
+        "real_i_m_bits": 1.0,
+        "seed": 87003,
+        "solution_count": 8
+      },
+      {
+        "a_private_size": 2,
+        "b_private_size": 4,
+        "instance_id": "hypothesis-000153dc",
+        "joint_solutions": [
+          "candidate-0"
+        ],
+        "option_ids": [
+          "candidate-0",
+          "candidate-1",
+          "candidate-2",
+          "candidate-3",
+          "candidate-4",
+          "candidate-5",
+          "candidate-6",
+          "candidate-7"
+        ],
+        "placebo_claim": "bit0=0",
+        "placebo_i_m_bits": 0.0,
+        "private_clues": {
+          "A": [
+            "bit0=0",
+            "bit2=0"
+          ],
+          "B": [
+            "bit1=0"
+          ]
+        },
+        "real_claim": "bit1=0",
+        "real_i_m_bits": 1.0,
+        "seed": 87004,
+        "solution_count": 8
+      },
+      {
+        "a_private_size": 2,
+        "b_private_size": 4,
+        "instance_id": "hypothesis-000153dd",
+        "joint_solutions": [
+          "candidate-4"
+        ],
+        "option_ids": [
+          "candidate-0",
+          "candidate-1",
+          "candidate-2",
+          "candidate-3",
+          "candidate-4",
+          "candidate-5",
+          "candidate-6",
+          "candidate-7"
+        ],
+        "placebo_claim": "bit0=0",
+        "placebo_i_m_bits": 0.0,
+        "private_clues": {
+          "A": [
+            "bit0=0",
+            "bit2=1"
+          ],
+          "B": [
+            "bit1=0"
+          ]
+        },
+        "real_claim": "bit1=0",
+        "real_i_m_bits": 1.0,
+        "seed": 87005,
+        "solution_count": 8
+      },
+      {
+        "a_private_size": 2,
+        "b_private_size": 4,
+        "instance_id": "hypothesis-000153de",
+        "joint_solutions": [
+          "candidate-7"
+        ],
+        "option_ids": [
+          "candidate-0",
+          "candidate-1",
+          "candidate-2",
+          "candidate-3",
+          "candidate-4",
+          "candidate-5",
+          "candidate-6",
+          "candidate-7"
+        ],
+        "placebo_claim": "bit0=1",
+        "placebo_i_m_bits": 0.0,
+        "private_clues": {
+          "A": [
+            "bit0=1",
+            "bit2=1"
+          ],
+          "B": [
+            "bit1=1"
+          ]
+        },
+        "real_claim": "bit1=1",
+        "real_i_m_bits": 1.0,
+        "seed": 87006,
+        "solution_count": 8
+      },
+      {
+        "a_private_size": 2,
+        "b_private_size": 4,
+        "instance_id": "hypothesis-000153e2",
+        "joint_solutions": [
+          "candidate-3"
+        ],
+        "option_ids": [
+          "candidate-0",
+          "candidate-1",
+          "candidate-2",
+          "candidate-3",
+          "candidate-4",
+          "candidate-5",
+          "candidate-6",
+          "candidate-7"
+        ],
+        "placebo_claim": "bit0=1",
+        "placebo_i_m_bits": 0.0,
+        "private_clues": {
+          "A": [
+            "bit0=1",
+            "bit2=0"
+          ],
+          "B": [
+            "bit1=1"
+          ]
+        },
+        "real_claim": "bit1=1",
+        "real_i_m_bits": 1.0,
+        "seed": 87010,
+        "solution_count": 8
+      },
+      {
+        "a_private_size": 2,
+        "b_private_size": 4,
+        "instance_id": "hypothesis-000153e3",
+        "joint_solutions": [
+          "candidate-6"
+        ],
+        "option_ids": [
+          "candidate-0",
+          "candidate-1",
+          "candidate-2",
+          "candidate-3",
+          "candidate-4",
+          "candidate-5",
+          "candidate-6",
+          "candidate-7"
+        ],
+        "placebo_claim": "bit0=0",
+        "placebo_i_m_bits": 0.0,
+        "private_clues": {
+          "A": [
+            "bit0=0",
+            "bit2=1"
+          ],
+          "B": [
+            "bit1=1"
+          ]
+        },
+        "real_claim": "bit1=1",
+        "real_i_m_bits": 1.0,
+        "seed": 87011,
+        "solution_count": 8
+      },
+      {
+        "a_private_size": 2,
+        "b_private_size": 4,
+        "instance_id": "hypothesis-000153e4",
+        "joint_solutions": [
+          "candidate-1"
+        ],
+        "option_ids": [
+          "candidate-0",
+          "candidate-1",
+          "candidate-2",
+          "candidate-3",
+          "candidate-4",
+          "candidate-5",
+          "candidate-6",
+          "candidate-7"
+        ],
+        "placebo_claim": "bit0=1",
+        "placebo_i_m_bits": 0.0,
+        "private_clues": {
+          "A": [
+            "bit0=1",
+            "bit2=0"
+          ],
+          "B": [
+            "bit1=0"
+          ]
+        },
+        "real_claim": "bit1=0",
+        "real_i_m_bits": 1.0,
+        "seed": 87012,
+        "solution_count": 8
+      },
+      {
+        "a_private_size": 2,
+        "b_private_size": 4,
+        "instance_id": "hypothesis-000153e5",
+        "joint_solutions": [
+          "candidate-2"
+        ],
+        "option_ids": [
+          "candidate-0",
+          "candidate-1",
+          "candidate-2",
+          "candidate-3",
+          "candidate-4",
+          "candidate-5",
+          "candidate-6",
+          "candidate-7"
+        ],
+        "placebo_claim": "bit0=0",
+        "placebo_i_m_bits": 0.0,
+        "private_clues": {
+          "A": [
+            "bit0=0",
+            "bit2=0"
+          ],
+          "B": [
+            "bit1=1"
+          ]
+        },
+        "real_claim": "bit1=1",
+        "real_i_m_bits": 1.0,
+        "seed": 87013,
+        "solution_count": 8
+      },
+      {
+        "a_private_size": 2,
+        "b_private_size": 4,
+        "instance_id": "hypothesis-000153e6",
+        "joint_solutions": [
+          "candidate-3"
+        ],
+        "option_ids": [
+          "candidate-0",
+          "candidate-1",
+          "candidate-2",
+          "candidate-3",
+          "candidate-4",
+          "candidate-5",
+          "candidate-6",
+          "candidate-7"
+        ],
+        "placebo_claim": "bit0=1",
+        "placebo_i_m_bits": 0.0,
+        "private_clues": {
+          "A": [
+            "bit0=1",
+            "bit2=0"
+          ],
+          "B": [
+            "bit1=1"
+          ]
+        },
+        "real_claim": "bit1=1",
+        "real_i_m_bits": 1.0,
+        "seed": 87014,
+        "solution_count": 8
+      },
+      {
+        "a_private_size": 2,
+        "b_private_size": 4,
+        "instance_id": "hypothesis-000153e7",
+        "joint_solutions": [
+          "candidate-0"
+        ],
+        "option_ids": [
+          "candidate-0",
+          "candidate-1",
+          "candidate-2",
+          "candidate-3",
+          "candidate-4",
+          "candidate-5",
+          "candidate-6",
+          "candidate-7"
+        ],
+        "placebo_claim": "bit0=0",
+        "placebo_i_m_bits": 0.0,
+        "private_clues": {
+          "A": [
+            "bit0=0",
+            "bit2=0"
+          ],
+          "B": [
+            "bit1=0"
+          ]
+        },
+        "real_claim": "bit1=0",
+        "real_i_m_bits": 1.0,
+        "seed": 87015,
+        "solution_count": 8
+      },
+      {
+        "a_private_size": 2,
+        "b_private_size": 4,
+        "instance_id": "hypothesis-000153e8",
+        "joint_solutions": [
+          "candidate-6"
+        ],
+        "option_ids": [
+          "candidate-0",
+          "candidate-1",
+          "candidate-2",
+          "candidate-3",
+          "candidate-4",
+          "candidate-5",
+          "candidate-6",
+          "candidate-7"
+        ],
+        "placebo_claim": "bit0=0",
+        "placebo_i_m_bits": 0.0,
+        "private_clues": {
+          "A": [
+            "bit0=0",
+            "bit2=1"
+          ],
+          "B": [
+            "bit1=1"
+          ]
+        },
+        "real_claim": "bit1=1",
+        "real_i_m_bits": 1.0,
+        "seed": 87016,
+        "solution_count": 8
+      },
+      {
+        "a_private_size": 2,
+        "b_private_size": 4,
+        "instance_id": "hypothesis-000153e9",
+        "joint_solutions": [
+          "candidate-6"
+        ],
+        "option_ids": [
+          "candidate-0",
+          "candidate-1",
+          "candidate-2",
+          "candidate-3",
+          "candidate-4",
+          "candidate-5",
+          "candidate-6",
+          "candidate-7"
+        ],
+        "placebo_claim": "bit0=0",
+        "placebo_i_m_bits": 0.0,
+        "private_clues": {
+          "A": [
+            "bit0=0",
+            "bit2=1"
+          ],
+          "B": [
+            "bit1=1"
+          ]
+        },
+        "real_claim": "bit1=1",
+        "real_i_m_bits": 1.0,
+        "seed": 87017,
+        "solution_count": 8
+      },
+      {
+        "a_private_size": 2,
+        "b_private_size": 4,
+        "instance_id": "hypothesis-000153f8",
+        "joint_solutions": [
+          "candidate-1"
+        ],
+        "option_ids": [
+          "candidate-0",
+          "candidate-1",
+          "candidate-2",
+          "candidate-3",
+          "candidate-4",
+          "candidate-5",
+          "candidate-6",
+          "candidate-7"
+        ],
+        "placebo_claim": "bit0=1",
+        "placebo_i_m_bits": 0.0,
+        "private_clues": {
+          "A": [
+            "bit0=1",
+            "bit2=0"
+          ],
+          "B": [
+            "bit1=0"
+          ]
+        },
+        "real_claim": "bit1=0",
+        "real_i_m_bits": 1.0,
+        "seed": 87032,
+        "solution_count": 8
+      }
+    ]
+  },
+  "issue": "#200",
+  "prompt_form_definition": {
+    "derivation": "sha256 of the model-visible ISO pre-read request body (model + state + question/instructions/criteria) produced only from generator/task structure; no outcome enters the hash",
+    "function": "jev_replay.prompt_form_id(jev_replay_preregistration_v4.pre_read_body(...))",
+    "unit": "prompt form"
+  },
+  "stage": "offline form-capacity audit for a non-planning replication",
+  "structure": {
+    "a_clues_per_instance": 2,
+    "b_clues_per_instance": 1,
+    "b_to_a_information_bits": [
+      1.0
+    ],
+    "closed_finite_solution_set": true,
+    "eligible": true,
+    "family": "hypothesis",
+    "finalizer_needs_peer": true,
+    "informative_b_owned_claims": 512
+  },
+  "windows": {
+    "closure_probe": {
+      "base": 86000,
+      "end": 86511,
+      "role": "closure test only; no seed may be selected from it",
+      "window": 512
+    },
+    "confirmation": {
+      "base": 87000,
+      "end": 87511,
+      "role": "fresh-seed confirmation block manifest",
+      "window": 512
+    },
+    "disjoint_from_documented_prior_ranges": true,
+    "documented_prior_range_overlaps": [],
+    "primary": {
+      "base": 85000,
+      "end": 85511,
+      "role": "form census and manifest selection",
+      "window": 512
+    }
+  }
+}

@@ -1,0 +1,1123 @@
+{
+  "approval": {
+    "approved": false,
+    "approved_by": null,
+    "live_collection_authorized": false,
+    "scope": "replication_registration_lock_is_not_execution_approval"
+  },
+  "approval_required": true,
+  "audit_binding": {
+    "audit_content_hash": "5242e9cfa35e3a77c54045475428dd617cf93cb16d464b55ad679adc35f80a83",
+    "audit_version": "jev-replication-form-audit-v1",
+    "form_ids": [
+      "57ee9880f18bff4971516f9db820fd96dfb9eb86dab29e166025625e88a7b0c9",
+      "a0e4ffd0c0b442207bf171422592a1f0b8f58556e2d44d8845d74ec23853f03d",
+      "a95806c84d3a722d0ae240c637277373526956b57051cf006e5430706bf6e94c",
+      "fc05e96360fa58fd2398727a886654d27d87fe561b2160002bcc01511f322562"
+    ],
+    "form_set_hash": "010c5812c17723ee617dac4039b021fb363c2ab61932f46092cb30ec02dc6480",
+    "path": "runs/epic-126/replication/jev-replication-form-audit-v1.json",
+    "space": "closed"
+  },
+  "authoritative_checks": {
+    "a_to_b_excluded": true,
+    "board_log": "board_write then A peer_read_exposure with sequencing and exposure_id",
+    "deduplication": "at most one accepted B-owned informative claim per pre-read state",
+    "exposure": "nonempty exposure id recorded by the reader, never invented",
+    "i_m": "authoritative ExactInformationEvaluator accepted with delta_i_bits > 0",
+    "ownership": "instance.holds_claim('B', claim) and not holds_claim('A', claim)",
+    "receiver_known": "the real claim must be absent from A's private clues"
+  },
+  "branches": {
+    "envelope": "peer_clue: {claim}",
+    "fixed_across_branches": [
+      "receiver model",
+      "option set",
+      "wording",
+      "target",
+      "timing",
+      "pre-read state C"
+    ],
+    "modes": [
+      "real",
+      "placebo",
+      "null"
+    ],
+    "null": "no message",
+    "only_difference": "state.visible_messages",
+    "placebo": "controller-injected source-neutral re-presentation of a receiver-already-known A clue with I_m = 0 and no feasible-set reduction, same envelope as the real arm",
+    "placebo_construction": "controller-injected source-neutral re-presentation of a receiver-already-known pre-read clue, using the same envelope as the real arm",
+    "placebo_origin": "controller",
+    "real": "the exact accepted B-owned claim for the pre-read state, bound per instance as B's single owned private clue"
+  },
+  "claim_scope": {
+    "conditional_on": [
+      "the closed prompt-form space of the hypothesis family",
+      "the paid Ling route that generated the messages"
+    ],
+    "k_max": 4,
+    "statement": "conditional on the selected family's frozen forms and the paid Ling route; fresh instance IDs never increase k",
+    "type": "preregistered non-planning-family replication of a matched replay"
+  },
+  "created_by_task": "#200",
+  "disjointness": {
+    "disjoint_from_all_prior_artifacts": true,
+    "documented_seed_ranges": [
+      {
+        "high": 17104,
+        "low": 16000
+      },
+      {
+        "high": 39001,
+        "low": 39000
+      },
+      {
+        "high": 41001,
+        "low": 41000
+      },
+      {
+        "high": 70016,
+        "low": 70000
+      },
+      {
+        "high": 71016,
+        "low": 71000
+      },
+      {
+        "high": 72016,
+        "low": 72000
+      },
+      {
+        "high": 73016,
+        "low": 73000
+      },
+      {
+        "high": 74016,
+        "low": 74000
+      },
+      {
+        "high": 75255,
+        "low": 75000
+      },
+      {
+        "high": 80016,
+        "low": 80000
+      }
+    ],
+    "primary_vs_confirmation_overlap": [],
+    "prior_instance_id_count": 8945,
+    "prior_instance_ids_sha256": "429e8c54720d1a472d9e191fedc0510ade291680514f2dae4dff8c2a747607f9",
+    "prior_sources": [
+      "runs/container-isolation.json",
+      "runs/epic-126/channel-audit.json",
+      "runs/epic-126/cneed-fourfamilies-n9-diagnostic.json",
+      "runs/epic-126/cneed-fourfamilies-n9-report.json",
+      "runs/epic-126/cneed-fourfamilies-n9.jsonl",
+      "runs/epic-126/cneed-n20-diagnostic.json",
+      "runs/epic-126/cneed-n20-report.json",
+      "runs/epic-126/cneed-n20.jsonl",
+      "runs/epic-126/cneed-n9-diagnostic.json",
+      "runs/epic-126/cneed-n9-report.json",
+      "runs/epic-126/cneed-n9.jsonl",
+      "runs/epic-126/comm-n20-diagnostic.json",
+      "runs/epic-126/comm-n20-report.json",
+      "runs/epic-126/comm-n20.jsonl",
+      "runs/epic-126/comm-planning-n9-diagnostic.json",
+      "runs/epic-126/comm-planning-n9-report.json",
+      "runs/epic-126/comm-planning-n9.jsonl",
+      "runs/epic-126/confirmatory-v3-diagnostic.json",
+      "runs/epic-126/confirmatory-v3-report.json",
+      "runs/epic-126/confirmatory-v3.jsonl",
+      "runs/epic-126/decisions/jev-v7-coverage-decision.json",
+      "runs/epic-126/diagnostics/jev-provider-diagnostics-preregistration-v1.json",
+      "runs/epic-126/diagnostics/jev-transport-probe-v1.json",
+      "runs/epic-126/diagnostics/ling-transport-probe-v1.json",
+      "runs/epic-126/full-gate-1024-diagnostic.json",
+      "runs/epic-126/full-gate-1024-report.json",
+      "runs/epic-126/full-gate-1024.jsonl",
+      "runs/epic-126/full-gate-budget512-diagnostic.json",
+      "runs/epic-126/full-gate-budget512-report.json",
+      "runs/epic-126/full-gate-budget512.jsonl",
+      "runs/epic-126/full-gate-diagnostic.json",
+      "runs/epic-126/full-gate-hypmed-1024-diagnostic.json",
+      "runs/epic-126/full-gate-hypmed-1024-report.json",
+      "runs/epic-126/full-gate-hypmed-1024.jsonl",
+      "runs/epic-126/full-gate-repair-diagnostic.json",
+      "runs/epic-126/full-gate-repair-preflight.json",
+      "runs/epic-126/full-gate-repair-report.json",
+      "runs/epic-126/full-gate-repair.jsonl",
+      "runs/epic-126/full-gate-report.json",
+      "runs/epic-126/full-gate.jsonl",
+      "runs/epic-126/jev-board-necessity-selection.json",
+      "runs/epic-126/jev-cell-selection-v1.json",
+      "runs/epic-126/jev-choice-adapter-fixture.json",
+      "runs/epic-126/jev-choice-capability-preregistration.json",
+      "runs/epic-126/jev-choice-capability-report.json",
+      "runs/epic-126/jev-choice-capability.jsonl",
+      "runs/epic-126/jev-choice-normalization-diagnostics-v2.json",
+      "runs/epic-126/jev-choice-normalization-probe-report-v2.json",
+      "runs/epic-126/jev-choice-normalization-probe-v2.json",
+      "runs/epic-126/jev-choice-normalization-probe-v2.jsonl",
+      "runs/epic-126/jev-choice-pilot-report-v2.json",
+      "runs/epic-126/jev-choice-pilot-report-v3.json",
+      "runs/epic-126/jev-choice-pilot-report.json",
+      "runs/epic-126/jev-choice-pilot-v2.jsonl",
+      "runs/epic-126/jev-choice-pilot-v3.jsonl",
+      "runs/epic-126/jev-choice-pilot.jsonl",
+      "runs/epic-126/jev-choice-replay-preregistration-v2.json",
+      "runs/epic-126/jev-choice-replay-preregistration-v3.json",
+      "runs/epic-126/jev-choice-replay-preregistration.json",
+      "runs/epic-126/jev-choice-wire-smoke-golden.json",
+      "runs/epic-126/jev-choice-wire-smoke-report.json",
+      "runs/epic-126/jev-coverage-manifest-preregistration-v6.json",
+      "runs/epic-126/jev-coverage-manifest-preregistration-v7.json",
+      "runs/epic-126/jev-coverage-manifest-report-v6.json",
+      "runs/epic-126/jev-coverage-manifest-report-v7.json",
+      "runs/epic-126/jev-coverage-manifest-v6.jsonl",
+      "runs/epic-126/jev-coverage-manifest-v7.jsonl",
+      "runs/epic-126/jev-ling-transport-probe-v7.json",
+      "runs/epic-126/jev-planning-low-manifest.json",
+      "runs/epic-126/jev-six-form-coverage-audit-v1.json",
+      "runs/epic-126/jev-writer-exact-bridge-report-v5.json",
+      "runs/epic-126/jev-writer-exact-bridge-v5.jsonl",
+      "runs/epic-126/jev-writer-ladder-preregistration-v4.json",
+      "runs/epic-126/jev-writer-ladder-preregistration-v5.json",
+      "runs/epic-126/jev-writer-treatment-audit-v4.json",
+      "runs/epic-126/paired-analysis-n20.json",
+      "runs/epic-126/paired-analysis-planning.json",
+      "runs/epic-126/paired-screen-diagnostic.json",
+      "runs/epic-126/paired-screen-n5-diagnostic.json",
+      "runs/epic-126/paired-screen-n5-leakfree-diagnostic.json",
+      "runs/epic-126/paired-screen-n5-leakfree-report.json",
+      "runs/epic-126/paired-screen-n5-leakfree.jsonl",
+      "runs/epic-126/paired-screen-n5-report.json",
+      "runs/epic-126/paired-screen-n5.jsonl",
+      "runs/epic-126/paired-screen-report.json",
+      "runs/epic-126/paired-screen.jsonl",
+      "runs/epic-126/planning-high-v4-diagnostic.json",
+      "runs/epic-126/planning-high-v4-report.json",
+      "runs/epic-126/planning-high-v4.jsonl",
+      "runs/epic-126/preregistered-manifest.json",
+      "runs/epic-126/preregistration-planning-high-v4.json",
+      "runs/epic-126/preregistration-v1.json",
+      "runs/epic-126/preregistration-v2.json",
+      "runs/epic-126/preregistration-v3.json",
+      "runs/epic-126/replay-v4/jev-choice-replay-preregistration-v4.json",
+      "runs/epic-126/replay-v4/jev-choice-replay-report-v4.json",
+      "runs/epic-126/replay-v4/jev-choice-replay-v4.jsonl",
+      "runs/epic-126/replay-v5/jev-choice-replay-inference-v5.json",
+      "runs/epic-126/replay-v5/jev-choice-replay-preregistration-v5.json",
+      "runs/epic-126/replay-v5/jev-choice-replay-report-v5.json",
+      "runs/epic-126/replay-v5/jev-choice-replay-v5.jsonl",
+      "runs/epic-126/stage2-attempt-state.json",
+      "runs/epic-126/stage2-smoke-combined-analysis.json",
+      "runs/epic-126/stage2-smoke-diagnostic.json",
+      "runs/epic-126/stage2-smoke-report.json",
+      "runs/epic-126/stage2-smoke-resume1-diagnostic.json",
+      "runs/epic-126/stage2-smoke-resume1-report.json",
+      "runs/epic-126/stage2-smoke-v2-diagnostic.json",
+      "runs/epic-126/stage2-smoke-v2-report.json",
+      "runs/epic-126/stage2-smoke-v2.jsonl",
+      "runs/epic-126/stage2-smoke.jsonl",
+      "runs/epic-126/t1-pressure-catalog.json",
+      "runs/epic-126/t1-retained-pilot-audit.json",
+      "runs/epic-126/t1-screen-report.json",
+      "runs/epic-126/t1-screen-retry-report.json",
+      "runs/epic-126/t1-screen-retry.jsonl",
+      "runs/epic-126/t1-screen.jsonl",
+      "runs/epic-126/t2-capability-report.json",
+      "runs/epic-126/treatment-schema.json"
+    ],
+    "selected_ids_overlapping_prior": [],
+    "selected_seeds": [
+      85000,
+      85001,
+      85002,
+      85003,
+      85004,
+      85005,
+      85006,
+      85007,
+      85008,
+      85009,
+      85011,
+      85012,
+      85013,
+      85017,
+      85023,
+      85025,
+      87000,
+      87001,
+      87002,
+      87003,
+      87004,
+      87005,
+      87006,
+      87010,
+      87011,
+      87012,
+      87013,
+      87014,
+      87015,
+      87016,
+      87017,
+      87032
+    ]
+  },
+  "estimand": {
+    "directional_prediction": "Delta < 0",
+    "event_contrast": "d_i = H_real,i - H_placebo,i",
+    "events_are_independent_units": false,
+    "experimental_unit": "prompt form",
+    "form_contrast": "mean of d_i within prompt form f",
+    "null_branch": {
+      "excluded_from": "the primary real-versus-placebo contrast",
+      "retained_for": [
+        "H_real - H_null",
+        "H_placebo - H_null manipulation checks"
+      ]
+    },
+    "primary": "equal-weight mean over the registered forms of the within-form mean of H_real - H_placebo",
+    "unit_notes": [
+      "repeated instances inside a form are averaged, never treated as independent units",
+      "no instance-level t-test or Wilcoxon test may be primary"
+    ]
+  },
+  "family": "hypothesis",
+  "family_selection": {
+    "anti_prior_statement": "no prior live result (L4X bridge, v6/v7 coverage, pilots, normalization probe, the selection screen or the planning-low replay) was consulted, and the planning-low estimate and p-value are not used as a prior, an expectation or an effect-size guarantee anywhere in this registration",
+    "candidates_in_rule_order": [
+      "hypothesis",
+      "legal",
+      "lexicon",
+      "poetry",
+      "reference"
+    ],
+    "consulted_prior_live_outcomes": [],
+    "evaluations": [
+      {
+        "a_clues_per_instance": 2,
+        "b_clues_per_instance": 1,
+        "b_to_a_information_bits": [
+          1.0
+        ],
+        "closed_finite_solution_set": true,
+        "eligible": true,
+        "family": "hypothesis",
+        "finalizer_needs_peer": true,
+        "informative_b_owned_claims": 512
+      },
+      {
+        "a_clues_per_instance": 2,
+        "b_clues_per_instance": 1,
+        "b_to_a_information_bits": [
+          1.0
+        ],
+        "closed_finite_solution_set": true,
+        "eligible": true,
+        "family": "legal",
+        "finalizer_needs_peer": true,
+        "informative_b_owned_claims": 512
+      },
+      {
+        "a_clues_per_instance": 2,
+        "b_clues_per_instance": 1,
+        "b_to_a_information_bits": [
+          1.0
+        ],
+        "closed_finite_solution_set": true,
+        "eligible": true,
+        "family": "lexicon",
+        "finalizer_needs_peer": true,
+        "informative_b_owned_claims": 512
+      },
+      {
+        "a_clues_per_instance": 2,
+        "b_clues_per_instance": 1,
+        "b_to_a_information_bits": [
+          1.0
+        ],
+        "closed_finite_solution_set": true,
+        "eligible": true,
+        "family": "poetry",
+        "finalizer_needs_peer": true,
+        "informative_b_owned_claims": 512
+      },
+      {
+        "a_clues_per_instance": 2,
+        "b_clues_per_instance": 2,
+        "b_to_a_information_bits": [
+          1.0
+        ],
+        "closed_finite_solution_set": true,
+        "eligible": true,
+        "family": "reference",
+        "finalizer_needs_peer": true,
+        "informative_b_owned_claims": 1024
+      }
+    ],
+    "excluded_families": [
+      "planning"
+    ],
+    "exclusion_reason": "planning is excluded by requirement; this must be a new family",
+    "outcome_blind": true,
+    "preconditions": [
+      "closed finite solution set",
+      "A-finalizer structurally needs the peer clue",
+      "at least one B-owned claim that is informative for A"
+    ],
+    "rationale": "the rule is fixed in advance and cannot encode a preference, so the choice carries no information about favourability; it is evaluated on generator structure only, before any live outcome exists for this family",
+    "rule": "alphabetically first (bytewise ascending) non-planning family that passes the offline structural preconditions",
+    "selected_evaluation": {
+      "a_clues_per_instance": 2,
+      "b_clues_per_instance": 1,
+      "b_to_a_information_bits": [
+        1.0
+      ],
+      "closed_finite_solution_set": true,
+      "eligible": true,
+      "family": "hypothesis",
+      "finalizer_needs_peer": true,
+      "informative_b_owned_claims": 512
+    },
+    "selected_family": "hypothesis"
+  },
+  "form_capacity": {
+    "closed": true,
+    "closure_probe_distinct_forms": 4,
+    "closure_probe_growth_checkpoints": [
+      [
+        32,
+        4
+      ],
+      [
+        64,
+        4
+      ],
+      [
+        128,
+        4
+      ],
+      [
+        256,
+        4
+      ],
+      [
+        512,
+        4
+      ]
+    ],
+    "family": "hypothesis",
+    "form_ids": [
+      "57ee9880f18bff4971516f9db820fd96dfb9eb86dab29e166025625e88a7b0c9",
+      "a0e4ffd0c0b442207bf171422592a1f0b8f58556e2d44d8845d74ec23853f03d",
+      "a95806c84d3a722d0ae240c637277373526956b57051cf006e5430706bf6e94c",
+      "fc05e96360fa58fd2398727a886654d27d87fe561b2160002bcc01511f322562"
+    ],
+    "form_set_hash": "010c5812c17723ee617dac4039b021fb363c2ab61932f46092cb30ec02dc6480",
+    "k_max": 4,
+    "new_forms_in_closure_probe": 0,
+    "per_form_seed_counts": {
+      "57ee9880f18bff4971516f9db820fd96dfb9eb86dab29e166025625e88a7b0c9": 118,
+      "a0e4ffd0c0b442207bf171422592a1f0b8f58556e2d44d8845d74ec23853f03d": 129,
+      "a95806c84d3a722d0ae240c637277373526956b57051cf006e5430706bf6e94c": 133,
+      "fc05e96360fa58fd2398727a886654d27d87fe561b2160002bcc01511f322562": 132
+    },
+    "primary_distinct_forms": 4,
+    "primary_growth_checkpoints": [
+      [
+        32,
+        4
+      ],
+      [
+        64,
+        4
+      ],
+      [
+        128,
+        4
+      ],
+      [
+        256,
+        4
+      ],
+      [
+        512,
+        4
+      ]
+    ],
+    "space": "closed"
+  },
+  "inference_plan": {
+    "alpha": 0.05,
+    "attainable_two_sided_floor_by_k": {
+      "4": "0.125",
+      "5": "0.0625",
+      "6": "0.03125"
+    },
+    "audit_finding": "the selected family's prompt-form space is closed at k = 4, so the attainable exact two-sided sign-flip floor is 2/16 = 0.125; that is above 0.05, so no dichotomous rejection at alpha = 0.05 is attainable at any effect size on this family",
+    "consequence": "unless a reviewer approves a different form unit in a separate registration, this replication is preregistered as an estimation and descriptive study: the equal-form estimate and its t interval are reported and no significance-style claim is made",
+    "direction_requirement": "the observed equal-form mean must be negative",
+    "five_form_fallback": "with exactly five forms the result is interval-only descriptive: a two-sided sign-flip p below 0.05 is forbidden and no causal gate is released",
+    "guards": {
+      "feasible_set_mass_epsilon": 0.01,
+      "reporting": "reported separately by form and event; never used to filter the primary entropy estimate",
+      "target_probability_delta": 0.0,
+      "useful_uptake_rule": "an entropy drop alone is never useful uptake when either guard fails"
+    },
+    "imputation": "never impute missing pairs",
+    "interval": "form-mean t interval with df = k - 1 (k = 4 => df = 3)",
+    "k_max_from_audit": 4,
+    "mde": {
+      "formula": "t(0.975, k-1) x SD_between / sqrt(k)",
+      "illustrative_mde_bits": 0.30754,
+      "illustrative_sd_bits": 0.1933,
+      "illustrative_sd_source": "between-form SD recorded in #185/#189 from the J3 ISO-minus-FULL method demonstration; illustrative sensitivity only",
+      "not_a_prior": "the planning-low estimate and p-value are not used as a prior or an effect-size guarantee; this family's own between-form SD is unknown until data exist",
+      "null_result": "a null result cannot exclude effects below the illustrative figure above"
+    },
+    "minimum_form_rule": "a dichotomous confirmatory claim requires at least five distinct prompt forms; fewer than five is replay-coverage failure for any confirmatory claim",
+    "minimum_forms_for_confirmatory": 5,
+    "missingness": {
+      "below_five_forms": "replay-coverage failure",
+      "below_registered_forms": "replay-coverage failure: every registered form must contribute at least one complete pair",
+      "complete_pair": "real and placebo both valid",
+      "primary_requirement": "at least one complete pair in every registered form"
+    },
+    "primary_test": "exhaustive two-sided cluster sign-flip over the k form means",
+    "prohibited_as_primary": [
+      "instance-level t-test",
+      "instance-level Wilcoxon test",
+      "instance-weighted mean",
+      "treating events as independent states"
+    ]
+  },
+  "information_geometry_hash": "e263b4f0bf1a3086b73d5ee858f7ee9c17ba5847b9bcc5a84ad8ccdff6ac22c2",
+  "issue": "#159",
+  "live_collection_authorized": false,
+  "lock_does_not_imply_approval": true,
+  "lock_is_not_live_authorization": true,
+  "manifest_treatment_hash": "884a7f42b221aff0ddb8d8858351b9f72e4f12a95f2dcd8104c366cfe6c81f41",
+  "manifests": {
+    "confirmation": {
+      "form_membership": {
+        "57ee9880f18bff4971516f9db820fd96dfb9eb86dab29e166025625e88a7b0c9": [
+          "hypothesis-000153dd",
+          "hypothesis-000153e3",
+          "hypothesis-000153e8",
+          "hypothesis-000153e9"
+        ],
+        "a0e4ffd0c0b442207bf171422592a1f0b8f58556e2d44d8845d74ec23853f03d": [
+          "hypothesis-000153e2",
+          "hypothesis-000153e4",
+          "hypothesis-000153e6",
+          "hypothesis-000153f8"
+        ],
+        "a95806c84d3a722d0ae240c637277373526956b57051cf006e5430706bf6e94c": [
+          "hypothesis-000153d9",
+          "hypothesis-000153da",
+          "hypothesis-000153db",
+          "hypothesis-000153de"
+        ],
+        "fc05e96360fa58fd2398727a886654d27d87fe561b2160002bcc01511f322562": [
+          "hypothesis-000153d8",
+          "hypothesis-000153dc",
+          "hypothesis-000153e5",
+          "hypothesis-000153e7"
+        ]
+      },
+      "manifest": [
+        {
+          "instance_id": "hypothesis-000153dd",
+          "prompt_form_id": "57ee9880f18bff4971516f9db820fd96dfb9eb86dab29e166025625e88a7b0c9",
+          "seed": 87005
+        },
+        {
+          "instance_id": "hypothesis-000153e3",
+          "prompt_form_id": "57ee9880f18bff4971516f9db820fd96dfb9eb86dab29e166025625e88a7b0c9",
+          "seed": 87011
+        },
+        {
+          "instance_id": "hypothesis-000153e8",
+          "prompt_form_id": "57ee9880f18bff4971516f9db820fd96dfb9eb86dab29e166025625e88a7b0c9",
+          "seed": 87016
+        },
+        {
+          "instance_id": "hypothesis-000153e9",
+          "prompt_form_id": "57ee9880f18bff4971516f9db820fd96dfb9eb86dab29e166025625e88a7b0c9",
+          "seed": 87017
+        },
+        {
+          "instance_id": "hypothesis-000153e2",
+          "prompt_form_id": "a0e4ffd0c0b442207bf171422592a1f0b8f58556e2d44d8845d74ec23853f03d",
+          "seed": 87010
+        },
+        {
+          "instance_id": "hypothesis-000153e4",
+          "prompt_form_id": "a0e4ffd0c0b442207bf171422592a1f0b8f58556e2d44d8845d74ec23853f03d",
+          "seed": 87012
+        },
+        {
+          "instance_id": "hypothesis-000153e6",
+          "prompt_form_id": "a0e4ffd0c0b442207bf171422592a1f0b8f58556e2d44d8845d74ec23853f03d",
+          "seed": 87014
+        },
+        {
+          "instance_id": "hypothesis-000153f8",
+          "prompt_form_id": "a0e4ffd0c0b442207bf171422592a1f0b8f58556e2d44d8845d74ec23853f03d",
+          "seed": 87032
+        },
+        {
+          "instance_id": "hypothesis-000153d9",
+          "prompt_form_id": "a95806c84d3a722d0ae240c637277373526956b57051cf006e5430706bf6e94c",
+          "seed": 87001
+        },
+        {
+          "instance_id": "hypothesis-000153da",
+          "prompt_form_id": "a95806c84d3a722d0ae240c637277373526956b57051cf006e5430706bf6e94c",
+          "seed": 87002
+        },
+        {
+          "instance_id": "hypothesis-000153db",
+          "prompt_form_id": "a95806c84d3a722d0ae240c637277373526956b57051cf006e5430706bf6e94c",
+          "seed": 87003
+        },
+        {
+          "instance_id": "hypothesis-000153de",
+          "prompt_form_id": "a95806c84d3a722d0ae240c637277373526956b57051cf006e5430706bf6e94c",
+          "seed": 87006
+        },
+        {
+          "instance_id": "hypothesis-000153d8",
+          "prompt_form_id": "fc05e96360fa58fd2398727a886654d27d87fe561b2160002bcc01511f322562",
+          "seed": 87000
+        },
+        {
+          "instance_id": "hypothesis-000153dc",
+          "prompt_form_id": "fc05e96360fa58fd2398727a886654d27d87fe561b2160002bcc01511f322562",
+          "seed": 87004
+        },
+        {
+          "instance_id": "hypothesis-000153e5",
+          "prompt_form_id": "fc05e96360fa58fd2398727a886654d27d87fe561b2160002bcc01511f322562",
+          "seed": 87013
+        },
+        {
+          "instance_id": "hypothesis-000153e7",
+          "prompt_form_id": "fc05e96360fa58fd2398727a886654d27d87fe561b2160002bcc01511f322562",
+          "seed": 87015
+        }
+      ],
+      "manifest_hash": "b2293d7e6c6e3219b991e770f5cb5565beb8b8d585c3952911946c2106c86cff"
+    },
+    "primary": {
+      "form_membership": {
+        "57ee9880f18bff4971516f9db820fd96dfb9eb86dab29e166025625e88a7b0c9": [
+          "hypothesis-00014c0b",
+          "hypothesis-00014c11",
+          "hypothesis-00014c1f",
+          "hypothesis-00014c21"
+        ],
+        "a0e4ffd0c0b442207bf171422592a1f0b8f58556e2d44d8845d74ec23853f03d": [
+          "hypothesis-00014c0c",
+          "hypothesis-00014c0d",
+          "hypothesis-00014c0e",
+          "hypothesis-00014c10"
+        ],
+        "a95806c84d3a722d0ae240c637277373526956b57051cf006e5430706bf6e94c": [
+          "hypothesis-00014c0a",
+          "hypothesis-00014c14",
+          "hypothesis-00014c15",
+          "hypothesis-00014c19"
+        ],
+        "fc05e96360fa58fd2398727a886654d27d87fe561b2160002bcc01511f322562": [
+          "hypothesis-00014c08",
+          "hypothesis-00014c09",
+          "hypothesis-00014c0f",
+          "hypothesis-00014c13"
+        ]
+      },
+      "manifest": [
+        {
+          "instance_id": "hypothesis-00014c0b",
+          "prompt_form_id": "57ee9880f18bff4971516f9db820fd96dfb9eb86dab29e166025625e88a7b0c9",
+          "seed": 85003
+        },
+        {
+          "instance_id": "hypothesis-00014c11",
+          "prompt_form_id": "57ee9880f18bff4971516f9db820fd96dfb9eb86dab29e166025625e88a7b0c9",
+          "seed": 85009
+        },
+        {
+          "instance_id": "hypothesis-00014c1f",
+          "prompt_form_id": "57ee9880f18bff4971516f9db820fd96dfb9eb86dab29e166025625e88a7b0c9",
+          "seed": 85023
+        },
+        {
+          "instance_id": "hypothesis-00014c21",
+          "prompt_form_id": "57ee9880f18bff4971516f9db820fd96dfb9eb86dab29e166025625e88a7b0c9",
+          "seed": 85025
+        },
+        {
+          "instance_id": "hypothesis-00014c0c",
+          "prompt_form_id": "a0e4ffd0c0b442207bf171422592a1f0b8f58556e2d44d8845d74ec23853f03d",
+          "seed": 85004
+        },
+        {
+          "instance_id": "hypothesis-00014c0d",
+          "prompt_form_id": "a0e4ffd0c0b442207bf171422592a1f0b8f58556e2d44d8845d74ec23853f03d",
+          "seed": 85005
+        },
+        {
+          "instance_id": "hypothesis-00014c0e",
+          "prompt_form_id": "a0e4ffd0c0b442207bf171422592a1f0b8f58556e2d44d8845d74ec23853f03d",
+          "seed": 85006
+        },
+        {
+          "instance_id": "hypothesis-00014c10",
+          "prompt_form_id": "a0e4ffd0c0b442207bf171422592a1f0b8f58556e2d44d8845d74ec23853f03d",
+          "seed": 85008
+        },
+        {
+          "instance_id": "hypothesis-00014c0a",
+          "prompt_form_id": "a95806c84d3a722d0ae240c637277373526956b57051cf006e5430706bf6e94c",
+          "seed": 85002
+        },
+        {
+          "instance_id": "hypothesis-00014c14",
+          "prompt_form_id": "a95806c84d3a722d0ae240c637277373526956b57051cf006e5430706bf6e94c",
+          "seed": 85012
+        },
+        {
+          "instance_id": "hypothesis-00014c15",
+          "prompt_form_id": "a95806c84d3a722d0ae240c637277373526956b57051cf006e5430706bf6e94c",
+          "seed": 85013
+        },
+        {
+          "instance_id": "hypothesis-00014c19",
+          "prompt_form_id": "a95806c84d3a722d0ae240c637277373526956b57051cf006e5430706bf6e94c",
+          "seed": 85017
+        },
+        {
+          "instance_id": "hypothesis-00014c08",
+          "prompt_form_id": "fc05e96360fa58fd2398727a886654d27d87fe561b2160002bcc01511f322562",
+          "seed": 85000
+        },
+        {
+          "instance_id": "hypothesis-00014c09",
+          "prompt_form_id": "fc05e96360fa58fd2398727a886654d27d87fe561b2160002bcc01511f322562",
+          "seed": 85001
+        },
+        {
+          "instance_id": "hypothesis-00014c0f",
+          "prompt_form_id": "fc05e96360fa58fd2398727a886654d27d87fe561b2160002bcc01511f322562",
+          "seed": 85007
+        },
+        {
+          "instance_id": "hypothesis-00014c13",
+          "prompt_form_id": "fc05e96360fa58fd2398727a886654d27d87fe561b2160002bcc01511f322562",
+          "seed": 85011
+        }
+      ],
+      "manifest_hash": "60b31896734c5767910d0b72527f621c8f10c52aebd0359edcec23e8473ae4d5"
+    }
+  },
+  "multiplicity": {
+    "confirmation": {
+      "block": "confirmation",
+      "may_not_pool_with_primary_for_primary_estimate": true,
+      "n": 16,
+      "required_before_any_claim": true,
+      "role": "confirmatory only; reported separately",
+      "seed_window": {
+        "base": 87000,
+        "end": 87511,
+        "window": 512
+      },
+      "selection": "the same deterministic first-INSTANCES_PER_FORM-per-form rule on a window disjoint from the primary block and from every documented prior range"
+    },
+    "family_level_control": "Holm step-down across the registered family set",
+    "family_set_frozen_before_outcomes": true,
+    "forbidden": [
+      "sweeping families and selecting a winner post hoc",
+      "adding a family after outcomes are visible",
+      "removing a registered family after outcomes are visible"
+    ],
+    "future_families": "any additional family requires its own preregistration and its own confirmation block; it may never be added to this family set after outcomes are visible",
+    "registered_family_count": 1,
+    "registered_family_set": [
+      "hypothesis"
+    ],
+    "single_family_reduction": "with exactly one registered family the Holm-adjusted p equals the raw p; no cross-family claim follows"
+  },
+  "non_claims": [
+    "no population-level claim",
+    "no cross-family claim",
+    "no calibration claim",
+    "no instance-level claim",
+    "no unique-information claim",
+    "no generalization beyond the registered forms",
+    "no use of the planning-low estimate or p-value as a prior or effect-size guarantee",
+    "no post-hoc family sweep or winner selection"
+  ],
+  "operational_settings": {
+    "authorization": {
+      "approval_may_not_be_inferred_from_locking": true,
+      "approval_must_be_a_supplied_reference": true,
+      "locking_is_not_authorization": true,
+      "separate_live_authorization_required_after_locking": true
+    },
+    "caps": {
+      "block_n": 16,
+      "blocks": 2,
+      "collection": {
+        "cost_ceiling_usd": 0.4,
+        "next_call_reservation_usd": {
+          "jev": 0.001032192,
+          "ling": 0.00202752
+        },
+        "physical": {
+          "combined": 480,
+          "jev": 96,
+          "ling": 384
+        },
+        "planned": {
+          "combined": 160,
+          "jev": 32,
+          "ling": 128
+        },
+        "worst_case_cost_usd": 0.292552704
+      },
+      "cost_model": {
+        "jev_input_token_ceiling": 8192,
+        "jev_input_usd_per_mtok": 0.042,
+        "jev_worst_physical_call_usd": 0.000344064,
+        "ling_completion_usd_per_mtok": 0.18,
+        "ling_input_token_ceiling": 8192,
+        "ling_output_token_ceiling": 1024,
+        "ling_prompt_usd_per_mtok": 0.06,
+        "ling_worst_physical_call_usd": 0.00067584
+      },
+      "program": {
+        "arithmetic": "2 blocks x (collection: 16 x 4 Ling + 16 x 1 Jev; replay: <=16 events x 3 Jev), each x (1 + max_retries 2)",
+        "cost_ceiling_usd": 1.0,
+        "physical": {
+          "combined": 768,
+          "jev": 384,
+          "ling": 384
+        },
+        "planned": {
+          "combined": 256,
+          "jev": 128,
+          "ling": 128
+        },
+        "worst_case_cost_usd": 0.391643136
+      },
+      "replay": {
+        "branches": 3,
+        "cost_ceiling_usd": 0.15,
+        "events_max": 32,
+        "next_call_reservation_usd": {
+          "jev": 0.001032192
+        },
+        "physical": {
+          "combined": 288,
+          "jev": 288,
+          "ling": 0
+        },
+        "planned": {
+          "combined": 96,
+          "jev": 96,
+          "ling": 0
+        },
+        "worst_case_cost_usd": 0.099090432
+      }
+    },
+    "jev": {
+      "backoff": {
+        "initial_seconds": 0.5,
+        "jitter": 0.25,
+        "max_seconds": 5.0
+      },
+      "codec_version": "jev-choice-wire-v2",
+      "endpoint": "https://api.typesafe.ai/v1/systemone",
+      "max_retries": 2,
+      "model": "jev-1.13.0",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "retryable_statuses": [
+        408,
+        429,
+        500,
+        502,
+        503,
+        504,
+        529
+      ],
+      "timeout_seconds": 30.0
+    },
+    "ling": {
+      "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+      "key_loader": "behavioral_discovery._api_key",
+      "model": "inclusionai/ling-3.0-flash-vl",
+      "pacing": "ling-writer-openrouter-pacing-v3, 3.25 s between physical attempts",
+      "route": "paid OpenRouter SKU (the free SKU is not routable)",
+      "temperature": 0.0
+    },
+    "normalization": {
+      "hard_ceiling": 0.05,
+      "policy": {
+        "capture_then_judge": true,
+        "codec_version": "jev-choice-wire-v2",
+        "diagnostics_fields": [
+          "option_count",
+          "raw_probability_sum",
+          "signed_normalization_deviation",
+          "absolute_normalization_deviation",
+          "minimum_probability",
+          "maximum_probability",
+          "zero_count",
+          "all_finite",
+          "all_nonnegative",
+          "shape_valid",
+          "invalid_classes",
+          "raw_argmax_set",
+          "normalization_tier",
+          "renormalized",
+          "argmax_preserved",
+          "normalization_adjustment",
+          "entropy_raw_bits",
+          "entropy_normalized_bits"
+        ],
+        "hard_ceiling": 0.05,
+        "invalidity": {
+          "exact_option_identity_required": true,
+          "malformed_envelope_may_lack_vector": true,
+          "never_repaired": [
+            "empty",
+            "missing",
+            "nonnumeric",
+            "non_finite",
+            "negative",
+            "option_mismatched"
+          ],
+          "raw_vector_retained_on_invalid": "when safe (finite); non-finite values are encoded as strings"
+        },
+        "policy_fingerprint": "",
+        "quantization_bound": 0.03,
+        "raw_provider_envelope_retained": false,
+        "raw_vs_normalized_metrics": {
+          "normalized_vector_used_for": [
+            "entropy_bits",
+            "p_target",
+            "feasible_mass",
+            "brier_score",
+            "log_loss",
+            "selection_validation",
+            "downstream_replay_inference"
+          ],
+          "raw_retained_separately": [
+            "raw_probabilities",
+            "raw_probability_sum",
+            "signed_normalization_deviation",
+            "absolute_normalization_deviation"
+          ]
+        },
+        "renormalization": {
+          "applied_to": "every accepted vector (exact and complete_renormalized)",
+          "argmax_preservation_required": true,
+          "exact_tier_rescale": "within 1e-6; usually a numerical no-op but applied for one invariant",
+          "fail_closed_class": "argmax_shifted_on_renormalization",
+          "formula": "p_normalized[i] = p_raw[i] / sum(p_raw)",
+          "material_correction_band": "complete_renormalized"
+        },
+        "sensitivity_grid": [
+          1e-06,
+          0.01,
+          0.03,
+          0.05
+        ],
+        "tiers": {
+          "complete_renormalized": {
+            "boundary_epsilon": 1.7763568394002505e-15,
+            "boundary_inclusive_with_machine_epsilon": true,
+            "material_correction": true,
+            "max_absolute_deviation": 0.01,
+            "min_absolute_deviation_exclusive": 1e-06,
+            "renormalized": true,
+            "valid": true
+          },
+          "exact": {
+            "inclusive": true,
+            "material_correction": false,
+            "max_absolute_deviation": 1e-06,
+            "renormalized": true,
+            "valid": true
+          },
+          "not_normalized_hard": {
+            "min_absolute_deviation_exclusive": 0.05,
+            "renormalized": false,
+            "role": "invalid; triggers the registered hard stop",
+            "valid": false
+          },
+          "not_normalized_suspect": {
+            "max_absolute_deviation": 0.05,
+            "min_absolute_deviation_exclusive": 0.01,
+            "renormalized": false,
+            "role": "sensitivity diagnostic only; not accepted",
+            "valid": false
+          }
+        }
+      },
+      "policy_hash": "292ac217f1cf54083252e6363a16a48596daab72a8ca06d4569c20f861b7e1e9",
+      "rule": "normalize every accepted vector before any metric",
+      "tiers": [
+        "exact",
+        "complete_renormalized"
+      ]
+    },
+    "output_lifecycle": {
+      "append": false,
+      "fresh_paths": true,
+      "overwrite": false,
+      "path_overrides": false,
+      "resume": false,
+      "rule": "each phase writes only its own registered paths; a stopped run requires a new registration and a new review before any fresh attempt"
+    },
+    "partitions": {
+      "collection": {
+        "jev_physical": 96,
+        "ling_physical": 384,
+        "note": "retries are charged to the issuing provider"
+      },
+      "replay": {
+        "jev_physical": 288,
+        "ling_physical": 0
+      }
+    },
+    "terminal_stops": [
+      "request or cost cap before the next call",
+      "model drift",
+      "protocol-key drift",
+      "request/state/option identity drift",
+      "malformed, non-finite, negative or option-mismatched vector",
+      "hard normalization deviation above 0.05",
+      "argmax shift after normalization",
+      "output collision (journal or report already exists)",
+      "registration, source, treatment or geometry hash drift",
+      "writer terminal errors (empty_output, truncated_output, unparsed_output, invalid_answer, writer_error, rate-limited)",
+      "two consecutive terminal provider failures"
+    ]
+  },
+  "outputs": {
+    "audit": "runs/epic-126/replication/jev-replication-form-audit-v1.json",
+    "collection_journal": "runs/epic-126/replication/jev-replication-collection.jsonl",
+    "collection_report": "runs/epic-126/replication/jev-replication-collection-report.json",
+    "registration": "runs/epic-126/replication/jev-replication-preregistration-v1.json",
+    "replay_journal": "runs/epic-126/replication/jev-replay-replication.jsonl",
+    "replay_report": "runs/epic-126/replication/jev-replay-replication-report.json"
+  },
+  "pending_review": [
+    "reviewer decision on the family selection rule and the structural audit",
+    "reviewer decision on the k_max = 4 inference consequence recorded below",
+    "reviewer decision on caps, partitions and terminal stops",
+    "a separate explicit live authorization reference is required before any provider call; locking this registration is not that authorization"
+  ],
+  "preregistration_hash": "ff186a066e6af093ecc383e668d948bdca7c1ef8f84b5752b88db47960a6ec6d",
+  "preregistration_version": "stage3-jev-replay-replication-v1",
+  "purpose": "preregister, before any live outcome exists, a replication of the matched real/placebo/null Jev replay on exactly one non-planning task family, with its form capacity, multiplicity control, confirmation rule and operational bounds fixed in advance",
+  "source_files": [
+    "src/apart_incident_response/jev_replication_preregistration.py",
+    "src/apart_incident_response/task_families.py",
+    "src/apart_incident_response/communication_protocol.py",
+    "src/apart_incident_response/finite_information.py",
+    "src/apart_incident_response/jev_choice.py",
+    "src/apart_incident_response/jev_choice_v2.py",
+    "src/apart_incident_response/jev_replay.py",
+    "src/apart_incident_response/jev_replay_preregistration.py",
+    "src/apart_incident_response/jev_replay_preregistration_v2.py",
+    "src/apart_incident_response/jev_replay_preregistration_v4.py",
+    "src/apart_incident_response/behavioral_discovery.py",
+    "src/apart_incident_response/jev_ling_writer_v3.py",
+    "src/apart_incident_response/jev_ling_writer_v5.py",
+    "src/apart_incident_response/jev_coverage_manifest_preregistration_v6.py",
+    "src/apart_incident_response/jev_coverage_manifest_preregistration_v7.py",
+    "src/apart_incident_response/jev_writer_ladder_v5.py"
+  ],
+  "source_files_hash": "51085797147b685274200c1975e27f53ba21d91517f420c6dd61a9ac8975e61e",
+  "stage": "non-planning-family replication of the matched Jev replay",
+  "status": "draft_pending_review",
+  "treatment": {
+    "agents": [
+      "A",
+      "B"
+    ],
+    "board_evidence": "an accepted board_write by the writer whose normalized_claim and raw_text equal the claim and whose receiver_id is A, followed by an A peer_read_exposure with a nonempty exposure_id and read sequence strictly after the write; rejected or missing evidence yields no event",
+    "complexity": "low",
+    "exposure_id": "jev-finalizer",
+    "family": "hypothesis",
+    "final_receiver": "A via Jev Choice wire v2",
+    "generator_version": "six-family-clue-consistent-v2",
+    "mode": "exact-original-comm-bridge",
+    "ownership": "accepted board writes require exact instance.holds_claim ownership; non_owned_claim is rejected and journaled",
+    "primary_direction": "one-way B->A",
+    "regime": "N",
+    "turns": 2,
+    "visibility": "peer-only board rows; the Jev receiver A sees only accepted B-authored claims; rejected writes are never visible",
+    "writer_prompt": {
+      "max_tokens": 1024,
+      "output_grammar": "ANSWER: <label> + optional MESSAGE: <claim>; answer-only = silence",
+      "path": "communication_runner.AgentContext -> behavioral_discovery.treatment_prompt -> json.dumps(sort_keys=True)",
+      "prompt_fields": [
+        "instruction",
+        "family",
+        "complexity",
+        "condition",
+        "turn",
+        "is_finalizer",
+        "finalizing_agent",
+        "candidate_labels",
+        "joint_clues",
+        "private_clues",
+        "visible_messages"
+      ],
+      "prompt_hash": "80072617786477f58b846bef1fe580eec31330e8733828ef22e25087b67488b0",
+      "prompt_schema_version": "treatment-prompt-v2",
+      "provider_version": "behavioral-discovery-v1",
+      "seed_behavior": {
+        "algorithm": "sha256-truncated-signed31-v1",
+        "inputs": "provider_seed(instance_id, 'COMM', turn, agent_id)",
+        "sent_as_seed_field": true
+      },
+      "serialization": "json.dumps(treatment_prompt(context), sort_keys=True)",
+      "temperature": 0.0
+    },
+    "writer_transport": {
+      "backoff_initial_seconds": 0.5,
+      "backoff_max_seconds": 5.0,
+      "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+      "key_loader": "behavioral_discovery._api_key",
+      "max_retries": 2,
+      "min_attempt_interval_seconds": 3.25,
+      "model": "inclusionai/ling-3.0-flash-vl",
+      "pacing_algorithm": "monotonic_min_interval_between_physical_attempt_starts",
+      "retryable_statuses": [
+        408,
+        429,
+        500,
+        502,
+        503,
+        504,
+        529
+      ],
+      "supported_retry_headers": [
+        "retry-after",
+        "retry-after-ms"
+      ],
+      "temperature": 0.0,
+      "token_budget": 1024,
+      "writer_outcomes_version": "ling-writer-outcomes-v5",
+      "writer_parser_version": "ling-writer-parser-v5"
+    }
+  },
+  "treatment_hash": "4a51cf4faa269433738b157387f5fdc464573c0f8a171d0e398ac4da7fa708bf"
+}
