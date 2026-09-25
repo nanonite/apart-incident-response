@@ -1,0 +1,827 @@
+{
+  "artifact_version": "jev-v7-coverage-decision-v1",
+  "claim_scope": [
+    "registered partial run: fixed-N completeness failed; never described as a completed fixed-N sample",
+    "coverage pass is conditional on this partial run and does not erase the incomplete collection gate",
+    "paid-route findings are conditional on the paid Ling SKU and must not be pooled with free-route behavioral rates",
+    "gross transmitted I_m is never unique information delivered to Jev A",
+    "no causal, behavioral-capability, or replay-inference claim is made here",
+    "the formal coverage decision application of the frozen rule is recorded in decisions.coverage_replay_readiness; #193 owns the next step"
+  ],
+  "decisions": {
+    "collection_completeness": {
+      "attempted": 32,
+      "gate": "fixed N=36",
+      "planned": 36,
+      "result": "failed",
+      "statement": "Fixed N=36 was not completed: collection stopped at case 32 under a registered terminal rule. The v7 block is a registered partial run and cannot be described as a completed fixed-N sample."
+    },
+    "coverage_replay_readiness": {
+      "conditional_replay_gate_released": true,
+      "covered_form_ids": [
+        "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+        "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+        "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+        "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+        "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+        "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222"
+      ],
+      "covered_forms": 6,
+      "form_event_counts": {
+        "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee": 1,
+        "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc": 4,
+        "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c": 4,
+        "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569": 1,
+        "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb": 4,
+        "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222": 3
+      },
+      "gate_scope": "release is on the coverage dimension only: #193 may amend/lock the #159 matched replay plan; the incomplete collection gate is not erased and replay inference has not been run",
+      "k": 6,
+      "missing_forms": [],
+      "result": "six_form_coverage_observed",
+      "rule_applied": "#192 frozen coverage rule: every one of the six frozen prompt forms has at least one valid, authoritative B->A replay event",
+      "statement": "Six-form replay coverage passed within a registered partial run; fixed-N collection completeness failed."
+    }
+  },
+  "denominators": {
+    "attempted_instances": 32,
+    "distinct_covered_forms": 6,
+    "eligible_claims": 17,
+    "eligible_replay_events": 17,
+    "planned_instances": 36,
+    "receiver_invalid": 0,
+    "receiver_unattempted": 1,
+    "receiver_valid": 31,
+    "recomputed_eligible_rows": 17,
+    "rows_with_accepted_b_message_but_no_eligible_event": 0,
+    "unattempted_instance_ids": [
+      "planning-0001251e",
+      "planning-00012522",
+      "planning-00012524",
+      "planning-00012530"
+    ],
+    "unattempted_instances": 4,
+    "writer_invalid_calls": 1,
+    "writer_valid_calls": 124
+  },
+  "events": [
+    {
+      "accepted_b_message_present": true,
+      "claim": "precedes=stage>deploy",
+      "event_id": "planning-000124f8:message-B-1",
+      "exposure_ids": [
+        "jev-finalizer"
+      ],
+      "i_m_bits": 1.584962500721156,
+      "instance_id": "planning-000124f8",
+      "message_id": "message-B-1",
+      "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "reader_id": "A",
+      "receiver_valid": true,
+      "request_hash": "d2c5cbaad20a30ccf1110e12130e2f67355c6a83f91eb797399d4a27af1f8dec",
+      "resolved_model": "jev-1.13.0",
+      "selected_claims_in_pre_read_state": 1,
+      "state_hash": "1a4abfb98c9133c29c006bfb9d512485579e371b82286f12a4a9e1155e653deb",
+      "write_sequence": 0,
+      "writer_id": "B"
+    },
+    {
+      "accepted_b_message_present": true,
+      "claim": "precedes=inspect>stage",
+      "event_id": "planning-000124f9:message-B-0",
+      "exposure_ids": [
+        "turn-1"
+      ],
+      "i_m_bits": 1.584962500721156,
+      "instance_id": "planning-000124f9",
+      "message_id": "message-B-0",
+      "prompt_form_id": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "reader_id": "A",
+      "receiver_valid": true,
+      "request_hash": "8230fe35f65264cc0f491ff31a72ff53cdc45b98c6238bfd899771bb4cad0709",
+      "resolved_model": "jev-1.13.0",
+      "selected_claims_in_pre_read_state": 1,
+      "state_hash": "c550e2c0f188b3fe076a8b3e7a6645500bf71fd6711df0ea3220f45630bb65d9",
+      "write_sequence": 0,
+      "writer_id": "B"
+    },
+    {
+      "accepted_b_message_present": true,
+      "claim": "precedes=stage>deploy",
+      "event_id": "planning-000124fb:message-B-0",
+      "exposure_ids": [
+        "turn-1"
+      ],
+      "i_m_bits": 1.584962500721156,
+      "instance_id": "planning-000124fb",
+      "message_id": "message-B-0",
+      "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "reader_id": "A",
+      "receiver_valid": true,
+      "request_hash": "d2c5cbaad20a30ccf1110e12130e2f67355c6a83f91eb797399d4a27af1f8dec",
+      "resolved_model": "jev-1.13.0",
+      "selected_claims_in_pre_read_state": 1,
+      "state_hash": "1a4abfb98c9133c29c006bfb9d512485579e371b82286f12a4a9e1155e653deb",
+      "write_sequence": 0,
+      "writer_id": "B"
+    },
+    {
+      "accepted_b_message_present": true,
+      "claim": "precedes=inspect>stage",
+      "event_id": "planning-000124fc:message-B-0",
+      "exposure_ids": [
+        "turn-1"
+      ],
+      "i_m_bits": 1.584962500721156,
+      "instance_id": "planning-000124fc",
+      "message_id": "message-B-0",
+      "prompt_form_id": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "reader_id": "A",
+      "receiver_valid": true,
+      "request_hash": "6114508163c13509c9a59257167cb0ea29e2af09f6caa8bf9feb8892154420b3",
+      "resolved_model": "jev-1.13.0",
+      "selected_claims_in_pre_read_state": 1,
+      "state_hash": "2922da5faba2eaf392606a649248c8d613a92c47d1d6800f21b7f3fa34061bd5",
+      "write_sequence": 0,
+      "writer_id": "B"
+    },
+    {
+      "accepted_b_message_present": true,
+      "claim": "precedes=stage>deploy",
+      "event_id": "planning-000124fe:message-B-0",
+      "exposure_ids": [
+        "turn-1"
+      ],
+      "i_m_bits": 1.584962500721156,
+      "instance_id": "planning-000124fe",
+      "message_id": "message-B-0",
+      "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "reader_id": "A",
+      "receiver_valid": true,
+      "request_hash": "d2c5cbaad20a30ccf1110e12130e2f67355c6a83f91eb797399d4a27af1f8dec",
+      "resolved_model": "jev-1.13.0",
+      "selected_claims_in_pre_read_state": 1,
+      "state_hash": "1a4abfb98c9133c29c006bfb9d512485579e371b82286f12a4a9e1155e653deb",
+      "write_sequence": 0,
+      "writer_id": "B"
+    },
+    {
+      "accepted_b_message_present": true,
+      "claim": "precedes=stage>inspect",
+      "event_id": "planning-00012501:message-B-0",
+      "exposure_ids": [
+        "turn-1"
+      ],
+      "i_m_bits": 1.584962500721156,
+      "instance_id": "planning-00012501",
+      "message_id": "message-B-0",
+      "prompt_form_id": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "reader_id": "A",
+      "receiver_valid": true,
+      "request_hash": "029ec56f10b6489e2af3c3fcf79ea81c852f06b3f1b172794fd69bba290ca71e",
+      "resolved_model": "jev-1.13.0",
+      "selected_claims_in_pre_read_state": 1,
+      "state_hash": "369877028daf8ff62ec212ca97e6c9b15ad9f2944462ec5d4e3bf0a17b720103",
+      "write_sequence": 0,
+      "writer_id": "B"
+    },
+    {
+      "accepted_b_message_present": true,
+      "claim": "precedes=stage>deploy",
+      "event_id": "planning-00012502:message-B-1",
+      "exposure_ids": [
+        "jev-finalizer"
+      ],
+      "i_m_bits": 1.584962500721156,
+      "instance_id": "planning-00012502",
+      "message_id": "message-B-1",
+      "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "reader_id": "A",
+      "receiver_valid": true,
+      "request_hash": "d2c5cbaad20a30ccf1110e12130e2f67355c6a83f91eb797399d4a27af1f8dec",
+      "resolved_model": "jev-1.13.0",
+      "selected_claims_in_pre_read_state": 1,
+      "state_hash": "1a4abfb98c9133c29c006bfb9d512485579e371b82286f12a4a9e1155e653deb",
+      "write_sequence": 0,
+      "writer_id": "B"
+    },
+    {
+      "accepted_b_message_present": true,
+      "claim": "precedes=inspect>stage",
+      "event_id": "planning-00012503:message-B-1",
+      "exposure_ids": [
+        "jev-finalizer"
+      ],
+      "i_m_bits": 1.584962500721156,
+      "instance_id": "planning-00012503",
+      "message_id": "message-B-1",
+      "prompt_form_id": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "reader_id": "A",
+      "receiver_valid": true,
+      "request_hash": "6114508163c13509c9a59257167cb0ea29e2af09f6caa8bf9feb8892154420b3",
+      "resolved_model": "jev-1.13.0",
+      "selected_claims_in_pre_read_state": 1,
+      "state_hash": "2922da5faba2eaf392606a649248c8d613a92c47d1d6800f21b7f3fa34061bd5",
+      "write_sequence": 0,
+      "writer_id": "B"
+    },
+    {
+      "accepted_b_message_present": true,
+      "claim": "precedes=stage>inspect",
+      "event_id": "planning-00012504:message-B-1",
+      "exposure_ids": [
+        "jev-finalizer"
+      ],
+      "i_m_bits": 1.584962500721156,
+      "instance_id": "planning-00012504",
+      "message_id": "message-B-1",
+      "prompt_form_id": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "reader_id": "A",
+      "receiver_valid": true,
+      "request_hash": "5b39c8fdc02e7b884f3181416c6438aa6e4102f60fa45bb53b2610549e32b147",
+      "resolved_model": "jev-1.13.0",
+      "selected_claims_in_pre_read_state": 1,
+      "state_hash": "ffda3f0ec8ff626467134cc19985f98dd2293ca478eaf5dc8e3e43d533ce5d8b",
+      "write_sequence": 0,
+      "writer_id": "B"
+    },
+    {
+      "accepted_b_message_present": true,
+      "claim": "precedes=inspect>deploy",
+      "event_id": "planning-00012507:message-B-0",
+      "exposure_ids": [
+        "turn-1"
+      ],
+      "i_m_bits": 1.584962500721156,
+      "instance_id": "planning-00012507",
+      "message_id": "message-B-0",
+      "prompt_form_id": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "reader_id": "A",
+      "receiver_valid": true,
+      "request_hash": "d55b2f55ac0d91e014190fda63dbdfc35072f8b1866d056893712fc60f6398cd",
+      "resolved_model": "jev-1.13.0",
+      "selected_claims_in_pre_read_state": 1,
+      "state_hash": "3651ca7b8b56f5c8a804db055ab63f9427c6b6b40ef79345af52cca696d15345",
+      "write_sequence": 0,
+      "writer_id": "B"
+    },
+    {
+      "accepted_b_message_present": true,
+      "claim": "precedes=stage>inspect",
+      "event_id": "planning-0001250d:message-B-1",
+      "exposure_ids": [
+        "jev-finalizer"
+      ],
+      "i_m_bits": 1.584962500721156,
+      "instance_id": "planning-0001250d",
+      "message_id": "message-B-1",
+      "prompt_form_id": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "reader_id": "A",
+      "receiver_valid": true,
+      "request_hash": "5b39c8fdc02e7b884f3181416c6438aa6e4102f60fa45bb53b2610549e32b147",
+      "resolved_model": "jev-1.13.0",
+      "selected_claims_in_pre_read_state": 1,
+      "state_hash": "ffda3f0ec8ff626467134cc19985f98dd2293ca478eaf5dc8e3e43d533ce5d8b",
+      "write_sequence": 0,
+      "writer_id": "B"
+    },
+    {
+      "accepted_b_message_present": true,
+      "claim": "precedes=stage>inspect",
+      "event_id": "planning-0001250e:message-B-1",
+      "exposure_ids": [
+        "jev-finalizer"
+      ],
+      "i_m_bits": 1.584962500721156,
+      "instance_id": "planning-0001250e",
+      "message_id": "message-B-1",
+      "prompt_form_id": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "reader_id": "A",
+      "receiver_valid": true,
+      "request_hash": "5b39c8fdc02e7b884f3181416c6438aa6e4102f60fa45bb53b2610549e32b147",
+      "resolved_model": "jev-1.13.0",
+      "selected_claims_in_pre_read_state": 1,
+      "state_hash": "ffda3f0ec8ff626467134cc19985f98dd2293ca478eaf5dc8e3e43d533ce5d8b",
+      "write_sequence": 0,
+      "writer_id": "B"
+    },
+    {
+      "accepted_b_message_present": true,
+      "claim": "precedes=deploy>inspect",
+      "event_id": "planning-0001250f:message-B-0",
+      "exposure_ids": [
+        "turn-1"
+      ],
+      "i_m_bits": 1.584962500721156,
+      "instance_id": "planning-0001250f",
+      "message_id": "message-B-0",
+      "prompt_form_id": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "reader_id": "A",
+      "receiver_valid": true,
+      "request_hash": "4a13a7910bb6fe4e590f0a33865be0ffa188ea0ca1ec4ae5c0aeeb806f3d6a59",
+      "resolved_model": "jev-1.13.0",
+      "selected_claims_in_pre_read_state": 1,
+      "state_hash": "0d6e2341f463de52baf304c187fa6ba852198adf4d01fdfa18fe417198310065",
+      "write_sequence": 0,
+      "writer_id": "B"
+    },
+    {
+      "accepted_b_message_present": true,
+      "claim": "precedes=inspect>stage",
+      "event_id": "planning-00012511:message-B-0",
+      "exposure_ids": [
+        "turn-1"
+      ],
+      "i_m_bits": 1.584962500721156,
+      "instance_id": "planning-00012511",
+      "message_id": "message-B-0",
+      "prompt_form_id": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "reader_id": "A",
+      "receiver_valid": true,
+      "request_hash": "6114508163c13509c9a59257167cb0ea29e2af09f6caa8bf9feb8892154420b3",
+      "resolved_model": "jev-1.13.0",
+      "selected_claims_in_pre_read_state": 1,
+      "state_hash": "2922da5faba2eaf392606a649248c8d613a92c47d1d6800f21b7f3fa34061bd5",
+      "write_sequence": 0,
+      "writer_id": "B"
+    },
+    {
+      "accepted_b_message_present": true,
+      "claim": "precedes=deploy>inspect",
+      "event_id": "planning-00012517:message-B-1",
+      "exposure_ids": [
+        "jev-finalizer"
+      ],
+      "i_m_bits": 1.584962500721156,
+      "instance_id": "planning-00012517",
+      "message_id": "message-B-1",
+      "prompt_form_id": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "reader_id": "A",
+      "receiver_valid": true,
+      "request_hash": "4a13a7910bb6fe4e590f0a33865be0ffa188ea0ca1ec4ae5c0aeeb806f3d6a59",
+      "resolved_model": "jev-1.13.0",
+      "selected_claims_in_pre_read_state": 1,
+      "state_hash": "0d6e2341f463de52baf304c187fa6ba852198adf4d01fdfa18fe417198310065",
+      "write_sequence": 0,
+      "writer_id": "B"
+    },
+    {
+      "accepted_b_message_present": true,
+      "claim": "precedes=deploy>inspect",
+      "event_id": "planning-0001251b:message-B-1",
+      "exposure_ids": [
+        "jev-finalizer"
+      ],
+      "i_m_bits": 1.584962500721156,
+      "instance_id": "planning-0001251b",
+      "message_id": "message-B-1",
+      "prompt_form_id": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "reader_id": "A",
+      "receiver_valid": true,
+      "request_hash": "4a13a7910bb6fe4e590f0a33865be0ffa188ea0ca1ec4ae5c0aeeb806f3d6a59",
+      "resolved_model": "jev-1.13.0",
+      "selected_claims_in_pre_read_state": 1,
+      "state_hash": "0d6e2341f463de52baf304c187fa6ba852198adf4d01fdfa18fe417198310065",
+      "write_sequence": 0,
+      "writer_id": "B"
+    },
+    {
+      "accepted_b_message_present": true,
+      "claim": "precedes=deploy>stage",
+      "event_id": "planning-0001251c:message-B-1",
+      "exposure_ids": [
+        "jev-finalizer"
+      ],
+      "i_m_bits": 1.584962500721156,
+      "instance_id": "planning-0001251c",
+      "message_id": "message-B-1",
+      "prompt_form_id": "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "reader_id": "A",
+      "receiver_valid": true,
+      "request_hash": "e0b47cca22d5beab1c34ecd74fc7694fe64995fb25407081c33d2637fd81c107",
+      "resolved_model": "jev-1.13.0",
+      "selected_claims_in_pre_read_state": 1,
+      "state_hash": "418a62b200c98d50b46dcb2769bc85bc6dd5d2a536f863c19ca19dd77a67d216",
+      "write_sequence": 0,
+      "writer_id": "B"
+    }
+  ],
+  "experimental_unit": {
+    "events": 17,
+    "k": 6,
+    "note": "k is the number of covered frozen forms, not the number of events; repeated instances within a form are replicates of one model-visible pre-read state and claim treatment; the 17 events are not 17 independent states",
+    "prohibited_and_not_performed": [
+      "instance-level t-test",
+      "instance-level Wilcoxon test",
+      "other independence-assuming analyses",
+      "real/placebo/null replay inference",
+      "causal uptake effect"
+    ],
+    "unit": "prompt form"
+  },
+  "generated_by": "src/apart_incident_response/jev_v7_coverage_decision.py",
+  "information_accounting": {
+    "distinct_form_claim_treatments": {
+      "count": 6,
+      "i_m_bits": 9.509775004326936,
+      "pairs": [
+        {
+          "claim": "precedes=inspect>deploy",
+          "prompt_form_id": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee"
+        },
+        {
+          "claim": "precedes=stage>deploy",
+          "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc"
+        },
+        {
+          "claim": "precedes=stage>inspect",
+          "prompt_form_id": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c"
+        },
+        {
+          "claim": "precedes=deploy>stage",
+          "prompt_form_id": "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569"
+        },
+        {
+          "claim": "precedes=inspect>stage",
+          "prompt_form_id": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb"
+        },
+        {
+          "claim": "precedes=deploy>inspect",
+          "prompt_form_id": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222"
+        }
+      ]
+    },
+    "gross_a_to_b": {
+      "i_m_bits": 7.92481250360578,
+      "records": 5
+    },
+    "gross_b_to_a": {
+      "i_m_bits": 30.114287513701953,
+      "records": 19
+    },
+    "gross_is_not_unique_note": "the gross totals include A->B messages and repeated identical B claims within an event; they must never be described as unique information delivered",
+    "gross_transmitted_all_messages": {
+      "i_m_bits": 38.039100017307724,
+      "records": 24
+    },
+    "label_rule": "gross transmitted bits are gross transmission, never unique information delivered to Jev A",
+    "primary_replay_set_direction": "B->A only",
+    "primary_replay_set_direction_verified": true,
+    "replay_eligible_event_claims": {
+      "claims": 17,
+      "events": 17,
+      "i_m_bits": 26.94436251225965
+    }
+  },
+  "inputs": {
+    "historical_sha256": {
+      "runs/epic-126/jev-choice-replay-preregistration-v2.json": "f4e68dadcd570789e30b46f41282201f7b5a0377c941f9d717a0699ca8fa5ee0",
+      "runs/epic-126/jev-choice-replay-preregistration-v3.json": "fbb4eecc7c5765974bdbaaa4de46cc1006d456aafc70263899cd8c00114567c9",
+      "runs/epic-126/jev-choice-replay-preregistration.json": "241591d24acc38ada2b236270adac6dba91fc9c3b190cc7afecd9436fc08675d",
+      "runs/epic-126/jev-coverage-manifest-preregistration-v6.json": "63be1ccbff954cd4c55be303d3a9569e592b336a976c6fcc824fb2fbcda1c9f5",
+      "runs/epic-126/jev-coverage-manifest-report-v6.json": "a6f5253cbef7aa4534df3520aaa88a7e3918bb97903a3f2ff264013edb6b195c",
+      "runs/epic-126/jev-coverage-manifest-v6.jsonl": "f5a7a0d8c1f54a0e65864ca3e2ba9589d22be3989639fa50b98202aaa1d6c364",
+      "runs/epic-126/jev-ling-transport-probe-v7.json": "06d22e8741ee490b93c7c6f78535c480f4f67a8f53f3ac1ca589f3d639abb534",
+      "runs/epic-126/jev-writer-exact-bridge-report-v5.json": "325206d9c51a56c10195265e7f699e78b57b762b9d243160d52cdd63c58aef2d",
+      "runs/epic-126/jev-writer-exact-bridge-v5.jsonl": "4ea9f91decba5c504bb2726e178f36ed6cd845bba635876c822aa72d53c9a5de",
+      "runs/epic-126/jev-writer-ladder-preregistration-v4.json": "a3dd6e2c8e60e64132c76668f4f5b79881e32936a816353d667a1f4250db4255",
+      "runs/epic-126/jev-writer-ladder-preregistration-v5.json": "42ab5784ec0f536159aedf8f8e83763197425633117d9b0fc0a2d08ecf9b3993"
+    },
+    "input_verification": {
+      "checks": [
+        {
+          "check": "pin:runs/epic-126/jev-coverage-manifest-v7.jsonl",
+          "detail": {
+            "actual": "23ab961c8f4327a98af821d5457b94f278c1f0993bc027953a86bbc36081ebc5",
+            "expected": "23ab961c8f4327a98af821d5457b94f278c1f0993bc027953a86bbc36081ebc5"
+          },
+          "ok": true
+        },
+        {
+          "check": "pin:runs/epic-126/jev-coverage-manifest-report-v7.json",
+          "detail": {
+            "actual": "456515559c65faf976ce1063107a2d4036c7f6d06f0e9bf7e9b1f87b89b1088f",
+            "expected": "456515559c65faf976ce1063107a2d4036c7f6d06f0e9bf7e9b1f87b89b1088f"
+          },
+          "ok": true
+        },
+        {
+          "check": "pin:runs/epic-126/jev-coverage-manifest-preregistration-v7.json",
+          "detail": {
+            "actual": "289d83fee5c8fcdc3c1aaa29b104850d696a3d98c32cf291e300dbf89edd5e94",
+            "expected": "289d83fee5c8fcdc3c1aaa29b104850d696a3d98c32cf291e300dbf89edd5e94"
+          },
+          "ok": true
+        },
+        {
+          "check": "pin:runs/epic-126/jev-six-form-coverage-audit-v1.json",
+          "detail": {
+            "actual": "73751bed24776e851f76e63dec427dafc1b458624bc56efdf96612fcfc568dcb",
+            "expected": "73751bed24776e851f76e63dec427dafc1b458624bc56efdf96612fcfc568dcb"
+          },
+          "ok": true
+        },
+        {
+          "check": "pin:src/apart_incident_response/jev_six_form_coverage_audit.py",
+          "detail": {
+            "actual": "d97918ce1ebc6b2ab79e51ff29c1b85589ba662d5ebfeae543c8ee87a6e0b6d8",
+            "expected": "d97918ce1ebc6b2ab79e51ff29c1b85589ba662d5ebfeae543c8ee87a6e0b6d8"
+          },
+          "ok": true
+        },
+        {
+          "check": "pin:src/apart_incident_response/task_families.py",
+          "detail": {
+            "actual": "b399bb15c96be98d2c4c7e00012448d9a3df9f1cd7deac0ff1375ecb3e1ea6c4",
+            "expected": "b399bb15c96be98d2c4c7e00012448d9a3df9f1cd7deac0ff1375ecb3e1ea6c4"
+          },
+          "ok": true
+        },
+        {
+          "check": "historical_pin:runs/epic-126/jev-choice-replay-preregistration.json",
+          "detail": {
+            "actual": "241591d24acc38ada2b236270adac6dba91fc9c3b190cc7afecd9436fc08675d",
+            "expected": "241591d24acc38ada2b236270adac6dba91fc9c3b190cc7afecd9436fc08675d"
+          },
+          "ok": true
+        },
+        {
+          "check": "historical_pin:runs/epic-126/jev-choice-replay-preregistration-v2.json",
+          "detail": {
+            "actual": "f4e68dadcd570789e30b46f41282201f7b5a0377c941f9d717a0699ca8fa5ee0",
+            "expected": "f4e68dadcd570789e30b46f41282201f7b5a0377c941f9d717a0699ca8fa5ee0"
+          },
+          "ok": true
+        },
+        {
+          "check": "historical_pin:runs/epic-126/jev-choice-replay-preregistration-v3.json",
+          "detail": {
+            "actual": "fbb4eecc7c5765974bdbaaa4de46cc1006d456aafc70263899cd8c00114567c9",
+            "expected": "fbb4eecc7c5765974bdbaaa4de46cc1006d456aafc70263899cd8c00114567c9"
+          },
+          "ok": true
+        },
+        {
+          "check": "historical_pin:runs/epic-126/jev-writer-ladder-preregistration-v4.json",
+          "detail": {
+            "actual": "a3dd6e2c8e60e64132c76668f4f5b79881e32936a816353d667a1f4250db4255",
+            "expected": "a3dd6e2c8e60e64132c76668f4f5b79881e32936a816353d667a1f4250db4255"
+          },
+          "ok": true
+        },
+        {
+          "check": "historical_pin:runs/epic-126/jev-writer-ladder-preregistration-v5.json",
+          "detail": {
+            "actual": "42ab5784ec0f536159aedf8f8e83763197425633117d9b0fc0a2d08ecf9b3993",
+            "expected": "42ab5784ec0f536159aedf8f8e83763197425633117d9b0fc0a2d08ecf9b3993"
+          },
+          "ok": true
+        },
+        {
+          "check": "historical_pin:runs/epic-126/jev-writer-exact-bridge-v5.jsonl",
+          "detail": {
+            "actual": "4ea9f91decba5c504bb2726e178f36ed6cd845bba635876c822aa72d53c9a5de",
+            "expected": "4ea9f91decba5c504bb2726e178f36ed6cd845bba635876c822aa72d53c9a5de"
+          },
+          "ok": true
+        },
+        {
+          "check": "historical_pin:runs/epic-126/jev-writer-exact-bridge-report-v5.json",
+          "detail": {
+            "actual": "325206d9c51a56c10195265e7f699e78b57b762b9d243160d52cdd63c58aef2d",
+            "expected": "325206d9c51a56c10195265e7f699e78b57b762b9d243160d52cdd63c58aef2d"
+          },
+          "ok": true
+        },
+        {
+          "check": "historical_pin:runs/epic-126/jev-coverage-manifest-preregistration-v6.json",
+          "detail": {
+            "actual": "63be1ccbff954cd4c55be303d3a9569e592b336a976c6fcc824fb2fbcda1c9f5",
+            "expected": "63be1ccbff954cd4c55be303d3a9569e592b336a976c6fcc824fb2fbcda1c9f5"
+          },
+          "ok": true
+        },
+        {
+          "check": "historical_pin:runs/epic-126/jev-coverage-manifest-v6.jsonl",
+          "detail": {
+            "actual": "f5a7a0d8c1f54a0e65864ca3e2ba9589d22be3989639fa50b98202aaa1d6c364",
+            "expected": "f5a7a0d8c1f54a0e65864ca3e2ba9589d22be3989639fa50b98202aaa1d6c364"
+          },
+          "ok": true
+        },
+        {
+          "check": "historical_pin:runs/epic-126/jev-coverage-manifest-report-v6.json",
+          "detail": {
+            "actual": "a6f5253cbef7aa4534df3520aaa88a7e3918bb97903a3f2ff264013edb6b195c",
+            "expected": "a6f5253cbef7aa4534df3520aaa88a7e3918bb97903a3f2ff264013edb6b195c"
+          },
+          "ok": true
+        },
+        {
+          "check": "historical_pin:runs/epic-126/jev-ling-transport-probe-v7.json",
+          "detail": {
+            "actual": "06d22e8741ee490b93c7c6f78535c480f4f67a8f53f3ac1ca589f3d639abb534",
+            "expected": "06d22e8741ee490b93c7c6f78535c480f4f67a8f53f3ac1ca589f3d639abb534"
+          },
+          "ok": true
+        },
+        {
+          "check": "journal_row_count",
+          "detail": 32,
+          "ok": true
+        },
+        {
+          "check": "report_case_count",
+          "detail": 32,
+          "ok": true
+        }
+      ],
+      "failed": [],
+      "ok": true
+    },
+    "registration_content_hash": "f7f7d5742ea3e6a710ed102e6c2a454992abede5c4f51591a9cc447781797565",
+    "report_summary": {
+      "attempted_cases": 32,
+      "planned_cases": 36,
+      "receiver_invalid_cases": 0,
+      "receiver_unattempted_cases": 1,
+      "receiver_valid_cases": 31,
+      "status": "stopped",
+      "stop_reason": "empty_output"
+    },
+    "sha256": {
+      "runs/epic-126/jev-coverage-manifest-preregistration-v7.json": "289d83fee5c8fcdc3c1aaa29b104850d696a3d98c32cf291e300dbf89edd5e94",
+      "runs/epic-126/jev-coverage-manifest-report-v7.json": "456515559c65faf976ce1063107a2d4036c7f6d06f0e9bf7e9b1f87b89b1088f",
+      "runs/epic-126/jev-coverage-manifest-v7.jsonl": "23ab961c8f4327a98af821d5457b94f278c1f0993bc027953a86bbc36081ebc5",
+      "runs/epic-126/jev-six-form-coverage-audit-v1.json": "73751bed24776e851f76e63dec427dafc1b458624bc56efdf96612fcfc568dcb",
+      "src/apart_incident_response/jev_six_form_coverage_audit.py": "d97918ce1ebc6b2ab79e51ff29c1b85589ba662d5ebfeae543c8ee87a6e0b6d8",
+      "src/apart_incident_response/task_families.py": "b399bb15c96be98d2c4c7e00012448d9a3df9f1cd7deac0ff1375ecb3e1ea6c4"
+    }
+  },
+  "issue": "#192",
+  "missingness_by_form": {
+    "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee": {
+      "attempted_instances": 6,
+      "eligible_events": 1,
+      "not_attempted_instances": [],
+      "planned_instances": 6,
+      "receiver_unattempted_instances": 0,
+      "receiver_valid_instances": 6,
+      "writer_invalid_instances": []
+    },
+    "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc": {
+      "attempted_instances": 6,
+      "eligible_events": 4,
+      "not_attempted_instances": [],
+      "planned_instances": 6,
+      "receiver_unattempted_instances": 0,
+      "receiver_valid_instances": 6,
+      "writer_invalid_instances": []
+    },
+    "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c": {
+      "attempted_instances": 6,
+      "eligible_events": 4,
+      "not_attempted_instances": [],
+      "planned_instances": 6,
+      "receiver_unattempted_instances": 1,
+      "receiver_valid_instances": 5,
+      "writer_invalid_instances": [
+        "planning-0001251d"
+      ]
+    },
+    "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569": {
+      "attempted_instances": 4,
+      "eligible_events": 1,
+      "not_attempted_instances": [
+        "planning-00012522",
+        "planning-00012524"
+      ],
+      "planned_instances": 6,
+      "receiver_unattempted_instances": 0,
+      "receiver_valid_instances": 4,
+      "writer_invalid_instances": []
+    },
+    "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb": {
+      "attempted_instances": 6,
+      "eligible_events": 4,
+      "not_attempted_instances": [],
+      "planned_instances": 6,
+      "receiver_unattempted_instances": 0,
+      "receiver_valid_instances": 6,
+      "writer_invalid_instances": []
+    },
+    "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222": {
+      "attempted_instances": 4,
+      "eligible_events": 3,
+      "not_attempted_instances": [
+        "planning-0001251e",
+        "planning-00012530"
+      ],
+      "planned_instances": 6,
+      "receiver_unattempted_instances": 0,
+      "receiver_valid_instances": 4,
+      "writer_invalid_instances": []
+    }
+  },
+  "mode": "offline-analysis-only",
+  "provider_calls": 0,
+  "selection_policy": {
+    "direction": "one-way B->A",
+    "eligibility_conditions": [
+      "writer is B",
+      "receiver is A",
+      "board write was accepted",
+      "B authoritatively owns the exact claim",
+      "claim is informative to A before reading",
+      "recomputed I_m > 0",
+      "matching board_write exists",
+      "matching A peer_read_exposure exists after the write",
+      "nonempty exposure ID",
+      "no board_write_rejected evidence for that message",
+      "claim is not already known to A",
+      "claim reduces A's feasible set",
+      "at most one claim per pre-read state",
+      "repeated identical B claims within an event are deduplicated",
+      "A->B messages are excluded",
+      "receiver must be valid",
+      "request/state/protocol provenance must match"
+    ],
+    "invalid_writer_outcomes": [
+      "empty_output",
+      "invalid_answer",
+      "truncated_output",
+      "unparsed_output",
+      "writer_error"
+    ],
+    "policy_version": "jev-six-form-coverage-audit-v1::select_replay_claims",
+    "selector_module": "src/apart_incident_response/jev_six_form_coverage_audit.py",
+    "selector_source_sha256": "d97918ce1ebc6b2ab79e51ff29c1b85589ba662d5ebfeae543c8ee87a6e0b6d8",
+    "unit_filter_note": "eligibility is evaluated per pre-read state; at most one deduplicated claim per state",
+    "valid_writer_outcomes": [
+      "deliberate_silence",
+      "message_candidate",
+      "non_owned_claim"
+    ]
+  },
+  "writer_validity": {
+    "definition": {
+      "writer_invalid": "empty_output, truncated_output, unparsed_output, invalid_answer, writer_error",
+      "writer_valid": "a Ling call produced a protocol-classifiable outcome: deliberate_silence, an accepted owned message candidate, or a non-owned claim that is explicitly rejected and recorded \u2014 classifiability, NOT correctness"
+    },
+    "invalid_not_counted_as_silence": true,
+    "outcome_totals": {
+      "deliberate_silence": 100,
+      "empty_output": 1,
+      "message_candidate": 24
+    },
+    "outcomes_by_agent_turn": {
+      "A|0|deliberate_silence": 30,
+      "A|0|empty_output": 1,
+      "A|0|message_candidate": 1,
+      "A|1|deliberate_silence": 27,
+      "A|1|message_candidate": 4,
+      "B|0|deliberate_silence": 23,
+      "B|0|message_candidate": 8,
+      "B|1|deliberate_silence": 20,
+      "B|1|message_candidate": 11
+    },
+    "terminal_failure": {
+      "agent": "A",
+      "classification": "writer-invalid missing data caused by output-budget exhaustion",
+      "error_class": null,
+      "explicitly_not": [
+        "deliberate silence",
+        "lack of communication",
+        "an API-key failure",
+        "an OpenRouter transport failure"
+      ],
+      "finish_reason": "length",
+      "instance_id": "planning-0001251d",
+      "outcome": "empty_output",
+      "output_tokens": 1024,
+      "receiver_unattempted": true,
+      "turn": 0,
+      "visible_content": "empty"
+    },
+    "writer_calls_total": 125,
+    "writer_invalid_calls": 1,
+    "writer_valid_calls": 124
+  }
+}
