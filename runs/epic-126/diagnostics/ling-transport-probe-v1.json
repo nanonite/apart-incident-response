@@ -1,0 +1,68 @@
+{
+  "approval": "reviewer-approved-2026-09-25-jev-ling-diagnostics-6508b419",
+  "attempt_count": 1,
+  "authorizes_replay": false,
+  "availability_only": true,
+  "credentials_retained": false,
+  "diagnostics_version": "jev-provider-diagnostics-v1",
+  "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+  "error_class": "valid_response",
+  "finish_reason": "length",
+  "headers_retained": false,
+  "http_status": null,
+  "http_success": true,
+  "key_loader": "behavioral_discovery._api_key",
+  "max_logical_requests": 1,
+  "max_physical_attempts": 1,
+  "max_retries": 0,
+  "model": "inclusionai/ling-3.0-flash-vl",
+  "output": "runs/epic-126/diagnostics/ling-transport-probe-v1.json",
+  "parse_error": null,
+  "persist": true,
+  "prompt_format": "LingWriterClientV5.write_outcome payload",
+  "provider": "openrouter",
+  "provider_calls": 1,
+  "raw_response_retained": false,
+  "recorded_at_utc": "2026-09-25T15:04:27+00:00",
+  "retry_metadata": {
+    "cap": 1,
+    "max_retries": 0,
+    "per_attempt": [
+      {
+        "delay_seconds": 0.0,
+        "delay_source": "none",
+        "delay_sources": [],
+        "error_class": null,
+        "logical_call_id": "ling-call-1",
+        "physical_attempt": 1,
+        "retry_after_ms_present": false,
+        "retry_after_ms_valid": false,
+        "retry_after_present": false,
+        "retry_after_valid": false,
+        "retry_ordinal": 0,
+        "status": 200
+      }
+    ],
+    "physical_attempts": 1,
+    "retries_performed": 0,
+    "retryable_statuses": [
+      408,
+      429,
+      500,
+      502,
+      503,
+      504,
+      529
+    ]
+  },
+  "scope": "bounded_provider_diagnostics",
+  "status": "completed",
+  "transport_error": null,
+  "usage": {
+    "completion_tokens": 16,
+    "input_tokens": 26,
+    "output_tokens": 16
+  },
+  "usage_present": true,
+  "writer_outcome": "empty_output"
+}

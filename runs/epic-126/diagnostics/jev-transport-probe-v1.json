@@ -1,0 +1,48 @@
+{
+  "approval": "reviewer-approved-2026-09-25-jev-ling-diagnostics-6508b419",
+  "attempt_count": 1,
+  "authorizes_replay": false,
+  "availability_only": true,
+  "credentials_retained": false,
+  "diagnostics_version": "jev-provider-diagnostics-v1",
+  "endpoint": "https://api.typesafe.ai/v1/systemone",
+  "error_class": "valid_response",
+  "headers_retained": false,
+  "http_status": null,
+  "http_success": true,
+  "max_logical_requests": 1,
+  "max_physical_attempts": 1,
+  "max_retries": 0,
+  "model": "jev-1.13.0",
+  "output": "runs/epic-126/diagnostics/jev-transport-probe-v1.json",
+  "parse_error": null,
+  "persist": true,
+  "provider": "jev",
+  "provider_calls": 1,
+  "raw_response_retained": false,
+  "recorded_at_utc": "2026-09-25T15:04:26+00:00",
+  "request_shape": "frozen_pre_read_iso_choice_state",
+  "retry_metadata": {
+    "cap": 1,
+    "max_retries": 0,
+    "physical_attempts": 1,
+    "retries_performed": 0,
+    "retryable_statuses": [
+      408,
+      429,
+      500,
+      502,
+      503,
+      504,
+      529
+    ]
+  },
+  "scope": "bounded_provider_diagnostics",
+  "status": "completed",
+  "transport_error": null,
+  "usage": {
+    "input_tokens": 420,
+    "output_tokens": 96
+  },
+  "usage_present": true
+}
