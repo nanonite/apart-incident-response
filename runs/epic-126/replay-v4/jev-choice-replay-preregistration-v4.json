@@ -20,6 +20,7 @@
       "template": "peer_clue: {claim}",
       "wording_hash": "268425b3d4bcb5d3a8a30eb52d87a0165e0f2d4c0931eb685adc1c8f21a87f41"
     },
+    "execution_order": "frozen in branch_schedule: event-major over the #192 decision order with one counterbalanced permutation per event; the future runner must fail closed on any deviation",
     "no_ling_calls": "real messages come from the frozen #192 event set and placebo is controller-injected; replay needs no Ling call",
     "null": "C with no message",
     "only_difference_between_branches": "state.visible_messages",
@@ -28,6 +29,388 @@
     "real": "C plus serialize_message(the exact accepted B-owned claim selected by #192)",
     "sender_identity_model_visible": false,
     "synthetic_origin_model_visible": false
+  },
+  "branch_schedule": {
+    "allowed_branches": [
+      "real",
+      "placebo",
+      "null"
+    ],
+    "assignment_rule": "per-event permutation = BRANCH_PERMUTATIONS[(lexicographic form index + within-form event index) % 6]; depends only on frozen form and event identity, never on outcomes",
+    "event_major": true,
+    "event_order": [
+      "planning-000124f8:message-B-1",
+      "planning-000124f9:message-B-0",
+      "planning-000124fb:message-B-0",
+      "planning-000124fc:message-B-0",
+      "planning-000124fe:message-B-0",
+      "planning-00012501:message-B-0",
+      "planning-00012502:message-B-1",
+      "planning-00012503:message-B-1",
+      "planning-00012504:message-B-1",
+      "planning-00012507:message-B-0",
+      "planning-0001250d:message-B-1",
+      "planning-0001250e:message-B-1",
+      "planning-0001250f:message-B-0",
+      "planning-00012511:message-B-0",
+      "planning-00012517:message-B-1",
+      "planning-0001251b:message-B-1",
+      "planning-0001251c:message-B-1"
+    ],
+    "execution_order": "events in #192 decision order; the three branches of one event are executed adjacently before the next event",
+    "expected_max_position_difference": 1,
+    "form_roles": {
+      "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee": {
+        "events": [
+          {
+            "branches": [
+              "real",
+              "placebo",
+              "null"
+            ],
+            "event_id": "planning-00012507:message-B-0",
+            "permutation_index": 0,
+            "within_form_index": 0
+          }
+        ],
+        "lexicographic_form_index": 0,
+        "rotation_start": 0
+      },
+      "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc": {
+        "events": [
+          {
+            "branches": [
+              "real",
+              "null",
+              "placebo"
+            ],
+            "event_id": "planning-000124f8:message-B-1",
+            "permutation_index": 1,
+            "within_form_index": 0
+          },
+          {
+            "branches": [
+              "placebo",
+              "real",
+              "null"
+            ],
+            "event_id": "planning-000124fb:message-B-0",
+            "permutation_index": 2,
+            "within_form_index": 1
+          },
+          {
+            "branches": [
+              "placebo",
+              "null",
+              "real"
+            ],
+            "event_id": "planning-000124fe:message-B-0",
+            "permutation_index": 3,
+            "within_form_index": 2
+          },
+          {
+            "branches": [
+              "null",
+              "real",
+              "placebo"
+            ],
+            "event_id": "planning-00012502:message-B-1",
+            "permutation_index": 4,
+            "within_form_index": 3
+          }
+        ],
+        "lexicographic_form_index": 1,
+        "rotation_start": 1
+      },
+      "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c": {
+        "events": [
+          {
+            "branches": [
+              "placebo",
+              "real",
+              "null"
+            ],
+            "event_id": "planning-00012501:message-B-0",
+            "permutation_index": 2,
+            "within_form_index": 0
+          },
+          {
+            "branches": [
+              "placebo",
+              "null",
+              "real"
+            ],
+            "event_id": "planning-00012504:message-B-1",
+            "permutation_index": 3,
+            "within_form_index": 1
+          },
+          {
+            "branches": [
+              "null",
+              "real",
+              "placebo"
+            ],
+            "event_id": "planning-0001250d:message-B-1",
+            "permutation_index": 4,
+            "within_form_index": 2
+          },
+          {
+            "branches": [
+              "null",
+              "placebo",
+              "real"
+            ],
+            "event_id": "planning-0001250e:message-B-1",
+            "permutation_index": 5,
+            "within_form_index": 3
+          }
+        ],
+        "lexicographic_form_index": 2,
+        "rotation_start": 2
+      },
+      "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569": {
+        "events": [
+          {
+            "branches": [
+              "placebo",
+              "null",
+              "real"
+            ],
+            "event_id": "planning-0001251c:message-B-1",
+            "permutation_index": 3,
+            "within_form_index": 0
+          }
+        ],
+        "lexicographic_form_index": 3,
+        "rotation_start": 3
+      },
+      "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb": {
+        "events": [
+          {
+            "branches": [
+              "null",
+              "real",
+              "placebo"
+            ],
+            "event_id": "planning-000124f9:message-B-0",
+            "permutation_index": 4,
+            "within_form_index": 0
+          },
+          {
+            "branches": [
+              "null",
+              "placebo",
+              "real"
+            ],
+            "event_id": "planning-000124fc:message-B-0",
+            "permutation_index": 5,
+            "within_form_index": 1
+          },
+          {
+            "branches": [
+              "real",
+              "placebo",
+              "null"
+            ],
+            "event_id": "planning-00012503:message-B-1",
+            "permutation_index": 0,
+            "within_form_index": 2
+          },
+          {
+            "branches": [
+              "real",
+              "null",
+              "placebo"
+            ],
+            "event_id": "planning-00012511:message-B-0",
+            "permutation_index": 1,
+            "within_form_index": 3
+          }
+        ],
+        "lexicographic_form_index": 4,
+        "rotation_start": 4
+      },
+      "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222": {
+        "events": [
+          {
+            "branches": [
+              "null",
+              "placebo",
+              "real"
+            ],
+            "event_id": "planning-0001250f:message-B-0",
+            "permutation_index": 5,
+            "within_form_index": 0
+          },
+          {
+            "branches": [
+              "real",
+              "placebo",
+              "null"
+            ],
+            "event_id": "planning-00012517:message-B-1",
+            "permutation_index": 0,
+            "within_form_index": 1
+          },
+          {
+            "branches": [
+              "real",
+              "null",
+              "placebo"
+            ],
+            "event_id": "planning-0001251b:message-B-1",
+            "permutation_index": 1,
+            "within_form_index": 2
+          }
+        ],
+        "lexicographic_form_index": 5,
+        "rotation_start": 5
+      }
+    },
+    "permutations": [
+      [
+        "real",
+        "placebo",
+        "null"
+      ],
+      [
+        "real",
+        "null",
+        "placebo"
+      ],
+      [
+        "placebo",
+        "real",
+        "null"
+      ],
+      [
+        "placebo",
+        "null",
+        "real"
+      ],
+      [
+        "null",
+        "real",
+        "placebo"
+      ],
+      [
+        "null",
+        "placebo",
+        "real"
+      ]
+    ],
+    "position_balance": {
+      "by_position": {
+        "1": {
+          "null": 6,
+          "placebo": 5,
+          "real": 6
+        },
+        "2": {
+          "null": 6,
+          "placebo": 6,
+          "real": 5
+        },
+        "3": {
+          "null": 5,
+          "placebo": 6,
+          "real": 6
+        }
+      },
+      "max_position_difference": 1,
+      "per_branch_totals": {
+        "null": 17,
+        "placebo": 17,
+        "real": 17
+      }
+    },
+    "schedule": {
+      "planning-000124f8:message-B-1": [
+        "real",
+        "null",
+        "placebo"
+      ],
+      "planning-000124f9:message-B-0": [
+        "null",
+        "real",
+        "placebo"
+      ],
+      "planning-000124fb:message-B-0": [
+        "placebo",
+        "real",
+        "null"
+      ],
+      "planning-000124fc:message-B-0": [
+        "null",
+        "placebo",
+        "real"
+      ],
+      "planning-000124fe:message-B-0": [
+        "placebo",
+        "null",
+        "real"
+      ],
+      "planning-00012501:message-B-0": [
+        "placebo",
+        "real",
+        "null"
+      ],
+      "planning-00012502:message-B-1": [
+        "null",
+        "real",
+        "placebo"
+      ],
+      "planning-00012503:message-B-1": [
+        "real",
+        "placebo",
+        "null"
+      ],
+      "planning-00012504:message-B-1": [
+        "placebo",
+        "null",
+        "real"
+      ],
+      "planning-00012507:message-B-0": [
+        "real",
+        "placebo",
+        "null"
+      ],
+      "planning-0001250d:message-B-1": [
+        "null",
+        "real",
+        "placebo"
+      ],
+      "planning-0001250e:message-B-1": [
+        "null",
+        "placebo",
+        "real"
+      ],
+      "planning-0001250f:message-B-0": [
+        "null",
+        "placebo",
+        "real"
+      ],
+      "planning-00012511:message-B-0": [
+        "real",
+        "null",
+        "placebo"
+      ],
+      "planning-00012517:message-B-1": [
+        "real",
+        "placebo",
+        "null"
+      ],
+      "planning-0001251b:message-B-1": [
+        "real",
+        "null",
+        "placebo"
+      ],
+      "planning-0001251c:message-B-1": [
+        "placebo",
+        "null",
+        "real"
+      ]
+    }
   },
   "caps": {
     "cost_cap_usd": 1.0,
@@ -38,6 +421,7 @@
       "physical_cap": 0,
       "planned_calls": 0
     },
+    "next_call_reservation_arithmetic": "0.000344064 x (1 + max_retries 2) = 0.001032192 reserved before each logical branch",
     "physical_requests": 153,
     "planned_calls": {
       "arithmetic": "17 events x 3 branches (real/placebo/null) = 51 Jev receiver calls; the replay design makes no Ling call",
@@ -58,7 +442,8 @@
     "status": "locked; live_collection_authorized=false",
     "worst_case_arithmetic": "153 x 8192 x 0.042 / 1e6 = 0.052641792 <= ceiling 1.0",
     "worst_case_call_cost_usd": 0.000344064,
-    "worst_case_cost_usd": 0.052641792
+    "worst_case_cost_usd": 0.052641792,
+    "worst_case_next_call_cost_usd": 0.001032192
   },
   "claim_scope": {
     "events": 17,
@@ -109,6 +494,14 @@
           "placebo": "e1304318c4a4aef958ebcf90a4f84bfe47f851a9e7e08e6071a76e2a6c6963d5",
           "real": "b6389212557f6b98432682646d98a388323c84a3311e25395a4f11c1547201d4"
         },
+        "feasible_set": [
+          "deploy>inspect>stage",
+          "inspect>deploy>stage",
+          "inspect>stage>deploy"
+        ],
+        "feasible_set_hash": "88bbbf186da2ceea19f2e9291ff259d29463f723b7060855138e60c3af933d24",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
         "option_ids": [
           "deploy>inspect>stage",
           "deploy>stage>inspect",
@@ -155,6 +548,14 @@
           "placebo": "8c272dbc110ce157367c3b81156f36ca8b7bda7df476c1eb3fef982630beb8b4",
           "real": "2fe01f843d13b21a6fb09230ec13f3e06d971572c7da9c08b0ca46f461bdb600"
         },
+        "feasible_set": [
+          "deploy>inspect>stage",
+          "deploy>stage>inspect",
+          "stage>deploy>inspect"
+        ],
+        "feasible_set_hash": "827b820bd493b7f88bd059ee9575876b138f3b07dd3ff634659a4a8a6d2e9897",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
         "option_ids": [
           "deploy>inspect>stage",
           "deploy>stage>inspect",
@@ -201,6 +602,14 @@
           "placebo": "e1304318c4a4aef958ebcf90a4f84bfe47f851a9e7e08e6071a76e2a6c6963d5",
           "real": "b6389212557f6b98432682646d98a388323c84a3311e25395a4f11c1547201d4"
         },
+        "feasible_set": [
+          "deploy>inspect>stage",
+          "inspect>deploy>stage",
+          "inspect>stage>deploy"
+        ],
+        "feasible_set_hash": "88bbbf186da2ceea19f2e9291ff259d29463f723b7060855138e60c3af933d24",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
         "option_ids": [
           "deploy>inspect>stage",
           "deploy>stage>inspect",
@@ -247,6 +656,14 @@
           "placebo": "8c272dbc110ce157367c3b81156f36ca8b7bda7df476c1eb3fef982630beb8b4",
           "real": "2fe01f843d13b21a6fb09230ec13f3e06d971572c7da9c08b0ca46f461bdb600"
         },
+        "feasible_set": [
+          "deploy>inspect>stage",
+          "deploy>stage>inspect",
+          "stage>deploy>inspect"
+        ],
+        "feasible_set_hash": "827b820bd493b7f88bd059ee9575876b138f3b07dd3ff634659a4a8a6d2e9897",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
         "option_ids": [
           "deploy>inspect>stage",
           "deploy>stage>inspect",
@@ -293,6 +710,14 @@
           "placebo": "e1304318c4a4aef958ebcf90a4f84bfe47f851a9e7e08e6071a76e2a6c6963d5",
           "real": "b6389212557f6b98432682646d98a388323c84a3311e25395a4f11c1547201d4"
         },
+        "feasible_set": [
+          "deploy>inspect>stage",
+          "inspect>deploy>stage",
+          "inspect>stage>deploy"
+        ],
+        "feasible_set_hash": "88bbbf186da2ceea19f2e9291ff259d29463f723b7060855138e60c3af933d24",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
         "option_ids": [
           "deploy>inspect>stage",
           "deploy>stage>inspect",
@@ -339,6 +764,14 @@
           "placebo": "924b0f7f3d908f30105cac401aa67b63e876c13db020d14f7297812e195cccf5",
           "real": "a01fd1f594b6989dab236a01224c642ebd338a8b6267e74839a5ecce70930617"
         },
+        "feasible_set": [
+          "deploy>inspect>stage",
+          "deploy>stage>inspect",
+          "inspect>deploy>stage"
+        ],
+        "feasible_set_hash": "4dc5cab22953857aa93036b0d367c932f582c4fd486a67a9cb0a64cd3f30eff8",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
         "option_ids": [
           "deploy>inspect>stage",
           "deploy>stage>inspect",
@@ -385,6 +818,14 @@
           "placebo": "e1304318c4a4aef958ebcf90a4f84bfe47f851a9e7e08e6071a76e2a6c6963d5",
           "real": "b6389212557f6b98432682646d98a388323c84a3311e25395a4f11c1547201d4"
         },
+        "feasible_set": [
+          "deploy>inspect>stage",
+          "inspect>deploy>stage",
+          "inspect>stage>deploy"
+        ],
+        "feasible_set_hash": "88bbbf186da2ceea19f2e9291ff259d29463f723b7060855138e60c3af933d24",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
         "option_ids": [
           "deploy>inspect>stage",
           "deploy>stage>inspect",
@@ -431,6 +872,14 @@
           "placebo": "8c272dbc110ce157367c3b81156f36ca8b7bda7df476c1eb3fef982630beb8b4",
           "real": "2fe01f843d13b21a6fb09230ec13f3e06d971572c7da9c08b0ca46f461bdb600"
         },
+        "feasible_set": [
+          "deploy>inspect>stage",
+          "deploy>stage>inspect",
+          "stage>deploy>inspect"
+        ],
+        "feasible_set_hash": "827b820bd493b7f88bd059ee9575876b138f3b07dd3ff634659a4a8a6d2e9897",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
         "option_ids": [
           "deploy>inspect>stage",
           "deploy>stage>inspect",
@@ -477,6 +926,14 @@
           "placebo": "924b0f7f3d908f30105cac401aa67b63e876c13db020d14f7297812e195cccf5",
           "real": "a01fd1f594b6989dab236a01224c642ebd338a8b6267e74839a5ecce70930617"
         },
+        "feasible_set": [
+          "deploy>inspect>stage",
+          "deploy>stage>inspect",
+          "inspect>deploy>stage"
+        ],
+        "feasible_set_hash": "4dc5cab22953857aa93036b0d367c932f582c4fd486a67a9cb0a64cd3f30eff8",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
         "option_ids": [
           "deploy>inspect>stage",
           "deploy>stage>inspect",
@@ -523,6 +980,14 @@
           "placebo": "9698777edee9d94ddb88b27e004d42e6616e089902542fa7cadd1024a80688dc",
           "real": "9767cd295972b8e62b1b295f7eaf38ffd3ed66e31cd4569283a7bfe91f8b02dd"
         },
+        "feasible_set": [
+          "deploy>stage>inspect",
+          "stage>deploy>inspect",
+          "stage>inspect>deploy"
+        ],
+        "feasible_set_hash": "def96d021e4beb68fcd0b3496856047cf19c1ecaa0be0cc5b2b8210075c532ad",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
         "option_ids": [
           "deploy>inspect>stage",
           "deploy>stage>inspect",
@@ -569,6 +1034,14 @@
           "placebo": "924b0f7f3d908f30105cac401aa67b63e876c13db020d14f7297812e195cccf5",
           "real": "a01fd1f594b6989dab236a01224c642ebd338a8b6267e74839a5ecce70930617"
         },
+        "feasible_set": [
+          "deploy>inspect>stage",
+          "deploy>stage>inspect",
+          "inspect>deploy>stage"
+        ],
+        "feasible_set_hash": "4dc5cab22953857aa93036b0d367c932f582c4fd486a67a9cb0a64cd3f30eff8",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
         "option_ids": [
           "deploy>inspect>stage",
           "deploy>stage>inspect",
@@ -615,6 +1088,14 @@
           "placebo": "924b0f7f3d908f30105cac401aa67b63e876c13db020d14f7297812e195cccf5",
           "real": "a01fd1f594b6989dab236a01224c642ebd338a8b6267e74839a5ecce70930617"
         },
+        "feasible_set": [
+          "deploy>inspect>stage",
+          "deploy>stage>inspect",
+          "inspect>deploy>stage"
+        ],
+        "feasible_set_hash": "4dc5cab22953857aa93036b0d367c932f582c4fd486a67a9cb0a64cd3f30eff8",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
         "option_ids": [
           "deploy>inspect>stage",
           "deploy>stage>inspect",
@@ -661,6 +1142,14 @@
           "placebo": "a124e103d1bf3dacddfd0579c077019c5edc57900c7b1d5451f856d099ea922b",
           "real": "bbcd959a4d0316c1336d4c7a39a7df60c70a5e869d75f7ebc8f13495fa5858b8"
         },
+        "feasible_set": [
+          "inspect>stage>deploy",
+          "stage>deploy>inspect",
+          "stage>inspect>deploy"
+        ],
+        "feasible_set_hash": "9d0b330822f2421371538c171e68ba41e4184289d83f9a0cb765cd85f49c4283",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
         "option_ids": [
           "deploy>inspect>stage",
           "deploy>stage>inspect",
@@ -707,6 +1196,14 @@
           "placebo": "8c272dbc110ce157367c3b81156f36ca8b7bda7df476c1eb3fef982630beb8b4",
           "real": "2fe01f843d13b21a6fb09230ec13f3e06d971572c7da9c08b0ca46f461bdb600"
         },
+        "feasible_set": [
+          "deploy>inspect>stage",
+          "deploy>stage>inspect",
+          "stage>deploy>inspect"
+        ],
+        "feasible_set_hash": "827b820bd493b7f88bd059ee9575876b138f3b07dd3ff634659a4a8a6d2e9897",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
         "option_ids": [
           "deploy>inspect>stage",
           "deploy>stage>inspect",
@@ -753,6 +1250,14 @@
           "placebo": "a124e103d1bf3dacddfd0579c077019c5edc57900c7b1d5451f856d099ea922b",
           "real": "bbcd959a4d0316c1336d4c7a39a7df60c70a5e869d75f7ebc8f13495fa5858b8"
         },
+        "feasible_set": [
+          "inspect>stage>deploy",
+          "stage>deploy>inspect",
+          "stage>inspect>deploy"
+        ],
+        "feasible_set_hash": "9d0b330822f2421371538c171e68ba41e4184289d83f9a0cb765cd85f49c4283",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
         "option_ids": [
           "deploy>inspect>stage",
           "deploy>stage>inspect",
@@ -799,6 +1304,14 @@
           "placebo": "a124e103d1bf3dacddfd0579c077019c5edc57900c7b1d5451f856d099ea922b",
           "real": "bbcd959a4d0316c1336d4c7a39a7df60c70a5e869d75f7ebc8f13495fa5858b8"
         },
+        "feasible_set": [
+          "inspect>stage>deploy",
+          "stage>deploy>inspect",
+          "stage>inspect>deploy"
+        ],
+        "feasible_set_hash": "9d0b330822f2421371538c171e68ba41e4184289d83f9a0cb765cd85f49c4283",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
         "option_ids": [
           "deploy>inspect>stage",
           "deploy>stage>inspect",
@@ -845,6 +1358,14 @@
           "placebo": "19a874fd9161a33ee8f354b0d2c6b101296b059979f734d84960987b632f0ef2",
           "real": "6b749cac3152ab2a9906d32a128414219ee73c96933b2acec0995c1ce7e0a455"
         },
+        "feasible_set": [
+          "inspect>deploy>stage",
+          "inspect>stage>deploy",
+          "stage>inspect>deploy"
+        ],
+        "feasible_set_hash": "925a9647b3478fce359b9db3392a6ceb8c43b11803a693590de20ec5484ee79b",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
         "option_ids": [
           "deploy>inspect>stage",
           "deploy>stage>inspect",
@@ -873,6 +1394,85 @@
       }
     }
   ],
+  "execution_policy": {
+    "immediate_terminal_stops": [
+      "request cap or cost cap before the next call",
+      "model drift",
+      "protocol-key drift",
+      "request/state/option identity drift",
+      "malformed or non-finite/negative/option-mismatched vectors",
+      "hard normalization deviation above 0.05",
+      "argmax shift after normalization",
+      "output collision",
+      "registration or source/treatment hash drift"
+    ],
+    "journal": {
+      "branch_order_persistence": "both planned and actual branch order are persisted per row and per event; a runner must fail closed if actual execution order differs from the frozen branch_schedule",
+      "duplicate_key_policy": "fail closed",
+      "durability": "append, flush, and fsync after every logical branch outcome",
+      "kind": "append-only branch-attempt journal",
+      "partial_triplets": "partial triplets must remain observable rather than being lost",
+      "report_grouping": "the final report groups branch rows into event-level real/placebo/null records for the registered replay validator and inference",
+      "row_fields": [
+        "planned_branch_position",
+        "actual_branch_position",
+        "request_hash",
+        "state_hash",
+        "protocol_key",
+        "resolved_model",
+        "physical_attempts",
+        "vector and normalization diagnostics",
+        "validity",
+        "usage",
+        "error_class",
+        "cap counters"
+      ],
+      "row_unit": "one durable row per logical (event_id, branch) execution",
+      "unique_key": [
+        "event_id",
+        "branch"
+      ]
+    },
+    "nonterminal_invalidity": {
+      "band": "an accepted transport response outside the primary normalization band but within the registered suspect sensitivity band",
+      "policy": "recorded invalid with its safe raw diagnostics retained; never reinterpreted as valid; continue unless a registered terminal rule applies"
+    },
+    "output_lifecycle": {
+      "append_to_prior_replay_artifacts": false,
+      "automatic_resume": false,
+      "credentials_retained": false,
+      "fresh_execution_after_partial_run": "a fresh execution after a partial/stopped run requires a new review and explicit authorization",
+      "overwrite": false,
+      "raw_provider_envelopes_retained": false
+    },
+    "per_branch": {
+      "complete_pair": "an event is a primary complete pair only when real and placebo are both valid",
+      "cost_reservation": "reserve the registered retry-inclusive worst-case next-call cost (0.001032192 USD) before each logical branch",
+      "cost_reservation_usd": 0.001032192,
+      "imputation": "none",
+      "nonterminal_invalid": "a nonterminal invalid branch is journaled and does not cause the remaining branches in that event to be skipped",
+      "null_validity": "reported separately and not required for the primary real/placebo pair",
+      "physical_attempts_include_retries": true,
+      "retries": "registered retryable transport statuses only, maximum two"
+    },
+    "preflight": [
+      "exact reviewed registration hash and repository-backed verification",
+      "exact event and branch-order manifests",
+      "model, endpoint, codec, protocol key, retry and normalization settings",
+      "request, state, option and treatment hashes",
+      "credentials present but never printed or retained",
+      "registered journal/report paths absent",
+      "enforced request and cost caps",
+      "no provider call before every preflight check passes"
+    ],
+    "provider_failures": {
+      "consecutive_terminal_failure_stop": 2,
+      "reset": "the consecutive-failure count resets after a successful valid response",
+      "retention": "never retain response bodies or credentials",
+      "retry_exhaustion": "record a sanitized invalid branch row"
+    },
+    "stopping_report": "stopping preserves a partial report with planned/attempted/valid/invalid/unattempted counts by branch, event, and form"
+  },
   "forms": {
     "covered_form_ids": [
       "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
@@ -935,6 +1535,17 @@
   },
   "guards": {
     "feasible_set_mass_epsilon": 0.01,
+    "formulas": {
+      "computation_rule": "compute all metrics only from the accepted normalized vector",
+      "delta_feasible_mass_i": "mass_SA(real_i) - mass_SA(placebo_i)",
+      "delta_p_target_i": "p_target(real_i) - p_target(placebo_i)",
+      "mass_SA": "sum of the normalized Choice probabilities over the frozen authoritative pre-read feasible_set for receiver A",
+      "mass_ok_i": "delta_feasible_mass_i >= -0.01",
+      "reporting_rule": "report guard values per event and aggregate them within form; guards never remove an otherwise valid real/placebo pair from the primary entropy estimate; entropy reduction alone is never called useful uptake when either guard fails; null remains excluded from these primary real-versus-placebo guards",
+      "target_ok_i": "delta_p_target_i >= 0.0",
+      "useful_uptake_i": "(H_real_i - H_placebo_i < 0) and target_ok_i and mass_ok_i"
+    },
+    "reference_set": "the frozen authoritative pre-read feasible_set for receiver A, stored and hashed per event",
     "reporting": "reported separately by form and event; never used to filter the primary entropy estimate",
     "target_probability_delta": 0.0,
     "useful_uptake_rule": "an entropy reduction alone must never be labeled useful uptake if the target-probability guard fails"
@@ -1116,7 +1727,7 @@
   "pending_decisions": [
     "locking this registration does NOT authorize #159 execution; live replay requires a separate review and explicit live authorization after this lock is approved"
   ],
-  "preregistration_hash": "fe156254ab94088c2573061c6a62a9209afe4633ce95fd29a73ed516240695bf",
+  "preregistration_hash": "ffb46af295335fc7f8c30eae2f114e47f52dbee0f810ddc1196629b322d515b1",
   "preregistration_version": "stage2-jev-choice-replay-v4",
   "provenance": {
     "event_count": 17,
@@ -1141,6 +1752,14 @@
     }
   },
   "purpose": "amend and lock the #159 matched real/placebo/null Jev replay plan on top of the coverage-qualified #192 event set, without rerunning collection",
+  "runner_policy": {
+    "adding_runner_authorizes_collection": false,
+    "live_execution_rule": "this registration lock is not live authorization; live execution requires a future runner that is source-bound here plus a separate explicit authorization",
+    "policy": "the future #159 runner does not exist yet; it must be added to this registration's source binding and the registration re-locked with a new hash before any live authorization",
+    "required_before_live": true,
+    "runner_implemented": false,
+    "runner_source_files": []
+  },
   "sensitivity": {
     "normalization_thresholds": [
       1e-06,
@@ -1179,7 +1798,7 @@
     "src/apart_incident_response/jev_v7_coverage_decision.py",
     "src/apart_incident_response/jev_replay_preregistration_v4.py"
   ],
-  "source_files_hash": "40e0727f761182a833d07db0e9ad3cdf32551a1c606555e24a0ab81b6aaa2434",
+  "source_files_hash": "f5aa599b78f000b24d23185e5a7b6eeddbe12f663dd4a6cabcbc930df1fba35d",
   "stage": "planning-low-matched-jev-replay",
   "status": "locked_for_jev_choice_replay_v4",
   "successor_of": {

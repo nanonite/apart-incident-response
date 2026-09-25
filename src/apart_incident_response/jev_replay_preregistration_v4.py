@@ -121,7 +121,119 @@ OLD_OUTPUT_PATHS_V4 = (
     "runs/epic-126/jev-coverage-manifest-report-v7.json",
 )
 
-#: Frozen estimand, inference, guards, missingness, sensitivity, limitations.
+#: Frozen branch-order construction: deterministic, hash-free, lexicographic.
+BRANCHES = ("real", "placebo", "null")
+BRANCH_PERMUTATIONS = (
+    ("real", "placebo", "null"),
+    ("real", "null", "placebo"),
+    ("placebo", "real", "null"),
+    ("placebo", "null", "real"),
+    ("null", "real", "placebo"),
+    ("null", "placebo", "real"),
+)
+
+#: Retry-inclusive worst-case next-call reservation (one logical branch).
+NEXT_CALL_RESERVE_USD = round(WORST_CASE_CALL_COST_USD * RETRY_RESERVE_FACTOR, 12)
+
+#: Frozen guard estimands (exact formulas; evaluated per event).
+GUARD_FORMULAS = {
+    "delta_p_target_i": "p_target(real_i) - p_target(placebo_i)",
+    "delta_feasible_mass_i": "mass_SA(real_i) - mass_SA(placebo_i)",
+    "mass_SA": ("sum of the normalized Choice probabilities over the frozen authoritative "
+                "pre-read feasible_set for receiver A"),
+    "target_ok_i": "delta_p_target_i >= 0.0",
+    "mass_ok_i": "delta_feasible_mass_i >= -0.01",
+    "useful_uptake_i": "(H_real_i - H_placebo_i < 0) and target_ok_i and mass_ok_i",
+    "computation_rule": "compute all metrics only from the accepted normalized vector",
+    "reporting_rule": ("report guard values per event and aggregate them within form; guards "
+                       "never remove an otherwise valid real/placebo pair from the primary "
+                       "entropy estimate; entropy reduction alone is never called useful "
+                       "uptake when either guard fails; null remains excluded from these "
+                       "primary real-versus-placebo guards"),
+}
+
+#: Frozen operational execution and missingness rules for the future runner.
+EXECUTION_POLICY = {
+    "preflight": [
+        "exact reviewed registration hash and repository-backed verification",
+        "exact event and branch-order manifests",
+        "model, endpoint, codec, protocol key, retry and normalization settings",
+        "request, state, option and treatment hashes",
+        "credentials present but never printed or retained",
+        "registered journal/report paths absent",
+        "enforced request and cost caps",
+        "no provider call before every preflight check passes",
+    ],
+    "output_lifecycle": {
+        "overwrite": False,
+        "automatic_resume": False,
+        "append_to_prior_replay_artifacts": False,
+        "fresh_execution_after_partial_run": ("a fresh execution after a partial/stopped run "
+                                              "requires a new review and explicit authorization"),
+        "raw_provider_envelopes_retained": False,
+        "credentials_retained": False,
+    },
+    "journal": {
+        "kind": "append-only branch-attempt journal",
+        "row_unit": "one durable row per logical (event_id, branch) execution",
+        "durability": "append, flush, and fsync after every logical branch outcome",
+        "unique_key": ["event_id", "branch"],
+        "duplicate_key_policy": "fail closed",
+        "row_fields": ["planned_branch_position", "actual_branch_position", "request_hash",
+                       "state_hash", "protocol_key", "resolved_model", "physical_attempts",
+                       "vector and normalization diagnostics", "validity", "usage",
+                       "error_class", "cap counters"],
+        "branch_order_persistence": ("both planned and actual branch order are persisted per "
+                                     "row and per event; a runner must fail closed if actual "
+                                     "execution order differs from the frozen branch_schedule"),
+        "report_grouping": ("the final report groups branch rows into event-level "
+                            "real/placebo/null records for the registered replay validator "
+                            "and inference"),
+        "partial_triplets": "partial triplets must remain observable rather than being lost",
+    },
+    "per_branch": {
+        "retries": "registered retryable transport statuses only, maximum two",
+        "physical_attempts_include_retries": True,
+        "cost_reservation": ("reserve the registered retry-inclusive worst-case next-call "
+                             f"cost ({NEXT_CALL_RESERVE_USD} USD) before each logical branch"),
+        "cost_reservation_usd": NEXT_CALL_RESERVE_USD,
+        "nonterminal_invalid": ("a nonterminal invalid branch is journaled and does not cause "
+                                "the remaining branches in that event to be skipped"),
+        "complete_pair": ("an event is a primary complete pair only when real and placebo are "
+                          "both valid"),
+        "null_validity": ("reported separately and not required for the primary real/placebo "
+                          "pair"),
+        "imputation": "none",
+    },
+    "immediate_terminal_stops": [
+        "request cap or cost cap before the next call",
+        "model drift",
+        "protocol-key drift",
+        "request/state/option identity drift",
+        "malformed or non-finite/negative/option-mismatched vectors",
+        "hard normalization deviation above 0.05",
+        "argmax shift after normalization",
+        "output collision",
+        "registration or source/treatment hash drift",
+    ],
+    "nonterminal_invalidity": {
+        "band": ("an accepted transport response outside the primary normalization band but "
+                 "within the registered suspect sensitivity band"),
+        "policy": ("recorded invalid with its safe raw diagnostics retained; never "
+                   "reinterpreted as valid; continue unless a registered terminal rule "
+                   "applies"),
+    },
+    "provider_failures": {
+        "retry_exhaustion": "record a sanitized invalid branch row",
+        "consecutive_terminal_failure_stop": 2,
+        "reset": "the consecutive-failure count resets after a successful valid response",
+        "retention": "never retain response bodies or credentials",
+    },
+    "stopping_report": ("stopping preserves a partial report with planned/attempted/valid/"
+                        "invalid/unattempted counts by branch, event, and form"),
+}
+
+#: Frozen estimator, inference, guards, missingness, sensitivity, limitations.
 ESTIMAND = {
     "experimental_unit": "prompt form",
     "events": EXPECTED_EVENT_COUNT,
@@ -163,6 +275,9 @@ GUARDS = {
                   "entropy estimate"),
     "useful_uptake_rule": ("an entropy reduction alone must never be labeled useful uptake if "
                            "the target-probability guard fails"),
+    "reference_set": ("the frozen authoritative pre-read feasible_set for receiver A, stored "
+                      "and hashed per event"),
+    "formulas": dict(GUARD_FORMULAS),
 }
 
 MISSINGNESS = {
@@ -239,6 +354,68 @@ def _regenerate_instance(instance_id: str) -> Any:
     if instance.instance_id != instance_id:
         raise ValueError(f"instance id does not match seed: {instance_id}")
     return instance
+
+
+def branch_position_balance(schedule: Mapping[str, Sequence[str]]) -> dict[str, Any]:
+    """Per-position branch counts and balance metrics for a branch schedule."""
+
+    positions: dict[str, dict[str, int]] = {}
+    totals: dict[str, int] = {}
+    for branches in schedule.values():
+        for index, branch in enumerate(branches, start=1):
+            slot = positions.setdefault(str(index), {})
+            slot[branch] = slot.get(branch, 0) + 1
+            totals[branch] = totals.get(branch, 0) + 1
+    differences = [max(slot.values()) - min(slot.values()) for slot in positions.values()]
+    return {"by_position": {key: dict(sorted(value.items()))
+                            for key, value in sorted(positions.items())},
+            "per_branch_totals": dict(sorted(totals.items())),
+            "max_position_difference": max(differences) if differences else 0}
+
+
+def build_branch_schedule(events: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """Deterministic event-major branch schedule from frozen identity only.
+
+    Event execution follows the #192 decision order; the three branches of one
+    event run adjacently. The per-event permutation is
+    ``BRANCH_PERMUTATIONS[(lexicographic_form_index + within_form_event_index) % 6]``
+    — a lexicographic, hash-free rotation depending only on frozen form and
+    event identity, never on outcomes. With the frozen 1/4/4/1/4/3
+    distribution this yields all six permutations, per-position branch counts
+    differing by at most one, and17 executions of each branch.
+    """
+
+    event_order = [str(event["event_id"]) for event in events]
+    by_form: dict[str, list[str]] = {}
+    for event in events:
+        by_form.setdefault(str(event["prompt_form_id"]), []).append(str(event["event_id"]))
+    schedule: dict[str, list[str]] = {}
+    form_roles: dict[str, Any] = {}
+    for form_index, form in enumerate(sorted(by_form)):
+        roles = []
+        for within_form_index, event_id in enumerate(by_form[form]):
+            permutation_index = (form_index + within_form_index) % len(BRANCH_PERMUTATIONS)
+            branches = list(BRANCH_PERMUTATIONS[permutation_index])
+            schedule[event_id] = branches
+            roles.append({"event_id": event_id, "within_form_index": within_form_index,
+                          "permutation_index": permutation_index, "branches": branches})
+        form_roles[form] = {"lexicographic_form_index": form_index,
+                            "rotation_start": form_index, "events": roles}
+    ordered_schedule = {event_id: schedule[event_id] for event_id in event_order}
+    balance = branch_position_balance(ordered_schedule)
+    return {"event_major": True,
+            "execution_order": ("events in #192 decision order; the three branches of one "
+                                "event are executed adjacently before the next event"),
+            "allowed_branches": list(BRANCHES),
+            "permutations": [list(permutation) for permutation in BRANCH_PERMUTATIONS],
+            "assignment_rule": ("per-event permutation = BRANCH_PERMUTATIONS[(lexicographic "
+                               "form index + within-form event index) % 6]; depends only on "
+                               "frozen form and event identity, never on outcomes"),
+            "event_order": event_order,
+            "schedule": ordered_schedule,
+            "form_roles": form_roles,
+            "position_balance": balance,
+            "expected_max_position_difference": 1}
 
 
 def pre_read_body(instance: Any, model: str) -> tuple[dict[str, Any], Any]:
@@ -326,6 +503,13 @@ def build_event_binding(event: Mapping[str, Any]) -> dict[str, Any]:
         if marker in state_json:
             raise ValueError(f"answer-key marker leakage in pre-read state: {event['event_id']}")
 
+    feasible_set = sorted(str(value) for value in instance.private_solutions["A"])
+    clue_consistent = sorted(str(value) for value in
+                             instance.clue_consistent(instance.private_clues["A"]))
+    if feasible_set != clue_consistent:
+        raise ValueError(f"authoritative feasible set drifted from the clue-consistent "
+                         f"pre-read set: {event['event_id']}")
+
     option_ids = sorted(str(label) for label in instance.solutions)
     return {
         "event_id": str(event["event_id"]),
@@ -355,6 +539,11 @@ def build_event_binding(event: Mapping[str, Any]) -> dict[str, Any]:
         "pre_read": {
             "state_hash": jr.canonical_hash(dict(state.state)),
             "request_body_hash": jr.prompt_form_id(body),
+            "feasible_set": feasible_set,
+            "feasible_set_hash": jr.canonical_hash(feasible_set),
+            "feasible_set_verified": True,
+            "feasible_set_source": ("authoritative receiver-A pre-read private_solutions "
+                                    "equals the clue-consistent pre-read set"),
             "branch_request_hashes": {
                 "real": jr.prompt_form_id(jr.branch_request_body(body, real_text)),
                 "placebo": jr.prompt_form_id(jr.branch_request_body(body, placebo_text)),
@@ -415,6 +604,9 @@ def build_replay_preregistration_v4(*, approved: bool = False,
         raise ValueError("sign-flip floor for k=6 is not 2/64")
 
     bindings = [build_event_binding(event) for event in events]
+    branch_schedule = build_branch_schedule(events)
+    if list(branch_schedule["event_order"]) != [str(event["event_id"]) for event in events]:
+        raise ValueError("branch schedule event order differs from the decision order")
     form_ids = sorted({binding["prompt_form_id"] for binding in bindings})
     if tuple(len([b for b in bindings if b["prompt_form_id"] == form]) for form in form_ids) \
             != EXPECTED_FORM_DISTRIBUTION:
@@ -488,6 +680,7 @@ def build_replay_preregistration_v4(*, approved: bool = False,
             "k": 6,
         },
         "events": bindings,
+        "branch_schedule": branch_schedule,
         "branch_design": {
             "branches": ["real", "placebo", "null"],
             "pre_read_state": (
@@ -514,6 +707,9 @@ def build_replay_preregistration_v4(*, approved: bool = False,
                 "per event and recomputed by the verifier"),
             "no_ling_calls": ("real messages come from the frozen #192 event set and placebo "
                               "is controller-injected; replay needs no Ling call"),
+            "execution_order": ("frozen in branch_schedule: event-major over the #192 decision "
+                                "order with one counterbalanced permutation per event; the "
+                                "future runner must fail closed on any deviation"),
         },
         "estimand": dict(ESTIMAND),
         "inference": dict(INFERENCE),
@@ -561,6 +757,11 @@ def build_replay_preregistration_v4(*, approved: bool = False,
             "worst_case_arithmetic": (
                 f"{PHYSICAL_REQUEST_CEILING} x {INPUT_TOKEN_CEILING} x {INPUT_USD_PER_MTOK} "
                 f"/ 1e6 = {WORST_CASE_COST_USD} <= ceiling {COST_CAP_USD}"),
+            "worst_case_next_call_cost_usd": NEXT_CALL_RESERVE_USD,
+            "next_call_reservation_arithmetic": (
+                f"{WORST_CASE_CALL_COST_USD} x (1 + max_retries "
+                f"{pr.JEV_REPLAY_MAX_RETRIES}) = {NEXT_CALL_RESERVE_USD} reserved before each "
+                "logical branch"),
             "ling_budget": {
                 "planned_calls": 0,
                 "physical_cap": 0,
@@ -570,6 +771,19 @@ def build_replay_preregistration_v4(*, approved: bool = False,
             },
             "status": ("locked; live_collection_authorized=false" if approved
                        else "draft; not authorized"),
+        },
+        "execution_policy": dict(EXECUTION_POLICY),
+        "runner_policy": {
+            "required_before_live": True,
+            "runner_implemented": False,
+            "runner_source_files": [],
+            "policy": ("the future #159 runner does not exist yet; it must be added to this "
+                       "registration's source binding and the registration re-locked with a "
+                       "new hash before any live authorization"),
+            "adding_runner_authorizes_collection": False,
+            "live_execution_rule": ("this registration lock is not live authorization; live "
+                                    "execution requires a future runner that is source-bound "
+                                    "here plus a separate explicit authorization"),
         },
         "claim_scope": {
             "type": "matched real/placebo/null replay preregistration (offline lock)",
@@ -690,6 +904,55 @@ def verify_against_jev_replay_preregistration_v4(
             json.dumps(sorted(FROZEN_FORM_IDS), sort_keys=True).encode("utf-8")).hexdigest():
         errors.append("form manifest hash mismatch")
 
+    # frozen counterbalanced branch schedule
+    try:
+        expected_schedule = build_branch_schedule(expected_events)
+    except Exception as exc:
+        expected_schedule = None
+        errors.append(f"branch schedule rebuild failed: {type(exc).__name__}: {exc}")
+    schedule_block = document.get("branch_schedule") or {}
+    if expected_schedule is not None and schedule_block != expected_schedule:
+        errors.append("branch schedule drift from the frozen construction")
+    if schedule_block.get("event_order") != [str(event.get("event_id"))
+                                             for event in recorded_events]:
+        errors.append("branch schedule event order differs from the bound events")
+    if set(schedule_block.get("allowed_branches") or []) != set(BRANCHES):
+        errors.append("branch schedule allows branches other than real/placebo/null")
+    schedule_table = schedule_block.get("schedule") or {}
+    if set(schedule_table) != {str(event.get("event_id")) for event in recorded_events}:
+        errors.append("branch schedule is missing or has extra events")
+    for event_id, branches in schedule_table.items():
+        if (not isinstance(branches, list) or len(branches) != 3
+                or sorted(branches) != sorted(BRANCHES)):
+            errors.append(f"branch schedule entry is not a permutation of the branches: "
+                          f"{event_id}")
+            break
+    used_permutations = {tuple(branches) for branches in schedule_table.values()}
+    if used_permutations != set(BRANCH_PERMUTATIONS):
+        errors.append("branch schedule does not represent all six permutations")
+    balance = schedule_block.get("position_balance") or {}
+    if balance != branch_position_balance(schedule_table):
+        errors.append("branch position balance drift")
+    elif int(balance.get("max_position_difference") or 99) > 1:
+        errors.append("branch position counts differ by more than one")
+    if balance.get("per_branch_totals") != {"null": 17, "placebo": 17, "real": 17}:
+        errors.append("branch totals are not 17/17/17 across the 17 events")
+    form_roles = schedule_block.get("form_roles") or {}
+    if set(form_roles) != set(FROZEN_FORM_IDS):
+        errors.append("branch schedule form coverage drift")
+    for form, role in form_roles.items():
+        events_in_form = [str(event.get("event_id")) for event in recorded_events
+                          if event.get("prompt_form_id") == form]
+        role_events = [entry.get("event_id") for entry in (role or {}).get("events", [])]
+        if role_events != events_in_form:
+            errors.append(f"branch schedule within-form event order drift: {form}")
+            break
+        permutations = [tuple(entry.get("branches") or ()) for entry in
+                        (role or {}).get("events", [])]
+        if len(set(permutations)) != len(permutations):
+            errors.append(f"branch schedule does not rotate within form: {form}")
+            break
+
     # per-event authoritative checks against regenerated instances
     for event in recorded_events:
         event_id = str(event.get("event_id"))
@@ -768,6 +1031,22 @@ def verify_against_jev_replay_preregistration_v4(
                 errors.append(f"event {event_id}: answer-key marker leakage")
                 break
 
+        authoritative_set = sorted(str(value)
+                                   for value in instance.private_solutions["A"])
+        clue_consistent = sorted(str(value) for value in
+                                 instance.clue_consistent(instance.private_clues["A"]))
+        if authoritative_set != clue_consistent:
+            errors.append(f"event {event_id}: authoritative feasible set drifted from the "
+                          f"clue-consistent pre-read set")
+        if pre_read.get("feasible_set") != authoritative_set:
+            errors.append(f"event {event_id}: feasible set drift")
+        if pre_read.get("feasible_set_hash") != jr.canonical_hash(authoritative_set):
+            errors.append(f"event {event_id}: feasible set hash drift")
+        if pre_read.get("feasible_set_verified") is not True:
+            errors.append(f"event {event_id}: feasible set verification missing")
+        if pre_read.get("target_id") != target:
+            errors.append(f"event {event_id}: target id drift")
+
     # frozen design blocks
     estimand = document.get("estimand") or {}
     if estimand.get("experimental_unit") != "prompt form" or estimand.get("k") != 6:
@@ -794,6 +1073,15 @@ def verify_against_jev_replay_preregistration_v4(
         errors.append("guard thresholds drift")
     if "never used to filter" not in str(guards.get("reporting")):
         errors.append("guards must not filter the primary estimate")
+    formulas = guards.get("formulas") or {}
+    for key, expected in GUARD_FORMULAS.items():
+        if formulas.get(key) != expected:
+            if key in ("target_ok_i", "mass_ok_i"):
+                errors.append(f"guard comparison drift: {key}")
+            else:
+                errors.append(f"guard formula drift: {key}")
+    if "frozen authoritative pre-read feasible_set" not in str(guards.get("reference_set")):
+        errors.append("guard reference-set definition drift")
     missingness = document.get("missingness") or {}
     if missingness.get("imputation") != "never impute missing pairs":
         errors.append("missingness imputation rule drift")
@@ -863,11 +1151,117 @@ def verify_against_jev_replay_preregistration_v4(
         errors.append("cost ceiling drift")
     if caps.get("worst_case_cost_usd") != WORST_CASE_COST_USD:
         errors.append("worst-case cost drift")
+    if caps.get("worst_case_next_call_cost_usd") != NEXT_CALL_RESERVE_USD:
+        errors.append("next-call cost reservation drift")
+    if f"{NEXT_CALL_RESERVE_USD}" not in str(caps.get("next_call_reservation_arithmetic", "")):
+        errors.append("next-call reservation arithmetic missing")
     if float(caps.get("worst_case_cost_usd", 1e9)) > float(caps.get("cost_cap_usd", 0.0)):
         errors.append("worst-case cost exceeds the cost ceiling")
     ling_budget = caps.get("ling_budget") or {}
     if ling_budget.get("planned_calls") != 0 or ling_budget.get("physical_cap") != 0:
         errors.append("replay registration must not carry a Ling budget")
+
+    policy = document.get("execution_policy") or {}
+
+    def policy_check(condition: bool, name: str) -> None:
+        if not condition:
+            errors.append(f"execution policy drift: {name}")
+
+    preflight_items = " | ".join(policy.get("preflight") or [])
+    for required in ("registration hash", "branch-order manifests", "protocol key",
+                     "treatment hashes", "never printed", "paths absent",
+                     "request and cost caps", "no provider call before"):
+        policy_check(required in preflight_items, f"preflight.{required}")
+    lifecycle = policy.get("output_lifecycle") or {}
+    policy_check(lifecycle.get("overwrite") is False, "output_lifecycle.overwrite")
+    policy_check(lifecycle.get("automatic_resume") is False,
+                 "output_lifecycle.automatic_resume")
+    policy_check(lifecycle.get("append_to_prior_replay_artifacts") is False,
+                 "output_lifecycle.append_to_prior_replay_artifacts")
+    policy_check("new review and explicit authorization" in
+                 str(lifecycle.get("fresh_execution_after_partial_run")),
+                 "output_lifecycle.fresh_execution_after_partial_run")
+    policy_check(lifecycle.get("raw_provider_envelopes_retained") is False
+                 and lifecycle.get("credentials_retained") is False,
+                 "output_lifecycle.retention")
+    journal_policy = policy.get("journal") or {}
+    policy_check(journal_policy.get("kind") == "append-only branch-attempt journal",
+                 "journal.kind")
+    policy_check("one durable row per logical (event_id, branch) execution"
+                 in str(journal_policy.get("row_unit")), "journal.row_unit")
+    policy_check("fsync after every logical branch outcome"
+                 in str(journal_policy.get("durability")), "journal.durability")
+    policy_check(journal_policy.get("unique_key") == ["event_id", "branch"],
+                 "journal.unique_key")
+    policy_check(journal_policy.get("duplicate_key_policy") == "fail closed",
+                 "journal.duplicate_key_policy")
+    row_fields = journal_policy.get("row_fields") or []
+    for required in ("planned_branch_position", "actual_branch_position", "request_hash",
+                     "state_hash", "protocol_key", "physical_attempts", "validity",
+                     "usage", "error_class", "cap counters"):
+        policy_check(required in row_fields, f"journal.row_fields.{required}")
+    policy_check("fail closed if actual" in str(journal_policy.get("branch_order_persistence")),
+                 "journal.branch_order_persistence")
+    policy_check("event-level real/placebo/null records"
+                 in str(journal_policy.get("report_grouping")), "journal.report_grouping")
+    policy_check("remain observable" in str(journal_policy.get("partial_triplets")),
+                 "journal.partial_triplets")
+    per_branch = policy.get("per_branch") or {}
+    policy_check("maximum two" in str(per_branch.get("retries")), "per_branch.retries")
+    policy_check(per_branch.get("physical_attempts_include_retries") is True,
+                 "per_branch.physical_attempts_include_retries")
+    policy_check(per_branch.get("cost_reservation_usd") == NEXT_CALL_RESERVE_USD
+                 and f"{NEXT_CALL_RESERVE_USD}" in str(per_branch.get("cost_reservation")),
+                 "per_branch.cost_reservation")
+    policy_check("does not cause the remaining branches" in
+                 str(per_branch.get("nonterminal_invalid")), "per_branch.nonterminal_invalid")
+    policy_check("real and placebo are both valid" in str(per_branch.get("complete_pair")),
+                 "per_branch.complete_pair")
+    policy_check("not required for the primary" in str(per_branch.get("null_validity")),
+                 "per_branch.null_validity")
+    policy_check(per_branch.get("imputation") == "none", "per_branch.imputation")
+    expected_stops = [
+        "request cap or cost cap before the next call", "model drift", "protocol-key drift",
+        "request/state/option identity drift",
+        "malformed or non-finite/negative/option-mismatched vectors",
+        "hard normalization deviation above 0.05", "argmax shift after normalization",
+        "output collision", "registration or source/treatment hash drift"]
+    if list(policy.get("immediate_terminal_stops") or []) != expected_stops:
+        errors.append("terminal stop classes drift")
+    nonterminal = policy.get("nonterminal_invalidity") or {}
+    policy_check("recorded invalid" in str(nonterminal.get("policy"))
+                 and "never" in str(nonterminal.get("policy"))
+                 and "continue unless" in str(nonterminal.get("policy")),
+                 "nonterminal_invalidity.policy")
+    policy_check("suspect sensitivity band" in str(nonterminal.get("band")),
+                 "nonterminal_invalidity.band")
+    provider = policy.get("provider_failures") or {}
+    policy_check("sanitized invalid branch row" in str(provider.get("retry_exhaustion")),
+                 "provider_failures.retry_exhaustion")
+    policy_check(provider.get("consecutive_terminal_failure_stop") == 2,
+                 "provider_failures.consecutive_terminal_failure_stop")
+    policy_check("successful valid response" in str(provider.get("reset")),
+                 "provider_failures.reset")
+    policy_check("never retain response bodies" in str(provider.get("retention")),
+                 "provider_failures.retention")
+    stopping = str(policy.get("stopping_report") or "")
+    policy_check("planned/attempted/valid/invalid/unattempted" in stopping
+                 and "by branch, event, and form" in stopping, "stopping_report")
+
+    runner_policy = document.get("runner_policy") or {}
+    if runner_policy.get("required_before_live") is not True:
+        errors.append("runner policy missing")
+    if runner_policy.get("runner_implemented") is not False:
+        errors.append("runner must not be reported implemented before it exists")
+    if runner_policy.get("runner_source_files") != []:
+        errors.append("runner source list must be empty until a runner exists")
+    if runner_policy.get("adding_runner_authorizes_collection") is not False:
+        errors.append("adding a runner must not authorize collection")
+    if "source binding" not in str(runner_policy.get("policy", "")) \
+            or "re-locked" not in str(runner_policy.get("policy", "")):
+        errors.append("runner policy must require source binding and a re-lock")
+    if "separate explicit authorization" not in str(runner_policy.get("live_execution_rule", "")):
+        errors.append("runner live-execution rule drift")
 
     outputs = document.get("outputs") or {}
     if outputs != output_paths():

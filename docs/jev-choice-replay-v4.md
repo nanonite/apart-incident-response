@@ -10,8 +10,8 @@ authorization.
 - Artifact: `runs/epic-126/jev-choice-replay-preregistration-v4.json`
   (version `stage2-jev-choice-replay-v4`, status
   `locked_for_jev_choice_replay_v4`, content hash
-  `fe156254ab94088c2573061c6a62a9209afe4633ce95fd29a73ed516240695bf`,
-  byte-reproducible)
+  `ffb46af295335fc7f8c30eae2f114e47f52dbee0f810ddc1196629b322d515b1`
+  (supersedes the reviewed `fe156254…` lock), byte-reproducible)
 - Fresh outputs (refused if occupied) live under `runs/epic-126/replay-v4/`
   — a subdirectory because the earlier registrations' prior-ID scan globs are
   non-recursive, so the v4 trio never perturbs their rebuild evidence:
@@ -60,6 +60,59 @@ drift). Jev `jev-1.13.0`, Choice codec v2, protocol
 `292ac217…` (normalize-all-accepted-vectors). **No Ling call** exists in the
 replay design — real messages come from the frozen event set.
 
+## Counterbalanced branch execution order (frozen)
+
+Jev is stochastic with no supported seed/temperature control, so branch
+order is frozen in the registration (`branch_schedule`), not left to the
+future runner:
+
+- **Event-major**: events execute in the exact #192 decision order; the three
+  branches of one event run adjacently before the next event.
+- **Per-event permutation** = `BRANCH_PERMUTATIONS[(lexicographic form index
+  + within-form event index) % 6]` — lexicographic, hash-free, depending
+  only on frozen form/event identity, never on outcomes. The full
+  `event_id → [branch1, branch2, branch3]` table is stored explicitly.
+- Allowed branches are exactly `real`, `placebo`, `null`, each once per event.
+- All **six permutations** occur; branch-position counts across the 51 calls:
+
+  | Position | real | placebo | null | max diff |
+  |---|---|---|---|---|
+  | 1 | 6 | 5 | 6 | 1 |
+  | 2 | 5 | 6 | 6 | 1 |
+  | 3 | 6 | 6 | 5 | 1 |
+
+  per-branch totals 17/17/17. Within multi-event forms the schedule rotates
+  through distinct consecutive permutations, so branch position is not
+  needlessly confounded with treatment.
+- The future journal persists **planned and actual** branch position per
+  row/event; a runner must **fail closed** if execution order differs from
+  the frozen schedule.
+
+## Guard estimands and authoritative feasible set (frozen)
+
+Every event stores the sorted authoritative receiver-A pre-read
+`feasible_set` (verified equal to the regenerated instance's
+`private_solutions["A"]` and the clue-consistent pre-read set), a
+`feasible_set_hash` (`canonical_hash`), and controller-side `target_id`.
+Frozen per-event formulas (computed only from the accepted normalized
+vector):
+
+```
+delta_p_target_i     = p_target(real_i) - p_target(placebo_i)
+delta_feasible_mass_i = mass_SA(real_i) - mass_SA(placebo_i)
+mass_SA(branch_i)     = sum of normalized Choice probabilities over the frozen
+                        authoritative pre-read feasible_set for receiver A
+target_ok_i  := delta_p_target_i >= 0.0
+mass_ok_i    := delta_feasible_mass_i >= -0.01
+useful_uptake_i := (H_real_i - H_placebo_i < 0) and target_ok_i and mass_ok_i
+```
+
+Guard values are reported per event and aggregated within form; guards never
+remove an otherwise valid real/placebo pair from the primary entropy
+estimate; entropy reduction alone is never useful uptake when either guard
+fails; null stays excluded from these real-versus-placebo guards. Feasible-set,
+formula, comparison-direction and threshold drift all fail the verifier.
+
 ## Estimand and inference (frozen)
 
 - Unit: **prompt form**; `d_i = H_real,i − H_placebo,i`; within-form mean;
@@ -87,6 +140,58 @@ replay design — real messages come from the frozen event set.
   overrides primary): form-cluster bootstrap, sign test on form means,
   instance-weighted mean; hierarchical and Wilcoxon-on-form-means are not
   implemented and are not registered.
+
+## Operational execution and missingness rules (frozen)
+
+`execution_policy` freezes everything the future #191-style runner must not
+silently choose:
+
+- **Preflight**: exact reviewed registration hash with repository-backed
+  verification; exact event and branch-order manifests; model/endpoint/codec/
+  protocol/retry/normalization settings; request/state/option/treatment
+  hashes; credentials present but never printed or retained; registered
+  journal/report paths absent; enforced request and cost caps; **no provider
+  call before every check passes**.
+- **Output lifecycle**: no overwrite, no automatic resume, no append to any
+  prior replay artifact; a fresh execution after a partial/stopped run
+  requires a new review and explicit authorization; raw envelopes and
+  credentials never retained.
+- **Durability/journal**: append-only branch-attempt journal — one durable
+  row per logical `(event_id, branch)`; append + flush + fsync after every
+  logical branch outcome; unique key `(event_id, branch)` with
+  **duplicate-key → fail closed**; rows persist planned/actual branch
+  position, request/state hashes, protocol/model, physical attempts,
+  vector/normalization diagnostics, validity, usage, error class and cap
+  counters; the final report groups branch rows into event-level
+  real/placebo/null records for the registered replay validator and
+  inference; partial triplets stay observable.
+- **Per-branch**: retries only for registered retryable transport statuses,
+  maximum two; physical attempts include retries; reserve the registered
+  retry-inclusive next-call cost **$0.001032192** (= 0.000344064 × 3) before
+  each logical branch; a nonterminal invalid branch is journaled without
+  skipping the event's remaining branches; primary complete pair = real AND
+  placebo valid; null validity reported separately and not required; no
+  imputation.
+- **Immediate terminal stops**: request/cost cap before the next call; model
+  drift; protocol-key drift; request/state/option identity drift; malformed
+  or non-finite/negative/option-mismatched vectors; hard normalization
+  deviation above 0.05; argmax shift after normalization; output collision;
+  registration or source/treatment hash drift.
+- **Nonterminal invalidity**: an accepted response outside the primary
+  normalization band but within the registered suspect sensitivity band is
+  recorded invalid with safe raw diagnostics retained, never reinterpreted as
+  valid, and the run continues unless a terminal rule applies.
+- **Provider failures**: sanitized invalid branch row after retry exhaustion;
+  stop after **two consecutive** terminal provider/HTTP failures; the counter
+  resets after a successful valid response; no bodies or credentials ever
+  retained.
+- **Stopping** preserves a partial report with
+  planned/attempted/valid/invalid/unattempted counts **by branch, event and
+  form**.
+- **Runner policy**: no runner exists yet; a future runner must be added to
+  this registration's source binding and the registration re-locked with a
+  new hash **before any live authorization** (`adding_runner_authorizes_
+  collection: false`).
 
 ## Cap arithmetic
 

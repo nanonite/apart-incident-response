@@ -527,5 +527,448 @@ class OfflineContractTests(unittest.TestCase):
             self.assertNotIn(old, str(outputs["report"]))
 
 
+def _expect_error(test, mutate, expected, document):
+    tampered = copy.deepcopy(document)
+    mutate(tampered)
+    result = verify(tampered)
+    test.assertFalse(result["ok"])
+    test.assertTrue(any(expected in error for error in result["errors"]), result["errors"])
+
+
+class BranchScheduleTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.document = load_locked()
+        cls.events = DECISION["events"]
+        cls.schedule = cls.document["branch_schedule"]
+
+    def test_schedule_reproduces_and_rebuilds_identically(self):
+        built = reg.build_branch_schedule(self.events)
+        self.assertEqual(built, self.schedule)
+        self.assertEqual(reg.build_branch_schedule(self.events), built)
+
+    def test_event_major_decision_order_and_valid_permutations(self):
+        self.assertTrue(self.schedule["event_major"])
+        self.assertIn("executed adjacently", self.schedule["execution_order"])
+        expected_order = [event["event_id"] for event in self.events]
+        self.assertEqual(self.schedule["event_order"], expected_order)
+        self.assertEqual(list(self.schedule["schedule"]), expected_order)
+        self.assertEqual(set(self.schedule["schedule"]), set(expected_order))
+        self.assertEqual(self.schedule["allowed_branches"], ["real", "placebo", "null"])
+        for event_id, branches in self.schedule["schedule"].items():
+            with self.subTest(event=event_id):
+                self.assertEqual(len(branches), 3)
+                self.assertEqual(sorted(branches), ["null", "placebo", "real"])
+
+    def test_all_six_permutations_represented(self):
+        used = {tuple(branches) for branches in self.schedule["schedule"].values()}
+        self.assertEqual(used, set(reg.BRANCH_PERMUTATIONS))
+        self.assertEqual(len(self.schedule["permutations"]), 6)
+
+    def test_position_balance_table(self):
+        balance = self.schedule["position_balance"]
+        self.assertEqual(balance["by_position"], {
+            "1": {"null": 6, "placebo": 5, "real": 6},
+            "2": {"null": 6, "placebo": 6, "real": 5},
+            "3": {"null": 5, "placebo": 6, "real": 6},
+        })
+        self.assertEqual(balance["per_branch_totals"],
+                         {"null": 17, "placebo": 17, "real": 17})
+        self.assertEqual(balance["max_position_difference"], 1)
+        self.assertEqual(self.schedule["expected_max_position_difference"], 1)
+        for slot in balance["by_position"].values():
+            self.assertEqual(sum(slot.values()), 17)
+            self.assertLessEqual(max(slot.values()) - min(slot.values()), 1)
+
+    def test_form_level_rotation(self):
+        form_roles = self.schedule["form_roles"]
+        self.assertEqual(set(form_roles), set(reg.FROZEN_FORM_IDS))
+        counts = {"0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee": 1,
+                  "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc": 4,
+                  "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c": 4,
+                  "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569": 1,
+                  "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb": 4,
+                  "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222": 3}
+        for form, role in form_roles.items():
+            events = role["events"]
+            with self.subTest(form=form):
+                self.assertEqual(len(events), counts[form])
+                self.assertEqual(role["lexicographic_form_index"],
+                                 sorted(reg.FROZEN_FORM_IDS).index(form))
+                self.assertEqual(role["rotation_start"], role["lexicographic_form_index"])
+                permutations = [tuple(entry["branches"]) for entry in events]
+                self.assertEqual(len(set(permutations)), len(permutations))
+                per_form_ids = [event["event_id"] for event in self.events
+                                if event["prompt_form_id"] == form]
+                self.assertEqual([entry["event_id"] for entry in events], per_form_ids)
+                for index, entry in enumerate(events):
+                    self.assertEqual(entry["permutation_index"],
+                                     (role["rotation_start"] + index) % 6)
+
+    def test_schedule_depends_only_on_frozen_identity(self):
+        mutated = copy.deepcopy(self.events)
+        for event in mutated:
+            event["claim"] = "tampered"
+            event["i_m_bits"] = 999.0
+            event["exposure_ids"] = []
+        self.assertEqual(reg.build_branch_schedule(mutated), self.schedule)
+
+    def test_execution_order_and_permutation_drift_rejected(self):
+        _expect_error(self, lambda d: d["branch_schedule"]["schedule"].__setitem__(
+            d["branch_schedule"]["event_order"][0], ["real", "real", "null"]),
+            "branch schedule drift", self.document)
+        _expect_error(self, lambda d: d["branch_schedule"]["schedule"].pop(
+            d["branch_schedule"]["event_order"][-1]),
+            "branch schedule is missing or has extra events", self.document)
+        _expect_error(self, lambda d: d["branch_schedule"].__setitem__(
+            "event_order", list(reversed(d["branch_schedule"]["event_order"]))),
+            "branch schedule event order differs", self.document)
+        _expect_error(self, lambda d: d["branch_schedule"].__setitem__(
+            "allowed_branches", ["real", "placebo"]),
+            "branch schedule allows branches other than", self.document)
+
+    def test_balance_and_rotation_drift_rejected(self):
+        def skew_balance(document):
+            schedule = document["branch_schedule"]["schedule"]
+            first = document["branch_schedule"]["event_order"][0]
+            schedule[first] = ["real", "placebo", "null"]
+            second = document["branch_schedule"]["event_order"][1]
+            schedule[second] = ["real", "placebo", "null"]
+        _expect_error(self, skew_balance, "branch schedule drift", self.document)
+
+        def duplicate_within_form(document):
+            roles = document["branch_schedule"]["form_roles"]
+            form = "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc"
+            events = roles[form]["events"]
+            events[1]["branches"] = list(events[0]["branches"])
+            schedule = document["branch_schedule"]["schedule"]
+            schedule[events[1]["event_id"]] = list(events[0]["branches"])
+        _expect_error(self, duplicate_within_form, "branch schedule drift", self.document)
+
+        def stale_balance(document):
+            document["branch_schedule"]["position_balance"]["max_position_difference"] = 0
+        _expect_error(self, stale_balance, "branch position balance drift", self.document)
+
+        def wrong_totals(document):
+            document["branch_schedule"]["position_balance"]["per_branch_totals"] = {
+                "real": 18, "placebo": 17, "null": 16}
+        _expect_error(self, wrong_totals, "branch totals are not 17/17/17", self.document)
+
+
+class GuardEstimandTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.document = load_locked()
+
+    def test_guard_formulas_frozen_exactly(self):
+        guards = self.document["guards"]
+        self.assertEqual(guards, reg.GUARDS)
+        formulas = guards["formulas"]
+        self.assertEqual(formulas["delta_p_target_i"],
+                         "p_target(real_i) - p_target(placebo_i)")
+        self.assertEqual(formulas["delta_feasible_mass_i"],
+                         "mass_SA(real_i) - mass_SA(placebo_i)")
+        self.assertEqual(formulas["mass_SA"],
+                         "sum of the normalized Choice probabilities over the frozen "
+                         "authoritative pre-read feasible_set for receiver A")
+        self.assertEqual(formulas["target_ok_i"], "delta_p_target_i >= 0.0")
+        self.assertEqual(formulas["mass_ok_i"], "delta_feasible_mass_i >= -0.01")
+        self.assertEqual(formulas["useful_uptake_i"],
+                         "(H_real_i - H_placebo_i < 0) and target_ok_i and mass_ok_i")
+        self.assertIn("accepted normalized vector", formulas["computation_rule"])
+        self.assertIn("never remove an otherwise valid real/placebo pair",
+                      formulas["reporting_rule"])
+        self.assertIn("null remains excluded", formulas["reporting_rule"])
+        self.assertEqual(guards["target_probability_delta"], 0.0)
+        self.assertEqual(guards["feasible_set_mass_epsilon"], 0.01)
+        self.assertIn("frozen authoritative pre-read feasible_set",
+                      guards["reference_set"])
+
+    def test_feasible_set_bindings_reconstruct(self):
+        for event in self.document["events"]:
+            with self.subTest(event=event["event_id"]):
+                instance = reg._regenerate_instance(event["instance_id"])
+                pre_read = event["pre_read"]
+                authoritative = sorted(str(value)
+                                       for value in instance.private_solutions["A"])
+                clue_consistent = sorted(str(value) for value in
+                                         instance.clue_consistent(instance.private_clues["A"]))
+                self.assertEqual(authoritative, clue_consistent)
+                self.assertEqual(pre_read["feasible_set"], authoritative)
+                self.assertEqual(pre_read["feasible_set_hash"],
+                                 jr.canonical_hash(authoritative))
+                self.assertTrue(pre_read["feasible_set_verified"])
+                self.assertEqual(pre_read["target_id"], instance.target)
+                self.assertIn("clue-consistent", pre_read["feasible_set_source"])
+
+    def test_feasible_set_drift_rejected(self):
+        _expect_error(self, lambda d: d["events"][0]["pre_read"]["feasible_set"].pop(),
+                      "feasible set drift", self.document)
+        _expect_error(self, lambda d: d["events"][0]["pre_read"].__setitem__(
+            "feasible_set_hash", "0" * 64), "feasible set hash drift", self.document)
+        _expect_error(self, lambda d: d["events"][0]["pre_read"].__setitem__(
+            "feasible_set_verified", False), "feasible set verification missing",
+            self.document)
+        _expect_error(self, lambda d: d["events"][0]["pre_read"].__setitem__(
+            "target_id", "tampered-target"), "target id drift", self.document)
+
+    def test_guard_formula_direction_and_threshold_drift_rejected(self):
+        _expect_error(self, lambda d: d["guards"]["formulas"].__setitem__(
+            "delta_p_target_i", "p_target(placebo_i) - p_target(real_i)"),
+            "guard formula drift: delta_p_target_i", self.document)
+        _expect_error(self, lambda d: d["guards"]["formulas"].__setitem__(
+            "delta_feasible_mass_i", "mass_SA(placebo_i) - mass_SA(real_i)"),
+            "guard formula drift: delta_feasible_mass_i", self.document)
+        _expect_error(self, lambda d: d["guards"]["formulas"].__setitem__(
+            "mass_SA", "sum over the receiver's own posterior"),
+            "guard formula drift: mass_SA", self.document)
+        _expect_error(self, lambda d: d["guards"]["formulas"].__setitem__(
+            "target_ok_i", "delta_p_target_i <= 0.0"),
+            "guard comparison drift: target_ok_i", self.document)
+        _expect_error(self, lambda d: d["guards"]["formulas"].__setitem__(
+            "mass_ok_i", "delta_feasible_mass_i >= 0.01"),
+            "guard comparison drift: mass_ok_i", self.document)
+        _expect_error(self, lambda d: d["guards"]["formulas"].__setitem__(
+            "useful_uptake_i", "H_real_i < H_placebo_i"),
+            "guard formula drift: useful_uptake_i", self.document)
+        _expect_error(self, lambda d: d["guards"]["formulas"].__setitem__(
+            "computation_rule", "compute from the raw vector"),
+            "guard formula drift: computation_rule", self.document)
+        _expect_error(self, lambda d: d["guards"].__setitem__(
+            "reference_set", "the receiver's posterior"),
+            "guard reference-set definition drift", self.document)
+        _expect_error(self, lambda d: d["guards"].__setitem__(
+            "feasible_set_mass_epsilon", 0.05), "guard thresholds drift", self.document)
+
+
+class ExecutionPolicyTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.document = load_locked()
+        cls.policy = cls.document["execution_policy"]
+
+    def test_preflight_rules_frozen(self):
+        items = " | ".join(self.policy["preflight"])
+        for required in ("exact reviewed registration hash", "branch-order manifests",
+                         "model, endpoint, codec, protocol key, retry and normalization",
+                         "request, state, option and treatment hashes",
+                         "credentials present but never printed or retained",
+                         "registered journal/report paths absent",
+                         "enforced request and cost caps",
+                         "no provider call before every preflight check passes"):
+            self.assertIn(required, items)
+
+    def test_output_lifecycle_frozen(self):
+        lifecycle = self.policy["output_lifecycle"]
+        self.assertFalse(lifecycle["overwrite"])
+        self.assertFalse(lifecycle["automatic_resume"])
+        self.assertFalse(lifecycle["append_to_prior_replay_artifacts"])
+        self.assertIn("new review and explicit authorization",
+                      lifecycle["fresh_execution_after_partial_run"])
+        self.assertFalse(lifecycle["raw_provider_envelopes_retained"])
+        self.assertFalse(lifecycle["credentials_retained"])
+
+    def test_journal_contract_frozen(self):
+        journal = self.policy["journal"]
+        self.assertEqual(journal["kind"], "append-only branch-attempt journal")
+        self.assertEqual(journal["row_unit"],
+                         "one durable row per logical (event_id, branch) execution")
+        self.assertIn("fsync after every logical branch outcome", journal["durability"])
+        self.assertEqual(journal["unique_key"], ["event_id", "branch"])
+        self.assertEqual(journal["duplicate_key_policy"], "fail closed")
+        fields = journal["row_fields"]
+        for required in ("planned_branch_position", "actual_branch_position", "request_hash",
+                         "state_hash", "protocol_key", "resolved_model", "physical_attempts",
+                         "vector and normalization diagnostics", "validity", "usage",
+                         "error_class", "cap counters"):
+            self.assertIn(required, fields)
+        self.assertIn("fail closed if actual", journal["branch_order_persistence"])
+        self.assertIn("event-level real/placebo/null records", journal["report_grouping"])
+        self.assertIn("remain observable", journal["partial_triplets"])
+
+    def test_per_branch_rules_frozen(self):
+        per_branch = self.policy["per_branch"]
+        self.assertIn("maximum two", per_branch["retries"])
+        self.assertTrue(per_branch["physical_attempts_include_retries"])
+        self.assertEqual(per_branch["cost_reservation_usd"], 0.001032192)
+        self.assertIn("0.001032192", per_branch["cost_reservation"])
+        self.assertIn("does not cause the remaining branches",
+                      per_branch["nonterminal_invalid"])
+        self.assertIn("real and placebo are both valid", per_branch["complete_pair"])
+        self.assertIn("not required for the primary", per_branch["null_validity"])
+        self.assertEqual(per_branch["imputation"], "none")
+
+    def test_terminal_and_provider_failure_rules_frozen(self):
+        self.assertEqual(self.policy["immediate_terminal_stops"], [
+            "request cap or cost cap before the next call",
+            "model drift",
+            "protocol-key drift",
+            "request/state/option identity drift",
+            "malformed or non-finite/negative/option-mismatched vectors",
+            "hard normalization deviation above 0.05",
+            "argmax shift after normalization",
+            "output collision",
+            "registration or source/treatment hash drift"])
+        nonterminal = self.policy["nonterminal_invalidity"]
+        self.assertIn("suspect sensitivity band", nonterminal["band"])
+        self.assertIn("recorded invalid", nonterminal["policy"])
+        self.assertIn("never", nonterminal["policy"])
+        self.assertIn("continue unless", nonterminal["policy"])
+        provider = self.policy["provider_failures"]
+        self.assertIn("sanitized invalid branch row", provider["retry_exhaustion"])
+        self.assertEqual(provider["consecutive_terminal_failure_stop"], 2)
+        self.assertIn("successful valid response", provider["reset"])
+        self.assertIn("never retain response bodies", provider["retention"])
+        self.assertIn("planned/attempted/valid/invalid/unattempted",
+                      self.policy["stopping_report"])
+        self.assertIn("by branch, event, and form", self.policy["stopping_report"])
+
+    def test_caps_reservation_and_unchanged_limits(self):
+        caps = self.document["caps"]
+        self.assertEqual(caps["planned_calls"]["jev"], 51)
+        self.assertEqual(caps["planned_calls"]["ling"], 0)
+        self.assertEqual(caps["physical_requests"], 153)
+        self.assertEqual(caps["cost_cap_usd"], 1.0)
+        self.assertEqual(caps["worst_case_cost_usd"], 0.052641792)
+        self.assertEqual(caps["worst_case_next_call_cost_usd"], 0.001032192)
+        self.assertEqual(round(caps["worst_case_call_cost_usd"] * 3, 12), 0.001032192)
+        self.assertIn("0.001032192", caps["next_call_reservation_arithmetic"])
+
+    def test_runner_policy_frozen(self):
+        policy = self.document["runner_policy"]
+        self.assertTrue(policy["required_before_live"])
+        self.assertFalse(policy["runner_implemented"])
+        self.assertEqual(policy["runner_source_files"], [])
+        self.assertFalse(policy["adding_runner_authorizes_collection"])
+        self.assertIn("source binding", policy["policy"])
+        self.assertIn("re-locked", policy["policy"])
+        self.assertIn("separate explicit authorization", policy["live_execution_rule"])
+
+    def test_execution_policy_drift_rejected(self):
+        cases = [
+            (lambda d: d["execution_policy"]["output_lifecycle"].__setitem__("overwrite", True),
+             "execution policy drift: output_lifecycle.overwrite"),
+            (lambda d: d["execution_policy"]["output_lifecycle"].__setitem__(
+                "automatic_resume", True), "execution policy drift: output_lifecycle.automatic_resume"),
+            (lambda d: d["execution_policy"]["output_lifecycle"].__setitem__(
+                "append_to_prior_replay_artifacts", True),
+             "execution policy drift: output_lifecycle.append_to_prior_replay_artifacts"),
+            (lambda d: d["execution_policy"]["journal"].__setitem__(
+                "durability", "append and flush"),
+             "execution policy drift: journal.durability"),
+            (lambda d: d["execution_policy"]["journal"].__setitem__(
+                "unique_key", ["event_id"]), "execution policy drift: journal.unique_key"),
+            (lambda d: d["execution_policy"]["journal"].__setitem__(
+                "duplicate_key_policy", "overwrite"),
+             "execution policy drift: journal.duplicate_key_policy"),
+            (lambda d: d["execution_policy"]["journal"]["row_fields"].remove(
+                "planned_branch_position"),
+             "execution policy drift: journal.row_fields.planned_branch_position"),
+            (lambda d: d["execution_policy"]["journal"].__setitem__(
+                "branch_order_persistence", "best effort"),
+             "execution policy drift: journal.branch_order_persistence"),
+            (lambda d: d["execution_policy"]["journal"].__setitem__(
+                "partial_triplets", "dropped"),
+             "execution policy drift: journal.partial_triplets"),
+            (lambda d: d["execution_policy"]["per_branch"].__setitem__(
+                "retries", "registered statuses, maximum five"),
+             "execution policy drift: per_branch.retries"),
+            (lambda d: d["execution_policy"]["per_branch"].__setitem__(
+                "physical_attempts_include_retries", False),
+             "execution policy drift: per_branch.physical_attempts_include_retries"),
+            (lambda d: d["execution_policy"]["per_branch"].__setitem__(
+                "cost_reservation_usd", 0.0001),
+             "execution policy drift: per_branch.cost_reservation"),
+            (lambda d: d["execution_policy"]["per_branch"].__setitem__(
+                "nonterminal_invalid", "skip the rest of the event"),
+             "execution policy drift: per_branch.nonterminal_invalid"),
+            (lambda d: d["execution_policy"]["per_branch"].__setitem__(
+                "complete_pair", "any one branch valid"),
+             "execution policy drift: per_branch.complete_pair"),
+            (lambda d: d["execution_policy"]["per_branch"].__setitem__(
+                "null_validity", "required for the primary pair"),
+             "execution policy drift: per_branch.null_validity"),
+            (lambda d: d["execution_policy"]["per_branch"].__setitem__("imputation", "mean"),
+             "execution policy drift: per_branch.imputation"),
+            (lambda d: d["execution_policy"]["immediate_terminal_stops"].pop(),
+             "terminal stop classes drift"),
+            (lambda d: d["execution_policy"]["nonterminal_invalidity"].__setitem__(
+                "policy", "reinterpreted as valid and the run continues"),
+             "execution policy drift: nonterminal_invalidity.policy"),
+            (lambda d: d["execution_policy"]["provider_failures"].__setitem__(
+                "consecutive_terminal_failure_stop", 3),
+             "execution policy drift: provider_failures.consecutive_terminal_failure_stop"),
+            (lambda d: d["execution_policy"]["provider_failures"].__setitem__(
+                "reset", "never"), "execution policy drift: provider_failures.reset"),
+            (lambda d: d["execution_policy"]["provider_failures"].__setitem__(
+                "retention", "retain response bodies"),
+             "execution policy drift: provider_failures.retention"),
+            (lambda d: d["execution_policy"].__setitem__("stopping_report", "counts by branch"),
+             "execution policy drift: stopping_report"),
+        ]
+        for mutate, expected in cases:
+            with self.subTest(expected=expected):
+                _expect_error(self, mutate, expected, self.document)
+
+    def test_runner_policy_drift_rejected(self):
+        _expect_error(self, lambda d: d["runner_policy"].__setitem__(
+            "runner_implemented", True),
+            "runner must not be reported implemented before it exists", self.document)
+        _expect_error(self, lambda d: d["runner_policy"].__setitem__(
+            "runner_source_files", ["src/apart_incident_response/x.py"]),
+            "runner source list must be empty until a runner exists", self.document)
+        _expect_error(self, lambda d: d["runner_policy"].__setitem__(
+            "adding_runner_authorizes_collection", True),
+            "adding a runner must not authorize collection", self.document)
+        _expect_error(self, lambda d: d["runner_policy"].__setitem__(
+            "policy", "a runner may execute freely"),
+            "runner policy must require source binding and a re-lock", self.document)
+        _expect_error(self, lambda d: d["runner_policy"].__setitem__(
+            "live_execution_rule", "live execution is forbidden until reviewed"),
+            "runner live-execution rule drift", self.document)
+
+
+class BranchJournalSchemaTests(unittest.TestCase):
+    """The frozen future branch-journal contract and stop semantics."""
+
+    def test_branch_row_fields_and_key_contract(self):
+        journal = load_locked()["execution_policy"]["journal"]
+        self.assertEqual(journal["unique_key"], ["event_id", "branch"])
+        self.assertEqual(journal["duplicate_key_policy"], "fail closed")
+        self.assertIn("planned_branch_position", journal["row_fields"])
+        self.assertIn("actual_branch_position", journal["row_fields"])
+        self.assertIn("both planned and actual branch order", journal["branch_order_persistence"])
+
+    def test_nonterminal_invalid_continues_and_null_not_required(self):
+        policy = load_locked()["execution_policy"]
+        self.assertIn("does not cause the remaining branches",
+                      policy["per_branch"]["nonterminal_invalid"])
+        self.assertIn("real and placebo are both valid",
+                      policy["per_branch"]["complete_pair"])
+        self.assertIn("not required for the primary", policy["per_branch"]["null_validity"])
+        self.assertEqual(policy["per_branch"]["imputation"], "none")
+
+    def test_two_consecutive_provider_failure_rule(self):
+        provider = load_locked()["execution_policy"]["provider_failures"]
+        self.assertEqual(provider["consecutive_terminal_failure_stop"], 2)
+        self.assertIn("successful valid response", provider["reset"])
+        self.assertIn("sanitized invalid branch row", provider["retry_exhaustion"])
+
+    def test_request_and_cost_cap_reservation_registered(self):
+        caps = load_locked()["caps"]
+        self.assertEqual(caps["physical_requests"], 153)
+        self.assertEqual(caps["planned_calls"]["jev"], 51)
+        self.assertEqual(caps["worst_case_next_call_cost_usd"],
+                         round(caps["worst_case_call_cost_usd"] * 3, 12))
+
+    def test_partial_triplet_missingness_semantics(self):
+        policy = load_locked()["execution_policy"]
+        self.assertIn("remain observable", policy["journal"]["partial_triplets"])
+        report_rule = policy["stopping_report"]
+        self.assertIn("planned/attempted/valid/invalid/unattempted", report_rule)
+        self.assertIn("by branch, event, and form", report_rule)
+
+
+
 if __name__ == "__main__":
     unittest.main()
