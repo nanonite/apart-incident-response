@@ -1,0 +1,1964 @@
+{
+  "amended_by_task": "#197",
+  "approval": {
+    "approved": true,
+    "approved_by": "offline-registration-lock",
+    "live_collection_authorized": false,
+    "scope": "replay_v5_registration_lock_only"
+  },
+  "approval_required": false,
+  "branch_design": {
+    "branch_request_reconstruction": "each branch request is the frozen pre-read body with visible_messages set to the envelope text (real/placebo) or [] (null); request hashes are frozen per event and recomputed by the verifier",
+    "branches": [
+      "real",
+      "placebo",
+      "null"
+    ],
+    "envelope": {
+      "identical_for_real_and_placebo": true,
+      "source_neutral": true,
+      "template": "peer_clue: {claim}",
+      "wording_hash": "268425b3d4bcb5d3a8a30eb52d87a0165e0f2d4c0931eb685adc1c8f21a87f41"
+    },
+    "execution_order": "frozen in branch_schedule: event-major over the #192 decision order with one counterbalanced permutation per event; the future runner must fail closed on any deviation",
+    "no_ling_calls": "real messages come from the frozen #192 event set and placebo is controller-injected; replay needs no Ling call",
+    "null": "C with no message",
+    "only_difference_between_branches": "state.visible_messages",
+    "placebo": "C plus serialize_placebo_message(a receiver-already-known clue of A with authoritative I_m = 0 and no feasible-set reduction); synthetic origin stays controller-side",
+    "pre_read_state": "one identical model-visible C per event: the receiver-A pre-read state (family, complexity, agent_id, clues) with the registered model, question id, instructions and criteria; prompt_form_id equals the frozen #189/#192 form id",
+    "real": "C plus serialize_message(the exact accepted B-owned claim selected by #192)",
+    "sender_identity_model_visible": false,
+    "synthetic_origin_model_visible": false
+  },
+  "branch_schedule": {
+    "allowed_branches": [
+      "real",
+      "placebo",
+      "null"
+    ],
+    "assignment_rule": "per-event permutation = BRANCH_PERMUTATIONS[(lexicographic form index + within-form event index) % 6]; depends only on frozen form and event identity, never on outcomes",
+    "event_major": true,
+    "event_order": [
+      "planning-000124f8:message-B-1",
+      "planning-000124f9:message-B-0",
+      "planning-000124fb:message-B-0",
+      "planning-000124fc:message-B-0",
+      "planning-000124fe:message-B-0",
+      "planning-00012501:message-B-0",
+      "planning-00012502:message-B-1",
+      "planning-00012503:message-B-1",
+      "planning-00012504:message-B-1",
+      "planning-00012507:message-B-0",
+      "planning-0001250d:message-B-1",
+      "planning-0001250e:message-B-1",
+      "planning-0001250f:message-B-0",
+      "planning-00012511:message-B-0",
+      "planning-00012517:message-B-1",
+      "planning-0001251b:message-B-1",
+      "planning-0001251c:message-B-1"
+    ],
+    "execution_order": "events in #192 decision order; the three branches of one event are executed adjacently before the next event",
+    "expected_max_position_difference": 1,
+    "form_roles": {
+      "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee": {
+        "events": [
+          {
+            "branches": [
+              "real",
+              "placebo",
+              "null"
+            ],
+            "event_id": "planning-00012507:message-B-0",
+            "permutation_index": 0,
+            "within_form_index": 0
+          }
+        ],
+        "lexicographic_form_index": 0,
+        "rotation_start": 0
+      },
+      "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc": {
+        "events": [
+          {
+            "branches": [
+              "real",
+              "null",
+              "placebo"
+            ],
+            "event_id": "planning-000124f8:message-B-1",
+            "permutation_index": 1,
+            "within_form_index": 0
+          },
+          {
+            "branches": [
+              "placebo",
+              "real",
+              "null"
+            ],
+            "event_id": "planning-000124fb:message-B-0",
+            "permutation_index": 2,
+            "within_form_index": 1
+          },
+          {
+            "branches": [
+              "placebo",
+              "null",
+              "real"
+            ],
+            "event_id": "planning-000124fe:message-B-0",
+            "permutation_index": 3,
+            "within_form_index": 2
+          },
+          {
+            "branches": [
+              "null",
+              "real",
+              "placebo"
+            ],
+            "event_id": "planning-00012502:message-B-1",
+            "permutation_index": 4,
+            "within_form_index": 3
+          }
+        ],
+        "lexicographic_form_index": 1,
+        "rotation_start": 1
+      },
+      "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c": {
+        "events": [
+          {
+            "branches": [
+              "placebo",
+              "real",
+              "null"
+            ],
+            "event_id": "planning-00012501:message-B-0",
+            "permutation_index": 2,
+            "within_form_index": 0
+          },
+          {
+            "branches": [
+              "placebo",
+              "null",
+              "real"
+            ],
+            "event_id": "planning-00012504:message-B-1",
+            "permutation_index": 3,
+            "within_form_index": 1
+          },
+          {
+            "branches": [
+              "null",
+              "real",
+              "placebo"
+            ],
+            "event_id": "planning-0001250d:message-B-1",
+            "permutation_index": 4,
+            "within_form_index": 2
+          },
+          {
+            "branches": [
+              "null",
+              "placebo",
+              "real"
+            ],
+            "event_id": "planning-0001250e:message-B-1",
+            "permutation_index": 5,
+            "within_form_index": 3
+          }
+        ],
+        "lexicographic_form_index": 2,
+        "rotation_start": 2
+      },
+      "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569": {
+        "events": [
+          {
+            "branches": [
+              "placebo",
+              "null",
+              "real"
+            ],
+            "event_id": "planning-0001251c:message-B-1",
+            "permutation_index": 3,
+            "within_form_index": 0
+          }
+        ],
+        "lexicographic_form_index": 3,
+        "rotation_start": 3
+      },
+      "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb": {
+        "events": [
+          {
+            "branches": [
+              "null",
+              "real",
+              "placebo"
+            ],
+            "event_id": "planning-000124f9:message-B-0",
+            "permutation_index": 4,
+            "within_form_index": 0
+          },
+          {
+            "branches": [
+              "null",
+              "placebo",
+              "real"
+            ],
+            "event_id": "planning-000124fc:message-B-0",
+            "permutation_index": 5,
+            "within_form_index": 1
+          },
+          {
+            "branches": [
+              "real",
+              "placebo",
+              "null"
+            ],
+            "event_id": "planning-00012503:message-B-1",
+            "permutation_index": 0,
+            "within_form_index": 2
+          },
+          {
+            "branches": [
+              "real",
+              "null",
+              "placebo"
+            ],
+            "event_id": "planning-00012511:message-B-0",
+            "permutation_index": 1,
+            "within_form_index": 3
+          }
+        ],
+        "lexicographic_form_index": 4,
+        "rotation_start": 4
+      },
+      "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222": {
+        "events": [
+          {
+            "branches": [
+              "null",
+              "placebo",
+              "real"
+            ],
+            "event_id": "planning-0001250f:message-B-0",
+            "permutation_index": 5,
+            "within_form_index": 0
+          },
+          {
+            "branches": [
+              "real",
+              "placebo",
+              "null"
+            ],
+            "event_id": "planning-00012517:message-B-1",
+            "permutation_index": 0,
+            "within_form_index": 1
+          },
+          {
+            "branches": [
+              "real",
+              "null",
+              "placebo"
+            ],
+            "event_id": "planning-0001251b:message-B-1",
+            "permutation_index": 1,
+            "within_form_index": 2
+          }
+        ],
+        "lexicographic_form_index": 5,
+        "rotation_start": 5
+      }
+    },
+    "permutations": [
+      [
+        "real",
+        "placebo",
+        "null"
+      ],
+      [
+        "real",
+        "null",
+        "placebo"
+      ],
+      [
+        "placebo",
+        "real",
+        "null"
+      ],
+      [
+        "placebo",
+        "null",
+        "real"
+      ],
+      [
+        "null",
+        "real",
+        "placebo"
+      ],
+      [
+        "null",
+        "placebo",
+        "real"
+      ]
+    ],
+    "position_balance": {
+      "by_position": {
+        "1": {
+          "null": 6,
+          "placebo": 5,
+          "real": 6
+        },
+        "2": {
+          "null": 6,
+          "placebo": 6,
+          "real": 5
+        },
+        "3": {
+          "null": 5,
+          "placebo": 6,
+          "real": 6
+        }
+      },
+      "max_position_difference": 1,
+      "per_branch_totals": {
+        "null": 17,
+        "placebo": 17,
+        "real": 17
+      }
+    },
+    "schedule": {
+      "planning-000124f8:message-B-1": [
+        "real",
+        "null",
+        "placebo"
+      ],
+      "planning-000124f9:message-B-0": [
+        "null",
+        "real",
+        "placebo"
+      ],
+      "planning-000124fb:message-B-0": [
+        "placebo",
+        "real",
+        "null"
+      ],
+      "planning-000124fc:message-B-0": [
+        "null",
+        "placebo",
+        "real"
+      ],
+      "planning-000124fe:message-B-0": [
+        "placebo",
+        "null",
+        "real"
+      ],
+      "planning-00012501:message-B-0": [
+        "placebo",
+        "real",
+        "null"
+      ],
+      "planning-00012502:message-B-1": [
+        "null",
+        "real",
+        "placebo"
+      ],
+      "planning-00012503:message-B-1": [
+        "real",
+        "placebo",
+        "null"
+      ],
+      "planning-00012504:message-B-1": [
+        "placebo",
+        "null",
+        "real"
+      ],
+      "planning-00012507:message-B-0": [
+        "real",
+        "placebo",
+        "null"
+      ],
+      "planning-0001250d:message-B-1": [
+        "null",
+        "real",
+        "placebo"
+      ],
+      "planning-0001250e:message-B-1": [
+        "null",
+        "placebo",
+        "real"
+      ],
+      "planning-0001250f:message-B-0": [
+        "null",
+        "placebo",
+        "real"
+      ],
+      "planning-00012511:message-B-0": [
+        "real",
+        "null",
+        "placebo"
+      ],
+      "planning-00012517:message-B-1": [
+        "real",
+        "placebo",
+        "null"
+      ],
+      "planning-0001251b:message-B-1": [
+        "real",
+        "null",
+        "placebo"
+      ],
+      "planning-0001251c:message-B-1": [
+        "placebo",
+        "null",
+        "real"
+      ]
+    }
+  },
+  "caps": {
+    "cost_cap_usd": 1.0,
+    "input_token_ceiling": 8192,
+    "input_usd_per_mtok": 0.042,
+    "ling_budget": {
+      "justification": "no Ling call exists in the replay design: real messages are taken from the frozen #192 event set, the placebo is controller-injected, and only the Jev receiver is called",
+      "physical_cap": 0,
+      "planned_calls": 0
+    },
+    "next_call_reservation_arithmetic": "0.000344064 x (1 + max_retries 2) = 0.001032192 reserved before each logical branch",
+    "physical_requests": 153,
+    "planned_calls": {
+      "arithmetic": "17 events x 3 branches (real/placebo/null) = 51 Jev receiver calls; the replay design makes no Ling call",
+      "combined": 51,
+      "jev": 51,
+      "ling": 0
+    },
+    "provider_partition": {
+      "arithmetic": "51 x (1 + registered max_retries 2) = 153 physical Jev attempts (retry-inclusive ceiling)",
+      "jev": 153,
+      "ling": 0,
+      "total": 153
+    },
+    "retry_reserve": {
+      "max_retries": 2,
+      "physical": 102
+    },
+    "status": "locked; live_collection_authorized=false",
+    "worst_case_arithmetic": "153 x 8192 x 0.042 / 1e6 = 0.052641792 <= ceiling 1.0",
+    "worst_case_call_cost_usd": 0.000344064,
+    "worst_case_cost_usd": 0.052641792,
+    "worst_case_next_call_cost_usd": 0.001032192
+  },
+  "claim_scope": {
+    "events": 17,
+    "experimental_unit": "prompt form",
+    "k": 6,
+    "statement": "conditional on the six frozen planning-low forms and the paid Ling route that generated the messages; locking is not live authorization; fresh instance IDs never increase k",
+    "type": "matched real/placebo/null replay preregistration (offline lock)"
+  },
+  "estimand": {
+    "directional_prediction": "Delta < 0",
+    "event_contrast": "d_i = H_real,i - H_placebo,i",
+    "events": 17,
+    "events_are_independent_units": false,
+    "experimental_unit": "prompt form",
+    "form_contrast": "mean of d_i within prompt form f",
+    "k": 6,
+    "null_branch": {
+      "excluded_from": "the algebraically cancelling primary real-versus-placebo contrast",
+      "retained_for": [
+        "H_real - H_null",
+        "H_placebo - H_null manipulation checks"
+      ]
+    },
+    "primary": "Delta = equal-weight mean over the six frozen forms of the within-form mean of H_real - H_placebo",
+    "unit_notes": [
+      "the 17 events are replicates within six prompt forms, not 17 independent states",
+      "repeated instances inside a form are averaged, never treated as independent units",
+      "no instance-level t-test or Wilcoxon test may be used as primary inference"
+    ]
+  },
+  "events": [
+    {
+      "event_id": "planning-000124f8:message-B-1",
+      "instance_id": "planning-000124f8",
+      "placebo": {
+        "claim": "precedes=inspect>stage",
+        "construction": "controller-injected source-neutral re-presentation of a receiver-already-known pre-read clue, using the same envelope as the real arm",
+        "envelope": "peer_clue: {claim}",
+        "i_m_bits": 0.0,
+        "inert_verified": true,
+        "origin": "controller",
+        "receiver_known": true,
+        "synthetic": true
+      },
+      "pre_read": {
+        "branch_request_hashes": {
+          "null": "47c58af68377f6ac46c557f02f49a7e52d4f5231afccc7157a2fb2f4ed47351c",
+          "placebo": "e1304318c4a4aef958ebcf90a4f84bfe47f851a9e7e08e6071a76e2a6c6963d5",
+          "real": "b6389212557f6b98432682646d98a388323c84a3311e25395a4f11c1547201d4"
+        },
+        "feasible_set": [
+          "deploy>inspect>stage",
+          "inspect>deploy>stage",
+          "inspect>stage>deploy"
+        ],
+        "feasible_set_hash": "88bbbf186da2ceea19f2e9291ff259d29463f723b7060855138e60c3af933d24",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
+        "option_ids": [
+          "deploy>inspect>stage",
+          "deploy>stage>inspect",
+          "inspect>deploy>stage",
+          "inspect>stage>deploy",
+          "stage>deploy>inspect",
+          "stage>inspect>deploy"
+        ],
+        "request_body_hash": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+        "state_hash": "a17effa76523c7d362f1d294eb6e4d62ed4a4029cbf0f402acab5c18e3b1ba93",
+        "target_id": "inspect>stage>deploy"
+      },
+      "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+      "real": {
+        "claim": "precedes=stage>deploy",
+        "exposure_ids": [
+          "jev-finalizer"
+        ],
+        "i_m_bits": 1.584962500721156,
+        "informative_verified": true,
+        "message_id": "message-B-1",
+        "ownership_verified": true,
+        "reader_id": "A",
+        "write_sequence": 0,
+        "writer_id": "B"
+      }
+    },
+    {
+      "event_id": "planning-000124f9:message-B-0",
+      "instance_id": "planning-000124f9",
+      "placebo": {
+        "claim": "precedes=deploy>inspect",
+        "construction": "controller-injected source-neutral re-presentation of a receiver-already-known pre-read clue, using the same envelope as the real arm",
+        "envelope": "peer_clue: {claim}",
+        "i_m_bits": 0.0,
+        "inert_verified": true,
+        "origin": "controller",
+        "receiver_known": true,
+        "synthetic": true
+      },
+      "pre_read": {
+        "branch_request_hashes": {
+          "null": "40f9a6c24d02149c02ca0acf7e3d057d56194c9c8e6a0b367fa7e6afee6a3804",
+          "placebo": "8c272dbc110ce157367c3b81156f36ca8b7bda7df476c1eb3fef982630beb8b4",
+          "real": "2fe01f843d13b21a6fb09230ec13f3e06d971572c7da9c08b0ca46f461bdb600"
+        },
+        "feasible_set": [
+          "deploy>inspect>stage",
+          "deploy>stage>inspect",
+          "stage>deploy>inspect"
+        ],
+        "feasible_set_hash": "827b820bd493b7f88bd059ee9575876b138f3b07dd3ff634659a4a8a6d2e9897",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
+        "option_ids": [
+          "deploy>inspect>stage",
+          "deploy>stage>inspect",
+          "inspect>deploy>stage",
+          "inspect>stage>deploy",
+          "stage>deploy>inspect",
+          "stage>inspect>deploy"
+        ],
+        "request_body_hash": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+        "state_hash": "e265c5cfe34f80606fb5d0ec14d930b5251d6e5ad0056ba12b7d3c989c8d3822",
+        "target_id": "deploy>inspect>stage"
+      },
+      "prompt_form_id": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "real": {
+        "claim": "precedes=inspect>stage",
+        "exposure_ids": [
+          "turn-1"
+        ],
+        "i_m_bits": 1.584962500721156,
+        "informative_verified": true,
+        "message_id": "message-B-0",
+        "ownership_verified": true,
+        "reader_id": "A",
+        "write_sequence": 0,
+        "writer_id": "B"
+      }
+    },
+    {
+      "event_id": "planning-000124fb:message-B-0",
+      "instance_id": "planning-000124fb",
+      "placebo": {
+        "claim": "precedes=inspect>stage",
+        "construction": "controller-injected source-neutral re-presentation of a receiver-already-known pre-read clue, using the same envelope as the real arm",
+        "envelope": "peer_clue: {claim}",
+        "i_m_bits": 0.0,
+        "inert_verified": true,
+        "origin": "controller",
+        "receiver_known": true,
+        "synthetic": true
+      },
+      "pre_read": {
+        "branch_request_hashes": {
+          "null": "47c58af68377f6ac46c557f02f49a7e52d4f5231afccc7157a2fb2f4ed47351c",
+          "placebo": "e1304318c4a4aef958ebcf90a4f84bfe47f851a9e7e08e6071a76e2a6c6963d5",
+          "real": "b6389212557f6b98432682646d98a388323c84a3311e25395a4f11c1547201d4"
+        },
+        "feasible_set": [
+          "deploy>inspect>stage",
+          "inspect>deploy>stage",
+          "inspect>stage>deploy"
+        ],
+        "feasible_set_hash": "88bbbf186da2ceea19f2e9291ff259d29463f723b7060855138e60c3af933d24",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
+        "option_ids": [
+          "deploy>inspect>stage",
+          "deploy>stage>inspect",
+          "inspect>deploy>stage",
+          "inspect>stage>deploy",
+          "stage>deploy>inspect",
+          "stage>inspect>deploy"
+        ],
+        "request_body_hash": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+        "state_hash": "a17effa76523c7d362f1d294eb6e4d62ed4a4029cbf0f402acab5c18e3b1ba93",
+        "target_id": "inspect>stage>deploy"
+      },
+      "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+      "real": {
+        "claim": "precedes=stage>deploy",
+        "exposure_ids": [
+          "turn-1"
+        ],
+        "i_m_bits": 1.584962500721156,
+        "informative_verified": true,
+        "message_id": "message-B-0",
+        "ownership_verified": true,
+        "reader_id": "A",
+        "write_sequence": 0,
+        "writer_id": "B"
+      }
+    },
+    {
+      "event_id": "planning-000124fc:message-B-0",
+      "instance_id": "planning-000124fc",
+      "placebo": {
+        "claim": "precedes=deploy>inspect",
+        "construction": "controller-injected source-neutral re-presentation of a receiver-already-known pre-read clue, using the same envelope as the real arm",
+        "envelope": "peer_clue: {claim}",
+        "i_m_bits": 0.0,
+        "inert_verified": true,
+        "origin": "controller",
+        "receiver_known": true,
+        "synthetic": true
+      },
+      "pre_read": {
+        "branch_request_hashes": {
+          "null": "40f9a6c24d02149c02ca0acf7e3d057d56194c9c8e6a0b367fa7e6afee6a3804",
+          "placebo": "8c272dbc110ce157367c3b81156f36ca8b7bda7df476c1eb3fef982630beb8b4",
+          "real": "2fe01f843d13b21a6fb09230ec13f3e06d971572c7da9c08b0ca46f461bdb600"
+        },
+        "feasible_set": [
+          "deploy>inspect>stage",
+          "deploy>stage>inspect",
+          "stage>deploy>inspect"
+        ],
+        "feasible_set_hash": "827b820bd493b7f88bd059ee9575876b138f3b07dd3ff634659a4a8a6d2e9897",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
+        "option_ids": [
+          "deploy>inspect>stage",
+          "deploy>stage>inspect",
+          "inspect>deploy>stage",
+          "inspect>stage>deploy",
+          "stage>deploy>inspect",
+          "stage>inspect>deploy"
+        ],
+        "request_body_hash": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+        "state_hash": "e265c5cfe34f80606fb5d0ec14d930b5251d6e5ad0056ba12b7d3c989c8d3822",
+        "target_id": "deploy>inspect>stage"
+      },
+      "prompt_form_id": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "real": {
+        "claim": "precedes=inspect>stage",
+        "exposure_ids": [
+          "turn-1"
+        ],
+        "i_m_bits": 1.584962500721156,
+        "informative_verified": true,
+        "message_id": "message-B-0",
+        "ownership_verified": true,
+        "reader_id": "A",
+        "write_sequence": 0,
+        "writer_id": "B"
+      }
+    },
+    {
+      "event_id": "planning-000124fe:message-B-0",
+      "instance_id": "planning-000124fe",
+      "placebo": {
+        "claim": "precedes=inspect>stage",
+        "construction": "controller-injected source-neutral re-presentation of a receiver-already-known pre-read clue, using the same envelope as the real arm",
+        "envelope": "peer_clue: {claim}",
+        "i_m_bits": 0.0,
+        "inert_verified": true,
+        "origin": "controller",
+        "receiver_known": true,
+        "synthetic": true
+      },
+      "pre_read": {
+        "branch_request_hashes": {
+          "null": "47c58af68377f6ac46c557f02f49a7e52d4f5231afccc7157a2fb2f4ed47351c",
+          "placebo": "e1304318c4a4aef958ebcf90a4f84bfe47f851a9e7e08e6071a76e2a6c6963d5",
+          "real": "b6389212557f6b98432682646d98a388323c84a3311e25395a4f11c1547201d4"
+        },
+        "feasible_set": [
+          "deploy>inspect>stage",
+          "inspect>deploy>stage",
+          "inspect>stage>deploy"
+        ],
+        "feasible_set_hash": "88bbbf186da2ceea19f2e9291ff259d29463f723b7060855138e60c3af933d24",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
+        "option_ids": [
+          "deploy>inspect>stage",
+          "deploy>stage>inspect",
+          "inspect>deploy>stage",
+          "inspect>stage>deploy",
+          "stage>deploy>inspect",
+          "stage>inspect>deploy"
+        ],
+        "request_body_hash": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+        "state_hash": "a17effa76523c7d362f1d294eb6e4d62ed4a4029cbf0f402acab5c18e3b1ba93",
+        "target_id": "inspect>stage>deploy"
+      },
+      "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+      "real": {
+        "claim": "precedes=stage>deploy",
+        "exposure_ids": [
+          "turn-1"
+        ],
+        "i_m_bits": 1.584962500721156,
+        "informative_verified": true,
+        "message_id": "message-B-0",
+        "ownership_verified": true,
+        "reader_id": "A",
+        "write_sequence": 0,
+        "writer_id": "B"
+      }
+    },
+    {
+      "event_id": "planning-00012501:message-B-0",
+      "instance_id": "planning-00012501",
+      "placebo": {
+        "claim": "precedes=deploy>stage",
+        "construction": "controller-injected source-neutral re-presentation of a receiver-already-known pre-read clue, using the same envelope as the real arm",
+        "envelope": "peer_clue: {claim}",
+        "i_m_bits": 0.0,
+        "inert_verified": true,
+        "origin": "controller",
+        "receiver_known": true,
+        "synthetic": true
+      },
+      "pre_read": {
+        "branch_request_hashes": {
+          "null": "18dd37414d6520f105eda97465f3b39799173783b77f1e952f6689374ca9fa57",
+          "placebo": "924b0f7f3d908f30105cac401aa67b63e876c13db020d14f7297812e195cccf5",
+          "real": "a01fd1f594b6989dab236a01224c642ebd338a8b6267e74839a5ecce70930617"
+        },
+        "feasible_set": [
+          "deploy>inspect>stage",
+          "deploy>stage>inspect",
+          "inspect>deploy>stage"
+        ],
+        "feasible_set_hash": "4dc5cab22953857aa93036b0d367c932f582c4fd486a67a9cb0a64cd3f30eff8",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
+        "option_ids": [
+          "deploy>inspect>stage",
+          "deploy>stage>inspect",
+          "inspect>deploy>stage",
+          "inspect>stage>deploy",
+          "stage>deploy>inspect",
+          "stage>inspect>deploy"
+        ],
+        "request_body_hash": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+        "state_hash": "9027512e3e6387711d4fa410abf5ef0add193f142ee63c577897088455085e79",
+        "target_id": "deploy>stage>inspect"
+      },
+      "prompt_form_id": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+      "real": {
+        "claim": "precedes=stage>inspect",
+        "exposure_ids": [
+          "turn-1"
+        ],
+        "i_m_bits": 1.584962500721156,
+        "informative_verified": true,
+        "message_id": "message-B-0",
+        "ownership_verified": true,
+        "reader_id": "A",
+        "write_sequence": 0,
+        "writer_id": "B"
+      }
+    },
+    {
+      "event_id": "planning-00012502:message-B-1",
+      "instance_id": "planning-00012502",
+      "placebo": {
+        "claim": "precedes=inspect>stage",
+        "construction": "controller-injected source-neutral re-presentation of a receiver-already-known pre-read clue, using the same envelope as the real arm",
+        "envelope": "peer_clue: {claim}",
+        "i_m_bits": 0.0,
+        "inert_verified": true,
+        "origin": "controller",
+        "receiver_known": true,
+        "synthetic": true
+      },
+      "pre_read": {
+        "branch_request_hashes": {
+          "null": "47c58af68377f6ac46c557f02f49a7e52d4f5231afccc7157a2fb2f4ed47351c",
+          "placebo": "e1304318c4a4aef958ebcf90a4f84bfe47f851a9e7e08e6071a76e2a6c6963d5",
+          "real": "b6389212557f6b98432682646d98a388323c84a3311e25395a4f11c1547201d4"
+        },
+        "feasible_set": [
+          "deploy>inspect>stage",
+          "inspect>deploy>stage",
+          "inspect>stage>deploy"
+        ],
+        "feasible_set_hash": "88bbbf186da2ceea19f2e9291ff259d29463f723b7060855138e60c3af933d24",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
+        "option_ids": [
+          "deploy>inspect>stage",
+          "deploy>stage>inspect",
+          "inspect>deploy>stage",
+          "inspect>stage>deploy",
+          "stage>deploy>inspect",
+          "stage>inspect>deploy"
+        ],
+        "request_body_hash": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+        "state_hash": "a17effa76523c7d362f1d294eb6e4d62ed4a4029cbf0f402acab5c18e3b1ba93",
+        "target_id": "inspect>stage>deploy"
+      },
+      "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+      "real": {
+        "claim": "precedes=stage>deploy",
+        "exposure_ids": [
+          "jev-finalizer"
+        ],
+        "i_m_bits": 1.584962500721156,
+        "informative_verified": true,
+        "message_id": "message-B-1",
+        "ownership_verified": true,
+        "reader_id": "A",
+        "write_sequence": 0,
+        "writer_id": "B"
+      }
+    },
+    {
+      "event_id": "planning-00012503:message-B-1",
+      "instance_id": "planning-00012503",
+      "placebo": {
+        "claim": "precedes=deploy>inspect",
+        "construction": "controller-injected source-neutral re-presentation of a receiver-already-known pre-read clue, using the same envelope as the real arm",
+        "envelope": "peer_clue: {claim}",
+        "i_m_bits": 0.0,
+        "inert_verified": true,
+        "origin": "controller",
+        "receiver_known": true,
+        "synthetic": true
+      },
+      "pre_read": {
+        "branch_request_hashes": {
+          "null": "40f9a6c24d02149c02ca0acf7e3d057d56194c9c8e6a0b367fa7e6afee6a3804",
+          "placebo": "8c272dbc110ce157367c3b81156f36ca8b7bda7df476c1eb3fef982630beb8b4",
+          "real": "2fe01f843d13b21a6fb09230ec13f3e06d971572c7da9c08b0ca46f461bdb600"
+        },
+        "feasible_set": [
+          "deploy>inspect>stage",
+          "deploy>stage>inspect",
+          "stage>deploy>inspect"
+        ],
+        "feasible_set_hash": "827b820bd493b7f88bd059ee9575876b138f3b07dd3ff634659a4a8a6d2e9897",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
+        "option_ids": [
+          "deploy>inspect>stage",
+          "deploy>stage>inspect",
+          "inspect>deploy>stage",
+          "inspect>stage>deploy",
+          "stage>deploy>inspect",
+          "stage>inspect>deploy"
+        ],
+        "request_body_hash": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+        "state_hash": "e265c5cfe34f80606fb5d0ec14d930b5251d6e5ad0056ba12b7d3c989c8d3822",
+        "target_id": "deploy>inspect>stage"
+      },
+      "prompt_form_id": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "real": {
+        "claim": "precedes=inspect>stage",
+        "exposure_ids": [
+          "jev-finalizer"
+        ],
+        "i_m_bits": 1.584962500721156,
+        "informative_verified": true,
+        "message_id": "message-B-1",
+        "ownership_verified": true,
+        "reader_id": "A",
+        "write_sequence": 0,
+        "writer_id": "B"
+      }
+    },
+    {
+      "event_id": "planning-00012504:message-B-1",
+      "instance_id": "planning-00012504",
+      "placebo": {
+        "claim": "precedes=deploy>stage",
+        "construction": "controller-injected source-neutral re-presentation of a receiver-already-known pre-read clue, using the same envelope as the real arm",
+        "envelope": "peer_clue: {claim}",
+        "i_m_bits": 0.0,
+        "inert_verified": true,
+        "origin": "controller",
+        "receiver_known": true,
+        "synthetic": true
+      },
+      "pre_read": {
+        "branch_request_hashes": {
+          "null": "18dd37414d6520f105eda97465f3b39799173783b77f1e952f6689374ca9fa57",
+          "placebo": "924b0f7f3d908f30105cac401aa67b63e876c13db020d14f7297812e195cccf5",
+          "real": "a01fd1f594b6989dab236a01224c642ebd338a8b6267e74839a5ecce70930617"
+        },
+        "feasible_set": [
+          "deploy>inspect>stage",
+          "deploy>stage>inspect",
+          "inspect>deploy>stage"
+        ],
+        "feasible_set_hash": "4dc5cab22953857aa93036b0d367c932f582c4fd486a67a9cb0a64cd3f30eff8",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
+        "option_ids": [
+          "deploy>inspect>stage",
+          "deploy>stage>inspect",
+          "inspect>deploy>stage",
+          "inspect>stage>deploy",
+          "stage>deploy>inspect",
+          "stage>inspect>deploy"
+        ],
+        "request_body_hash": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+        "state_hash": "9027512e3e6387711d4fa410abf5ef0add193f142ee63c577897088455085e79",
+        "target_id": "deploy>stage>inspect"
+      },
+      "prompt_form_id": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+      "real": {
+        "claim": "precedes=stage>inspect",
+        "exposure_ids": [
+          "jev-finalizer"
+        ],
+        "i_m_bits": 1.584962500721156,
+        "informative_verified": true,
+        "message_id": "message-B-1",
+        "ownership_verified": true,
+        "reader_id": "A",
+        "write_sequence": 0,
+        "writer_id": "B"
+      }
+    },
+    {
+      "event_id": "planning-00012507:message-B-0",
+      "instance_id": "planning-00012507",
+      "placebo": {
+        "claim": "precedes=stage>inspect",
+        "construction": "controller-injected source-neutral re-presentation of a receiver-already-known pre-read clue, using the same envelope as the real arm",
+        "envelope": "peer_clue: {claim}",
+        "i_m_bits": 0.0,
+        "inert_verified": true,
+        "origin": "controller",
+        "receiver_known": true,
+        "synthetic": true
+      },
+      "pre_read": {
+        "branch_request_hashes": {
+          "null": "9c148bc03b18fc5f4c0e9125e96be06048c024f1bb6d666400b2f298a060c786",
+          "placebo": "9698777edee9d94ddb88b27e004d42e6616e089902542fa7cadd1024a80688dc",
+          "real": "9767cd295972b8e62b1b295f7eaf38ffd3ed66e31cd4569283a7bfe91f8b02dd"
+        },
+        "feasible_set": [
+          "deploy>stage>inspect",
+          "stage>deploy>inspect",
+          "stage>inspect>deploy"
+        ],
+        "feasible_set_hash": "def96d021e4beb68fcd0b3496856047cf19c1ecaa0be0cc5b2b8210075c532ad",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
+        "option_ids": [
+          "deploy>inspect>stage",
+          "deploy>stage>inspect",
+          "inspect>deploy>stage",
+          "inspect>stage>deploy",
+          "stage>deploy>inspect",
+          "stage>inspect>deploy"
+        ],
+        "request_body_hash": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+        "state_hash": "818a5924bc275d822c78cca0aec38b2de78f25d682cc57ab920ef1606e7eb685",
+        "target_id": "stage>inspect>deploy"
+      },
+      "prompt_form_id": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+      "real": {
+        "claim": "precedes=inspect>deploy",
+        "exposure_ids": [
+          "turn-1"
+        ],
+        "i_m_bits": 1.584962500721156,
+        "informative_verified": true,
+        "message_id": "message-B-0",
+        "ownership_verified": true,
+        "reader_id": "A",
+        "write_sequence": 0,
+        "writer_id": "B"
+      }
+    },
+    {
+      "event_id": "planning-0001250d:message-B-1",
+      "instance_id": "planning-0001250d",
+      "placebo": {
+        "claim": "precedes=deploy>stage",
+        "construction": "controller-injected source-neutral re-presentation of a receiver-already-known pre-read clue, using the same envelope as the real arm",
+        "envelope": "peer_clue: {claim}",
+        "i_m_bits": 0.0,
+        "inert_verified": true,
+        "origin": "controller",
+        "receiver_known": true,
+        "synthetic": true
+      },
+      "pre_read": {
+        "branch_request_hashes": {
+          "null": "18dd37414d6520f105eda97465f3b39799173783b77f1e952f6689374ca9fa57",
+          "placebo": "924b0f7f3d908f30105cac401aa67b63e876c13db020d14f7297812e195cccf5",
+          "real": "a01fd1f594b6989dab236a01224c642ebd338a8b6267e74839a5ecce70930617"
+        },
+        "feasible_set": [
+          "deploy>inspect>stage",
+          "deploy>stage>inspect",
+          "inspect>deploy>stage"
+        ],
+        "feasible_set_hash": "4dc5cab22953857aa93036b0d367c932f582c4fd486a67a9cb0a64cd3f30eff8",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
+        "option_ids": [
+          "deploy>inspect>stage",
+          "deploy>stage>inspect",
+          "inspect>deploy>stage",
+          "inspect>stage>deploy",
+          "stage>deploy>inspect",
+          "stage>inspect>deploy"
+        ],
+        "request_body_hash": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+        "state_hash": "9027512e3e6387711d4fa410abf5ef0add193f142ee63c577897088455085e79",
+        "target_id": "deploy>stage>inspect"
+      },
+      "prompt_form_id": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+      "real": {
+        "claim": "precedes=stage>inspect",
+        "exposure_ids": [
+          "jev-finalizer"
+        ],
+        "i_m_bits": 1.584962500721156,
+        "informative_verified": true,
+        "message_id": "message-B-1",
+        "ownership_verified": true,
+        "reader_id": "A",
+        "write_sequence": 0,
+        "writer_id": "B"
+      }
+    },
+    {
+      "event_id": "planning-0001250e:message-B-1",
+      "instance_id": "planning-0001250e",
+      "placebo": {
+        "claim": "precedes=deploy>stage",
+        "construction": "controller-injected source-neutral re-presentation of a receiver-already-known pre-read clue, using the same envelope as the real arm",
+        "envelope": "peer_clue: {claim}",
+        "i_m_bits": 0.0,
+        "inert_verified": true,
+        "origin": "controller",
+        "receiver_known": true,
+        "synthetic": true
+      },
+      "pre_read": {
+        "branch_request_hashes": {
+          "null": "18dd37414d6520f105eda97465f3b39799173783b77f1e952f6689374ca9fa57",
+          "placebo": "924b0f7f3d908f30105cac401aa67b63e876c13db020d14f7297812e195cccf5",
+          "real": "a01fd1f594b6989dab236a01224c642ebd338a8b6267e74839a5ecce70930617"
+        },
+        "feasible_set": [
+          "deploy>inspect>stage",
+          "deploy>stage>inspect",
+          "inspect>deploy>stage"
+        ],
+        "feasible_set_hash": "4dc5cab22953857aa93036b0d367c932f582c4fd486a67a9cb0a64cd3f30eff8",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
+        "option_ids": [
+          "deploy>inspect>stage",
+          "deploy>stage>inspect",
+          "inspect>deploy>stage",
+          "inspect>stage>deploy",
+          "stage>deploy>inspect",
+          "stage>inspect>deploy"
+        ],
+        "request_body_hash": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+        "state_hash": "9027512e3e6387711d4fa410abf5ef0add193f142ee63c577897088455085e79",
+        "target_id": "deploy>stage>inspect"
+      },
+      "prompt_form_id": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+      "real": {
+        "claim": "precedes=stage>inspect",
+        "exposure_ids": [
+          "jev-finalizer"
+        ],
+        "i_m_bits": 1.584962500721156,
+        "informative_verified": true,
+        "message_id": "message-B-1",
+        "ownership_verified": true,
+        "reader_id": "A",
+        "write_sequence": 0,
+        "writer_id": "B"
+      }
+    },
+    {
+      "event_id": "planning-0001250f:message-B-0",
+      "instance_id": "planning-0001250f",
+      "placebo": {
+        "claim": "precedes=stage>deploy",
+        "construction": "controller-injected source-neutral re-presentation of a receiver-already-known pre-read clue, using the same envelope as the real arm",
+        "envelope": "peer_clue: {claim}",
+        "i_m_bits": 0.0,
+        "inert_verified": true,
+        "origin": "controller",
+        "receiver_known": true,
+        "synthetic": true
+      },
+      "pre_read": {
+        "branch_request_hashes": {
+          "null": "6f4fa879d50f221c6a4cf4f55d256518c1e3d800ed79ecaefc8898d9fbbc900a",
+          "placebo": "a124e103d1bf3dacddfd0579c077019c5edc57900c7b1d5451f856d099ea922b",
+          "real": "bbcd959a4d0316c1336d4c7a39a7df60c70a5e869d75f7ebc8f13495fa5858b8"
+        },
+        "feasible_set": [
+          "inspect>stage>deploy",
+          "stage>deploy>inspect",
+          "stage>inspect>deploy"
+        ],
+        "feasible_set_hash": "9d0b330822f2421371538c171e68ba41e4184289d83f9a0cb765cd85f49c4283",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
+        "option_ids": [
+          "deploy>inspect>stage",
+          "deploy>stage>inspect",
+          "inspect>deploy>stage",
+          "inspect>stage>deploy",
+          "stage>deploy>inspect",
+          "stage>inspect>deploy"
+        ],
+        "request_body_hash": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+        "state_hash": "59d4afa3c27653c49de759f04c5d6bf9cd443498d1ba4fddfa2493c41f0db9aa",
+        "target_id": "stage>deploy>inspect"
+      },
+      "prompt_form_id": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+      "real": {
+        "claim": "precedes=deploy>inspect",
+        "exposure_ids": [
+          "turn-1"
+        ],
+        "i_m_bits": 1.584962500721156,
+        "informative_verified": true,
+        "message_id": "message-B-0",
+        "ownership_verified": true,
+        "reader_id": "A",
+        "write_sequence": 0,
+        "writer_id": "B"
+      }
+    },
+    {
+      "event_id": "planning-00012511:message-B-0",
+      "instance_id": "planning-00012511",
+      "placebo": {
+        "claim": "precedes=deploy>inspect",
+        "construction": "controller-injected source-neutral re-presentation of a receiver-already-known pre-read clue, using the same envelope as the real arm",
+        "envelope": "peer_clue: {claim}",
+        "i_m_bits": 0.0,
+        "inert_verified": true,
+        "origin": "controller",
+        "receiver_known": true,
+        "synthetic": true
+      },
+      "pre_read": {
+        "branch_request_hashes": {
+          "null": "40f9a6c24d02149c02ca0acf7e3d057d56194c9c8e6a0b367fa7e6afee6a3804",
+          "placebo": "8c272dbc110ce157367c3b81156f36ca8b7bda7df476c1eb3fef982630beb8b4",
+          "real": "2fe01f843d13b21a6fb09230ec13f3e06d971572c7da9c08b0ca46f461bdb600"
+        },
+        "feasible_set": [
+          "deploy>inspect>stage",
+          "deploy>stage>inspect",
+          "stage>deploy>inspect"
+        ],
+        "feasible_set_hash": "827b820bd493b7f88bd059ee9575876b138f3b07dd3ff634659a4a8a6d2e9897",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
+        "option_ids": [
+          "deploy>inspect>stage",
+          "deploy>stage>inspect",
+          "inspect>deploy>stage",
+          "inspect>stage>deploy",
+          "stage>deploy>inspect",
+          "stage>inspect>deploy"
+        ],
+        "request_body_hash": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+        "state_hash": "e265c5cfe34f80606fb5d0ec14d930b5251d6e5ad0056ba12b7d3c989c8d3822",
+        "target_id": "deploy>inspect>stage"
+      },
+      "prompt_form_id": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "real": {
+        "claim": "precedes=inspect>stage",
+        "exposure_ids": [
+          "turn-1"
+        ],
+        "i_m_bits": 1.584962500721156,
+        "informative_verified": true,
+        "message_id": "message-B-0",
+        "ownership_verified": true,
+        "reader_id": "A",
+        "write_sequence": 0,
+        "writer_id": "B"
+      }
+    },
+    {
+      "event_id": "planning-00012517:message-B-1",
+      "instance_id": "planning-00012517",
+      "placebo": {
+        "claim": "precedes=stage>deploy",
+        "construction": "controller-injected source-neutral re-presentation of a receiver-already-known pre-read clue, using the same envelope as the real arm",
+        "envelope": "peer_clue: {claim}",
+        "i_m_bits": 0.0,
+        "inert_verified": true,
+        "origin": "controller",
+        "receiver_known": true,
+        "synthetic": true
+      },
+      "pre_read": {
+        "branch_request_hashes": {
+          "null": "6f4fa879d50f221c6a4cf4f55d256518c1e3d800ed79ecaefc8898d9fbbc900a",
+          "placebo": "a124e103d1bf3dacddfd0579c077019c5edc57900c7b1d5451f856d099ea922b",
+          "real": "bbcd959a4d0316c1336d4c7a39a7df60c70a5e869d75f7ebc8f13495fa5858b8"
+        },
+        "feasible_set": [
+          "inspect>stage>deploy",
+          "stage>deploy>inspect",
+          "stage>inspect>deploy"
+        ],
+        "feasible_set_hash": "9d0b330822f2421371538c171e68ba41e4184289d83f9a0cb765cd85f49c4283",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
+        "option_ids": [
+          "deploy>inspect>stage",
+          "deploy>stage>inspect",
+          "inspect>deploy>stage",
+          "inspect>stage>deploy",
+          "stage>deploy>inspect",
+          "stage>inspect>deploy"
+        ],
+        "request_body_hash": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+        "state_hash": "59d4afa3c27653c49de759f04c5d6bf9cd443498d1ba4fddfa2493c41f0db9aa",
+        "target_id": "stage>deploy>inspect"
+      },
+      "prompt_form_id": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+      "real": {
+        "claim": "precedes=deploy>inspect",
+        "exposure_ids": [
+          "jev-finalizer"
+        ],
+        "i_m_bits": 1.584962500721156,
+        "informative_verified": true,
+        "message_id": "message-B-1",
+        "ownership_verified": true,
+        "reader_id": "A",
+        "write_sequence": 0,
+        "writer_id": "B"
+      }
+    },
+    {
+      "event_id": "planning-0001251b:message-B-1",
+      "instance_id": "planning-0001251b",
+      "placebo": {
+        "claim": "precedes=stage>deploy",
+        "construction": "controller-injected source-neutral re-presentation of a receiver-already-known pre-read clue, using the same envelope as the real arm",
+        "envelope": "peer_clue: {claim}",
+        "i_m_bits": 0.0,
+        "inert_verified": true,
+        "origin": "controller",
+        "receiver_known": true,
+        "synthetic": true
+      },
+      "pre_read": {
+        "branch_request_hashes": {
+          "null": "6f4fa879d50f221c6a4cf4f55d256518c1e3d800ed79ecaefc8898d9fbbc900a",
+          "placebo": "a124e103d1bf3dacddfd0579c077019c5edc57900c7b1d5451f856d099ea922b",
+          "real": "bbcd959a4d0316c1336d4c7a39a7df60c70a5e869d75f7ebc8f13495fa5858b8"
+        },
+        "feasible_set": [
+          "inspect>stage>deploy",
+          "stage>deploy>inspect",
+          "stage>inspect>deploy"
+        ],
+        "feasible_set_hash": "9d0b330822f2421371538c171e68ba41e4184289d83f9a0cb765cd85f49c4283",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
+        "option_ids": [
+          "deploy>inspect>stage",
+          "deploy>stage>inspect",
+          "inspect>deploy>stage",
+          "inspect>stage>deploy",
+          "stage>deploy>inspect",
+          "stage>inspect>deploy"
+        ],
+        "request_body_hash": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+        "state_hash": "59d4afa3c27653c49de759f04c5d6bf9cd443498d1ba4fddfa2493c41f0db9aa",
+        "target_id": "stage>deploy>inspect"
+      },
+      "prompt_form_id": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222",
+      "real": {
+        "claim": "precedes=deploy>inspect",
+        "exposure_ids": [
+          "jev-finalizer"
+        ],
+        "i_m_bits": 1.584962500721156,
+        "informative_verified": true,
+        "message_id": "message-B-1",
+        "ownership_verified": true,
+        "reader_id": "A",
+        "write_sequence": 0,
+        "writer_id": "B"
+      }
+    },
+    {
+      "event_id": "planning-0001251c:message-B-1",
+      "instance_id": "planning-0001251c",
+      "placebo": {
+        "claim": "precedes=inspect>deploy",
+        "construction": "controller-injected source-neutral re-presentation of a receiver-already-known pre-read clue, using the same envelope as the real arm",
+        "envelope": "peer_clue: {claim}",
+        "i_m_bits": 0.0,
+        "inert_verified": true,
+        "origin": "controller",
+        "receiver_known": true,
+        "synthetic": true
+      },
+      "pre_read": {
+        "branch_request_hashes": {
+          "null": "2ba516131bdb635c3fe972dbe2c017fd512bbd2727c054eb84bc8530cab403c1",
+          "placebo": "19a874fd9161a33ee8f354b0d2c6b101296b059979f734d84960987b632f0ef2",
+          "real": "6b749cac3152ab2a9906d32a128414219ee73c96933b2acec0995c1ce7e0a455"
+        },
+        "feasible_set": [
+          "inspect>deploy>stage",
+          "inspect>stage>deploy",
+          "stage>inspect>deploy"
+        ],
+        "feasible_set_hash": "925a9647b3478fce359b9db3392a6ceb8c43b11803a693590de20ec5484ee79b",
+        "feasible_set_source": "authoritative receiver-A pre-read private_solutions equals the clue-consistent pre-read set",
+        "feasible_set_verified": true,
+        "option_ids": [
+          "deploy>inspect>stage",
+          "deploy>stage>inspect",
+          "inspect>deploy>stage",
+          "inspect>stage>deploy",
+          "stage>deploy>inspect",
+          "stage>inspect>deploy"
+        ],
+        "request_body_hash": "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+        "state_hash": "33ee49de327d5955b18a565f5b3c66e9fbe90978e0fc1f52305918b7431cfc4c",
+        "target_id": "inspect>deploy>stage"
+      },
+      "prompt_form_id": "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+      "real": {
+        "claim": "precedes=deploy>stage",
+        "exposure_ids": [
+          "jev-finalizer"
+        ],
+        "i_m_bits": 1.584962500721156,
+        "informative_verified": true,
+        "message_id": "message-B-1",
+        "ownership_verified": true,
+        "reader_id": "A",
+        "write_sequence": 0,
+        "writer_id": "B"
+      }
+    }
+  ],
+  "execution_policy": {
+    "immediate_terminal_stops": [
+      "request cap or cost cap before the next call",
+      "model drift",
+      "protocol-key drift",
+      "request/state/option identity drift",
+      "malformed or non-finite/negative/option-mismatched vectors",
+      "hard normalization deviation above 0.05",
+      "argmax shift after normalization",
+      "output collision",
+      "registration or source/treatment hash drift"
+    ],
+    "journal": {
+      "branch_order_persistence": "both planned and actual branch order are persisted per row and per event; a runner must fail closed if actual execution order differs from the frozen branch_schedule",
+      "duplicate_key_policy": "fail closed",
+      "durability": "append, flush, and fsync after every logical branch outcome",
+      "kind": "append-only branch-attempt journal",
+      "partial_triplets": "partial triplets must remain observable rather than being lost",
+      "report_grouping": "the final report groups branch rows into event-level real/placebo/null records for the registered replay validator and inference",
+      "row_fields": [
+        "planned_branch_position",
+        "actual_branch_position",
+        "request_hash",
+        "state_hash",
+        "protocol_key",
+        "resolved_model",
+        "physical_attempts",
+        "vector and normalization diagnostics",
+        "validity",
+        "usage",
+        "error_class",
+        "cap counters"
+      ],
+      "row_unit": "one durable row per logical (event_id, branch) execution",
+      "unique_key": [
+        "event_id",
+        "branch"
+      ]
+    },
+    "nonterminal_invalidity": {
+      "band": "an accepted transport response outside the primary normalization band but within the registered suspect sensitivity band",
+      "policy": "recorded invalid with its safe raw diagnostics retained; never reinterpreted as valid; continue unless a registered terminal rule applies"
+    },
+    "output_lifecycle": {
+      "append_to_prior_replay_artifacts": false,
+      "automatic_resume": false,
+      "credentials_retained": false,
+      "fresh_execution_after_partial_run": "a fresh execution after a partial/stopped run requires a new review and explicit authorization",
+      "overwrite": false,
+      "raw_provider_envelopes_retained": false
+    },
+    "per_branch": {
+      "complete_pair": "an event is a primary complete pair only when real and placebo are both valid",
+      "cost_reservation": "reserve the registered retry-inclusive worst-case next-call cost (0.001032192 USD) before each logical branch",
+      "cost_reservation_usd": 0.001032192,
+      "imputation": "none",
+      "nonterminal_invalid": "a nonterminal invalid branch is journaled and does not cause the remaining branches in that event to be skipped",
+      "null_validity": "reported separately and not required for the primary real/placebo pair",
+      "physical_attempts_include_retries": true,
+      "retries": "registered retryable transport statuses only, maximum two"
+    },
+    "preflight": [
+      "exact reviewed registration hash and repository-backed verification",
+      "exact event and branch-order manifests",
+      "model, endpoint, codec, protocol key, retry and normalization settings",
+      "request, state, option and treatment hashes",
+      "credentials present but never printed or retained",
+      "registered journal/report paths absent",
+      "enforced request and cost caps",
+      "no provider call before every preflight check passes"
+    ],
+    "provider_failures": {
+      "consecutive_terminal_failure_stop": 2,
+      "reset": "the consecutive-failure count resets after a successful valid response",
+      "retention": "never retain response bodies or credentials",
+      "retry_exhaustion": "record a sanitized invalid branch row"
+    },
+    "stopping_report": "stopping preserves a partial report with planned/attempted/valid/invalid/unattempted counts by branch, event, and form"
+  },
+  "forms": {
+    "covered_form_ids": [
+      "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee",
+      "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+      "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c",
+      "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569",
+      "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb",
+      "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222"
+    ],
+    "distribution_order": "sorted prompt_form_id order",
+    "expected_distribution": [
+      1,
+      4,
+      4,
+      1,
+      4,
+      3
+    ],
+    "form_event_counts": {
+      "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee": 1,
+      "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc": 4,
+      "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c": 4,
+      "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569": 1,
+      "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb": 4,
+      "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222": 3
+    },
+    "form_manifest_hash": "fb061b7a956ff953f15851e89d79aa6da149a78300164ffa7e493505fc8c96ea",
+    "form_membership": {
+      "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee": [
+        "planning-00012507:message-B-0"
+      ],
+      "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc": [
+        "planning-000124f8:message-B-1",
+        "planning-000124fb:message-B-0",
+        "planning-000124fe:message-B-0",
+        "planning-00012502:message-B-1"
+      ],
+      "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c": [
+        "planning-00012501:message-B-0",
+        "planning-00012504:message-B-1",
+        "planning-0001250d:message-B-1",
+        "planning-0001250e:message-B-1"
+      ],
+      "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569": [
+        "planning-0001251c:message-B-1"
+      ],
+      "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb": [
+        "planning-000124f9:message-B-0",
+        "planning-000124fc:message-B-0",
+        "planning-00012503:message-B-1",
+        "planning-00012511:message-B-0"
+      ],
+      "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222": [
+        "planning-0001250f:message-B-0",
+        "planning-00012517:message-B-1",
+        "planning-0001251b:message-B-1"
+      ]
+    },
+    "k": 6
+  },
+  "guards": {
+    "feasible_set_mass_epsilon": 0.01,
+    "formulas": {
+      "computation_rule": "compute all metrics only from the accepted normalized vector",
+      "delta_feasible_mass_i": "mass_SA(real_i) - mass_SA(placebo_i)",
+      "delta_p_target_i": "p_target(real_i) - p_target(placebo_i)",
+      "mass_SA": "sum of the normalized Choice probabilities over the frozen authoritative pre-read feasible_set for receiver A",
+      "mass_ok_i": "delta_feasible_mass_i >= -0.01",
+      "reporting_rule": "report guard values per event and aggregate them within form; guards never remove an otherwise valid real/placebo pair from the primary entropy estimate; entropy reduction alone is never called useful uptake when either guard fails; null remains excluded from these primary real-versus-placebo guards",
+      "target_ok_i": "delta_p_target_i >= 0.0",
+      "useful_uptake_i": "(H_real_i - H_placebo_i < 0) and target_ok_i and mass_ok_i"
+    },
+    "reference_set": "the frozen authoritative pre-read feasible_set for receiver A, stored and hashed per event",
+    "reporting": "reported separately by form and event; never used to filter the primary entropy estimate",
+    "target_probability_delta": 0.0,
+    "useful_uptake_rule": "an entropy reduction alone must never be labeled useful uptake if the target-probability guard fails"
+  },
+  "inference": {
+    "direction_requirement": "the observed equal-form mean must be negative",
+    "interval": "form-mean t interval with df = 5",
+    "min_two_sided_p_k5": 0.0625,
+    "min_two_sided_p_k5_expression": "2/32",
+    "min_two_sided_p_k6": 0.03125,
+    "min_two_sided_p_k6_expression": "2/64",
+    "primary_test": "exhaustive two-sided cluster sign-flip over the six form means",
+    "prohibited_as_primary": [
+      "instance-level t-test",
+      "instance-level Wilcoxon test",
+      "treating the 17 events as independent states"
+    ],
+    "report": [
+      "the sign-flip p-value",
+      "the form-mean t interval"
+    ]
+  },
+  "issue": "#159",
+  "limitations": {
+    "conditional_on": [
+      "the six frozen planning-low prompt forms",
+      "the paid Ling route that generated the messages"
+    ],
+    "k_cap": "k is capped at six by the generator's closed form space; fresh instance IDs cannot increase k",
+    "mde_context": "the planning-context approximate detectable-effect / confidence-interval limitation is about 0.203 bits (t(0.975,5) x 0.1933 / sqrt(6))",
+    "mde_or_ci_bits": 0.203,
+    "null_result": "a null result cannot exclude effects smaller than roughly 0.2 bits"
+  },
+  "live_collection_authorized": false,
+  "lock_is_not_live_authorization": true,
+  "message_wording_hash": "268425b3d4bcb5d3a8a30eb52d87a0165e0f2d4c0931eb685adc1c8f21a87f41",
+  "missingness": {
+    "below_five_forms": "replay-coverage failure",
+    "complete_pair": "a primary event pair is complete only when real and placebo are both valid",
+    "five_form_fallback": "interval-only descriptive reporting; a two-sided sign-flip p below 0.05 is forbidden; no causal gate is released",
+    "imputation": "never impute missing pairs",
+    "primary_requirement": "at least one complete real/placebo pair in every one of the six frozen forms",
+    "report": "planned, attempted, valid, invalid and complete pairs by branch and by form",
+    "target": "retain all 17 events"
+  },
+  "model_and_protocol": {
+    "backoff": {
+      "initial_seconds": 2.0,
+      "jitter": 0.25,
+      "max_seconds": 10.0
+    },
+    "codec_version": "jev-choice-wire-v2",
+    "endpoint": "https://api.typesafe.ai/v1/systemone",
+    "max_retries": 2,
+    "model": "jev-1.13.0",
+    "normalization_mode": "normalize-all-accepted-vectors (capture-then-judge)",
+    "normalization_policy": {
+      "capture_then_judge": true,
+      "codec_version": "jev-choice-wire-v2",
+      "diagnostics_fields": [
+        "option_count",
+        "raw_probability_sum",
+        "signed_normalization_deviation",
+        "absolute_normalization_deviation",
+        "minimum_probability",
+        "maximum_probability",
+        "zero_count",
+        "all_finite",
+        "all_nonnegative",
+        "shape_valid",
+        "invalid_classes",
+        "raw_argmax_set",
+        "normalization_tier",
+        "renormalized",
+        "argmax_preserved",
+        "normalization_adjustment",
+        "entropy_raw_bits",
+        "entropy_normalized_bits"
+      ],
+      "hard_ceiling": 0.05,
+      "invalidity": {
+        "exact_option_identity_required": true,
+        "malformed_envelope_may_lack_vector": true,
+        "never_repaired": [
+          "empty",
+          "missing",
+          "nonnumeric",
+          "non_finite",
+          "negative",
+          "option_mismatched"
+        ],
+        "raw_vector_retained_on_invalid": "when safe (finite); non-finite values are encoded as strings"
+      },
+      "policy_fingerprint": "",
+      "quantization_bound": 0.03,
+      "raw_provider_envelope_retained": false,
+      "raw_vs_normalized_metrics": {
+        "normalized_vector_used_for": [
+          "entropy_bits",
+          "p_target",
+          "feasible_mass",
+          "brier_score",
+          "log_loss",
+          "selection_validation",
+          "downstream_replay_inference"
+        ],
+        "raw_retained_separately": [
+          "raw_probabilities",
+          "raw_probability_sum",
+          "signed_normalization_deviation",
+          "absolute_normalization_deviation"
+        ]
+      },
+      "renormalization": {
+        "applied_to": "every accepted vector (exact and complete_renormalized)",
+        "argmax_preservation_required": true,
+        "exact_tier_rescale": "within 1e-6; usually a numerical no-op but applied for one invariant",
+        "fail_closed_class": "argmax_shifted_on_renormalization",
+        "formula": "p_normalized[i] = p_raw[i] / sum(p_raw)",
+        "material_correction_band": "complete_renormalized"
+      },
+      "sensitivity_grid": [
+        1e-06,
+        0.01,
+        0.03,
+        0.05
+      ],
+      "tiers": {
+        "complete_renormalized": {
+          "boundary_epsilon": 1.7763568394002505e-15,
+          "boundary_inclusive_with_machine_epsilon": true,
+          "material_correction": true,
+          "max_absolute_deviation": 0.01,
+          "min_absolute_deviation_exclusive": 1e-06,
+          "renormalized": true,
+          "valid": true
+        },
+        "exact": {
+          "inclusive": true,
+          "material_correction": false,
+          "max_absolute_deviation": 1e-06,
+          "renormalized": true,
+          "valid": true
+        },
+        "not_normalized_hard": {
+          "min_absolute_deviation_exclusive": 0.05,
+          "renormalized": false,
+          "role": "invalid; triggers the registered hard stop",
+          "valid": false
+        },
+        "not_normalized_suspect": {
+          "max_absolute_deviation": 0.05,
+          "min_absolute_deviation_exclusive": 0.01,
+          "renormalized": false,
+          "role": "sensitivity diagnostic only; not accepted",
+          "valid": false
+        }
+      }
+    },
+    "normalization_policy_hash": "292ac217f1cf54083252e6363a16a48596daab72a8ca06d4569c20f861b7e1e9",
+    "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+    "provider": "jev",
+    "retryable_statuses": [
+      408,
+      429,
+      500,
+      502,
+      503,
+      504,
+      529
+    ]
+  },
+  "operational_policy": {
+    "basis": "the authorized replay-v4 attempt stopped on provider_failure_limit after 2 of 51 branches, each exhausting its 3 registered physical attempts as sanitized transport_error, with 0 tokens and $0.00 cost on the first event; #196 then established that both registered provider routes are reachable on attempt 1",
+    "decisions": {
+      "bounded_pacing": {
+        "applies_to": "retry attempts only; no sleep occurs on the happy path",
+        "decision": "change_bounded",
+        "field": "model_and_protocol.backoff",
+        "from": {
+          "initial_seconds": 0.5,
+          "jitter": 0.25,
+          "max_seconds": 5.0
+        },
+        "previous_window_seconds": 1.5,
+        "rationale": "the v4 schedule allowed at most 0.5 + 1.0 = 1.5 s of backoff across the three physical attempts of one logical call, so the two-consecutive-failure terminal rule can fire after roughly 3 s of registered backoff on the very first event; widening the spacing to 2.0 + 4.0 = 6.0 s (capped at 10 s per backoff) is the minimal change that gives a transient a wider window while altering no count, status, cap or fail-closed rule",
+        "registered_window_per_logical_call_seconds": 6.0,
+        "to": {
+          "initial_seconds": 2.0,
+          "jitter": 0.25,
+          "max_seconds": 10.0
+        },
+        "unchanged": [
+          "retry count",
+          "retryable statuses",
+          "jitter",
+          "timeout",
+          "terminal failure rule",
+          "all caps"
+        ]
+      },
+      "jev_token_budget": {
+        "decision": "preserve",
+        "input_token_ceiling": 8192,
+        "input_usd_per_mtok": 0.042,
+        "rationale": "the stopped run returned zero usage, so no budget evidence exists; the #196 Jev probe used 420 input tokens against the registered 8192 ceiling"
+      },
+      "output_lifecycle": {
+        "decision": "fresh_paths_no_resume",
+        "journal": "runs/epic-126/replay-v5/jev-choice-replay-v5.jsonl",
+        "no_append": true,
+        "no_overwrite": true,
+        "no_path_overrides": true,
+        "no_resume": true,
+        "rationale": "the v4 registered outputs are occupied by a stopped run and v4 policy forbids resume/append/overwrite; any fresh execution needs fresh paths plus a new review and explicit authorization",
+        "report": "runs/epic-126/replay-v5/jev-choice-replay-report-v5.json"
+      },
+      "physical_request_and_cost_caps": {
+        "arithmetic": "0.000344064 x (1 + max_retries 2) = 0.001032192 reserved before each logical branch",
+        "cost_cap_usd": 1.0,
+        "decision": "preserve",
+        "physical_requests": 153,
+        "planned_combined": 51,
+        "planned_jev": 51,
+        "planned_ling": 0,
+        "provider_partition": {
+          "arithmetic": "51 x (1 + registered max_retries 2) = 153 physical Jev attempts (retry-inclusive ceiling)",
+          "jev": 153,
+          "ling": 0,
+          "total": 153
+        },
+        "rationale": "the design and its retry-inclusive arithmetic are unchanged: 51 logical x 3 = 153 physical, reserve 102, worst case $0.052641792 <= $1.00",
+        "retry_reserve": {
+          "max_retries": 2,
+          "physical": 102
+        },
+        "worst_case_cost_usd": 0.052641792,
+        "worst_case_next_call_cost_usd": 0.001032192
+      },
+      "retry_policy": {
+        "decision": "preserve",
+        "max_retries": 2,
+        "physical_attempts_per_logical_call": 3,
+        "rationale": "the registered retry budget was not shown to be wrong: the stop was a transport availability event, and increasing retry counts would raise the physical ceiling without evidence",
+        "retryable_statuses": [
+          408,
+          429,
+          500,
+          502,
+          503,
+          504,
+          529
+        ]
+      },
+      "terminal_failure_rule": {
+        "decision": "preserve",
+        "rationale": "fail-closed by design; weakening the threshold without cause would trade safety for availability",
+        "rule": "stop after two consecutive terminal provider/transport failures; the counter resets only after a valid branch"
+      },
+      "timeout": {
+        "decision": "preserve",
+        "rationale": "the #196 Jev probe returned promptly and produced no timeout evidence; raising it would slow failure detection without cause",
+        "seconds": 30.0
+      }
+    }
+  },
+  "outputs": {
+    "event_source": "runs/epic-126/decisions/jev-v7-coverage-decision.json",
+    "journal": "runs/epic-126/replay-v5/jev-choice-replay-v5.jsonl",
+    "registration": "runs/epic-126/replay-v5/jev-choice-replay-preregistration-v5.json",
+    "report": "runs/epic-126/replay-v5/jev-choice-replay-report-v5.json"
+  },
+  "pending_decisions": [
+    "reviewer acceptance of this v5 lock (offline only)",
+    "a separate explicit live authorization reference citing this registration hash before any replay-v5 run; locking and runner binding are not execution authorization",
+    "the stopped v4 outputs remain occupied and are never resumed, appended or overwritten"
+  ],
+  "preregistration_hash": "0a81e400f598d16742301d7c07cbaf5398fa861b4fa1701c15405391ab4f6d15",
+  "preregistration_version": "stage2-jev-choice-replay-v5",
+  "provenance": {
+    "event_count": 17,
+    "event_source": {
+      "artifact_version": "jev-v7-coverage-decision-v1",
+      "baseline_commit": "cad2c80",
+      "collection_statement": "Fixed N=36 was not completed: collection stopped at case 32 under a registered terminal rule. The v7 block is a registered partial run and cannot be described as a completed fixed-N sample.",
+      "coverage_statement": "Six-form replay coverage passed within a registered partial run; fixed-N collection completeness failed.",
+      "path": "runs/epic-126/decisions/jev-v7-coverage-decision.json",
+      "sha256": "3f45b8bf35ca87fe59d754c8426b256ed76aeab8e94a37881e7a768a1be5431b"
+    },
+    "form_count": 6,
+    "partial_run_note": "the incomplete 32/36 v7 collection is NOT a completed fixed-N sample; this registration consumes its frozen event set as-is",
+    "upstream_registration_content_hash": "f7f7d5742ea3e6a710ed102e6c2a454992abede5c4f51591a9cc447781797565",
+    "upstream_sha256": {
+      "runs/epic-126/jev-coverage-manifest-preregistration-v7.json": "289d83fee5c8fcdc3c1aaa29b104850d696a3d98c32cf291e300dbf89edd5e94",
+      "runs/epic-126/jev-coverage-manifest-report-v7.json": "456515559c65faf976ce1063107a2d4036c7f6d06f0e9bf7e9b1f87b89b1088f",
+      "runs/epic-126/jev-coverage-manifest-v7.jsonl": "23ab961c8f4327a98af821d5457b94f278c1f0993bc027953a86bbc36081ebc5",
+      "runs/epic-126/jev-six-form-coverage-audit-v1.json": "73751bed24776e851f76e63dec427dafc1b458624bc56efdf96612fcfc568dcb",
+      "src/apart_incident_response/jev_six_form_coverage_audit.py": "d97918ce1ebc6b2ab79e51ff29c1b85589ba662d5ebfeae543c8ee87a6e0b6d8",
+      "src/apart_incident_response/task_families.py": "b399bb15c96be98d2c4c7e00012448d9a3df9f1cd7deac0ff1375ecb3e1ea6c4"
+    }
+  },
+  "purpose": "fresh matched real/placebo/null Jev replay registration prepared under #197 after the authorized replay-v4 attempt stopped on provider_failure_limit; scientific content is inherited unchanged from the v4 lock and only lifecycle, supersession, bounded pacing and runner binding differ",
+  "runner_policy": {
+    "adding_runner_authorizes_collection": false,
+    "live_execution_rule": "this registration lock is not live authorization; live execution requires the source-bound runner plus a separate explicit authorization reference citing this registration hash",
+    "policy": "the #197 replay runner is implemented in src/apart_incident_response/jev_replay_runner_v5.py and delegates schedule execution to src/apart_incident_response/jev_replay_runner_v4.py; both are included in V5_SOURCE_FILES and adding the runner does not authorize execution \u2014 live execution still requires a separate explicit authorization",
+    "required_before_live": true,
+    "runner_delegate": {
+      "entrypoint": "src/apart_incident_response/jev_replay_runner_v5.py",
+      "executes_schedule_via": "src/apart_incident_response/jev_replay_runner_v4.py",
+      "note": "v5 owns registration loading, preflight, pacing and report provenance; the reviewed v4 schedule executor, durable branch journal and stop rules are reused unchanged and both modules are source-bound"
+    },
+    "runner_implemented": true,
+    "runner_source_bound": true,
+    "runner_source_files": [
+      "src/apart_incident_response/jev_replay_runner_v5.py",
+      "src/apart_incident_response/jev_replay_runner_v4.py"
+    ],
+    "supersedes_v4_registration": {
+      "note": "v4 lock and its stopped run are superseded, not deleted: preserved byte-for-byte as immutable historical inputs",
+      "path": "runs/epic-126/replay-v4/jev-choice-replay-preregistration-v4.json",
+      "preregistration_hash": "97217b478ee84797c642944732211d563666e11f3c1bd809593da848a1946eb4",
+      "sha256": "5ea64f8218ed1ddabb2cab5a081dea666e686683a2a67ea9a186a9409ea40ee2"
+    }
+  },
+  "sensitivity": {
+    "normalization_thresholds": [
+      1e-06,
+      0.01,
+      0.03,
+      0.05
+    ],
+    "not_implemented": [
+      "hierarchical model",
+      "Wilcoxon on form means"
+    ],
+    "report": [
+      "exact versus materially renormalized rows",
+      "maximum probability adjustment",
+      "maximum induced entropy change",
+      "argmax changes"
+    ],
+    "rule": "secondary sensitivity only; a secondary analysis never overrides the primary result",
+    "secondary_analyses": [
+      "form-cluster bootstrap",
+      "sign test on form means",
+      "instance-weighted mean"
+    ]
+  },
+  "source_files": [
+    "src/apart_incident_response/task_families.py",
+    "src/apart_incident_response/communication_protocol.py",
+    "src/apart_incident_response/finite_information.py",
+    "src/apart_incident_response/jev_choice.py",
+    "src/apart_incident_response/jev_choice_v2.py",
+    "src/apart_incident_response/jev_replay.py",
+    "src/apart_incident_response/jev_replay_inference.py",
+    "src/apart_incident_response/jev_replay_preregistration.py",
+    "src/apart_incident_response/jev_replay_preregistration_v2.py",
+    "src/apart_incident_response/jev_six_form_coverage_audit.py",
+    "src/apart_incident_response/jev_v7_coverage_decision.py",
+    "src/apart_incident_response/jev_replay_preregistration_v4.py",
+    "src/apart_incident_response/jev_replay_runner_v4.py",
+    "src/apart_incident_response/jev_replay_preregistration_v5.py",
+    "src/apart_incident_response/jev_replay_runner_v5.py"
+  ],
+  "source_files_hash": "ac9a36602d65b6cf77d138000343031d9a34728523dbc44d4c60e20c348a7d48",
+  "stage": "planning-low-matched-jev-replay",
+  "status": "locked_for_jev_choice_replay_v5",
+  "successor_of": {
+    "immutable": true,
+    "note": "v1-v4 registrations, journals and reports are immutable historical state: never modified, resumed, appended, pooled with or reinterpreted; v5 uses fresh paths only",
+    "v1": "runs/epic-126/jev-choice-replay-preregistration.json",
+    "v2": "runs/epic-126/jev-choice-replay-preregistration-v2.json",
+    "v3": "runs/epic-126/jev-choice-replay-preregistration-v3.json",
+    "v4": {
+      "preregistration_hash": "97217b478ee84797c642944732211d563666e11f3c1bd809593da848a1946eb4",
+      "registration": "runs/epic-126/replay-v4/jev-choice-replay-preregistration-v4.json",
+      "sha256": "5ea64f8218ed1ddabb2cab5a081dea666e686683a2a67ea9a186a9409ea40ee2",
+      "status": "stopped",
+      "stop_reason": "provider_failure_limit"
+    }
+  },
+  "supersedes": {
+    "journal": {
+      "path": "runs/epic-126/replay-v4/jev-choice-replay-v4.jsonl",
+      "rows": 2,
+      "sha256": "5a870d5f643f3716c70b8350ab19ff256834f9079e6364931661630587b24b62"
+    },
+    "preregistration_hash": "97217b478ee84797c642944732211d563666e11f3c1bd809593da848a1946eb4",
+    "registration": {
+      "path": "runs/epic-126/replay-v4/jev-choice-replay-preregistration-v4.json",
+      "sha256": "5ea64f8218ed1ddabb2cab5a081dea666e686683a2a67ea9a186a9409ea40ee2"
+    },
+    "report": {
+      "path": "runs/epic-126/replay-v4/jev-choice-replay-report-v4.json",
+      "sha256": "71a7f2c401bb67d5db5d0758188531361ae42cd6aedd4de92d3100c727f3a8a2"
+    },
+    "rule": "the v4 registration, journal and report are immutable historical inputs: never resumed, appended, overwritten, pooled, reinterpreted or deleted by v5",
+    "stopped_run": {
+      "approval": "reviewer-approved-2026-09-25-jev-replay-v4-97217b47",
+      "attempted_branches": 2,
+      "error_class": "transport_error on both attempted branches",
+      "estimated_cost_usd": 0.0,
+      "invalid_branches": 2,
+      "physical_attempts_jev": 6,
+      "registration_hash": "97217b478ee84797c642944732211d563666e11f3c1bd809593da848a1946eb4",
+      "status": "stopped",
+      "stop_reason": "provider_failure_limit",
+      "unattempted_branches": 49,
+      "valid_branches": 0
+    },
+    "version": "stage2-jev-choice-replay-v4"
+  },
+  "treatment_hash": "01fbe56287b409f9d340c1b64d6ff7d7a5c1b31630afd473653f8b00bf31817c"
+}
