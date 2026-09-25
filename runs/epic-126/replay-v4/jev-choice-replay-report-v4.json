@@ -1,0 +1,802 @@
+{
+  "analysis": {
+    "claim_limits": [
+      "no instance-level t-test or Wilcoxon; the17 events are replicates within six forms, never independent states",
+      "five-form fallback is interval-only descriptive with sub-0.05 sign-flip forbidden; below five forms is replay-coverage failure",
+      "inference is conditional on the six frozen forms and the paid Ling route that generated the messages"
+    ],
+    "complete_pairs": 0,
+    "events": 17,
+    "form_means_d_i": {},
+    "guards": {
+      "delta": 0.0,
+      "epsilon": 0.01,
+      "filtered_primary_estimate": false,
+      "formulas": {
+        "computation_rule": "compute all metrics only from the accepted normalized vector",
+        "delta_feasible_mass_i": "mass_SA(real_i) - mass_SA(placebo_i)",
+        "delta_p_target_i": "p_target(real_i) - p_target(placebo_i)",
+        "mass_SA": "sum of the normalized Choice probabilities over the frozen authoritative pre-read feasible_set for receiver A",
+        "mass_ok_i": "delta_feasible_mass_i >= -0.01",
+        "reporting_rule": "report guard values per event and aggregate them within form; guards never remove an otherwise valid real/placebo pair from the primary entropy estimate; entropy reduction alone is never called useful uptake when either guard fails; null remains excluded from these primary real-versus-placebo guards",
+        "target_ok_i": "delta_p_target_i >= 0.0",
+        "useful_uptake_i": "(H_real_i - H_placebo_i < 0) and target_ok_i and mass_ok_i"
+      },
+      "per_form": {
+        "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee": {
+          "complete_pairs": 0,
+          "mass_ok": 0,
+          "mean_delta_feasible_mass": null,
+          "mean_delta_p_target": null,
+          "target_ok": 0,
+          "useful_uptake": 0
+        },
+        "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc": {
+          "complete_pairs": 0,
+          "mass_ok": 0,
+          "mean_delta_feasible_mass": null,
+          "mean_delta_p_target": null,
+          "target_ok": 0,
+          "useful_uptake": 0
+        },
+        "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c": {
+          "complete_pairs": 0,
+          "mass_ok": 0,
+          "mean_delta_feasible_mass": null,
+          "mean_delta_p_target": null,
+          "target_ok": 0,
+          "useful_uptake": 0
+        },
+        "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569": {
+          "complete_pairs": 0,
+          "mass_ok": 0,
+          "mean_delta_feasible_mass": null,
+          "mean_delta_p_target": null,
+          "target_ok": 0,
+          "useful_uptake": 0
+        },
+        "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb": {
+          "complete_pairs": 0,
+          "mass_ok": 0,
+          "mean_delta_feasible_mass": null,
+          "mean_delta_p_target": null,
+          "target_ok": 0,
+          "useful_uptake": 0
+        },
+        "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222": {
+          "complete_pairs": 0,
+          "mass_ok": 0,
+          "mean_delta_feasible_mass": null,
+          "mean_delta_p_target": null,
+          "target_ok": 0,
+          "useful_uptake": 0
+        }
+      },
+      "statement": "guards are evaluated and reported per event and within form; they never remove a valid real/placebo pair from the primary entropy estimate, and entropy reduction alone is never useful uptake when either guard fails"
+    },
+    "incomplete_branches": 51,
+    "inference": {
+      "causal_gate_released": false,
+      "form_means": {},
+      "interval": null,
+      "k": 0,
+      "primary_delta": null,
+      "result": "replay_coverage_failure",
+      "sign_flip": {
+        "reported": false
+      },
+      "statement": "fewer than five forms have a complete real/placebo pair: replay-coverage failure"
+    },
+    "missingness": {
+      "complete_pairs_by_form": {
+        "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee": 0,
+        "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc": 0,
+        "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c": 0,
+        "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569": 0,
+        "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb": 0,
+        "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222": 0
+      },
+      "imputation": "none",
+      "planned_pairs": 17
+    },
+    "null_manipulation_checks": {
+      "events_with_real_minus_null": 0,
+      "mean_real_minus_null": null,
+      "scope": "retained for real-minus-null and placebo-minus-null; null excluded from the primary real-versus-placebo contrast"
+    },
+    "per_event": [
+      {
+        "complete_pair": false,
+        "d_i": null,
+        "event_id": "planning-000124f8:message-B-1",
+        "guards": null,
+        "null_contrast": null,
+        "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc"
+      },
+      {
+        "complete_pair": false,
+        "d_i": null,
+        "event_id": "planning-000124f9:message-B-0",
+        "guards": null,
+        "null_contrast": null,
+        "prompt_form_id": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb"
+      },
+      {
+        "complete_pair": false,
+        "d_i": null,
+        "event_id": "planning-000124fb:message-B-0",
+        "guards": null,
+        "null_contrast": null,
+        "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc"
+      },
+      {
+        "complete_pair": false,
+        "d_i": null,
+        "event_id": "planning-000124fc:message-B-0",
+        "guards": null,
+        "null_contrast": null,
+        "prompt_form_id": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb"
+      },
+      {
+        "complete_pair": false,
+        "d_i": null,
+        "event_id": "planning-000124fe:message-B-0",
+        "guards": null,
+        "null_contrast": null,
+        "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc"
+      },
+      {
+        "complete_pair": false,
+        "d_i": null,
+        "event_id": "planning-00012501:message-B-0",
+        "guards": null,
+        "null_contrast": null,
+        "prompt_form_id": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c"
+      },
+      {
+        "complete_pair": false,
+        "d_i": null,
+        "event_id": "planning-00012502:message-B-1",
+        "guards": null,
+        "null_contrast": null,
+        "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc"
+      },
+      {
+        "complete_pair": false,
+        "d_i": null,
+        "event_id": "planning-00012503:message-B-1",
+        "guards": null,
+        "null_contrast": null,
+        "prompt_form_id": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb"
+      },
+      {
+        "complete_pair": false,
+        "d_i": null,
+        "event_id": "planning-00012504:message-B-1",
+        "guards": null,
+        "null_contrast": null,
+        "prompt_form_id": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c"
+      },
+      {
+        "complete_pair": false,
+        "d_i": null,
+        "event_id": "planning-00012507:message-B-0",
+        "guards": null,
+        "null_contrast": null,
+        "prompt_form_id": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee"
+      },
+      {
+        "complete_pair": false,
+        "d_i": null,
+        "event_id": "planning-0001250d:message-B-1",
+        "guards": null,
+        "null_contrast": null,
+        "prompt_form_id": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c"
+      },
+      {
+        "complete_pair": false,
+        "d_i": null,
+        "event_id": "planning-0001250e:message-B-1",
+        "guards": null,
+        "null_contrast": null,
+        "prompt_form_id": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c"
+      },
+      {
+        "complete_pair": false,
+        "d_i": null,
+        "event_id": "planning-0001250f:message-B-0",
+        "guards": null,
+        "null_contrast": null,
+        "prompt_form_id": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222"
+      },
+      {
+        "complete_pair": false,
+        "d_i": null,
+        "event_id": "planning-00012511:message-B-0",
+        "guards": null,
+        "null_contrast": null,
+        "prompt_form_id": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb"
+      },
+      {
+        "complete_pair": false,
+        "d_i": null,
+        "event_id": "planning-00012517:message-B-1",
+        "guards": null,
+        "null_contrast": null,
+        "prompt_form_id": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222"
+      },
+      {
+        "complete_pair": false,
+        "d_i": null,
+        "event_id": "planning-0001251b:message-B-1",
+        "guards": null,
+        "null_contrast": null,
+        "prompt_form_id": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222"
+      },
+      {
+        "complete_pair": false,
+        "d_i": null,
+        "event_id": "planning-0001251c:message-B-1",
+        "guards": null,
+        "null_contrast": null,
+        "prompt_form_id": "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569"
+      }
+    ],
+    "unit": "prompt form"
+  },
+  "approval": "reviewer-approved-2026-09-25-jev-replay-v4-97217b47",
+  "attempted_branches": 2,
+  "codec_version": "jev-choice-wire-v2",
+  "cost_cap_usd": 1.0,
+  "credentials_retained": false,
+  "estimated_cost_usd": 0.0,
+  "events": [
+    {
+      "branch_order_actual": [
+        "real",
+        "null"
+      ],
+      "branch_order_planned": [
+        "real",
+        "null",
+        "placebo"
+      ],
+      "branches": {
+        "null": {
+          "actual_branch_position": 2,
+          "branch": "null",
+          "cap_counters": {
+            "cost_cap_usd": 1.0,
+            "estimated_cost_usd": 0.0,
+            "jev_cap": 153,
+            "jev_used": 6
+          },
+          "credentials_retained": false,
+          "entropy_bits": null,
+          "error_class": "transport_error",
+          "event_id": "planning-000124f8:message-B-1",
+          "feasible_mass": null,
+          "instance_id": "planning-000124f8",
+          "p_target": null,
+          "physical_attempts": {
+            "branch": 3,
+            "cap": 153,
+            "jev_cumulative": 6
+          },
+          "planned_branch_position": 2,
+          "probabilities": {},
+          "probability_diagnostics": null,
+          "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+          "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+          "raw_response_retained": false,
+          "request_hash": "47c58af68377f6ac46c557f02f49a7e52d4f5231afccc7157a2fb2f4ed47351c",
+          "resolved_model": "jev-1.13.0",
+          "selected_option_id": null,
+          "state_hash": "9668770b2ba00919db2cb3fac6bfab977d754d917a9f8d9148d7ed64af2b2f3f",
+          "status": "invalid",
+          "usage": {},
+          "valid": false
+        },
+        "real": {
+          "actual_branch_position": 1,
+          "branch": "real",
+          "cap_counters": {
+            "cost_cap_usd": 1.0,
+            "estimated_cost_usd": 0.0,
+            "jev_cap": 153,
+            "jev_used": 3
+          },
+          "credentials_retained": false,
+          "entropy_bits": null,
+          "error_class": "transport_error",
+          "event_id": "planning-000124f8:message-B-1",
+          "feasible_mass": null,
+          "instance_id": "planning-000124f8",
+          "p_target": null,
+          "physical_attempts": {
+            "branch": 3,
+            "cap": 153,
+            "jev_cumulative": 3
+          },
+          "planned_branch_position": 1,
+          "probabilities": {},
+          "probability_diagnostics": null,
+          "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc",
+          "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+          "raw_response_retained": false,
+          "request_hash": "b6389212557f6b98432682646d98a388323c84a3311e25395a4f11c1547201d4",
+          "resolved_model": "jev-1.13.0",
+          "selected_option_id": null,
+          "state_hash": "e97d602ea79e9b8d3eab477daf76287be024c36ced14961173278d40fba9594b",
+          "status": "invalid",
+          "usage": {},
+          "valid": false
+        }
+      },
+      "event_id": "planning-000124f8:message-B-1",
+      "instance_id": "planning-000124f8",
+      "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc"
+    },
+    {
+      "branch_order_actual": [],
+      "branch_order_planned": [
+        "null",
+        "real",
+        "placebo"
+      ],
+      "branches": {},
+      "event_id": "planning-000124f9:message-B-0",
+      "instance_id": "planning-000124f9",
+      "prompt_form_id": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb"
+    },
+    {
+      "branch_order_actual": [],
+      "branch_order_planned": [
+        "placebo",
+        "real",
+        "null"
+      ],
+      "branches": {},
+      "event_id": "planning-000124fb:message-B-0",
+      "instance_id": "planning-000124fb",
+      "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc"
+    },
+    {
+      "branch_order_actual": [],
+      "branch_order_planned": [
+        "null",
+        "placebo",
+        "real"
+      ],
+      "branches": {},
+      "event_id": "planning-000124fc:message-B-0",
+      "instance_id": "planning-000124fc",
+      "prompt_form_id": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb"
+    },
+    {
+      "branch_order_actual": [],
+      "branch_order_planned": [
+        "placebo",
+        "null",
+        "real"
+      ],
+      "branches": {},
+      "event_id": "planning-000124fe:message-B-0",
+      "instance_id": "planning-000124fe",
+      "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc"
+    },
+    {
+      "branch_order_actual": [],
+      "branch_order_planned": [
+        "placebo",
+        "real",
+        "null"
+      ],
+      "branches": {},
+      "event_id": "planning-00012501:message-B-0",
+      "instance_id": "planning-00012501",
+      "prompt_form_id": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c"
+    },
+    {
+      "branch_order_actual": [],
+      "branch_order_planned": [
+        "null",
+        "real",
+        "placebo"
+      ],
+      "branches": {},
+      "event_id": "planning-00012502:message-B-1",
+      "instance_id": "planning-00012502",
+      "prompt_form_id": "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc"
+    },
+    {
+      "branch_order_actual": [],
+      "branch_order_planned": [
+        "real",
+        "placebo",
+        "null"
+      ],
+      "branches": {},
+      "event_id": "planning-00012503:message-B-1",
+      "instance_id": "planning-00012503",
+      "prompt_form_id": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb"
+    },
+    {
+      "branch_order_actual": [],
+      "branch_order_planned": [
+        "placebo",
+        "null",
+        "real"
+      ],
+      "branches": {},
+      "event_id": "planning-00012504:message-B-1",
+      "instance_id": "planning-00012504",
+      "prompt_form_id": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c"
+    },
+    {
+      "branch_order_actual": [],
+      "branch_order_planned": [
+        "real",
+        "placebo",
+        "null"
+      ],
+      "branches": {},
+      "event_id": "planning-00012507:message-B-0",
+      "instance_id": "planning-00012507",
+      "prompt_form_id": "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee"
+    },
+    {
+      "branch_order_actual": [],
+      "branch_order_planned": [
+        "null",
+        "real",
+        "placebo"
+      ],
+      "branches": {},
+      "event_id": "planning-0001250d:message-B-1",
+      "instance_id": "planning-0001250d",
+      "prompt_form_id": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c"
+    },
+    {
+      "branch_order_actual": [],
+      "branch_order_planned": [
+        "null",
+        "placebo",
+        "real"
+      ],
+      "branches": {},
+      "event_id": "planning-0001250e:message-B-1",
+      "instance_id": "planning-0001250e",
+      "prompt_form_id": "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c"
+    },
+    {
+      "branch_order_actual": [],
+      "branch_order_planned": [
+        "null",
+        "placebo",
+        "real"
+      ],
+      "branches": {},
+      "event_id": "planning-0001250f:message-B-0",
+      "instance_id": "planning-0001250f",
+      "prompt_form_id": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222"
+    },
+    {
+      "branch_order_actual": [],
+      "branch_order_planned": [
+        "real",
+        "null",
+        "placebo"
+      ],
+      "branches": {},
+      "event_id": "planning-00012511:message-B-0",
+      "instance_id": "planning-00012511",
+      "prompt_form_id": "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb"
+    },
+    {
+      "branch_order_actual": [],
+      "branch_order_planned": [
+        "real",
+        "placebo",
+        "null"
+      ],
+      "branches": {},
+      "event_id": "planning-00012517:message-B-1",
+      "instance_id": "planning-00012517",
+      "prompt_form_id": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222"
+    },
+    {
+      "branch_order_actual": [],
+      "branch_order_planned": [
+        "real",
+        "null",
+        "placebo"
+      ],
+      "branches": {},
+      "event_id": "planning-0001251b:message-B-1",
+      "instance_id": "planning-0001251b",
+      "prompt_form_id": "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222"
+    },
+    {
+      "branch_order_actual": [],
+      "branch_order_planned": [
+        "placebo",
+        "null",
+        "real"
+      ],
+      "branches": {},
+      "event_id": "planning-0001251c:message-B-1",
+      "instance_id": "planning-0001251c",
+      "prompt_form_id": "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569"
+    }
+  ],
+  "input_tokens": 0,
+  "invalid_branches": 2,
+  "missingness": {
+    "by_branch": {
+      "null": {
+        "attempted": 1,
+        "invalid": 1,
+        "planned": 17,
+        "unattempted": 16,
+        "valid": 0
+      },
+      "placebo": {
+        "attempted": 0,
+        "invalid": 0,
+        "planned": 17,
+        "unattempted": 17,
+        "valid": 0
+      },
+      "real": {
+        "attempted": 1,
+        "invalid": 1,
+        "planned": 17,
+        "unattempted": 16,
+        "valid": 0
+      }
+    },
+    "by_event": {
+      "planning-000124f8:message-B-1": {
+        "attempted": 2,
+        "complete_pair": false,
+        "invalid": 2,
+        "partial_triplet": true,
+        "planned": 3,
+        "unattempted": 1,
+        "valid": 0
+      },
+      "planning-000124f9:message-B-0": {
+        "attempted": 0,
+        "complete_pair": false,
+        "invalid": 0,
+        "partial_triplet": false,
+        "planned": 3,
+        "unattempted": 3,
+        "valid": 0
+      },
+      "planning-000124fb:message-B-0": {
+        "attempted": 0,
+        "complete_pair": false,
+        "invalid": 0,
+        "partial_triplet": false,
+        "planned": 3,
+        "unattempted": 3,
+        "valid": 0
+      },
+      "planning-000124fc:message-B-0": {
+        "attempted": 0,
+        "complete_pair": false,
+        "invalid": 0,
+        "partial_triplet": false,
+        "planned": 3,
+        "unattempted": 3,
+        "valid": 0
+      },
+      "planning-000124fe:message-B-0": {
+        "attempted": 0,
+        "complete_pair": false,
+        "invalid": 0,
+        "partial_triplet": false,
+        "planned": 3,
+        "unattempted": 3,
+        "valid": 0
+      },
+      "planning-00012501:message-B-0": {
+        "attempted": 0,
+        "complete_pair": false,
+        "invalid": 0,
+        "partial_triplet": false,
+        "planned": 3,
+        "unattempted": 3,
+        "valid": 0
+      },
+      "planning-00012502:message-B-1": {
+        "attempted": 0,
+        "complete_pair": false,
+        "invalid": 0,
+        "partial_triplet": false,
+        "planned": 3,
+        "unattempted": 3,
+        "valid": 0
+      },
+      "planning-00012503:message-B-1": {
+        "attempted": 0,
+        "complete_pair": false,
+        "invalid": 0,
+        "partial_triplet": false,
+        "planned": 3,
+        "unattempted": 3,
+        "valid": 0
+      },
+      "planning-00012504:message-B-1": {
+        "attempted": 0,
+        "complete_pair": false,
+        "invalid": 0,
+        "partial_triplet": false,
+        "planned": 3,
+        "unattempted": 3,
+        "valid": 0
+      },
+      "planning-00012507:message-B-0": {
+        "attempted": 0,
+        "complete_pair": false,
+        "invalid": 0,
+        "partial_triplet": false,
+        "planned": 3,
+        "unattempted": 3,
+        "valid": 0
+      },
+      "planning-0001250d:message-B-1": {
+        "attempted": 0,
+        "complete_pair": false,
+        "invalid": 0,
+        "partial_triplet": false,
+        "planned": 3,
+        "unattempted": 3,
+        "valid": 0
+      },
+      "planning-0001250e:message-B-1": {
+        "attempted": 0,
+        "complete_pair": false,
+        "invalid": 0,
+        "partial_triplet": false,
+        "planned": 3,
+        "unattempted": 3,
+        "valid": 0
+      },
+      "planning-0001250f:message-B-0": {
+        "attempted": 0,
+        "complete_pair": false,
+        "invalid": 0,
+        "partial_triplet": false,
+        "planned": 3,
+        "unattempted": 3,
+        "valid": 0
+      },
+      "planning-00012511:message-B-0": {
+        "attempted": 0,
+        "complete_pair": false,
+        "invalid": 0,
+        "partial_triplet": false,
+        "planned": 3,
+        "unattempted": 3,
+        "valid": 0
+      },
+      "planning-00012517:message-B-1": {
+        "attempted": 0,
+        "complete_pair": false,
+        "invalid": 0,
+        "partial_triplet": false,
+        "planned": 3,
+        "unattempted": 3,
+        "valid": 0
+      },
+      "planning-0001251b:message-B-1": {
+        "attempted": 0,
+        "complete_pair": false,
+        "invalid": 0,
+        "partial_triplet": false,
+        "planned": 3,
+        "unattempted": 3,
+        "valid": 0
+      },
+      "planning-0001251c:message-B-1": {
+        "attempted": 0,
+        "complete_pair": false,
+        "invalid": 0,
+        "partial_triplet": false,
+        "planned": 3,
+        "unattempted": 3,
+        "valid": 0
+      }
+    },
+    "by_form": {
+      "0a3349e16c9633b4d559dfbb808d1e50d0446d8f92160a0feddd1e37299796ee": {
+        "attempted": 0,
+        "complete_pairs": 0,
+        "invalid": 0,
+        "planned_branches": 3,
+        "planned_events": 1,
+        "unattempted": 3,
+        "valid": 0
+      },
+      "1c1d9f6b5c9271ad8e74de180c3e397e1369d326564c9a08ba0840eff0b148fc": {
+        "attempted": 2,
+        "complete_pairs": 0,
+        "invalid": 2,
+        "planned_branches": 12,
+        "planned_events": 4,
+        "unattempted": 10,
+        "valid": 0
+      },
+      "2954f5684bcd198ed8eea0956cf573f93cde628d6dfa7472fc57f556bd089b2c": {
+        "attempted": 0,
+        "complete_pairs": 0,
+        "invalid": 0,
+        "planned_branches": 12,
+        "planned_events": 4,
+        "unattempted": 12,
+        "valid": 0
+      },
+      "3196a8d69f844702db012816def7d7866e7416e9fadc9f28eaa7f12ac16a8569": {
+        "attempted": 0,
+        "complete_pairs": 0,
+        "invalid": 0,
+        "planned_branches": 3,
+        "planned_events": 1,
+        "unattempted": 3,
+        "valid": 0
+      },
+      "55968fe191b18f37d1951d71f777115f753e0b9a6da526015f3db5251a1383eb": {
+        "attempted": 0,
+        "complete_pairs": 0,
+        "invalid": 0,
+        "planned_branches": 12,
+        "planned_events": 4,
+        "unattempted": 12,
+        "valid": 0
+      },
+      "ce847ac53b6e344103bc775aede5212b2be6fbd568dc1d85fd24cbde8f585222": {
+        "attempted": 0,
+        "complete_pairs": 0,
+        "invalid": 0,
+        "planned_branches": 9,
+        "planned_events": 3,
+        "unattempted": 9,
+        "valid": 0
+      }
+    }
+  },
+  "mode": "jev-choice-replay-runner-v4",
+  "model": "jev-1.13.0",
+  "output_tokens": 0,
+  "partial_report_note": "stopping preserves this report with planned/attempted/valid/invalid/unattempted counts by branch, event and form; partial triplets remain observable",
+  "physical_attempts": {
+    "cap": 153,
+    "combined": 6,
+    "jev": 6
+  },
+  "planned": {
+    "branches": 51,
+    "by_branch": {
+      "null": 17,
+      "placebo": 17,
+      "real": 17
+    },
+    "events": 17
+  },
+  "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+  "provider_calls": 6,
+  "raw_response_retained": false,
+  "registration_hash": "97217b478ee84797c642944732211d563666e11f3c1bd809593da848a1946eb4",
+  "rows": 2,
+  "schedule_adherence": {
+    "planned_equals_actual": false,
+    "rows": 2
+  },
+  "status": "stopped",
+  "stop_reason": "provider_failure_limit",
+  "unattempted_branches": 49,
+  "valid_branches": 0
+}
