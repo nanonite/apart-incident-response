@@ -10,8 +10,10 @@ authorization.
 - Artifact: `runs/epic-126/jev-choice-replay-preregistration-v4.json`
   (version `stage2-jev-choice-replay-v4`, status
   `locked_for_jev_choice_replay_v4`, content hash
-  `ffb46af295335fc7f8c30eae2f114e47f52dbee0f810ddc1196629b322d515b1`
-  (supersedes the reviewed `fe156254…` lock), byte-reproducible)
+  `97217b478ee84797c642944732211d563666e11f3c1bd809593da848a1946eb4`
+  (amendment chain: `fe156254…` → `ffb46af2…` → runner-bound
+  `97217b47…`; earlier locks are recorded/superseded in git and
+  `runner_policy.superseded_offline_lock`), byte-reproducible)
 - Fresh outputs (refused if occupied) live under `runs/epic-126/replay-v4/`
   — a subdirectory because the earlier registrations' prior-ID scan globs are
   non-recursive, so the v4 trio never perturbs their rebuild evidence:
@@ -224,13 +226,68 @@ Jev model/endpoint/codec, normalization-policy drift, mixed protocol keys;
 cap or cost drift (including any Ling budget); old or occupied output paths;
 and any attempt to treat the 17 events as 17 independent experimental units.
 
+## Runner (#195) — source-bound, offline-validated
+
+`src/apart_incident_response/jev_replay_runner_v4.py`
+(`jev-choice-replay-runner-v4`) is registered in `runner_policy`
+(`runner_implemented: true`, `runner_source_files` lists exactly it,
+included in `REPLAY_V4_SOURCE_FILES` → new `source_files_hash` and
+`treatment_hash` embedding the runner source). **Adding the runner does not
+authorize execution**; `live_collection_authorized` stays false.
+
+- **Preflight (25 named checks, fail-closed)**: locked registration + content
+  hash, all #192 event/upstream hashes, exact event IDs, six-form
+  distribution 1/4/4/1/4/3, feasible-set hashes, branch schedule and
+  event-major order, `jev-1.13.0`/endpoint/codec v2/protocol key/retry/
+  normalization, source/treatment hashes, fresh `replay-v4/` outputs,
+  Jev credentials present (never printed), physical cap 153 / planned 51/0,
+  cost reserve `$0.001032192`. Failed preflight or missing approval ⇒ zero
+  calls and zero output files; no provider construction happens before the
+  preflight passes.
+- **Execution**: frozen schedule (event-major, three adjacent branches per
+  event, planned order from `branch_schedule`); real = exact accepted B→A
+  claim, placebo = source-neutral envelope around the frozen receiver-known
+  A clue, null = no message; only `state.visible_messages` differs; every
+  request hash and the pre-read state hash are recomputed and must equal the
+  registered values before any Jev call; no Ling call.
+- **Journal**: append-only `BranchJournal` — one durable row per
+  `(event_id, branch)`, append+flush+fsync per row, duplicate keys fail
+  closed, overwrite refused (`open "x"`), no automatic resume; rows carry
+  planned/actual positions, request/state hashes, protocol/model, physical
+  attempts and cap counters, safe vector diagnostics, normalized metrics
+  (entropy, p_target, feasible mass), validity, usage and error class; the
+  report groups rows into event-level real/placebo/null records with
+  planned/attempted/valid/invalid/unattempted counts by branch, event and
+  form; partial triplets stay observable.
+- **Stops**: retries only for registered statuses (max 2); reserve
+  `$0.001032192` before every logical branch; malformed/non-finite/negative/
+  option-mismatched vectors, model/protocol/identity drift, hard
+  normalization (>0.05), argmax shift, hash drift, caps and output
+  collisions stop immediately; suspect-band vectors are journaled invalid
+  with diagnostics and never become valid; nonterminal invalid branches do
+  not skip siblings; sanitized provider-failure rows with a stop after two
+  consecutive terminal provider failures (counter resets on success).
+- **Registered analysis in the report**: `d_i = H_real − H_placebo` over
+  complete pairs, equal-weight within-form means across the six forms,
+  exhaustive two-sided cluster sign-flip + form-mean t interval (df=5),
+  negative-direction requirement, δ/ε guards computed per event and within
+  form but never filtering the entropy estimate, separate null manipulation
+  checks, five-form interval-only fallback (sub-0.05 sign-flip forbidden, no
+  causal gate), below-five = replay-coverage failure, no instance-level
+  inference; only accepted normalized vectors feed any metric.
+
 ## Not run — future live command (requires separate review + live authorization)
+
+Task **#195** ("Implement the source-bound Jev replay-v4 runner offline")
+is open for reviewer assessment. The live command (**NOT RUN**):
 
 ```
 UV_CACHE_DIR=.uv-cache uv run env PYTHONPATH=src \
-  python -m apart_incident_response.<v6/#191-style runner TBD for #159> \
-  --live --approval "<reviewer reference for lock fe156254…>"
+  python -m apart_incident_response.jev_replay_runner_v4 \
+  --live --approval "<reviewer reference for lock 97217b47…>"
 ```
 
-(No runner is registered or authorized by this task; #193 freezes the plan
-only. #159 stays blocked.)
+Offline usage (`python -m apart_incident_response.jev_replay_runner_v4`
+without `--live`) runs the named preflight only and makes zero provider
+calls. **#159 stays blocked** pending #195 review, reconciliation of open
+blockers #158/#187, and a separate explicit live authorization.

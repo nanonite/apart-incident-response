@@ -1727,7 +1727,7 @@
   "pending_decisions": [
     "locking this registration does NOT authorize #159 execution; live replay requires a separate review and explicit live authorization after this lock is approved"
   ],
-  "preregistration_hash": "ffb46af295335fc7f8c30eae2f114e47f52dbee0f810ddc1196629b322d515b1",
+  "preregistration_hash": "97217b478ee84797c642944732211d563666e11f3c1bd809593da848a1946eb4",
   "preregistration_version": "stage2-jev-choice-replay-v4",
   "provenance": {
     "event_count": 17,
@@ -1754,11 +1754,18 @@
   "purpose": "amend and lock the #159 matched real/placebo/null Jev replay plan on top of the coverage-qualified #192 event set, without rerunning collection",
   "runner_policy": {
     "adding_runner_authorizes_collection": false,
-    "live_execution_rule": "this registration lock is not live authorization; live execution requires a future runner that is source-bound here plus a separate explicit authorization",
-    "policy": "the future #159 runner does not exist yet; it must be added to this registration's source binding and the registration re-locked with a new hash before any live authorization",
+    "live_execution_rule": "this registration lock is not live authorization; live execution requires the source-bound runner plus a separate explicit authorization",
+    "policy": "the #195 replay runner is implemented in src/apart_incident_response/jev_replay_runner_v4.py and included in REPLAY_V4_SOURCE_FILES; adding the runner does not authorize execution \u2014 live execution still requires a separate explicit authorization",
     "required_before_live": true,
-    "runner_implemented": false,
-    "runner_source_files": []
+    "runner_implemented": true,
+    "runner_source_bound": true,
+    "runner_source_files": [
+      "src/apart_incident_response/jev_replay_runner_v4.py"
+    ],
+    "superseded_offline_lock": {
+      "note": "pre-runner offline lock; original content preserved in git commits d97a459 and a2a9e31; superseded by this runner-bound amendment",
+      "preregistration_hash": "ffb46af295335fc7f8c30eae2f114e47f52dbee0f810ddc1196629b322d515b1"
+    }
   },
   "sensitivity": {
     "normalization_thresholds": [
@@ -1796,9 +1803,10 @@
     "src/apart_incident_response/jev_replay_preregistration_v2.py",
     "src/apart_incident_response/jev_six_form_coverage_audit.py",
     "src/apart_incident_response/jev_v7_coverage_decision.py",
-    "src/apart_incident_response/jev_replay_preregistration_v4.py"
+    "src/apart_incident_response/jev_replay_preregistration_v4.py",
+    "src/apart_incident_response/jev_replay_runner_v4.py"
   ],
-  "source_files_hash": "f5aa599b78f000b24d23185e5a7b6eeddbe12f663dd4a6cabcbc930df1fba35d",
+  "source_files_hash": "8199635fb5ac5fe182368a36a9edcec53fc74794d3a46fd65c6a2e9aa9b63c99",
   "stage": "planning-low-matched-jev-replay",
   "status": "locked_for_jev_choice_replay_v4",
   "successor_of": {
@@ -1808,5 +1816,5 @@
     "v2": "runs/epic-126/jev-choice-replay-preregistration-v2.json",
     "v3": "runs/epic-126/jev-choice-replay-preregistration-v3.json"
   },
-  "treatment_hash": "1f11d2e9d3d4787f32ef937a070035684476a449d1a4461fd2fd7295664221fd"
+  "treatment_hash": "c72a5d0b0575afe92e8efa5ea188a0e0dc46961ed4cb77bd29230c02126ff767"
 }

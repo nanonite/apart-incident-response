@@ -837,12 +837,16 @@ class ExecutionPolicyTests(unittest.TestCase):
     def test_runner_policy_frozen(self):
         policy = self.document["runner_policy"]
         self.assertTrue(policy["required_before_live"])
-        self.assertFalse(policy["runner_implemented"])
-        self.assertEqual(policy["runner_source_files"], [])
+        self.assertTrue(policy["runner_implemented"])
+        self.assertEqual(policy["runner_source_files"], [reg.RUNNER_SOURCE_REL])
+        self.assertTrue(policy["runner_source_bound"])
+        self.assertIn(reg.RUNNER_SOURCE_REL, reg.REPLAY_V4_SOURCE_FILES)
         self.assertFalse(policy["adding_runner_authorizes_collection"])
-        self.assertIn("source binding", policy["policy"])
-        self.assertIn("re-locked", policy["policy"])
+        self.assertIn("does not authorize execution", policy["policy"])
         self.assertIn("separate explicit authorization", policy["live_execution_rule"])
+        self.assertEqual(policy["superseded_offline_lock"]["preregistration_hash"],
+                         reg.SUPERSEDED_OFFLINE_LOCK_HASH)
+        self.assertIn("d97a459", policy["superseded_offline_lock"]["note"])
 
     def test_execution_policy_drift_rejected(self):
         cases = [
@@ -912,20 +916,29 @@ class ExecutionPolicyTests(unittest.TestCase):
 
     def test_runner_policy_drift_rejected(self):
         _expect_error(self, lambda d: d["runner_policy"].__setitem__(
-            "runner_implemented", True),
-            "runner must not be reported implemented before it exists", self.document)
+            "runner_implemented", False),
+            "runner must be implemented and source-bound in this lock", self.document)
         _expect_error(self, lambda d: d["runner_policy"].__setitem__(
             "runner_source_files", ["src/apart_incident_response/x.py"]),
-            "runner source list must be empty until a runner exists", self.document)
+            "runner source file mismatch", self.document)
+        _expect_error(self, lambda d: d["runner_policy"].__setitem__(
+            "runner_source_bound", False),
+            "runner source binding declaration missing", self.document)
         _expect_error(self, lambda d: d["runner_policy"].__setitem__(
             "adding_runner_authorizes_collection", True),
             "adding a runner must not authorize collection", self.document)
         _expect_error(self, lambda d: d["runner_policy"].__setitem__(
             "policy", "a runner may execute freely"),
-            "runner policy must require source binding and a re-lock", self.document)
+            "does not authorize execution", self.document)
         _expect_error(self, lambda d: d["runner_policy"].__setitem__(
             "live_execution_rule", "live execution is forbidden until reviewed"),
             "runner live-execution rule drift", self.document)
+        _expect_error(self, lambda d: d["runner_policy"]["superseded_offline_lock"].__setitem__(
+            "preregistration_hash", "0" * 64),
+            "superseded offline lock hash missing or drifted", self.document)
+        _expect_error(self, lambda d: d["source_files"].append("src/x.py"),
+            "runner module missing from REPLAY_V4_SOURCE_FILES"
+            if False else "registration content drift", self.document)
 
 
 class BranchJournalSchemaTests(unittest.TestCase):

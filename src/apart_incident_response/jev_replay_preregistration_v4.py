@@ -78,6 +78,12 @@ WORST_CASE_CALL_COST_USD = round(INPUT_TOKEN_CEILING * INPUT_USD_PER_MTOK / 1_00
 WORST_CASE_COST_USD = round(PHYSICAL_REQUEST_CEILING * WORST_CASE_CALL_COST_USD, 9)
 COST_CAP_USD = 1.0
 
+#: The #195 replay runner bound into this registration.
+RUNNER_SOURCE_REL = "src/apart_incident_response/jev_replay_runner_v4.py"
+#: Pre-runner offline lock superseded by the runner-bound amendment.
+SUPERSEDED_OFFLINE_LOCK_HASH = (
+    "ffb46af295335fc7f8c30eae2f114e47f52dbee0f810ddc1196629b322d515b1")
+
 #: Source files whose semantics this registration binds (hash stored in JSON).
 REPLAY_V4_SOURCE_FILES = (
     "src/apart_incident_response/task_families.py",
@@ -92,6 +98,7 @@ REPLAY_V4_SOURCE_FILES = (
     "src/apart_incident_response/jev_six_form_coverage_audit.py",
     "src/apart_incident_response/jev_v7_coverage_decision.py",
     "src/apart_incident_response/jev_replay_preregistration_v4.py",
+    "src/apart_incident_response/jev_replay_runner_v4.py",
 )
 
 #: Prior output paths the v4 verifier must refuse as v4 outputs.
@@ -568,6 +575,8 @@ def treatment_hash_v4(*, decision_sha256: str, wording_hash: str,
         "branch_modes": ["real", "placebo", "null"],
         "estimand": ESTIMAND["primary"],
         "directional_prediction": ESTIMAND["directional_prediction"],
+        "runner_source_file": RUNNER_SOURCE_REL,
+        "runner_version": "jev-choice-replay-runner-v4",
     }
     return hashlib.sha256(json.dumps(payload, sort_keys=True).encode("utf-8")).hexdigest()
 
@@ -775,15 +784,22 @@ def build_replay_preregistration_v4(*, approved: bool = False,
         "execution_policy": dict(EXECUTION_POLICY),
         "runner_policy": {
             "required_before_live": True,
-            "runner_implemented": False,
-            "runner_source_files": [],
-            "policy": ("the future #159 runner does not exist yet; it must be added to this "
-                       "registration's source binding and the registration re-locked with a "
-                       "new hash before any live authorization"),
+            "runner_implemented": True,
+            "runner_source_files": [RUNNER_SOURCE_REL],
+            "runner_source_bound": RUNNER_SOURCE_REL in REPLAY_V4_SOURCE_FILES,
+            "policy": (f"the #195 replay runner is implemented in {RUNNER_SOURCE_REL} and "
+                       "included in REPLAY_V4_SOURCE_FILES; adding the runner does not "
+                       "authorize execution — live execution still requires a separate "
+                       "explicit authorization"),
             "adding_runner_authorizes_collection": False,
             "live_execution_rule": ("this registration lock is not live authorization; live "
-                                    "execution requires a future runner that is source-bound "
-                                    "here plus a separate explicit authorization"),
+                                    "execution requires the source-bound runner plus a "
+                                    "separate explicit authorization"),
+            "superseded_offline_lock": {
+                "preregistration_hash": SUPERSEDED_OFFLINE_LOCK_HASH,
+                "note": ("pre-runner offline lock; original content preserved in git commits "
+                         "d97a459 and a2a9e31; superseded by this runner-bound amendment"),
+            },
         },
         "claim_scope": {
             "type": "matched real/placebo/null replay preregistration (offline lock)",
@@ -1251,17 +1267,24 @@ def verify_against_jev_replay_preregistration_v4(
     runner_policy = document.get("runner_policy") or {}
     if runner_policy.get("required_before_live") is not True:
         errors.append("runner policy missing")
-    if runner_policy.get("runner_implemented") is not False:
-        errors.append("runner must not be reported implemented before it exists")
-    if runner_policy.get("runner_source_files") != []:
-        errors.append("runner source list must be empty until a runner exists")
+    if runner_policy.get("runner_implemented") is not True:
+        errors.append("runner must be implemented and source-bound in this lock")
+    if runner_policy.get("runner_source_files") != [RUNNER_SOURCE_REL]:
+        errors.append("runner source file mismatch")
+    if runner_policy.get("runner_source_bound") is not True:
+        errors.append("runner source binding declaration missing")
+    if RUNNER_SOURCE_REL not in REPLAY_V4_SOURCE_FILES:
+        errors.append("runner module missing from REPLAY_V4_SOURCE_FILES")
     if runner_policy.get("adding_runner_authorizes_collection") is not False:
         errors.append("adding a runner must not authorize collection")
-    if "source binding" not in str(runner_policy.get("policy", "")) \
-            or "re-locked" not in str(runner_policy.get("policy", "")):
-        errors.append("runner policy must require source binding and a re-lock")
+    if "does not authorize execution" not in str(runner_policy.get("policy", "")):
+        errors.append("runner policy must state that adding the runner does not authorize "
+                      "execution")
     if "separate explicit authorization" not in str(runner_policy.get("live_execution_rule", "")):
         errors.append("runner live-execution rule drift")
+    superseded = runner_policy.get("superseded_offline_lock") or {}
+    if superseded.get("preregistration_hash") != SUPERSEDED_OFFLINE_LOCK_HASH:
+        errors.append("superseded offline lock hash missing or drifted")
 
     outputs = document.get("outputs") or {}
     if outputs != output_paths():
