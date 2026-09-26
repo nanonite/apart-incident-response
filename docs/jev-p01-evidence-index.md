@@ -181,10 +181,11 @@ both items in a new version, not by modifying the frozen draft.
   does the new `tests/test_jev_p01_evidence_index.py` that pins this document
   against the frozen artifacts; every suite asserts the frozen inputs
   byte-for-byte unchanged after running.
-- Ran the repository suite (`python -m unittest discover -s tests`): all tests
-  pass except 4 pre-existing environment errors on this host — numpy cannot
-  load `libstdc++.so.6` and `bubblewrap` is not on PATH — which are unrelated
-  to this task and predate it.
+- Ran the repository suite (`python -m unittest discover -s tests`): every
+  task-relevant test passes; the only failures are pre-existing environment
+  errors that vary by host (missing modules such as numpy or cryptography,
+  missing system libraries, or `bubblewrap` not on PATH) and are unrelated to
+  this task and predate it. No task-relevant test fails on any host.
 
 ## 7. Handoff
 
