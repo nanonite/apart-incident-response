@@ -3,6 +3,12 @@
 **Status: `draft_pending_review`, offline. No provider call is made by any code
 path in this module. Locking will not be execution approval.**
 
+Next-phase planning: [hypotheses and sequential discovery/confirmation plan](jev-discovery-confirmation-plan.md).
+That plan clarifies the six-form confirmatory minimum, descriptive status of
+this four-form study, and the distinction between interval half-width and a
+power-based MDE. This document and its frozen draft artifacts remain a historical
+record; implementing those clarifications requires a new registration version.
+
 | | |
 |---|---|
 | Task | Chainlink **#200** under **#159** |

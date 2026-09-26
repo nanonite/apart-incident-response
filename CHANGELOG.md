@@ -37,6 +37,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix board IPC integration and CLI tool wiring (#58)
 
 ### Changed
+- Reconcile the planning-low baseline and the next-phase research contract; publish the P01 evidence index with input hashes, the preserved planning-low conditional result and guard failures, the `hypothesis:low` pilot identification, and the new-version log for the five-form wording and interval-half-width/MDE mismatch (#202)
 - Reconcile and publish the final planning-low Jev replay result (#199)
 - Planning-low six-form coverage and causal Jev replay (#188)
 - Prepare a fresh replay-v5 registration after the stopped v4 run (#197)
