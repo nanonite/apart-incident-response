@@ -1,0 +1,649 @@
+{
+  "authorization": {
+    "approval_may_not_be_inferred_from_locking": true,
+    "approval_must_be_a_supplied_reference": true,
+    "locking_is_not_authorization": true,
+    "pending_review": [
+      "reviewer decision on the design classification (k = 4, floor 0.125, pilot)",
+      "reviewer decision on the fixed-N discovery manifest and selection rule",
+      "reviewer decision on treatment/route, budgets, stops, paths and coverage rules",
+      "a separate explicit live authorization reference is required before any provider call; locking this registration is not that authorization"
+    ],
+    "separate_live_authorization_required_after_locking": true
+  },
+  "authorizes": "nothing beyond P05 planning; no provider call, no collection, no registration lock, no live run",
+  "budgets": {
+    "block_n": 16,
+    "cost_model": {
+      "jev_input_token_ceiling": 8192,
+      "jev_input_usd_per_mtok": 0.042,
+      "jev_worst_physical_call_usd": 0.000344064,
+      "ling_completion_usd_per_mtok": 0.18,
+      "ling_input_token_ceiling": 8192,
+      "ling_output_token_ceiling": 1024,
+      "ling_prompt_usd_per_mtok": 0.06,
+      "ling_worst_physical_call_usd": 0.00067584
+    },
+    "discovery_collection": {
+      "cost_ceiling_usd": 0.2,
+      "next_call_reservation_usd": {
+        "jev": 0.001032192,
+        "ling": 0.00202752
+      },
+      "physical": {
+        "combined": 240,
+        "jev": 48,
+        "ling": 192
+      },
+      "planned": {
+        "combined": 80,
+        "jev": 16,
+        "ling": 64
+      },
+      "worst_case_cost_usd": 0.146276352
+    },
+    "exploratory_replay": {
+      "branches": 3,
+      "cost_ceiling_usd": 0.1,
+      "events_max": 16,
+      "next_call_reservation_usd": {
+        "jev": 0.001032192
+      },
+      "physical": {
+        "combined": 144,
+        "jev": 144,
+        "ling": 0
+      },
+      "planned": {
+        "combined": 48,
+        "jev": 48,
+        "ling": 0
+      },
+      "worst_case_cost_usd": 0.049545216
+    },
+    "program": {
+      "arithmetic": "1 block x (collection: 16 x 4 Ling + 16 x 1 Jev; exploratory replay: <=16 events x 3 Jev), each x (1 + max_retries 2)",
+      "cost_ceiling_usd": 0.3,
+      "physical": {
+        "combined": 384,
+        "jev": 192,
+        "ling": 192
+      },
+      "planned": {
+        "combined": 128,
+        "jev": 64,
+        "ling": 64
+      },
+      "worst_case_cost_usd": 0.195821568
+    }
+  },
+  "complexity": "low",
+  "coverage_rules": {
+    "complete_case_scope": "the set of planned instances with all required fields: structural need, emission/silence, ownership, board write/read exposure, and information; reported by stage, form, and branch with reasons",
+    "discovery_screen_requirements": [
+      "every registered form must have at least one instance with structural need (finalizer_needs_peer)",
+      "every registered form must have at least one instance with voluntary emission (B-authored claim) or recorded silence",
+      "every registered form must have at least one instance with verified B ownership and an accepted board write followed by A read exposure"
+    ],
+    "exploratory_replay_requirements": [
+      "every registered form must have at least one complete real/placebo pair",
+      "a missing entire form blocks the full-form estimand; the available-form estimate is descriptive"
+    ],
+    "instances_per_form": 4,
+    "min_complete_per_form": 1,
+    "missing_entire_form": "blocks confirmation of the registered full-form estimand; label any available-form estimate descriptive",
+    "no_form_removal_after_outcomes": true,
+    "no_imputation": true,
+    "no_seed_replacement": true,
+    "permissible_within_form_missingness": "up to 3 of 4 seeds per form may be missing; at least 1 complete instance per form is required",
+    "reporting": "report planned, attempted, emitted, eligible, replayed, valid, complete, and missing counts by stage, form, and branch, with reasons; average valid complete pairs within their frozen forms, regardless of guards",
+    "selection_risk": "if within-form missingness is not random, the complete-case estimate may be biased; the registration freezes the permissible missingness before collection and reports the resulting complete-case scope and selection risk"
+  },
+  "design_classification": {
+    "attainable_two_sided_sign_flip_floor": "0.125",
+    "classification": "pilot",
+    "distinct_seed_ids_are_not_independent_forms": true,
+    "estimand": "equal-weight form mean of real-minus-placebo entropy",
+    "experimental_unit": "prompt form",
+    "floor_above_0_05": true,
+    "fresh_seed_replication": "descriptive only; a fresh-seed replication block cannot become confirmatory on this family",
+    "guards_never_filter_the_estimate": true,
+    "h0": "Delta = 0",
+    "h1": "Delta < 0",
+    "k": 4,
+    "k_bands": [
+      {
+        "classification": "pilot (descriptive/estimation only)",
+        "floor": "0.125",
+        "k": 4
+      },
+      {
+        "classification": "descriptive/estimation only",
+        "floor": "0.0625",
+        "k": 5
+      },
+      {
+        "classification": "potentially confirmatory, subject to all other gates",
+        "floor": "0.03125",
+        "k": 6
+      },
+      {
+        "classification": "potentially confirmatory, subject to all other gates",
+        "floor": "0.015625",
+        "k": 7
+      }
+    ],
+    "no_planning_low_effect_size_prior": true,
+    "pilot_vs_potentially_confirmatory": "pilot (descriptive/estimation only): k = 4 < 6, so the design is a pilot, not potentially confirmatory; no dichotomous rejection at alpha = 0.05 is attainable at any effect size on this family",
+    "statement": "the hypothesis form space is closed at k = 4 (P03 census), so the attainable exact two-sided sign-flip floor is 2/2^4 = 0.125 > 0.05. No dichotomous rejection at alpha = 0.05 is attainable at any effect size on this family. The design is a pilot (descriptive/estimation only), not potentially confirmatory; a potentially confirmatory design needs k >= 6. hypothesis remains descriptive, including for its fresh-seed replication block. Guards never filter the estimate; all forms and missingness are reported without imputation. No planning-low effect-size prior is used anywhere. Distinct seed ids are not independent forms; the experimental unit is the prompt form."
+  },
+  "deterministic_rebuild": {
+    "builder": "src/apart_incident_response/jev_p04_design_classification.py",
+    "byte_reproducible": true,
+    "rebuild_command": "python -m apart_incident_response.jev_p04_design_classification --repo-root ."
+  },
+  "exploratory_replay": {
+    "branches": [
+      "real",
+      "placebo",
+      "null"
+    ],
+    "estimand": "equal-weight form mean of real-minus-placebo entropy",
+    "fixed_across_branches": [
+      "receiver model",
+      "option set",
+      "wording",
+      "target",
+      "timing",
+      "pre-read state C"
+    ],
+    "inference": "descriptive only; k = 4 floor 0.125 > 0.05, so no significance-style claim is made",
+    "label": "exploratory; never confirmatory",
+    "may_not_pool_with_held_out": true,
+    "null": "no message",
+    "only_difference": "state.visible_messages",
+    "placebo": "controller-injected source-neutral re-presentation of a receiver-already-known A clue with I_m = 0 and no feasible-set reduction, same envelope as the real arm",
+    "real": "the exact accepted B-owned claim for the pre-read state, bound per instance as B's single owned private clue",
+    "status": "optional; separately covered by P05 authorization"
+  },
+  "family": "hypothesis",
+  "fixed_n": {
+    "block": "discovery",
+    "block_n": 16,
+    "form_count": 4,
+    "form_membership": {
+      "57ee9880f18bff4971516f9db820fd96dfb9eb86dab29e166025625e88a7b0c9": [
+        "hypothesis-00014c0b",
+        "hypothesis-00014c11",
+        "hypothesis-00014c1f",
+        "hypothesis-00014c21"
+      ],
+      "a0e4ffd0c0b442207bf171422592a1f0b8f58556e2d44d8845d74ec23853f03d": [
+        "hypothesis-00014c0c",
+        "hypothesis-00014c0d",
+        "hypothesis-00014c0e",
+        "hypothesis-00014c10"
+      ],
+      "a95806c84d3a722d0ae240c637277373526956b57051cf006e5430706bf6e94c": [
+        "hypothesis-00014c0a",
+        "hypothesis-00014c14",
+        "hypothesis-00014c15",
+        "hypothesis-00014c19"
+      ],
+      "fc05e96360fa58fd2398727a886654d27d87fe561b2160002bcc01511f322562": [
+        "hypothesis-00014c08",
+        "hypothesis-00014c09",
+        "hypothesis-00014c0f",
+        "hypothesis-00014c13"
+      ]
+    },
+    "instances_per_form": 4,
+    "manifest": [
+      {
+        "instance_id": "hypothesis-00014c0b",
+        "prompt_form_id": "57ee9880f18bff4971516f9db820fd96dfb9eb86dab29e166025625e88a7b0c9",
+        "seed": 85003
+      },
+      {
+        "instance_id": "hypothesis-00014c11",
+        "prompt_form_id": "57ee9880f18bff4971516f9db820fd96dfb9eb86dab29e166025625e88a7b0c9",
+        "seed": 85009
+      },
+      {
+        "instance_id": "hypothesis-00014c1f",
+        "prompt_form_id": "57ee9880f18bff4971516f9db820fd96dfb9eb86dab29e166025625e88a7b0c9",
+        "seed": 85023
+      },
+      {
+        "instance_id": "hypothesis-00014c21",
+        "prompt_form_id": "57ee9880f18bff4971516f9db820fd96dfb9eb86dab29e166025625e88a7b0c9",
+        "seed": 85025
+      },
+      {
+        "instance_id": "hypothesis-00014c0c",
+        "prompt_form_id": "a0e4ffd0c0b442207bf171422592a1f0b8f58556e2d44d8845d74ec23853f03d",
+        "seed": 85004
+      },
+      {
+        "instance_id": "hypothesis-00014c0d",
+        "prompt_form_id": "a0e4ffd0c0b442207bf171422592a1f0b8f58556e2d44d8845d74ec23853f03d",
+        "seed": 85005
+      },
+      {
+        "instance_id": "hypothesis-00014c0e",
+        "prompt_form_id": "a0e4ffd0c0b442207bf171422592a1f0b8f58556e2d44d8845d74ec23853f03d",
+        "seed": 85006
+      },
+      {
+        "instance_id": "hypothesis-00014c10",
+        "prompt_form_id": "a0e4ffd0c0b442207bf171422592a1f0b8f58556e2d44d8845d74ec23853f03d",
+        "seed": 85008
+      },
+      {
+        "instance_id": "hypothesis-00014c0a",
+        "prompt_form_id": "a95806c84d3a722d0ae240c637277373526956b57051cf006e5430706bf6e94c",
+        "seed": 85002
+      },
+      {
+        "instance_id": "hypothesis-00014c14",
+        "prompt_form_id": "a95806c84d3a722d0ae240c637277373526956b57051cf006e5430706bf6e94c",
+        "seed": 85012
+      },
+      {
+        "instance_id": "hypothesis-00014c15",
+        "prompt_form_id": "a95806c84d3a722d0ae240c637277373526956b57051cf006e5430706bf6e94c",
+        "seed": 85013
+      },
+      {
+        "instance_id": "hypothesis-00014c19",
+        "prompt_form_id": "a95806c84d3a722d0ae240c637277373526956b57051cf006e5430706bf6e94c",
+        "seed": 85017
+      },
+      {
+        "instance_id": "hypothesis-00014c08",
+        "prompt_form_id": "fc05e96360fa58fd2398727a886654d27d87fe561b2160002bcc01511f322562",
+        "seed": 85000
+      },
+      {
+        "instance_id": "hypothesis-00014c09",
+        "prompt_form_id": "fc05e96360fa58fd2398727a886654d27d87fe561b2160002bcc01511f322562",
+        "seed": 85001
+      },
+      {
+        "instance_id": "hypothesis-00014c0f",
+        "prompt_form_id": "fc05e96360fa58fd2398727a886654d27d87fe561b2160002bcc01511f322562",
+        "seed": 85007
+      },
+      {
+        "instance_id": "hypothesis-00014c13",
+        "prompt_form_id": "fc05e96360fa58fd2398727a886654d27d87fe561b2160002bcc01511f322562",
+        "seed": 85011
+      }
+    ],
+    "manifest_hash": "60b31896734c5767910d0b72527f621c8f10c52aebd0359edcec23e8473ae4d5",
+    "matches_200_audit_primary_block": true,
+    "selection_rule": "first INSTANCES_PER_FORM seeds per form in ascending seed order within the window; fixed N; no outcome-based stopping",
+    "window": {
+      "base": 85000,
+      "end": 85511,
+      "window": 512
+    }
+  },
+  "inference_plan": {
+    "alpha": 0.05,
+    "attainable_two_sided_floor_by_k": {
+      "4": "0.125",
+      "5": "0.0625",
+      "6": "0.03125",
+      "7": "0.015625"
+    },
+    "consequence": "k = 4 < 6, so the attainable exact two-sided sign-flip floor is 0.125 > 0.05; no dichotomous rejection at alpha = 0.05 is attainable at any effect size on this family",
+    "direction_requirement": "the observed equal-form mean must be negative",
+    "guards": {
+      "feasible_set_mass_epsilon": 0.01,
+      "reporting": "reported separately by form and event; never used to filter the primary entropy estimate",
+      "target_probability_delta": 0.0,
+      "useful_uptake_rule": "an entropy drop alone is never useful uptake when either guard fails"
+    },
+    "imputation": "never impute missing pairs",
+    "interval": "form-mean t interval with df = k - 1 (k = 4 => df = 3)",
+    "interval_half_width": {
+      "formula": "t(0.975, k-1) x SD_between / sqrt(k)",
+      "label": "illustrative interval half-width, not a power-based MDE; the planning-low estimate and p-value are not used as a prior or an effect-size guarantee",
+      "not_a_prior": true
+    },
+    "k_from_census": 4,
+    "minimum_form_rule": "a dichotomous confirmatory claim requires at least six distinct prompt forms; fewer than six is descriptive (k = 4 and k = 5) or replay-coverage failure",
+    "minimum_forms_for_confirmatory": 6,
+    "missingness": {
+      "below_six_forms": "descriptive/estimation only",
+      "complete_pair": "real and placebo both valid",
+      "missing_entire_form": "blocks confirmation of the registered full-form estimand; label any available-form estimate descriptive",
+      "primary_requirement": "at least one complete pair in every registered form"
+    },
+    "primary_test": "exhaustive two-sided cluster sign-flip over the k form means",
+    "prohibited_as_primary": [
+      "instance-level t-test",
+      "instance-level Wilcoxon test",
+      "instance-weighted mean",
+      "treating events as independent states"
+    ]
+  },
+  "input_evidence": {
+    "audit_200": {
+      "audit_content_hash": "5242e9cfa35e3a77c54045475428dd617cf93cb16d464b55ad679adc35f80a83",
+      "file_sha256": "cb529cd61e0e662bfa19fc4998e89fa59a0bf0d63e14f77498035466d6bce89d",
+      "path": "runs/epic-126/replication/jev-replication-form-audit-v1.json"
+    },
+    "census_p03": {
+      "content_hash": "ee0ba3a1714828b3e39834280a0a2eb7850f1cc0526463eb59d3bc4b7026fe14",
+      "file_sha256": "da57b403d36fd91fd5d90aeb5ef5d7f894ee19fffbfc41a2d2b2dd95f922b34b",
+      "path": "runs/next-phase/jev-form-census-v1.json"
+    },
+    "registration_200": {
+      "file_sha256": "bddf46ed5fd87ec4da99532d645580a65e250d64639de80477002ff73d278f3c",
+      "path": "runs/epic-126/replication/jev-replication-preregistration-v1.json",
+      "preregistration_hash": "ff186a066e6af093ecc383e668d948bdca7c1ef8f84b5752b88db47960a6ec6d"
+    },
+    "scope_freeze_p02": {
+      "content_hash": "4cf5556c8e9c0811653e4b4d726a7b437d43bd63134cad0f80b84eb9148ec59b",
+      "file_sha256": "c254c45c748a33d9f1514f2a497fe6fbc5d96fbb7553eb142d8fe22a4b64c474",
+      "path": "runs/next-phase/jev-p02-scope-freeze.json"
+    }
+  },
+  "issue": "#205",
+  "multiplicity": {
+    "family_level_control": "Holm step-down across the registered family set",
+    "family_set_frozen_before_outcomes": true,
+    "forbidden": [
+      "sweeping families and selecting a winner post hoc",
+      "adding a family after outcomes are visible",
+      "removing a registered family after outcomes are visible"
+    ],
+    "future_families": "any additional family requires its own preregistration and its own discovery/confirmation blocks; it may never be added to this family set after outcomes are visible",
+    "registered_family_count": 1,
+    "registered_family_set": [
+      "hypothesis"
+    ],
+    "single_family_reduction": "with exactly one registered family the Holm-adjusted p equals the raw p; no cross-family claim follows"
+  },
+  "non_claims": [
+    "no population-level claim",
+    "no cross-family claim",
+    "no calibration claim",
+    "no instance-level claim",
+    "no unique-information claim",
+    "no generalization beyond the registered forms",
+    "no use of the planning-low estimate or p-value as a prior or effect-size guarantee",
+    "no post-hoc family sweep or winner selection",
+    "no confirmatory claim from the k = 4 design or its fresh-seed replication"
+  ],
+  "offline_only": true,
+  "parent_issue": "#201",
+  "path_lifecycle": {
+    "append": false,
+    "fresh_paths": true,
+    "location_note": "reserved live output paths live under runs/next-phase/, not runs/epic-126/next-phase/, because the frozen #200 scan (runs/epic-126/**/*.json[l]) picks up instance ids from any file under runs/epic-126/ and would break the frozen prior-instance-id pin once a live journal exists; this matches the P02/P03 precedent",
+    "overwrite": false,
+    "path_overrides": false,
+    "resume": false,
+    "rule": "each phase writes only its own registered paths; a stopped run requires a new registration and a new review before any fresh attempt"
+  },
+  "paths": {
+    "discovery_journal": "runs/next-phase/hypothesis/jev-discovery-v1/jev-discovery-collection.jsonl",
+    "discovery_report": "runs/next-phase/hypothesis/jev-discovery-v1/jev-discovery-collection-report.json",
+    "exploratory_replay_journal": "runs/next-phase/hypothesis/jev-discovery-v1/jev-exploratory-replay.jsonl",
+    "exploratory_replay_report": "runs/next-phase/hypothesis/jev-discovery-v1/jev-exploratory-replay-report.json",
+    "registration": "runs/next-phase/jev-p04-discovery-registration-v1.json"
+  },
+  "preregistration_version": "jev-discovery-registration-v1",
+  "protocol": "docs/jev-discovery-confirmation-plan.md",
+  "regime": "N",
+  "registration_hash": "6fa6149770b620cd3a026a6415f8e4d97e800e8af5237794de7b29fca6dacfac",
+  "reuse": "#200 audit/registration reused as input evidence (hash-pinned); P02 scope freeze and P03 census reused as input evidence (hash-pinned); frozen artifacts preserved byte-for-byte",
+  "root_issue": "#159",
+  "route": {
+    "jev": {
+      "backoff": {
+        "initial_seconds": 0.5,
+        "jitter": 0.25,
+        "max_seconds": 5.0
+      },
+      "codec_version": "jev-choice-wire-v2",
+      "endpoint": "https://api.typesafe.ai/v1/systemone",
+      "max_retries": 2,
+      "model": "jev-1.13.0",
+      "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+      "retryable_statuses": [
+        408,
+        429,
+        500,
+        502,
+        503,
+        504,
+        529
+      ],
+      "timeout_seconds": 30.0
+    },
+    "ling": {
+      "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+      "key_loader": "behavioral_discovery._api_key",
+      "max_retries": 2,
+      "min_attempt_interval_seconds": 3.25,
+      "model": "inclusionai/ling-3.0-flash-vl",
+      "pacing": "ling-writer-openrouter-pacing-v3, 3.25 s between physical attempts",
+      "pacing_algorithm": "monotonic_min_interval_between_physical_attempt_starts",
+      "retryable_statuses": [
+        408,
+        429,
+        500,
+        502,
+        503,
+        504,
+        529
+      ],
+      "route": "paid OpenRouter SKU (the free SKU is not routable)",
+      "temperature": 0.0
+    },
+    "normalization": {
+      "hard_ceiling": 0.05,
+      "policy": {
+        "capture_then_judge": true,
+        "codec_version": "jev-choice-wire-v2",
+        "diagnostics_fields": [
+          "option_count",
+          "raw_probability_sum",
+          "signed_normalization_deviation",
+          "absolute_normalization_deviation",
+          "minimum_probability",
+          "maximum_probability",
+          "zero_count",
+          "all_finite",
+          "all_nonnegative",
+          "shape_valid",
+          "invalid_classes",
+          "raw_argmax_set",
+          "normalization_tier",
+          "renormalized",
+          "argmax_preserved",
+          "normalization_adjustment",
+          "entropy_raw_bits",
+          "entropy_normalized_bits"
+        ],
+        "hard_ceiling": 0.05,
+        "invalidity": {
+          "exact_option_identity_required": true,
+          "malformed_envelope_may_lack_vector": true,
+          "never_repaired": [
+            "empty",
+            "missing",
+            "nonnumeric",
+            "non_finite",
+            "negative",
+            "option_mismatched"
+          ],
+          "raw_vector_retained_on_invalid": "when safe (finite); non-finite values are encoded as strings"
+        },
+        "policy_fingerprint": "",
+        "quantization_bound": 0.03,
+        "raw_provider_envelope_retained": false,
+        "raw_vs_normalized_metrics": {
+          "normalized_vector_used_for": [
+            "entropy_bits",
+            "p_target",
+            "feasible_mass",
+            "brier_score",
+            "log_loss",
+            "selection_validation",
+            "downstream_replay_inference"
+          ],
+          "raw_retained_separately": [
+            "raw_probabilities",
+            "raw_probability_sum",
+            "signed_normalization_deviation",
+            "absolute_normalization_deviation"
+          ]
+        },
+        "renormalization": {
+          "applied_to": "every accepted vector (exact and complete_renormalized)",
+          "argmax_preservation_required": true,
+          "exact_tier_rescale": "within 1e-6; usually a numerical no-op but applied for one invariant",
+          "fail_closed_class": "argmax_shifted_on_renormalization",
+          "formula": "p_normalized[i] = p_raw[i] / sum(p_raw)",
+          "material_correction_band": "complete_renormalized"
+        },
+        "sensitivity_grid": [
+          1e-06,
+          0.01,
+          0.03,
+          0.05
+        ],
+        "tiers": {
+          "complete_renormalized": {
+            "boundary_epsilon": 1.7763568394002505e-15,
+            "boundary_inclusive_with_machine_epsilon": true,
+            "material_correction": true,
+            "max_absolute_deviation": 0.01,
+            "min_absolute_deviation_exclusive": 1e-06,
+            "renormalized": true,
+            "valid": true
+          },
+          "exact": {
+            "inclusive": true,
+            "material_correction": false,
+            "max_absolute_deviation": 1e-06,
+            "renormalized": true,
+            "valid": true
+          },
+          "not_normalized_hard": {
+            "min_absolute_deviation_exclusive": 0.05,
+            "renormalized": false,
+            "role": "invalid; triggers the registered hard stop",
+            "valid": false
+          },
+          "not_normalized_suspect": {
+            "max_absolute_deviation": 0.05,
+            "min_absolute_deviation_exclusive": 0.01,
+            "renormalized": false,
+            "role": "sensitivity diagnostic only; not accepted",
+            "valid": false
+          }
+        }
+      },
+      "policy_hash": "292ac217f1cf54083252e6363a16a48596daab72a8ca06d4569c20f861b7e1e9",
+      "rule": "normalize every accepted vector before any metric",
+      "tiers": [
+        "exact",
+        "complete_renormalized"
+      ]
+    }
+  },
+  "stage": "hypothesis:low discovery screen and optional exploratory replay",
+  "status": "draft_pending_review",
+  "stops": [
+    "request or cost cap before the next call",
+    "model drift",
+    "protocol-key drift",
+    "request/state/option identity drift",
+    "malformed, non-finite, negative or option-mismatched vector",
+    "hard normalization deviation above 0.05",
+    "argmax shift after normalization",
+    "output collision (journal or report already exists)",
+    "registration, source, treatment or geometry hash drift",
+    "writer terminal errors (empty_output, truncated_output, unparsed_output, invalid_answer, writer_error, rate-limited)",
+    "two consecutive terminal provider failures"
+  ],
+  "treatment": {
+    "agents": [
+      "A",
+      "B"
+    ],
+    "board_evidence": "an accepted board_write by the writer whose normalized_claim and raw_text equal the claim and whose receiver_id is A, followed by an A peer_read_exposure with a nonempty exposure_id and read sequence strictly after the write; rejected or missing evidence yields no event",
+    "complexity": "low",
+    "exposure_id": "jev-finalizer",
+    "family": "hypothesis",
+    "final_receiver": "A via Jev Choice wire v2",
+    "generator_version": "six-family-clue-consistent-v2",
+    "mode": "exact-original-comm-bridge",
+    "ownership": "accepted board writes require exact instance.holds_claim ownership; non_owned_claim is rejected and journaled",
+    "primary_direction": "one-way B->A",
+    "regime": "N",
+    "turns": 2,
+    "visibility": "peer-only board rows; the Jev receiver A sees only accepted B-authored claims; rejected writes are never visible",
+    "writer_prompt": {
+      "max_tokens": 1024,
+      "output_grammar": "ANSWER: <label> + optional MESSAGE: <claim>; answer-only = silence",
+      "path": "communication_runner.AgentContext -> behavioral_discovery.treatment_prompt -> json.dumps(sort_keys=True)",
+      "prompt_fields": [
+        "instruction",
+        "family",
+        "complexity",
+        "condition",
+        "turn",
+        "is_finalizer",
+        "finalizing_agent",
+        "candidate_labels",
+        "joint_clues",
+        "private_clues",
+        "visible_messages"
+      ],
+      "prompt_hash": "80072617786477f58b846bef1fe580eec31330e8733828ef22e25087b67488b0",
+      "prompt_schema_version": "treatment-prompt-v2",
+      "provider_version": "behavioral-discovery-v1",
+      "seed_behavior": {
+        "algorithm": "sha256-truncated-signed31-v1",
+        "inputs": "provider_seed(instance_id, 'COMM', turn, agent_id)",
+        "sent_as_seed_field": true
+      },
+      "serialization": "json.dumps(treatment_prompt(context), sort_keys=True)",
+      "temperature": 0.0
+    },
+    "writer_transport": {
+      "backoff_initial_seconds": 0.5,
+      "backoff_max_seconds": 5.0,
+      "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+      "key_loader": "behavioral_discovery._api_key",
+      "max_retries": 2,
+      "min_attempt_interval_seconds": 3.25,
+      "model": "inclusionai/ling-3.0-flash-vl",
+      "pacing_algorithm": "monotonic_min_interval_between_physical_attempt_starts",
+      "retryable_statuses": [
+        408,
+        429,
+        500,
+        502,
+        503,
+        504,
+        529
+      ],
+      "supported_retry_headers": [
+        "retry-after",
+        "retry-after-ms"
+      ],
+      "temperature": 0.0,
+      "token_budget": 1024,
+      "writer_outcomes_version": "ling-writer-outcomes-v5",
+      "writer_parser_version": "ling-writer-parser-v5"
+    }
+  }
+}
