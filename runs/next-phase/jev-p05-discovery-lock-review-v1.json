@@ -1,0 +1,101 @@
+{
+  "blocking_findings": [],
+  "checks": [
+    {
+      "check": "lock_hash_recomputes_independently",
+      "detail": "sha256(json.dumps(doc_without_lock_hash, sort_keys=True)) = 9de4a61f9d46c47b55bbe7b8da9903c677c6461bf4af353007277835ed6a18b3; matches recorded lock_hash (indent-2 variant 32af2f22... is not used, confirming the stated serialization).",
+      "ok": true
+    },
+    {
+      "check": "evidence_path_hashes_match_disk",
+      "detail": "7/7 recomputed: audit cb529cd6..., prereg bddf46ed..., scope c254c45c..., census da57b403..., p04 registration 78f7cd03..., p04 doc d110547c..., protocol 501e21b6... all match.",
+      "ok": true
+    },
+    {
+      "check": "offline_preflight_green",
+      "detail": "PYTHONPATH=src .venv/bin/python -m apart_incident_response.jev_p05_discovery_lock --repo-root . --preflight -> exit 0, mode jev-discovery-lock-v1-preflight, checks_run=51, failed=[], provider_calls=0.",
+      "ok": true
+    },
+    {
+      "check": "offline_preflight_zero_provider_calls",
+      "detail": "Re-ran preflight under a sys.addaudithook recording socket.connect/getaddrinfo/urllib.Request events: 0 network events, exit 0.",
+      "ok": true
+    },
+    {
+      "check": "full_verification_fails_closed_only_on_review_record",
+      "detail": "Full verify -> exit 2, checks_run=43, provider_calls=0, 0 network audit events. Exactly 5 failures, all review-record: review_record_exists, review_record_approved, review_record_matches_lock_hash, review_record_no_blocking_findings, review_record_covers_required_scope (record runs/next-phase/jev-p05-discovery-lock-review-v1.json absent, as designed). All other 38 checks pass, including lock_rebuilds_byte_for_byte, lock_file_is_byte_reproducible, embedded_preflight_matches_fresh (51), evidence_path_hashes_recompute.",
+      "ok": true
+    },
+    {
+      "check": "lock_bytes_reproducible",
+      "detail": "verify_lock rebuild of the lock equals the on-disk document and the rendered bytes.",
+      "ok": true
+    },
+    {
+      "check": "registration_hash_recomputes",
+      "detail": "P04 registration_hash recomputes to 6fa6149770b620cd3a026a6415f8e4d97e800e8af5237794de7b29fca6dacfac, matching the pin in locked_registration.",
+      "ok": true
+    },
+    {
+      "check": "design_classification_preserved",
+      "detail": "k=4, attainable_two_sided_sign_flip_floor='0.125', classification='pilot', descriptive_only=true, fresh_seed_replication='descriptive only...', estimand/h0='Delta = 0'/h1='Delta < 0', guards_never_filter=true, no_planning_low_prior=true — identical to P04 registration design_classification and to docs/jev-p04-design-classification.md (k = 4, 2/2^4 = 0.125 > 0.05, pilot, fresh-seed descriptive).",
+      "ok": true
+    },
+    {
+      "check": "frozen_200_artifacts_byte_unchanged",
+      "detail": "Disk hashes equal the P04 input_evidence pins: runs/epic-126/replication/jev-replication-form-audit-v1.json cb529cd61e0e662bfa19fc4998e89fa59a0bf0d63e14f77498035466d6bce89d; runs/epic-126/replication/jev-replication-preregistration-v1.json bddf46ed5fd87ec4da99532d645580a65e250d64639de80477002ff73d278f3c. Also match lock evidence_paths and preserved.frozen_200_artifacts.",
+      "ok": true
+    },
+    {
+      "check": "authorization_scope_matches_registration_field_by_field",
+      "detail": "stage, family, route (full dict incl. normalization/policy_hash 292ac217...), stops, paths, path_lifecycle all exact-equal to the P04 registration. request_caps: block_n=16, retry_model, collection planned 80/16/64 + physical 240/48/192, replay planned 48/48/0 + physical 144/144/0, branches=3, events_max=16, program planned 128/64/64 + physical 384/192/192 — all match. cost_caps: collection ceiling 0.2 / worst 0.146276352, replay ceiling 0.1 / worst 0.049545216, program ceiling 0.3 / worst 0.195821568, next-call reservations {jev 0.001032192, ling 0.00202752} and replay {jev 0.001032192} — all match; ceilings are $0.20 / $0.10 / $0.30 as specified.",
+      "ok": true
+    },
+    {
+      "check": "authorization_reference_genuinely_absent",
+      "detail": "state='pending_not_supplied', reference=null, recorded_at=null, must_cover=['stage','route','request_caps','cost_caps'], may_not_be_inferred_from covers this lock, the locked registration, environment credentials, the task prompt/plan document, and reserved output paths; blocks '#207 (P06)'. Lock authorizes 'nothing beyond locking the reviewed offline discovery design; no provider call, no collection, no live run'. No authorization file exists anywhere under runs/ or docs/.",
+      "ok": true
+    },
+    {
+      "check": "live_output_paths_absent",
+      "detail": "All four registered paths absent; runs/next-phase/hypothesis/ does not exist at all.",
+      "ok": true
+    },
+    {
+      "check": "issue_206_open_gate_not_closed",
+      "detail": "status=open, closed_at=null, no comments, blocked_by [205], blocking [207]; description matches the protocol P05 row verbatim.",
+      "ok": true
+    },
+    {
+      "check": "issue_207_open_no_successor_started",
+      "detail": "status=open, closed_at=null, blocked_by [206], labels include live-gated.",
+      "ok": true
+    },
+    {
+      "check": "protocol_p05_row_and_policy_cross_referenced",
+      "detail": "P05 row (line 194) and #206 acceptance text agree; multiplicity/registration policy section (lines 147-177) requirements are reflected in the registration's multiplicity and coverage_rules blocks copied into the lock scope.",
+      "ok": true
+    },
+    {
+      "check": "no_repository_mutation_by_this_review",
+      "detail": "git status shows 0 modified tracked files; only the two pre-existing untracked artifacts (lock json and module).",
+      "ok": true
+    }
+  ],
+  "findings": [
+    "P04 registration status_at_lock is still 'draft_pending_review' with 4 pending_review items; #206 requires a reviewed registration lock before any live authorization, so a separate registration review remains outstanding — this is honestly recorded and is not a defect of the lock itself.",
+    "The lock JSON and its generator module are still untracked in git; per AGENTS.md they should be included when this work is committed.",
+    "authorization_scope.cost_caps omits budgets.cost_model per-call rates (they are checked in the preflight and pinned indirectly via the registration file_sha256); not required by #206's 'request and cost caps'.",
+    "The review record file does not exist yet — that is the sole reason full verification exits 2, which is the intended fail-closed behavior."
+  ],
+  "lock_path": "runs/next-phase/jev-p05-discovery-lock-v1.json",
+  "provider_calls": 0,
+  "review_version": "jev-discovery-lock-review-v1",
+  "reviewed_against": [
+    "#206",
+    "docs/jev-discovery-confirmation-plan.md"
+  ],
+  "reviewed_lock_hash": "9de4a61f9d46c47b55bbe7b8da9903c677c6461bf4af353007277835ed6a18b3",
+  "reviewer": "MiMo-V2-Flash (opencode-go), independent read-only reviewer",
+  "verdict": "approved"
+}

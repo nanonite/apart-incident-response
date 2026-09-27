@@ -37,6 +37,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix board IPC integration and CLI tool wiring (#58)
 
 ### Changed
+- P05 — Lock discovery design and record live authorization [hypothesis:low] (#206)
+- Run the offline preflight (51 checks, `provider_calls: 0`), publish the versioned discovery lock `jev-p05-discovery-lock-v1` (`lock_hash` `9de4a61f9d46c47b55bbe7b8da9903c677c6461bf4af353007277835ed6a18b3`) over the P04 registration, freeze the exact stage, route, request caps and cost caps ($0.20 collection / $0.10 exploratory replay / $0.30 program) that a separate authorization reference must cover, and attach an independent approved review record; locking is not authorization, so #206 stays open and #207 stays blocked (#206)
 - P04 — Classify design and plan discovery [hypothesis:low] (#205)
 - Classify the hypothesis:low design (k = 4, attainable two-sided sign-flip floor 0.125 > 0.05, pilot not potentially confirmatory, fresh-seed replication descriptive) and draft the offline discovery registration (`jev-discovery-registration-v1`) with fixed N = 16, treatment/route, budgets, terminal stops, fresh paths, and coverage rules; resolves the six-form minimum and interval half-width labeling logged in P01 §5 (#205)
 - P03 — Audit form capacity and independence [hypothesis:low] (#204)

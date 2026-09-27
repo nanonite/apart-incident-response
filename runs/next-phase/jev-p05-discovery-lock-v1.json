@@ -1,0 +1,357 @@
+{
+  "authorization_reference": {
+    "blocks": "#207 (P06) remains blocked until a separate explicit reference is supplied and recorded",
+    "may_not_be_inferred_from": [
+      "this lock",
+      "the locked registration",
+      "credentials present in the environment",
+      "the task prompt or plan document",
+      "the presence of reserved output paths"
+    ],
+    "must_cover": [
+      "stage",
+      "route",
+      "request_caps",
+      "cost_caps"
+    ],
+    "recorded_at": null,
+    "reference": null,
+    "required_before": "any provider call, including the first discovery-collection call and any exploratory replay call",
+    "state": "pending_not_supplied"
+  },
+  "authorization_scope": {
+    "cost_caps": {
+      "discovery_collection_ceiling_usd": 0.2,
+      "discovery_collection_worst_case_usd": 0.146276352,
+      "exploratory_replay_ceiling_usd": 0.1,
+      "exploratory_replay_worst_case_usd": 0.049545216,
+      "next_call_reservation_usd": {
+        "discovery_collection": {
+          "jev": 0.001032192,
+          "ling": 0.00202752
+        },
+        "exploratory_replay": {
+          "jev": 0.001032192
+        }
+      },
+      "program_ceiling_usd": 0.3,
+      "program_worst_case_usd": 0.195821568
+    },
+    "family": "hypothesis",
+    "path_lifecycle": {
+      "append": false,
+      "fresh_paths": true,
+      "location_note": "reserved live output paths live under runs/next-phase/, not runs/epic-126/next-phase/, because the frozen #200 scan (runs/epic-126/**/*.json[l]) picks up instance ids from any file under runs/epic-126/ and would break the frozen prior-instance-id pin once a live journal exists; this matches the P02/P03 precedent",
+      "overwrite": false,
+      "path_overrides": false,
+      "resume": false,
+      "rule": "each phase writes only its own registered paths; a stopped run requires a new registration and a new review before any fresh attempt"
+    },
+    "paths": {
+      "discovery_journal": "runs/next-phase/hypothesis/jev-discovery-v1/jev-discovery-collection.jsonl",
+      "discovery_report": "runs/next-phase/hypothesis/jev-discovery-v1/jev-discovery-collection-report.json",
+      "exploratory_replay_journal": "runs/next-phase/hypothesis/jev-discovery-v1/jev-exploratory-replay.jsonl",
+      "exploratory_replay_report": "runs/next-phase/hypothesis/jev-discovery-v1/jev-exploratory-replay-report.json",
+      "registration": "runs/next-phase/jev-p04-discovery-registration-v1.json"
+    },
+    "request_caps": {
+      "block_n": 16,
+      "discovery_collection_physical": {
+        "combined": 240,
+        "jev": 48,
+        "ling": 192
+      },
+      "discovery_collection_planned": {
+        "combined": 80,
+        "jev": 16,
+        "ling": 64
+      },
+      "exploratory_replay_branches": 3,
+      "exploratory_replay_events_max": 16,
+      "exploratory_replay_physical": {
+        "combined": 144,
+        "jev": 144,
+        "ling": 0
+      },
+      "exploratory_replay_planned": {
+        "combined": 48,
+        "jev": 48,
+        "ling": 0
+      },
+      "program_physical": {
+        "combined": 384,
+        "jev": 192,
+        "ling": 192
+      },
+      "program_planned": {
+        "combined": 128,
+        "jev": 64,
+        "ling": 64
+      },
+      "retry_model": "every logical call may execute up to 3 physical attempts (1 + max_retries 2); all caps are retry inclusive"
+    },
+    "route": {
+      "jev": {
+        "backoff": {
+          "initial_seconds": 0.5,
+          "jitter": 0.25,
+          "max_seconds": 5.0
+        },
+        "codec_version": "jev-choice-wire-v2",
+        "endpoint": "https://api.typesafe.ai/v1/systemone",
+        "max_retries": 2,
+        "model": "jev-1.13.0",
+        "protocol_key": "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0",
+        "retryable_statuses": [
+          408,
+          429,
+          500,
+          502,
+          503,
+          504,
+          529
+        ],
+        "timeout_seconds": 30.0
+      },
+      "ling": {
+        "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+        "key_loader": "behavioral_discovery._api_key",
+        "max_retries": 2,
+        "min_attempt_interval_seconds": 3.25,
+        "model": "inclusionai/ling-3.0-flash-vl",
+        "pacing": "ling-writer-openrouter-pacing-v3, 3.25 s between physical attempts",
+        "pacing_algorithm": "monotonic_min_interval_between_physical_attempt_starts",
+        "retryable_statuses": [
+          408,
+          429,
+          500,
+          502,
+          503,
+          504,
+          529
+        ],
+        "route": "paid OpenRouter SKU (the free SKU is not routable)",
+        "temperature": 0.0
+      },
+      "normalization": {
+        "hard_ceiling": 0.05,
+        "policy": {
+          "capture_then_judge": true,
+          "codec_version": "jev-choice-wire-v2",
+          "diagnostics_fields": [
+            "option_count",
+            "raw_probability_sum",
+            "signed_normalization_deviation",
+            "absolute_normalization_deviation",
+            "minimum_probability",
+            "maximum_probability",
+            "zero_count",
+            "all_finite",
+            "all_nonnegative",
+            "shape_valid",
+            "invalid_classes",
+            "raw_argmax_set",
+            "normalization_tier",
+            "renormalized",
+            "argmax_preserved",
+            "normalization_adjustment",
+            "entropy_raw_bits",
+            "entropy_normalized_bits"
+          ],
+          "hard_ceiling": 0.05,
+          "invalidity": {
+            "exact_option_identity_required": true,
+            "malformed_envelope_may_lack_vector": true,
+            "never_repaired": [
+              "empty",
+              "missing",
+              "nonnumeric",
+              "non_finite",
+              "negative",
+              "option_mismatched"
+            ],
+            "raw_vector_retained_on_invalid": "when safe (finite); non-finite values are encoded as strings"
+          },
+          "policy_fingerprint": "",
+          "quantization_bound": 0.03,
+          "raw_provider_envelope_retained": false,
+          "raw_vs_normalized_metrics": {
+            "normalized_vector_used_for": [
+              "entropy_bits",
+              "p_target",
+              "feasible_mass",
+              "brier_score",
+              "log_loss",
+              "selection_validation",
+              "downstream_replay_inference"
+            ],
+            "raw_retained_separately": [
+              "raw_probabilities",
+              "raw_probability_sum",
+              "signed_normalization_deviation",
+              "absolute_normalization_deviation"
+            ]
+          },
+          "renormalization": {
+            "applied_to": "every accepted vector (exact and complete_renormalized)",
+            "argmax_preservation_required": true,
+            "exact_tier_rescale": "within 1e-6; usually a numerical no-op but applied for one invariant",
+            "fail_closed_class": "argmax_shifted_on_renormalization",
+            "formula": "p_normalized[i] = p_raw[i] / sum(p_raw)",
+            "material_correction_band": "complete_renormalized"
+          },
+          "sensitivity_grid": [
+            1e-06,
+            0.01,
+            0.03,
+            0.05
+          ],
+          "tiers": {
+            "complete_renormalized": {
+              "boundary_epsilon": 1.7763568394002505e-15,
+              "boundary_inclusive_with_machine_epsilon": true,
+              "material_correction": true,
+              "max_absolute_deviation": 0.01,
+              "min_absolute_deviation_exclusive": 1e-06,
+              "renormalized": true,
+              "valid": true
+            },
+            "exact": {
+              "inclusive": true,
+              "material_correction": false,
+              "max_absolute_deviation": 1e-06,
+              "renormalized": true,
+              "valid": true
+            },
+            "not_normalized_hard": {
+              "min_absolute_deviation_exclusive": 0.05,
+              "renormalized": false,
+              "role": "invalid; triggers the registered hard stop",
+              "valid": false
+            },
+            "not_normalized_suspect": {
+              "max_absolute_deviation": 0.05,
+              "min_absolute_deviation_exclusive": 0.01,
+              "renormalized": false,
+              "role": "sensitivity diagnostic only; not accepted",
+              "valid": false
+            }
+          }
+        },
+        "policy_hash": "292ac217f1cf54083252e6363a16a48596daab72a8ca06d4569c20f861b7e1e9",
+        "rule": "normalize every accepted vector before any metric",
+        "tiers": [
+          "exact",
+          "complete_renormalized"
+        ]
+      }
+    },
+    "stage": "hypothesis:low discovery screen and optional exploratory replay",
+    "stops": [
+      "request or cost cap before the next call",
+      "model drift",
+      "protocol-key drift",
+      "request/state/option identity drift",
+      "malformed, non-finite, negative or option-mismatched vector",
+      "hard normalization deviation above 0.05",
+      "argmax shift after normalization",
+      "output collision (journal or report already exists)",
+      "registration, source, treatment or geometry hash drift",
+      "writer terminal errors (empty_output, truncated_output, unparsed_output, invalid_answer, writer_error, rate-limited)",
+      "two consecutive terminal provider failures"
+    ]
+  },
+  "authorizes": "nothing beyond locking the reviewed offline discovery design; no provider call, no collection, no live run",
+  "evidence_paths": [
+    {
+      "path": "runs/epic-126/replication/jev-replication-form-audit-v1.json",
+      "role": "#200 frozen form audit (input evidence)",
+      "sha256": "cb529cd61e0e662bfa19fc4998e89fa59a0bf0d63e14f77498035466d6bce89d"
+    },
+    {
+      "path": "runs/epic-126/replication/jev-replication-preregistration-v1.json",
+      "role": "#200 frozen draft registration (input evidence)",
+      "sha256": "bddf46ed5fd87ec4da99532d645580a65e250d64639de80477002ff73d278f3c"
+    },
+    {
+      "path": "runs/next-phase/jev-p02-scope-freeze.json",
+      "role": "P02 scope freeze (input evidence)",
+      "sha256": "c254c45c748a33d9f1514f2a497fe6fbc5d96fbb7553eb142d8fe22a4b64c474"
+    },
+    {
+      "path": "runs/next-phase/jev-form-census-v1.json",
+      "role": "P03 form census (input evidence)",
+      "sha256": "da57b403d36fd91fd5d90aeb5ef5d7f894ee19fffbfc41a2d2b2dd95f922b34b"
+    },
+    {
+      "path": "runs/next-phase/jev-p04-discovery-registration-v1.json",
+      "role": "P04 discovery registration (locked by this record)",
+      "sha256": "78f7cd03c3afc12c94c3ba09839e4ac6ba667a3f68b96871571b274ae7d3ab11"
+    },
+    {
+      "path": "docs/jev-p04-design-classification.md",
+      "role": "P04 design classification narrative",
+      "sha256": "d110547c415f788920e14f4137910da36891907117ee3c7c6f98c0382324d762"
+    },
+    {
+      "path": "docs/jev-discovery-confirmation-plan.md",
+      "role": "protocol: hypotheses and sequential research plan",
+      "sha256": "501e21b6dea760371b0bf368046d8bacd203f6b92f0af754a7955d1f738677f7"
+    }
+  ],
+  "issue": "#206",
+  "lock_hash": "9de4a61f9d46c47b55bbe7b8da9903c677c6461bf4af353007277835ed6a18b3",
+  "lock_version": "jev-discovery-lock-v1",
+  "locked_registration": {
+    "file_sha256": "78f7cd03c3afc12c94c3ba09839e4ac6ba667a3f68b96871571b274ae7d3ab11",
+    "path": "runs/next-phase/jev-p04-discovery-registration-v1.json",
+    "preregistration_version": "jev-discovery-registration-v1",
+    "registration_hash": "6fa6149770b620cd3a026a6415f8e4d97e800e8af5237794de7b29fca6dacfac",
+    "status_at_lock": "draft_pending_review"
+  },
+  "offline_only": true,
+  "offline_preflight": {
+    "checks_run": 51,
+    "failed": [],
+    "mode": "jev-discovery-lock-v1-preflight",
+    "ok": true,
+    "provider_calls": 0
+  },
+  "parent_issue": "#201",
+  "preserved": {
+    "attainable_two_sided_sign_flip_floor": "0.125",
+    "classification": "pilot",
+    "descriptive_only": true,
+    "estimand": "equal-weight form mean of real-minus-placebo entropy",
+    "fresh_seed_replication": "descriptive only; a fresh-seed replication block cannot become confirmatory on this family",
+    "frozen_200_artifacts": [
+      {
+        "path": "runs/epic-126/replication/jev-replication-form-audit-v1.json",
+        "sha256": "cb529cd61e0e662bfa19fc4998e89fa59a0bf0d63e14f77498035466d6bce89d"
+      },
+      {
+        "path": "runs/epic-126/replication/jev-replication-preregistration-v1.json",
+        "sha256": "bddf46ed5fd87ec4da99532d645580a65e250d64639de80477002ff73d278f3c"
+      }
+    ],
+    "guards_never_filter_the_estimate": true,
+    "h0": "Delta = 0",
+    "h1": "Delta < 0",
+    "k": 4,
+    "no_planning_low_effect_size_prior": true
+  },
+  "protocol": "docs/jev-discovery-confirmation-plan.md",
+  "review": {
+    "completeness_rule": "verify_lock fails unless the review record exists, names this lock's lock_hash as reviewed_lock_hash, records verdict 'approved', and carries no blocking findings",
+    "independent": true,
+    "record_path": "runs/next-phase/jev-p05-discovery-lock-review-v1.json",
+    "required": true,
+    "reviewed_against": [
+      "#206",
+      "docs/jev-discovery-confirmation-plan.md"
+    ]
+  },
+  "root_issue": "#159",
+  "status": "locked_pending_separate_live_authorization",
+  "task": "P05"
+}
