@@ -37,7 +37,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix board IPC integration and CLI tool wiring (#58)
 
 ### Changed
+- P01 — Reconcile baseline and research contract [hypothesis:low] (#202)
 - Reconcile the planning-low baseline and the next-phase research contract; publish the P01 evidence index with input hashes, the preserved planning-low conditional result and guard failures, the `hypothesis:low` pilot identification, and the new-version log for the five-form wording and interval-half-width/MDE mismatch (#202)
+- P02 — Freeze next-family scope and artifact inventory [hypothesis:low] (#203)
+- Freeze the candidate order and outcome-blind structural rule, publish the prior-manifest inventory with hashes (131 files, 74 with instance ids), propose the discovery and held-out seed windows with explicit stage labels, and record the k=4 descriptive-only consequence; no live outcome used to choose forms or seeds (#203)
 - Reconcile and publish the final planning-low Jev replay result (#199)
 - Planning-low six-form coverage and causal Jev replay (#188)
 - Prepare a fresh replay-v5 registration after the stopped v4 run (#197)
