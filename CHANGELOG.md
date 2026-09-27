@@ -37,6 +37,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix board IPC integration and CLI tool wiring (#58)
 
 ### Changed
+- P03 — Audit form capacity and independence [hypothesis:low] (#204)
+- Publish the versioned form-capacity census (`jev-form-census-v1`) with per-form capacity across the three frozen seed windows, closure evidence proven by exhaustive enumeration of the finite generator state space (the form is a function of `(bit0, bit2)` of the target), pre-read hashes per form, a shared-template/dependence assessment, and a seed/ID overlap report with current manifest coverage rechecked against the #200 pin; the hypothesis form space is closed at k=4 (#204)
+- P02 — Freeze next-family scope and artifact inventory [hypothesis:low] (#203)
 - P01 — Reconcile baseline and research contract [hypothesis:low] (#202)
 - Reconcile the planning-low baseline and the next-phase research contract; publish the P01 evidence index with input hashes, the preserved planning-low conditional result and guard failures, the `hypothesis:low` pilot identification, and the new-version log for the five-form wording and interval-half-width/MDE mismatch (#202)
 - P02 — Freeze next-family scope and artifact inventory [hypothesis:low] (#203)
