@@ -37,6 +37,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix board IPC integration and CLI tool wiring (#58)
 
 ### Changed
+- P04 — Classify design and plan discovery [hypothesis:low] (#205)
+- P04 — Classify design and plan discovery [hypothesis:low] (#205)
+- Classify the hypothesis:low design (k = 4, attainable two-sided sign-flip floor 0.125 > 0.05, pilot not potentially confirmatory, fresh-seed replication descriptive) and draft the offline discovery registration (`jev-discovery-registration-v1`) with fixed N = 16, treatment/route, budgets, terminal stops, fresh paths, and coverage rules; resolves the six-form minimum and interval half-width labeling logged in P01 §5 (#205)
+- P03 — Audit form capacity and independence [hypothesis:low] (#204)
 - P03 — Audit form capacity and independence [hypothesis:low] (#204)
 - Publish the versioned form-capacity census (`jev-form-census-v1`) with per-form capacity across the three frozen seed windows, closure evidence proven by exhaustive enumeration of the finite generator state space (the form is a function of `(bit0, bit2)` of the target), pre-read hashes per form, a shared-template/dependence assessment, and a seed/ID overlap report with current manifest coverage rechecked against the #200 pin; the hypothesis form space is closed at k=4 (#204)
 - P02 — Freeze next-family scope and artifact inventory [hypothesis:low] (#203)
