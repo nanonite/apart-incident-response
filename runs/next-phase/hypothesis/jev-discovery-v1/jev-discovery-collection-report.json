@@ -1,0 +1,67 @@
+{
+  "authorization_reference": "user-chat-authorization-2026-09-28T15:28:15Z|scope_digest_sha256=938da9116805967253417c53709cd85d56d1913ac0142032d0d4732f50c04061",
+  "caps": {
+    "combined_physical_used": 3,
+    "combined_planned_used": 3,
+    "cost_ceiling_usd": 0.2,
+    "cost_usd": 0.00039726,
+    "physical_cap": {
+      "combined": 240,
+      "jev": 48,
+      "ling": 192
+    },
+    "physical_used": {
+      "jev": 0,
+      "ling": 3
+    },
+    "planned_cap": {
+      "combined": 80,
+      "jev": 16,
+      "ling": 64
+    },
+    "planned_used": {
+      "jev": 0,
+      "ling": 3
+    },
+    "program_cost_ceiling_usd": 0.3,
+    "program_physical_ceiling": 384,
+    "within_ceiling": true,
+    "within_program_cost_ceiling": true,
+    "within_program_physical_ceiling": true
+  },
+  "counts": {
+    "failed": 1,
+    "not_attempted": 15,
+    "ok": 0,
+    "silence": 0
+  },
+  "credentials_retained": false,
+  "journaled_seeds": 16,
+  "lock_hash": "9de4a61f9d46c47b55bbe7b8da9903c677c6461bf4af353007277835ed6a18b3",
+  "mode": "jev-p06-discovery-runner-v2",
+  "planned_seeds": 16,
+  "provider_calls": 3,
+  "registration_hash": "6fa6149770b620cd3a026a6415f8e4d97e800e8af5237794de7b29fca6dacfac",
+  "scope_digest_sha256": "938da9116805967253417c53709cd85d56d1913ac0142032d0d4732f50c04061",
+  "seeds": [
+    "hypothesis-00014c0b",
+    "hypothesis-00014c11",
+    "hypothesis-00014c1f",
+    "hypothesis-00014c21",
+    "hypothesis-00014c0c",
+    "hypothesis-00014c0d",
+    "hypothesis-00014c0e",
+    "hypothesis-00014c10",
+    "hypothesis-00014c0a",
+    "hypothesis-00014c14",
+    "hypothesis-00014c15",
+    "hypothesis-00014c19",
+    "hypothesis-00014c08",
+    "hypothesis-00014c09",
+    "hypothesis-00014c0f",
+    "hypothesis-00014c13"
+  ],
+  "stage": "hypothesis:low discovery screen and optional exploratory replay",
+  "status": "stopped",
+  "stop_reason": "truncated_output"
+}
