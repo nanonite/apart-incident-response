@@ -37,6 +37,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix board IPC integration and CLI tool wiring (#58)
 
 ### Changed
+- P14 — Publish family decision and next-family handoff [hypothesis:low] (#215)
 - P05 — Lock discovery design and record live authorization [hypothesis:low] (#206)
 - P06 transport and authorized-state readiness before live discovery (#217)
 - P06 offline runner repair before live discovery (#216)
