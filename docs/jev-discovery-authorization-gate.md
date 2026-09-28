@@ -1,7 +1,8 @@
 # Jev hypothesis:low discovery — authorization gate brief (#206)
 
-Decision brief prepared for a human. **Preparing this document and the
-accompanying record grants no authority of any kind.**
+Readiness brief for the locked P06 discovery scope. The authorization record
+now contains the explicit user decision; this offline implementation task does
+not execute or extend that authorization.
 
 Protocol: [hypotheses and sequential discovery/confirmation plan](jev-discovery-confirmation-plan.md).
 Family: `hypothesis:low` (pilot, k = 4, descriptive only).
@@ -12,7 +13,7 @@ Family: `hypothesis:low` (pilot, k = 4, descriptive only).
 | P04 registration review | [`runs/next-phase/jev-p04-discovery-registration-review-v1.json`](../runs/next-phase/jev-p04-discovery-registration-review-v1.json) | **approved**, 4/4 items, 24 checks, no blocking findings |
 | P05 lock | [`runs/next-phase/jev-p05-discovery-lock-v1.json`](../runs/next-phase/jev-p05-discovery-lock-v1.json) | `lock_hash 9de4a61f…a18b3`, `locked_pending_separate_live_authorization` |
 | P05 lock review | [`runs/next-phase/jev-p05-discovery-lock-review-v1.json`](../runs/next-phase/jev-p05-discovery-lock-review-v1.json) | **approved**, 16 checks, no blocking findings |
-| **Authorization record** | [`runs/next-phase/jev-discovery-authorization-record-v1.json`](../runs/next-phase/jev-discovery-authorization-record-v1.json) | **`awaiting_explicit_reference`**, `authorized: false`, `reference: null` |
+| **Authorization record** | [`runs/next-phase/jev-discovery-authorization-record-v1.json`](../runs/next-phase/jev-discovery-authorization-record-v1.json) | **`authorized`**, explicit reference recorded for the pinned scope |
 
 Full identifiers for audit:
 
@@ -21,7 +22,7 @@ Full identifiers for audit:
 - registration `file_sha256` = `78f7cd03c3afc12c94c3ba09839e4ac6ba667a3f68b96871571b274ae7d3ab11`
 - `scope_digest_sha256` = `938da9116805967253417c53709cd85d56d1913ac0142032d0d4732f50c04061`
 
-## 1. Outstanding P04 registration review — resolved
+## 1. P04 registration review — resolved
 
 An independent read-only reviewer (which did not build the registration)
 decided all four `authorization.pending_review` items. Verdict **`approved`**,
@@ -51,12 +52,13 @@ self-declared boolean, so the reviewer recomputed the structural comparison
 independently; `runs/container-isolation.json` stays permission-denied and is
 carried as a recorded audit exception, never as an empty set.
 
-## 2. What you are being asked to decide
+## 2. Approved scope
 
-Supply an **explicit live authorization reference** covering exactly the
-stage, the paid OpenRouter SKU and Jev route, the retry-inclusive request
-caps, and the cost caps below. Until you do: **zero provider calls, #206 stays
-open, #207 stays blocked, all four live output paths stay absent.**
+The explicit reference in the authorization record covers exactly the stage,
+the paid OpenRouter SKU and Jev route, retry-inclusive request caps, and cost
+caps below. Its bound scope digest is unchanged. This permits only the
+registered discovery screen and its optional exploratory replay; it does not
+authorize held-out replay gate #211.
 
 ### Stage
 `hypothesis:low discovery screen and optional exploratory replay` — family
@@ -92,39 +94,43 @@ The whole scope is carried verbatim in the authorization record with
 `scope_digest_sha256 = 938da9116805967253417c53709cd85d56d1913ac0142032d0d4732f50c04061`,
 so a reference can pin the exact scope it covers.
 
-## 3. What to supply
+## 3. Authorization provenance and historical pending state
 
-Edit **only** `runs/next-phase/jev-discovery-authorization-record-v1.json` and
-fill in:
+Before the user supplied the reference, the record was
+`awaiting_explicit_reference` with `authorized: false`, null reference fields,
+and zero provider calls. That pending-state provenance remains in the record's
+history (`effect_while_reference_absent`) and in the frozen P04/P05 artifacts;
+it is not the current authorization state.
 
-```
-state:              "authorized"          (currently "awaiting_explicit_reference")
-authorized:         true                  (currently false)
-reference:          "<opaque reference>"
-supplied_by:        "<who issued it>"
-supplied_at:        "<ISO-8601>"
-decision:           "<what you approved>"
-```
-and echo `scope_digest_sha256` in your reference so it is bound to this exact
-stage/route/request/cost scope.
+The current record carries the user's decision, supplier, timestamp, and
+reference containing `scope_digest_sha256 =
+938da9116805967253417c53709cd85d56d1913ac0142032d0d4732f50c04061`. The P04
+registration and P05 lock were not modified to record the transition.
 
 Any change to stage, route, request caps or cost caps requires a **new version
 of the record plus fresh registration and lock review** — not an edit here. A
 stopped run requires a new registration and fresh paths.
 
-## 4. Not authorization
+## 4. Scope boundaries
 
-This brief, the record's existence, the P05 lock, the two `approved` review
-verdicts, credentials present in the environment, and the reserved output
-paths are **all explicitly listed as things authorization may not be inferred
-from**. The reviews approved *the offline artifacts*, not live execution.
+The decision is not inferred from the brief, record existence, P05 lock,
+review verdicts, credentials, or reserved paths; it is explicitly recorded in
+the authorization record. The reviews approved the frozen artifacts, not an
+expanded scope. Any stage, route, request-cap, or cost-cap change requires a new
+record and fresh registration/lock review. The runner additionally requires a
+matching `--approval` reference and fresh registered output paths before it
+constructs either provider client.
 
-## 5. Current gate status
+## 5. Current readiness status
 
-- **#206 open** (`closed_at: null`) — not closed, by design.
-- **#207 (P06) blocked** by #206 — no successor started.
-- **Zero provider calls** at every step; the P05 preflight (51 checks) and
-  verification (44 checks) both report `provider_calls: 0`.
-- All four live output paths under `runs/next-phase/hypothesis/jev-discovery-v1/`
-  **do not exist**; `runs/next-phase/hypothesis/` does not exist.
-- The discovery loop has **not** been relaunched.
+- **#206 remains open** and #207 remains unclosed in this preparation task; the
+  orchestrating agent handles issue transitions after review.
+- **Zero provider calls** were made for transport implementation, authorized
+  dry preflight, verification, and tests. No collection or exploratory replay
+  was run.
+- At this readiness pass, the four live output paths under
+  `runs/next-phase/hypothesis/jev-discovery-v1/` were absent. Freshness is
+  checked against current filesystem state, not treated as a permanent
+  post-run invariant.
+- The discovery loop has **not** been relaunched. Authorization does not itself
+  cause any calls; `--live` is a separate, explicit execution command.

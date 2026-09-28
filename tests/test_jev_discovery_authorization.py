@@ -35,8 +35,7 @@ REQUIRED_PHRASES = [
     SCOPE_DIGEST,
     "awaiting_explicit_reference",
     "authorized: false",
-    "grants no authority of any kind",
-    "grants no authority",
+    "authorized",
     "paid OpenRouter SKU",
     "hypothesis:low discovery screen and optional exploratory replay",
     "$0.20",
@@ -44,10 +43,10 @@ REQUIRED_PHRASES = [
     "$0.30",
     "zero provider calls",
     "Zero provider calls",
-    "stays open",
-    "stays blocked",
-    "Not authorization",
-    "does not exist",
+    "remains open",
+    "remains unclosed",
+    "historical pending state",
+    "Freshness is checked against current filesystem state",
     "requires a **new version",
 ]
 
@@ -71,6 +70,14 @@ def sha256_of(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def pending_fixture(record):
+    pending = json.loads(json.dumps(record))
+    pending.update({"state": p06.AUTH_STATE_PENDING, "authorized": False,
+                    "reference": None, "supplied_by": None, "supplied_at": None,
+                    "decision": None})
+    return pending
+
+
 class AuthorizationGateTestCase(unittest.TestCase):
     def setUp(self):
         self.text = DOC.read_text(encoding="utf-8")
@@ -88,20 +95,28 @@ class AuthorizationGateTestCase(unittest.TestCase):
     def tearDown(self):
         self.assertEqual([path.exists() for path in self.live_paths],
                          self.live_before, "a live output path changed state")
-        for path in self.live_paths:
-            self.assertFalse(path.exists(),
-                             "a discovery live output must never appear offline")
 
 
 class AuthorizationRecordTests(AuthorizationGateTestCase):
-    def test_record_is_not_authorization(self):
-        self.assertEqual(self.record["state"], "awaiting_explicit_reference")
-        self.assertIs(self.record["authorized"], False)
-        self.assertIsNone(self.record["reference"])
-        self.assertIsNone(self.record["supplied_by"])
-        self.assertIsNone(self.record["supplied_at"])
-        self.assertIsNone(self.record["decision"])
+    def test_record_matches_the_explicit_authorized_decision(self):
+        self.assertEqual(self.record["state"], p06.AUTH_STATE_AUTHORIZED)
+        self.assertIs(self.record["authorized"], True)
+        self.assertTrue(p06.reference_binds_scope_digest(
+            self.record["reference"], SCOPE_DIGEST))
+        self.assertTrue(self.record["supplied_by"])
+        self.assertTrue(self.record["supplied_at"])
+        self.assertTrue(self.record["decision"])
         self.assertEqual(self.record["provider_calls"], 0)
+
+    def test_pending_fixture_preserves_historical_pre_authorization_state(self):
+        pending = pending_fixture(self.record)
+        self.assertEqual(pending["state"], p06.AUTH_STATE_PENDING)
+        self.assertIs(pending["authorized"], False)
+        self.assertIsNone(pending["reference"])
+        self.assertIsNone(pending["supplied_by"])
+        self.assertIsNone(pending["supplied_at"])
+        self.assertIsNone(pending["decision"])
+        self.assertEqual(pending["scope"], self.record["scope"])
 
     def test_record_covers_exactly_the_four_must_cover_fields(self):
         self.assertEqual(self.record["must_cover"],
@@ -229,23 +244,33 @@ class CrossConsistencyTests(AuthorizationGateTestCase):
 
     def test_p05_lock_still_verifies_green_after_the_review(self):
         rc, verification, calls = self.run_verify()
-        self.assertEqual(rc, 0)
         self.assertEqual(calls, [])
-        self.assertTrue(verification["ok"], verification["failed"])
         self.assertEqual(verification["checks_run"], 44)
         self.assertEqual(verification["provider_calls"], 0)
         self.assertEqual(verification["lock_hash"], LOCK_HASH)
         self.assertEqual(verification["authorization_reference_state"],
                          "pending_not_supplied")
+        checks = {item["check"]: item["ok"] for item in verification["checks"]}
+        self.assertTrue(checks["lock_rebuilds_byte_for_byte"])
+        self.assertTrue(checks["review_record_approved"])
+        self.assertTrue(checks["review_record_matches_lock_hash"])
+        freshness = not any(path.exists() for path in self.live_paths)
+        self.assertEqual(verification["ok"], freshness, verification["failed"])
+        self.assertEqual(rc, 0 if freshness else 1)
 
     def test_lock_review_still_approved_for_this_hash(self):
         self.assertEqual(self.lock_review["verdict"], "approved")
         self.assertEqual(self.lock_review["reviewed_lock_hash"], LOCK_HASH)
         self.assertEqual(self.lock_review["blocking_findings"], [])
 
-    def test_no_live_output_path_exists(self):
-        for path in self.live_paths:
-            self.assertFalse(path.exists())
+    def test_output_freshness_check_reflects_current_path_state(self):
+        result = p06.run_preflight(
+            REPO_ROOT, approval=self.record["reference"])
+        freshness = next(item for item in result["checks"]
+                         if item["check"] == "output_paths_absent")
+        expected_absent = not any(path.exists() for path in self.live_paths)
+        self.assertEqual(freshness["ok"], expected_absent)
+        self.assertEqual(result["provider_calls"], 0)
 
 
 class DocContentTests(AuthorizationGateTestCase):
@@ -260,14 +285,14 @@ class DocContentTests(AuthorizationGateTestCase):
                 self.assertNotIn(phrase.lower(), self.normalized_lower)
 
     def test_doc_states_gate_status(self):
-        status = " ".join(self.text.split("## 5. Current gate status")[1].split())
-        self.assertIn("#206 open", status)
+        status = " ".join(self.text.split("## 5. Current readiness status")[1].split())
+        self.assertIn("#206 remains open", status)
         self.assertIn("#207", status)
         self.assertIn("Zero provider calls", status)
-        self.assertIn("do not exist", status)
+        self.assertIn("authorized", status)
 
     def test_doc_names_the_four_must_cover_fields(self):
-        section = " ".join(self.text.split("## 2. What you are being asked to decide")[1]
+        section = " ".join(self.text.split("## 2. Approved scope")[1]
                            .split("## 3.")[0].split())
         for field in ("Stage", "Route", "Request caps", "Cost caps"):
             with self.subTest(field=field):
@@ -305,7 +330,7 @@ class AuthorizedAndPostRunStateTests(AuthorizationGateTestCase):
 
     def test_pending_record_is_refused_by_the_gate(self):
         self.assertEqual(
-            p06.evaluate_authorization(self.record, approval="anything",
+            p06.evaluate_authorization(pending_fixture(self.record), approval="anything",
                                        lock=self.lock),
             "authorization_pending")
 
@@ -320,17 +345,22 @@ class AuthorizedAndPostRunStateTests(AuthorizationGateTestCase):
     def test_preflight_accepts_authorized_state_without_touching_the_file(self):
         record = self.authorized_copy()
         result = self.preflight_with(record, approval=f"AUTHREF-JEV-0001:{SCOPE_DIGEST}")
-        self.assertTrue(result["ok"], result["failed"])
         self.assertEqual(result["authorization_state"], p06.AUTH_STATE_AUTHORIZED)
         self.assertIs(result["authorized"], True)
         self.assertIsNone(result["authorization_stop_reason"])
         self.assertEqual(result["scope_digest_sha256"], SCOPE_DIGEST)
+        freshness = next(item["ok"] for item in result["checks"]
+                         if item["check"] == "output_paths_absent")
+        self.assertEqual(result["ok"], freshness)
+        self.assertEqual(result["provider_calls"], 0)
         # the record on disk is untouched by this simulation
         self.assertEqual(json.loads(AUTH_RECORD.read_text(encoding="utf-8")), self.record)
 
     def test_authorized_without_approval_still_reports_missing_approval(self):
         result = self.preflight_with(self.authorized_copy(), approval=None)
-        self.assertTrue(result["ok"], result["failed"])
+        freshness = next(item["ok"] for item in result["checks"]
+                         if item["check"] == "output_paths_absent")
+        self.assertEqual(result["ok"], freshness)
         self.assertEqual(result["authorization_stop_reason"],
                          "approval_reference_not_supplied")
 
@@ -371,7 +401,7 @@ class AuthorizedAndPostRunStateTests(AuthorizationGateTestCase):
             result = p06.execute_discovery_run(
                 self.registration, self.lock, record, repo_root=REPO_ROOT,
                 approval=f"AUTHREF-JEV-0001:{SCOPE_DIGEST}",
-                preflight=p06.run_preflight(REPO_ROOT),
+                  preflight={"ok": True},
                 transport_factory=forbidden,
                 journal_path=journal, report_path=report_path)
             self.assertEqual(journal.read_text(encoding="utf-8"),

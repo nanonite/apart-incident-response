@@ -67,13 +67,15 @@ class FakeTransport(p06.DiscoveryTransport):
             raise outcome
         if isinstance(outcome, dict):
             return outcome
+        option_ids = [option.option_id for option in request["state"].options]
+        probability = 1.0 / len(option_ids)
+        probabilities = {option_id: probability for option_id in option_ids}
+        selected = max(probabilities, key=probabilities.get)
         return {"attempts": 1, "cost_usd": 0.000344064, "status": "complete",
-                "model": "jev-1.13.0", "selected_option_id": "candidate-0",
+                "model": "jev-1.13.0", "selected_option_id": selected,
                 "confidence": 0.5,
-                "probabilities": {"candidate-0": 0.5, "candidate-1": 0.3,
-                                  "candidate-2": 0.2},
-                "raw_probabilities": {"candidate-0": 0.5, "candidate-1": 0.3,
-                                      "candidate-2": 0.2},
+                "probabilities": probabilities,
+                "raw_probabilities": dict(probabilities),
                 "usage": {"input_tokens": 200, "output_tokens": 5},
                 "normalization_tier": "exact", "renormalized": True,
                 "request_hash": request.get("request_hash", "h")}
@@ -94,12 +96,22 @@ def authorized_copy(record, reference=None):
     return updated
 
 
+def pending_copy(record):
+    updated = json.loads(json.dumps(record))
+    updated.update({"state": p06.AUTH_STATE_PENDING, "authorized": False,
+                    "reference": None, "supplied_by": None, "supplied_at": None,
+                    "decision": None})
+    return updated
+
+
 class P06TestCase(unittest.TestCase):
     def setUp(self):
         self.registration = json.loads(REGISTRATION.read_text(encoding="utf-8"))
         self.lock = json.loads(LOCK.read_text(encoding="utf-8"))
         self.auth = json.loads(AUTH.read_text(encoding="utf-8"))
-        self.preflight = p06.run_preflight(REPO_ROOT)
+        # Unit execution uses isolated temporary output paths. The separate
+        # preflight tests below exercise the current on-disk freshness gate.
+        self.preflight = {"ok": True, "failed": [], "provider_calls": 0}
         self.manifest = self.registration["fixed_n"]["manifest"]
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
@@ -112,9 +124,6 @@ class P06TestCase(unittest.TestCase):
     def tearDown(self):
         self.assertEqual([path.exists() for path in self.live_paths],
                          self.live_before, "a live output path changed state")
-        for path in self.live_paths:
-            self.assertFalse(path.exists(),
-                             "a discovery live output must never appear offline")
 
     _UNSET = object()
 
@@ -140,6 +149,16 @@ class P06TestCase(unittest.TestCase):
             journal_path=self.journal_path, report_path=self.report_path)
         return report, created.get("transport")
 
+    def preflight_with_record(self, record, approval=None):
+        original = p06._load
+
+        def patched_load(root, rel):
+            value = original(root, rel)
+            return record if rel == p06.AUTH_PATH else value
+
+        with patch.object(p06, "_load", side_effect=patched_load):
+            return p06.run_preflight(REPO_ROOT, approval=approval)
+
 
 class PreflightTests(P06TestCase):
     def test_preflight_is_green_with_zero_network_events(self):
@@ -157,32 +176,62 @@ class PreflightTests(P06TestCase):
             _sys.addaudithook(hook)
             with contextlib.redirect_stdout(io.StringIO()):
                 rc = p06.main(["--repo-root", str(REPO_ROOT)])
-            result = p06.run_preflight(REPO_ROOT)
-        self.assertEqual(rc, 0)
+            result = p06.run_preflight(
+                REPO_ROOT, approval=self.auth["reference"])
+        outputs_fresh = next(check["ok"] for check in result["checks"]
+                             if check["check"] == "output_paths_absent")
+        self.assertEqual(rc, 0 if outputs_fresh else 2)
         self.assertEqual(events, [])
-        self.assertTrue(result["ok"], result["failed"])
-        self.assertEqual(result["failed"], [])
+        self.assertEqual(result["ok"], outputs_fresh)
         self.assertGreaterEqual(result["checks_run"], 24)
         self.assertEqual(result["provider_calls"], 0)
         self.assertEqual(result["status"], "offline")
         self.assertEqual(result["planned_seeds"], 16)
 
     def test_preflight_pins_the_registered_hashes_and_digest(self):
-        self.assertEqual(self.preflight["registration_hash"], p06.REGISTRATION_HASH)
-        self.assertEqual(self.preflight["lock_hash"], p06.LOCK_HASH)
-        self.assertEqual(self.preflight["scope_digest_sha256"], p06.SCOPE_DIGEST)
+        result = p06.run_preflight(REPO_ROOT, approval=self.auth["reference"])
+        self.assertEqual(result["registration_hash"], p06.REGISTRATION_HASH)
+        self.assertEqual(result["lock_hash"], p06.LOCK_HASH)
+        self.assertEqual(result["scope_digest_sha256"], p06.SCOPE_DIGEST)
 
-    def test_preflight_reports_pending_state_without_failing(self):
-        self.assertEqual(self.preflight["authorization_state"], p06.AUTH_STATE_PENDING)
-        self.assertIs(self.preflight["authorized"], False)
-        self.assertEqual(self.preflight["authorization_stop_reason"],
-                         "authorization_pending")
-        self.assertTrue(self.preflight["ok"])
+    def test_preflight_reports_authorized_state_without_failing(self):
+        result = p06.run_preflight(REPO_ROOT, approval=self.auth["reference"])
+        self.assertEqual(result["authorization_state"], p06.AUTH_STATE_AUTHORIZED)
+        self.assertIs(result["authorized"], True)
+        self.assertIsNone(result["authorization_stop_reason"])
+        freshness = next(check["ok"] for check in result["checks"]
+                         if check["check"] == "output_paths_absent")
+        self.assertEqual(result["ok"], freshness)
+        self.assertEqual(result["provider_calls"], 0)
+
+    def test_in_memory_pending_record_is_reported_without_provider_calls(self):
+        result = self.preflight_with_record(pending_copy(self.auth),
+                                            approval=_digest_binding_reference())
+        self.assertEqual(result["authorization_state"], p06.AUTH_STATE_PENDING)
+        self.assertFalse(result["authorized"])
+        self.assertEqual(result["authorization_stop_reason"], "authorization_pending")
+        self.assertEqual(result["provider_calls"], 0)
+        freshness = next(check["ok"] for check in result["checks"]
+                         if check["check"] == "output_paths_absent")
+        self.assertEqual(result["ok"], freshness)
 
     def test_cli_live_without_authorization_refuses(self):
-        with contextlib.redirect_stdout(io.StringIO()) as buffer:
-            rc = p06.main(["--repo-root", str(REPO_ROOT), "--live",
-                           "--approval", "ANY-REFERENCE"])
+        original = p06._load
+
+        def patched_load(root, rel):
+            value = original(root, rel)
+            return pending_copy(value) if rel == p06.AUTH_PATH else value
+
+        with patch.object(p06, "_load", side_effect=patched_load), \
+                patch.object(p06, "run_preflight", return_value={
+                    "mode": "test-preflight", "ok": True, "failed": [],
+                    "checks_run": 1, "authorization_state": p06.AUTH_STATE_PENDING,
+                    "authorized": False, "authorization_stop_reason": "authorization_pending",
+                    "scope_digest_sha256": p06.SCOPE_DIGEST, "planned_seeds": 16,
+                    "status": "offline", "provider_calls": 0}):
+            with contextlib.redirect_stdout(io.StringIO()) as buffer:
+                rc = p06.main(["--repo-root", str(REPO_ROOT), "--live",
+                               "--approval", "ANY-REFERENCE"])
         self.assertEqual(rc, 3)
         output = buffer.getvalue()
         self.assertIn("authorization_pending", output)
@@ -204,7 +253,7 @@ class AuthorizationRefusalTests(P06TestCase):
             raise AssertionError("transport must not be constructed while pending")
 
         report = p06.execute_discovery_run(
-            self.registration, self.lock, self.auth, repo_root=REPO_ROOT,
+            self.registration, self.lock, pending_copy(self.auth), repo_root=REPO_ROOT,
             approval="anything", preflight=self.preflight,
             transport_factory=forbidden_factory,
             journal_path=self.journal_path, report_path=self.report_path)
@@ -265,8 +314,8 @@ class AuthorizationRefusalTests(P06TestCase):
         self.run_with_transport(approval="wrong")
         after = json.loads(AUTH.read_text(encoding="utf-8"))
         self.assertEqual(after, self.auth)
-        self.assertEqual(after["state"], p06.AUTH_STATE_PENDING)
-        self.assertIsNone(after["reference"])
+        self.assertEqual(after["state"], p06.AUTH_STATE_AUTHORIZED)
+        self.assertTrue(after["reference"])
 
 
 class OutputCollisionTests(P06TestCase):
@@ -668,6 +717,66 @@ class StructuralNeedAndFormIdentityTests(P06TestCase):
 
 
 class NoNetworkOfflineTests(P06TestCase):
+    def test_configured_transport_charges_all_attempts_on_transport_errors(self):
+        class FailingLing:
+            api_key = "test-only-not-a-provider-key"
+            physical_attempts = 2
+            last_call_diagnostics = [{"status": 429}, {"status": 503}]
+
+            def write_outcome(self, context):
+                raise RuntimeError("mock writer failure")
+
+        class FailingJev:
+            physical_attempts = 0
+            credentials = type("Credentials", (), {"present": True, "shape_ok": True})()
+
+            def complete(self, request):
+                self.physical_attempts += 2
+                raise RuntimeError("mock receiver failure")
+
+        ling = FailingLing()
+        jev = FailingJev()
+        transport = p06.ConfiguredDiscoveryTransport(
+            self.registration, ling_client=ling, jev_client=jev)
+        self.assertTrue(transport.is_configured)
+        writer_result = transport.writer_completion(request={
+            "prompt": "serialized registered prompt", "private_clues": ["owned"],
+            "candidate_labels": ["option-a"], "max_tokens": 1024,
+            "provider_seed": 17,
+        })
+        self.assertEqual(writer_result["attempts"], 2)
+        self.assertEqual(writer_result["cost_usd"],
+                         2 * self.registration["budgets"]["cost_model"]
+                         ["ling_worst_physical_call_usd"])
+        self.assertEqual(writer_result["outcome"], "writer_error")
+
+        instance = p06._derive_instance(self.manifest[0]["instance_id"],
+                                        self.manifest[0]["seed"])
+        state = p06._build_receiver_state(instance, [])
+        receiver_result = transport.receiver_choice(request={"state": state})
+        self.assertEqual(receiver_result["attempts"], 2)
+        self.assertEqual(receiver_result["cost_usd"],
+                         2 * self.registration["budgets"]["cost_model"]
+                         ["jev_worst_physical_call_usd"])
+        self.assertEqual(receiver_result["status"], "invalid")
+        self.assertEqual(receiver_result["request_identity"]["request_hash"],
+                         state.request_hash)
+
+    def test_configured_transport_refuses_free_route_fallback(self):
+        drifted = json.loads(json.dumps(self.registration))
+        drifted["route"]["ling"]["model"] += ":free"
+        built = []
+
+        def builder(registration):
+            built.append(registration)
+            raise AssertionError("invalid route must fail before client creation")
+
+        with patch.object(p06, "_build_live_clients", side_effect=builder):
+            with self.assertRaisesRegex(p06.DiscoveryRunError,
+                                        "registered_transport_contract_drift"):
+                p06.ConfiguredDiscoveryTransport(drifted)
+        self.assertEqual(built, [])
+
     def test_execute_run_makes_zero_provider_calls(self):
         """The offline preflight makes zero provider calls."""
         self.assertEqual(self.preflight["provider_calls"], 0)
@@ -679,13 +788,204 @@ class NoNetworkOfflineTests(P06TestCase):
         self.assertEqual(report["status"], "blocked")
 
     def test_cli_live_with_pending_record_makes_zero_calls(self):
-        with contextlib.redirect_stdout(io.StringIO()) as buffer:
-            rc = p06.main(["--repo-root", str(REPO_ROOT), "--live",
-                           "--approval", _digest_binding_reference()])
+        original = p06._load
+
+        def patched_load(root, rel):
+            value = original(root, rel)
+            return pending_copy(value) if rel == p06.AUTH_PATH else value
+
+        with patch.object(p06, "_load", side_effect=patched_load), \
+                patch.object(p06, "run_preflight", return_value={
+                    "mode": "test-preflight", "ok": True, "failed": [],
+                    "checks_run": 1, "authorization_state": p06.AUTH_STATE_PENDING,
+                    "authorized": False, "authorization_stop_reason": "authorization_pending",
+                    "scope_digest_sha256": p06.SCOPE_DIGEST, "planned_seeds": 16,
+                    "status": "offline", "provider_calls": 0}):
+            with contextlib.redirect_stdout(io.StringIO()) as buffer:
+                rc = p06.main(["--repo-root", str(REPO_ROOT), "--live",
+                               "--approval", _digest_binding_reference()])
         self.assertEqual(rc, 3)
         output = buffer.getvalue()
         self.assertIn('"provider_calls": 0', output)
         self.assertIn("authorization_pending", output)
+
+    def test_cli_uses_configured_transport_with_mocked_clients_only(self):
+        from contextlib import redirect_stdout
+        from apart_incident_response import jev_choice as jc
+
+        class MockLingClient:
+            api_key = "test-only-not-a-provider-key"
+
+            def __init__(self):
+                self.calls = []
+                self.last_call_diagnostics = []
+
+            def write_outcome(self, context):
+                self.calls.append(dict(context))
+                self.last_call_diagnostics = [{"status": 200}]
+                return {"outcome": "message_candidate",
+                        "claim": context["private_clues"][0],
+                        "error_class": None, "input_tokens": 100,
+                        "output_tokens": 10}
+
+        class MockJevClient:
+            endpoint = p06.JEV_ENDPOINT
+            model = p06.JEV_MODEL
+            credentials = type("Credentials", (), {"present": True, "shape_ok": True})()
+
+            def __init__(self):
+                self.physical_attempts = 0
+                self.requests = []
+
+            def complete(self, request):
+                self.requests.append(dict(request))
+                self.physical_attempts += 1
+                criteria = request["questions"][jc.JEV_QUESTION_ID]["criteria"]
+                option_ids = list(criteria)
+                probabilities = {key: 1.0 / len(option_ids) for key in option_ids}
+                return {"model": p06.JEV_MODEL,
+                        "answers": {jc.JEV_QUESTION_ID: {
+                            "type": "choice", "choice": option_ids[0],
+                            "probabilities": probabilities, "confidence": 0.5}},
+                        "usage": {"input_tokens": 200, "output_tokens": 5}}
+
+        ling = MockLingClient()
+        jev = MockJevClient()
+        built = []
+
+        def build_clients(registration):
+            built.append(registration)
+            return ling, jev
+
+        with tempfile.TemporaryDirectory() as tmp:
+            journal_path = Path(tmp) / "collection.jsonl"
+            report_path = Path(tmp) / "collection-report.json"
+            registration = json.loads(json.dumps(self.registration))
+            registration["paths"]["discovery_journal"] = str(journal_path)
+            registration["paths"]["discovery_report"] = str(report_path)
+            original_load = p06._load
+
+            def load(root, rel):
+                if rel == p06.REGISTRATION_PATH:
+                    return registration
+                return original_load(root, rel)
+
+            preflight = {
+                "mode": "test-preflight", "ok": True, "failed": [],
+                "checks_run": 1, "authorization_state": p06.AUTH_STATE_AUTHORIZED,
+                "authorized": True, "authorization_stop_reason": None,
+                "scope_digest_sha256": p06.SCOPE_DIGEST,
+                "planned_seeds": p06.BLOCK_N, "status": "offline", "provider_calls": 0,
+            }
+            output = io.StringIO()
+            with patch.object(p06, "_load", side_effect=load), \
+                    patch.object(p06, "run_preflight", return_value=preflight), \
+                    patch.object(p06, "_build_live_clients", side_effect=build_clients), \
+                    patch("urllib.request.urlopen",
+                          side_effect=AssertionError("network access in integration test")), \
+                    redirect_stdout(output):
+                rc = p06.main(["--repo-root", str(REPO_ROOT), "--live",
+                               "--approval", self.auth["reference"]])
+
+            self.assertEqual(rc, 0, output.getvalue())
+            self.assertEqual(len(built), 1, "configured clients should be built after gates")
+            self.assertEqual(len(ling.calls), p06.L4X_TOTAL_LING_CALLS)
+            self.assertEqual(len(jev.requests), p06.L4X_TOTAL_JEV_CALLS)
+            self.assertTrue(journal_path.is_file())
+            self.assertTrue(report_path.is_file())
+            rows = p06.DiscoveryJournal.read_rows(journal_path)
+            self.assertEqual(len(rows), p06.BLOCK_N)
+            self.assertEqual(rows[0]["status"], "ok")
+            self.assertEqual(rows[0]["emission"]["writer_request_identities"][0]["model"],
+                             p06.LING_MODEL)
+            self.assertEqual(rows[0]["receiver"]["request_identity"]["protocol_key"],
+                             p06.PROTOCOL_KEY)
+
+    def test_cli_failed_authorization_and_output_gates_build_no_provider_clients(self):
+        builds = []
+
+        def forbidden_builder(registration):
+            builds.append(registration)
+            raise AssertionError("provider clients must not be constructed")
+
+        original_load = p06._load
+
+        def pending_load(root, rel):
+            value = original_load(root, rel)
+            return pending_copy(value) if rel == p06.AUTH_PATH else value
+
+        preflight = {
+            "mode": "test-preflight", "ok": True, "failed": [],
+            "checks_run": 1, "authorization_state": p06.AUTH_STATE_PENDING,
+            "authorized": False, "authorization_stop_reason": "authorization_pending",
+            "scope_digest_sha256": p06.SCOPE_DIGEST,
+            "planned_seeds": p06.BLOCK_N, "status": "offline", "provider_calls": 0,
+        }
+        with patch.object(p06, "_load", side_effect=pending_load), \
+                patch.object(p06, "run_preflight", return_value=preflight), \
+                patch.object(p06, "_build_live_clients", side_effect=forbidden_builder), \
+                contextlib.redirect_stdout(io.StringIO()):
+            rc = p06.main(["--repo-root", str(REPO_ROOT), "--live",
+                           "--approval", self.auth["reference"]])
+        self.assertEqual(rc, 3)
+        self.assertEqual(builds, [])
+
+    def test_cli_every_failed_gate_avoids_provider_client_construction(self):
+        original_load = p06._load
+        cases = ("pending", "missing_approval", "wrong_approval", "failed_preflight",
+                 "journal_collision", "report_collision")
+
+        for case in cases:
+            with self.subTest(case=case), tempfile.TemporaryDirectory() as tmp:
+                journal = Path(tmp) / "collection.jsonl"
+                report = Path(tmp) / "report.json"
+                registration = json.loads(json.dumps(self.registration))
+                registration["paths"]["discovery_journal"] = str(journal)
+                registration["paths"]["discovery_report"] = str(report)
+                if case == "journal_collision":
+                    journal.write_text("collision\n", encoding="utf-8")
+                elif case == "report_collision":
+                    report.write_text("collision\n", encoding="utf-8")
+
+                def load(root, rel):
+                    if rel == p06.REGISTRATION_PATH:
+                        return registration
+                    if rel == p06.AUTH_PATH and case == "pending":
+                        return pending_copy(original_load(root, rel))
+                    return original_load(root, rel)
+
+                builds = []
+
+                def forbidden_builder(value):
+                    builds.append(value)
+                    raise AssertionError("a failed gate constructed a provider client")
+
+                pending = case == "pending"
+                preflight_ok = case != "failed_preflight"
+                preflight = {
+                    "mode": "test-preflight", "ok": preflight_ok,
+                    "failed": [] if preflight_ok else ["output_paths_absent"],
+                    "checks_run": 1,
+                    "authorization_state": (p06.AUTH_STATE_PENDING if pending
+                                             else p06.AUTH_STATE_AUTHORIZED),
+                    "authorized": not pending,
+                    "authorization_stop_reason": "authorization_pending" if pending else None,
+                    "scope_digest_sha256": p06.SCOPE_DIGEST,
+                    "planned_seeds": p06.BLOCK_N, "status": "offline", "provider_calls": 0,
+                }
+                args = ["--repo-root", str(REPO_ROOT), "--live"]
+                if case != "missing_approval":
+                    args.extend(["--approval", "WRONG" if case == "wrong_approval"
+                                 else self.auth["reference"]])
+                with patch.object(p06, "_load", side_effect=load), \
+                        patch.object(p06, "run_preflight", return_value=preflight), \
+                        patch.object(p06, "_build_live_clients", side_effect=forbidden_builder), \
+                        patch("urllib.request.urlopen",
+                              side_effect=AssertionError("network access in failed-gate test")), \
+                        contextlib.redirect_stdout(io.StringIO()):
+                    rc = p06.main(args)
+                self.assertEqual(rc, 2 if case == "failed_preflight" else 3)
+                self.assertEqual(builds, [])
 
 
 if __name__ == "__main__":

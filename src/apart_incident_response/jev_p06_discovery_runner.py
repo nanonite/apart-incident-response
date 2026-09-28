@@ -26,6 +26,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import os
 from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
@@ -162,6 +163,260 @@ class DiscoveryTransport:
         raise NotImplementedError("live receiver transport is not configured")
 
 
+def _build_live_clients(registration: Mapping[str, Any]) -> tuple[Any, Any]:
+    """Construct provider clients for exactly the registered paid routes."""
+    from apart_incident_response import jev_choice as jc
+    from apart_incident_response import jev_ling_writer_v5 as ling_v5
+
+    budgets = registration["budgets"]["discovery_collection"]["physical"]
+    ling = ling_v5.LingWriterClientV5(
+        model=LING_MODEL, endpoint=LING_ENDPOINT, max_retries=2,
+        max_physical_requests=int(budgets["ling"]),
+        min_attempt_interval_seconds=3.25)
+    jev = jc.JevChoiceClient(
+        endpoint=JEV_ENDPOINT, model=JEV_MODEL, timeout=30.0,
+        max_retries=2, max_physical_requests=int(budgets["jev"]),
+        backoff_initial=0.5, backoff_max=5.0, backoff_jitter=0.25)
+    return ling, jev
+
+
+class ConfiguredDiscoveryTransport(DiscoveryTransport):
+    """Paid OpenRouter writer plus Jev Choice v2 transport for the frozen route.
+
+    This class is only instantiated by the live path after authorization,
+    preflight, and output-freshness checks have passed. No endpoint/model
+    overrides or route fallbacks are accepted.
+    """
+
+    is_configured = True
+
+    def __init__(self, registration: Mapping[str, Any], *, ling_client: Any = None,
+                 jev_client: Any = None) -> None:
+        from apart_incident_response import jev_choice_v2 as jc2
+
+        route = registration.get("route") or {}
+        ling_route = route.get("ling") or {}
+        jev_route = route.get("jev") or {}
+        norm = route.get("normalization") or {}
+        writer_contract = (registration.get("treatment") or {}).get("writer_transport") or {}
+        writer_prompt = (registration.get("treatment") or {}).get("writer_prompt") or {}
+        budgets = registration.get("budgets") or {}
+        collection = budgets.get("discovery_collection") or {}
+        cost_model = budgets.get("cost_model") or {}
+        exact = (
+            ling_route.get("model") == LING_MODEL
+            and ling_route.get("endpoint") == LING_ENDPOINT
+            and ling_route.get("route") == "paid OpenRouter SKU (the free SKU is not routable)"
+            and int(ling_route.get("max_retries", -1)) == 2
+            and float(ling_route.get("min_attempt_interval_seconds", -1)) == 3.25
+            and ling_route.get("retryable_statuses") == [408, 429, 500, 502, 503, 504, 529]
+            and ling_route.get("pacing_algorithm") ==
+                "monotonic_min_interval_between_physical_attempt_starts"
+            and ling_route.get("key_loader") == "behavioral_discovery._api_key"
+            and float(ling_route.get("temperature", -1)) == 0.0
+            and writer_contract.get("model") == LING_MODEL
+            and writer_contract.get("endpoint") == LING_ENDPOINT
+            and int(writer_contract.get("max_retries", -1)) == 2
+            and float(writer_contract.get("min_attempt_interval_seconds", -1)) == 3.25
+            and float(writer_contract.get("backoff_initial_seconds", -1)) == 0.5
+            and float(writer_contract.get("backoff_max_seconds", -1)) == 5.0
+            and writer_contract.get("pacing_algorithm") ==
+                "monotonic_min_interval_between_physical_attempt_starts"
+            and int(writer_contract.get("token_budget", -1)) == 1024
+            and float(writer_contract.get("temperature", -1)) == 0.0
+            and writer_prompt.get("output_grammar") ==
+                "ANSWER: <label> + optional MESSAGE: <claim>; answer-only = silence"
+            and jev_route.get("model") == JEV_MODEL
+            and jev_route.get("endpoint") == JEV_ENDPOINT
+            and int(jev_route.get("max_retries", -1)) == 2
+            and float(jev_route.get("timeout_seconds", -1)) == 30.0
+            and jev_route.get("retryable_statuses") == [408, 429, 500, 502, 503, 504, 529]
+            and jev_route.get("backoff") == {
+                "initial_seconds": 0.5, "jitter": 0.25, "max_seconds": 5.0}
+            and jev_route.get("codec_version") == JEV_CODEC_VERSION
+            and jev_route.get("protocol_key") == PROTOCOL_KEY
+            and norm.get("policy_hash") == NORMALIZATION_POLICY_HASH
+            and float(norm.get("hard_ceiling", -1)) == NORMALIZATION_HARD_CEILING
+            and budgets.get("block_n") == BLOCK_N
+            and collection.get("planned") == {"combined": 80, "jev": 16, "ling": 64}
+            and collection.get("physical") == {"combined": 240, "jev": 48, "ling": 192}
+            and float(collection.get("cost_ceiling_usd", -1)) == COLLECTION_COST_CEILING_USD
+            and collection.get("next_call_reservation_usd") == {
+                "jev": 0.001032192, "ling": 0.00202752}
+            and int(cost_model.get("ling_input_token_ceiling", 0)) == 8192
+            and int(cost_model.get("ling_output_token_ceiling", 0)) == 1024
+            and int(cost_model.get("jev_input_token_ceiling", 0)) == 8192
+            and float(cost_model.get("ling_prompt_usd_per_mtok", -1)) == 0.06
+            and float(cost_model.get("ling_completion_usd_per_mtok", -1)) == 0.18
+            and float(cost_model.get("jev_input_usd_per_mtok", -1)) == 0.042
+            and float(cost_model.get("ling_worst_physical_call_usd", -1)) == 0.00067584
+            and float(cost_model.get("jev_worst_physical_call_usd", -1)) == 0.000344064
+        )
+        if not exact:
+            raise DiscoveryRunError("registered_transport_contract_drift")
+
+        self.registration = registration
+        self._cost_model = cost_model
+        if ling_client is None or jev_client is None:
+            built_ling, built_jev = _build_live_clients(registration)
+            ling_client = ling_client if ling_client is not None else built_ling
+            jev_client = jev_client if jev_client is not None else built_jev
+        self.ling = ling_client
+        self.jev = jev_client
+        self.receiver = jc2.JevChoiceAdapterV2(self.jev, model=JEV_MODEL)
+        self.is_configured = bool(
+            getattr(self.ling, "api_key", None)
+            and getattr(getattr(self.jev, "credentials", None), "present", False)
+            and getattr(getattr(self.jev, "credentials", None), "shape_ok", False))
+
+    def writer_completion(self, *, request: Mapping[str, Any]) -> Mapping[str, Any]:
+        from apart_incident_response import behavioral_discovery as bd
+        from apart_incident_response.jev_ling_writer_v5 import GRAMMAR_ORIGINAL_LING
+
+        context = {
+            "prompt": request["prompt"],
+            "private_clues": request["private_clues"],
+            "candidate_labels": request["candidate_labels"],
+            "max_tokens": int(request["max_tokens"]),
+            "grammar": GRAMMAR_ORIGINAL_LING,
+            "seed": int(request["provider_seed"]),
+        }
+        before = int(getattr(self.ling, "physical_attempts", 0))
+        try:
+            outcome = self.ling.write_outcome(context)
+        except Exception as exc:  # noqa: BLE001 - preserve physical/cost evidence
+            diagnostics = list(getattr(self.ling, "last_call_diagnostics", ()))
+            attempts = max(int(getattr(self.ling, "physical_attempts", before)) - before,
+                           len(diagnostics))
+            return {
+                "attempts": attempts,
+                "cost_usd": attempts * float(self._cost_model["ling_worst_physical_call_usd"]),
+                "outcome": "writer_error", "claim": None,
+                "error_class": f"writer_{type(exc).__name__}",
+                "input_tokens": 0, "output_tokens": 0,
+                "attempt_diagnostics": diagnostics,
+                "request_identity": {
+                    "model": LING_MODEL, "endpoint": LING_ENDPOINT,
+                    "temperature": 0.0, "max_tokens": int(request["max_tokens"]),
+                    "provider_seed": int(request["provider_seed"]),
+                    "prompt_sha256": hashlib.sha256(
+                        str(request["prompt"]).encode()).hexdigest(),
+                },
+            }
+        attempts = len(getattr(self.ling, "last_call_diagnostics", ()))
+        diagnostics = list(getattr(self.ling, "last_call_diagnostics", ()))
+        input_tokens = outcome.get("input_tokens")
+        output_tokens = outcome.get("output_tokens")
+        costs = self._cost_model
+        worst = float(costs["ling_worst_physical_call_usd"])
+        failed_attempts = sum(1 for item in diagnostics if item.get("status") != 200)
+        known_success = bool(diagnostics and diagnostics[-1].get("status") == 200)
+        input_valid = (isinstance(input_tokens, int) and not isinstance(input_tokens, bool)
+                       and input_tokens >= 0)
+        output_valid = (isinstance(output_tokens, int) and not isinstance(output_tokens, bool)
+                        and output_tokens >= 0)
+        input_cost = (input_tokens * float(costs["ling_prompt_usd_per_mtok"])
+                      / 1_000_000 if input_valid else worst)
+        output_cost = (output_tokens * float(costs["ling_completion_usd_per_mtok"])
+                       / 1_000_000 if output_valid else 0.0)
+        final_cost = input_cost + output_cost
+        if not known_success or not input_valid or not output_valid:
+            final_cost = worst
+        cost = failed_attempts * worst + (final_cost if known_success else 0.0)
+        error_class = outcome.get("error_class")
+        parsed_outcome = outcome.get("outcome")
+        if parsed_outcome not in {
+                "message_candidate", "non_owned_claim", "deliberate_silence",
+                *WRITER_TERMINAL_OUTCOMES}:
+            parsed_outcome = "writer_error"
+            error_class = error_class or "writer_invalid_outcome"
+        token_limit_error = (
+            (input_valid
+             and input_tokens > int(costs["ling_input_token_ceiling"]))
+            or (output_valid
+                and output_tokens > int(costs["ling_output_token_ceiling"]))
+        )
+        token_usage_error = not input_valid or not output_valid
+        request_identity = {
+            "model": LING_MODEL,
+            "endpoint": LING_ENDPOINT,
+            "temperature": 0.0,
+            "max_tokens": int(request["max_tokens"]),
+            "provider_seed": int(request["provider_seed"]),
+            "prompt_sha256": hashlib.sha256(str(request["prompt"]).encode()).hexdigest(),
+        }
+        return {
+            "attempts": attempts, "cost_usd": cost,
+            "outcome": "writer_error" if token_limit_error or token_usage_error else parsed_outcome,
+            "claim": outcome.get("claim"),
+            "error_class": ("writer_token_budget_exceeded" if token_limit_error else
+                            "writer_malformed_usage" if token_usage_error else error_class),
+            "input_tokens": input_tokens or 0, "output_tokens": output_tokens or 0,
+            "request_identity": request_identity,
+            "attempt_diagnostics": diagnostics,
+        }
+
+    def receiver_choice(self, *, request: Mapping[str, Any]) -> Mapping[str, Any]:
+        state = request["state"]
+        before = int(getattr(self.jev, "physical_attempts", 0))
+        try:
+            response, raw = self.receiver.complete_with_raw(state)
+        except Exception as exc:  # noqa: BLE001 - preserve physical/cost evidence
+            attempts = max(0, int(getattr(self.jev, "physical_attempts", before)) - before)
+            return {
+                "attempts": attempts,
+                "cost_usd": attempts * float(self._cost_model["jev_worst_physical_call_usd"]),
+                "status": "invalid", "error_class": f"transport_error_{type(exc).__name__}",
+                "model": JEV_MODEL, "codec_version": JEV_CODEC_VERSION,
+                "request_hash": state.request_hash,
+                "usage": {"input_tokens": 0, "output_tokens": 0},
+                "request_identity": {
+                    "model": JEV_MODEL, "endpoint": JEV_ENDPOINT,
+                    "codec_version": JEV_CODEC_VERSION, "protocol_key": PROTOCOL_KEY,
+                    "request_hash": state.request_hash,
+                    "option_ids": [option.option_id for option in state.options],
+                },
+            }
+        attempts = int(getattr(self.jev, "physical_attempts", 0)) - before
+        usage = dict(response.usage or {})
+        costs = self._cost_model
+        worst = float(costs["jev_worst_physical_call_usd"])
+        input_tokens = usage.get("input_tokens")
+        diagnostics = response.diagnostics.to_dict() if response.diagnostics is not None else None
+        success_http = attempts > 0 and isinstance(raw, Mapping) and bool(usage)
+        successful_cost = (
+            max(0, int(input_tokens)) * float(costs["jev_input_usd_per_mtok"]) / 1_000_000
+            if isinstance(input_tokens, int) else worst)
+        if not success_http or not isinstance(input_tokens, int):
+            successful_cost = worst
+        cost = max(0, attempts - 1) * worst + (successful_cost if attempts else 0.0)
+        request_identity = {
+            "model": JEV_MODEL,
+            "endpoint": JEV_ENDPOINT,
+            "codec_version": JEV_CODEC_VERSION,
+            "protocol_key": PROTOCOL_KEY,
+            "request_hash": state.request_hash,
+            "option_ids": [option.option_id for option in state.options],
+        }
+        return {
+            "attempts": attempts, "cost_usd": cost,
+            "status": response.status,
+            "error_class": response.error_class,
+            "model": response.model,
+            "codec_version": response.version,
+            "selected_option_id": response.selected_option_id,
+            "confidence": response.confidence,
+            "probabilities": dict(response.probabilities),
+            "raw_probabilities": dict(response.raw_probabilities),
+            "usage": usage,
+            "normalization_tier": response.normalization_tier,
+            "renormalized": response.renormalized,
+            "normalization_diagnostics": diagnostics,
+            "request_hash": response.request_hash,
+            "request_identity": request_identity,
+        }
+
+
 # --------------------------------------------------------------------------
 # caps
 # --------------------------------------------------------------------------
@@ -207,6 +462,21 @@ class CapTracker:
         self.planned_used[provider] += 1
         self.physical_used[provider] += attempts
         self.cost_usd += float(cost_usd)
+
+    def reason_after_call(self, provider: str) -> str | None:
+        """Fail closed if observed usage crossed a registered ceiling."""
+        if self.planned_used[provider] > int(self.planned.get(provider, 0)):
+            return f"request_cap_planned:{provider}"
+        if self.physical_used[provider] > int(self.physical.get(provider, 0)):
+            return f"request_cap_physical:{provider}"
+        if self.cost_usd > self.ceiling:
+            return "cost_cap_exceeded_after_call"
+        combined = self.physical_used["ling"] + self.physical_used["jev"]
+        if combined > PROGRAM_PHYSICAL_CEILING:
+            return "program_request_cap_exceeded_after_call"
+        if self.cost_usd > PROGRAM_COST_CEILING_USD:
+            return "program_cost_cap_exceeded_after_call"
+        return None
 
     def snapshot(self) -> dict[str, Any]:
         combined_physical = self.physical_used["ling"] + self.physical_used["jev"]
@@ -526,6 +796,55 @@ def _build_receiver_state(instance: Any, board: Sequence[Mapping[str, Any]]) -> 
     return adapter.build_state(instance, "A", "COMM", visible_messages=visible)
 
 
+def _receiver_response_error(response: Mapping[str, Any], state: Any) -> str | None:
+    """Independently enforce the registered Choice response invariants."""
+    import math
+
+    if response.get("status") != "complete":
+        return str(response.get("error_class") or "receiver_invalid")
+    if response.get("model") not in (None, JEV_MODEL):
+        return "model_drift"
+    if response.get("codec_version") not in (None, JEV_CODEC_VERSION):
+        return "protocol_key_drift"
+    if response.get("request_hash") != state.request_hash:
+        return "request_hash_drift"
+    expected = {option.option_id for option in state.options}
+    probabilities = response.get("probabilities")
+    raw = response.get("raw_probabilities")
+    for name, vector in (("probabilities", probabilities), ("raw_probabilities", raw)):
+        if not isinstance(vector, Mapping) or set(vector) != expected:
+            return "option_identity_drift"
+        values = list(vector.values())
+        if any(isinstance(value, bool) or not isinstance(value, (int, float))
+               or not math.isfinite(float(value)) or float(value) < 0.0 for value in values):
+            return "invalid_probability_vector"
+        if name == "probabilities" and abs(sum(float(value) for value in values) - 1.0) > 1e-9:
+            return "normalized_vector_invalid"
+        if name == "raw_probabilities" and abs(
+                sum(float(value) for value in values) - 1.0) > NORMALIZATION_HARD_CEILING:
+            return "normalization_hard_ceiling_exceeded"
+    selected = response.get("selected_option_id")
+    if selected not in expected:
+        return "unknown_selection"
+    peak = max(float(value) for value in probabilities.values())
+    if float(probabilities[selected]) != peak:
+        return "unknown_selection"
+    confidence = response.get("confidence")
+    if (isinstance(confidence, bool) or not isinstance(confidence, (int, float))
+            or not math.isfinite(float(confidence)) or not 0.0 <= float(confidence) <= 1.0):
+        return "invalid_confidence"
+    usage = response.get("usage")
+    if not isinstance(usage, Mapping) or any(
+            isinstance(usage.get(name), bool) or not isinstance(usage.get(name), int)
+            or usage.get(name) < 0 for name in ("input_tokens", "output_tokens")):
+        return "malformed_usage"
+    diagnostics = response.get("normalization_diagnostics") or {}
+    deviation = diagnostics.get("absolute_normalization_deviation")
+    if deviation is not None and float(deviation) > NORMALIZATION_HARD_CEILING:
+        return "normalization_hard_ceiling_exceeded"
+    return None
+
+
 def _verify_board_evidence(events: Sequence[Any]) -> dict[str, Any]:
     """Verify B-to-A ownership and A read-after-write exposure from real events.
 
@@ -638,7 +957,11 @@ def execute_discovery_run(
         return _blocked("manifest_drift", auth=auth, extra={"found": len(manifest)})
 
     caps = CapTracker(registration.get("budgets") or {})
-    transport = transport_factory()
+    try:
+        transport = transport_factory()
+    except Exception as exc:  # noqa: BLE001 - fail closed before creating outputs
+        return _blocked("transport_configuration_failed", auth=auth,
+                        extra={"error_class": type(exc).__name__})
     if not getattr(transport, "is_configured", False):
         # Refuse before the journal exists: an unwired transport must never
         # consume the fresh output paths.
@@ -652,6 +975,10 @@ def execute_discovery_run(
     try:
         for index, entry in enumerate(manifest):
             row = _seed_row(entry, sequence=index + 1)
+            cost_before_row = caps.cost_usd
+            active_provider = "ling"
+            call_accounted = False
+            call_started = False
             if stop_reason is None:
                 reason = caps.reason_before_call("ling")
                 if reason is not None:
@@ -673,6 +1000,7 @@ def execute_discovery_run(
                     board_info: dict[str, Any] = {}
                     rejected: list[dict[str, Any]] = []
                     writer_outcomes: list[dict[str, Any]] = []
+                    writer_request_identities: list[dict[str, Any]] = []
                     invalid: str | None = None
 
                     for turn in range(L4X_TURNS):
@@ -687,30 +1015,106 @@ def execute_discovery_run(
                                 invalid = reason
                                 break
                             prompt = _build_writer_prompt(instance, agent, turn, board, run_id)
+                            from apart_incident_response import behavioral_discovery as bd
+                            view = instance.agent_view(agent, "COMM")
+                            provider_seed = bd.provider_seed(
+                                instance.instance_id, "COMM", turn, agent)
+                            active_provider = "ling"
+                            call_accounted = False
+                            call_started = True
                             result = transport.writer_completion(
                                 request={"instance_id": instance.instance_id,
                                          "seed": instance.seed,
+                                         "provider_seed": provider_seed,
                                          "agent": agent,
                                          "turn": turn,
                                          "prompt": prompt,
+                                         "private_clues": list(view.get("private_clues", ())),
+                                         "candidate_labels": sorted(
+                                             str(label) for label in instance.solutions),
+                                         "max_tokens": 1024,
                                          "model": LING_MODEL,
                                          "endpoint": LING_ENDPOINT})
-                            attempts = int(result.get("attempts", 1))
-                            cost = float(result.get("cost_usd", 0.0))
+                            raw_attempts = result.get("attempts", 1)
+                            attempts_valid = (isinstance(raw_attempts, int)
+                                              and not isinstance(raw_attempts, bool)
+                                              and raw_attempts >= 0)
+                            attempts = raw_attempts if attempts_valid else 1
+                            raw_cost = result.get("cost_usd", 0.0)
+                            try:
+                                cost = float(raw_cost)
+                            except (TypeError, ValueError):
+                                cost = float("nan")
+                            cost_valid = math.isfinite(cost) and cost >= 0
+                            if not attempts_valid or not cost_valid:
+                                cost = attempts * float((registration.get("budgets") or {})
+                                                        .get("cost_model", {})
+                                                        .get("ling_worst_physical_call_usd", 0.0))
                             provider_calls += attempts
                             caps.record("ling", attempts=attempts, cost_usd=cost)
+                            call_accounted = True
                             row["physical_attempts"]["ling"] += attempts
-                            row["token_usage"]["ling_input_tokens"] += int(
-                                result.get("input_tokens", 0) or 0)
-                            row["token_usage"]["ling_output_tokens"] += int(
-                                result.get("output_tokens", 0) or 0)
+                            input_tokens = result.get("input_tokens", 0)
+                            output_tokens = result.get("output_tokens", 0)
+                            input_valid = (isinstance(input_tokens, int)
+                                           and not isinstance(input_tokens, bool)
+                                           and input_tokens >= 0)
+                            output_valid = (isinstance(output_tokens, int)
+                                            and not isinstance(output_tokens, bool)
+                                            and output_tokens >= 0)
+                            row["token_usage"]["ling_input_tokens"] += (
+                                input_tokens if input_valid else 0)
+                            row["token_usage"]["ling_output_tokens"] += (
+                                output_tokens if output_valid else 0)
+                            if not attempts_valid:
+                                invalid = "writer_attempt_count_invalid"
+                            elif attempts > CapTracker.MAX_PHYSICAL_PER_CALL:
+                                invalid = "writer_attempt_count_invalid"
+                            elif not cost_valid:
+                                invalid = "writer_cost_invalid"
+                            elif not input_valid or not output_valid:
+                                invalid = "writer_malformed_usage"
+                            identity = result.get("request_identity")
+                            if identity is not None:
+                                if not isinstance(identity, Mapping) or (
+                                        identity.get("model") != LING_MODEL
+                                        or identity.get("endpoint") != LING_ENDPOINT
+                                        or identity.get("temperature") != 0.0
+                                        or identity.get("max_tokens") != 1024
+                                        or identity.get("provider_seed") != provider_seed
+                                        or identity.get("prompt_sha256") != hashlib.sha256(
+                                            prompt.encode()).hexdigest()):
+                                    invalid = invalid or "writer_request_identity_drift"
+                                    stop_reason = invalid
+                                else:
+                                    writer_request_identities.append(dict(identity))
                             outcome = result.get("outcome")
+                            if outcome not in {
+                                    "message_candidate", "non_owned_claim",
+                                    "deliberate_silence", *WRITER_TERMINAL_OUTCOMES}:
+                                outcome = "writer_error"
+                                result = dict(result, error_class="writer_invalid_outcome")
+                            if outcome in {"message_candidate", "non_owned_claim"} and (
+                                    not isinstance(result.get("claim"), str)
+                                    or not result["claim"].strip()):
+                                outcome = "writer_error"
+                                result = dict(result, error_class="writer_invalid_claim")
                             writer_outcomes.append({
                                 "agent": agent, "turn": turn, "outcome": outcome,
                                 "claim": result.get("claim"),
                                 "error_class": result.get("error_class"),
                                 "physical_attempts": attempts,
+                                "attempt_diagnostics": result.get("attempt_diagnostics", []),
+                                "request_identity": identity,
                             })
+                            if invalid is not None:
+                                stop_reason = invalid
+                                break
+                            cap_violation = caps.reason_after_call("ling")
+                            if cap_violation is not None:
+                                invalid = cap_violation
+                                stop_reason = cap_violation
+                                break
                             if outcome == "message_candidate":
                                 claim = str(result.get("claim"))
                                 if instance.holds_claim(agent, claim):
@@ -770,8 +1174,9 @@ def execute_discovery_run(
                                 "model": JEV_MODEL,
                                 "endpoint": JEV_ENDPOINT,
                                 "codec_version": JEV_CODEC_VERSION,
-                                "protocol_key": PROTOCOL_KEY,
-                                "request_hash": state.request_hash,
+                                         "protocol_key": PROTOCOL_KEY,
+                                         "request_hash": state.request_hash,
+                                         "state": state,
                             }
                             # Record A's exposure to every B-authored message
                             # passed into visible_messages, using the frozen
@@ -782,25 +1187,77 @@ def execute_discovery_run(
                                 log.peer_read("A", board_info[board_row["message_id"]],
                                               exposure_id=JEV_FINALIZER_EXPOSURE_ID)
                             try:
-                                response = transport.receiver_choice(request=receiver_request)
+                              active_provider = "jev"
+                              call_accounted = False
+                              call_started = True
+                              response = transport.receiver_choice(request=receiver_request)
                             except Exception as exc:  # noqa: BLE001 - fail closed
                                 receiver_error_class = f"jev_{type(exc).__name__}"
                                 stop_reason = receiver_error_class
-                                response = None
-                            if response is not None:
-                                receiver_attempted = True
-                                attempts = int(response.get("attempts", 1))
-                                cost = float(response.get("cost_usd", 0.0))
+                                # A thrown transport may have failed after the request
+                                # left the process. Charge one conservative physical
+                                # attempt rather than recording an unpriced failure.
+                                attempts = 1
+                                cost = float((registration.get("budgets") or {})
+                                             .get("cost_model", {})
+                                             .get("jev_worst_physical_call_usd", 0.0))
                                 provider_calls += attempts
                                 caps.record("jev", attempts=attempts, cost_usd=cost)
                                 row["physical_attempts"]["jev"] += attempts
+                                row["cost"]["usd"] += cost
+                                receiver_attempted = True
+                                call_accounted = True
+                                response = None
+                            if response is not None:
+                                receiver_attempted = True
+                                raw_attempts = response.get("attempts", 1)
+                                attempts_valid = (isinstance(raw_attempts, int)
+                                                  and not isinstance(raw_attempts, bool)
+                                                  and raw_attempts >= 0)
+                                attempts = raw_attempts if attempts_valid else 1
+                                raw_cost = response.get("cost_usd", 0.0)
+                                try:
+                                    cost = float(raw_cost)
+                                except (TypeError, ValueError):
+                                    cost = float("nan")
+                                cost_valid = math.isfinite(cost) and cost >= 0
+                                if not attempts_valid or not cost_valid:
+                                    cost = attempts * float((registration.get("budgets") or {})
+                                                            .get("cost_model", {})
+                                                            .get("jev_worst_physical_call_usd", 0.0))
+                                provider_calls += attempts
+                                caps.record("jev", attempts=attempts, cost_usd=cost)
+                                call_accounted = True
+                                row["physical_attempts"]["jev"] += attempts
                                 usage = response.get("usage") or {}
-                                row["token_usage"]["jev_input_tokens"] += int(
-                                    usage.get("input_tokens", 0) or 0)
-                                row["token_usage"]["jev_output_tokens"] += int(
-                                    usage.get("output_tokens", 0) or 0)
-                                receiver_valid = response.get("status") == "complete"
+                                input_tokens = (usage.get("input_tokens")
+                                                if isinstance(usage, Mapping) else None)
+                                output_tokens = (usage.get("output_tokens")
+                                                 if isinstance(usage, Mapping) else None)
+                                input_valid = (isinstance(input_tokens, int)
+                                               and not isinstance(input_tokens, bool)
+                                               and input_tokens >= 0)
+                                output_valid = (isinstance(output_tokens, int)
+                                                and not isinstance(output_tokens, bool)
+                                                and output_tokens >= 0)
+                                row["token_usage"]["jev_input_tokens"] += (
+                                    input_tokens if input_valid else 0)
+                                row["token_usage"]["jev_output_tokens"] += (
+                                    output_tokens if output_valid else 0)
+                                receiver_valid = (
+                                    response.get("status") == "complete"
+                                    and attempts_valid
+                                    and attempts <= CapTracker.MAX_PHYSICAL_PER_CALL
+                                    and cost_valid and input_valid and output_valid)
                                 receiver_error_class = response.get("error_class")
+                                if not attempts_valid or attempts > CapTracker.MAX_PHYSICAL_PER_CALL:
+                                    receiver_error_class = "jev_attempt_count_invalid"
+                                elif not cost_valid:
+                                    receiver_error_class = "jev_cost_invalid"
+                                elif not input_valid or not output_valid:
+                                    receiver_error_class = "malformed_usage"
+                                if not receiver_valid:
+                                    stop_reason = receiver_error_class or "receiver_invalid"
                                 receiver_row = {
                                     "status": response.get("status"),
                                     "error_class": receiver_error_class,
@@ -813,12 +1270,51 @@ def execute_discovery_run(
                                     "raw_probabilities": response.get("raw_probabilities"),
                                     "usage": response.get("usage"),
                                     "request_hash": state.request_hash,
-                                    "state_hash": response.get("state_hash"),
+                                      "state_hash": response.get("state_hash"),
+                                      "codec_version": response.get("codec_version"),
+                                      "normalization_diagnostics": response.get(
+                                          "normalization_diagnostics"),
+                                      "request_identity": response.get("request_identity"),
                                 }
+                                if response.get("request_identity") is not None and (
+                                          response["request_identity"].get("model") != JEV_MODEL
+                                          or response["request_identity"].get("endpoint") != JEV_ENDPOINT
+                                          or response["request_identity"].get("codec_version")
+                                          != JEV_CODEC_VERSION
+                                              or response["request_identity"].get("protocol_key")
+                                              != PROTOCOL_KEY
+                                              or response["request_identity"].get("request_hash")
+                                              != state.request_hash
+                                              or response["request_identity"].get("option_ids")
+                                              != [option.option_id for option in state.options]):
+                                    receiver_valid = False
+                                    receiver_error_class = "request_identity_drift"
+                                    stop_reason = "request_identity_drift"
+                                if response.get("model") not in (None, JEV_MODEL):
+                                    receiver_valid = False
+                                    receiver_error_class = "model_drift"
+                                    stop_reason = "model_drift"
+                                if response.get("codec_version") not in (None, JEV_CODEC_VERSION):
+                                    receiver_valid = False
+                                    receiver_error_class = "protocol_key_drift"
+                                    stop_reason = "protocol_key_drift"
+                                norm_diag = response.get("normalization_diagnostics") or {}
+                                deviation = norm_diag.get("absolute_normalization_deviation")
+                                if (deviation is not None
+                                          and float(deviation) > NORMALIZATION_HARD_CEILING):
+                                    receiver_valid = False
+                                    receiver_error_class = "normalization_hard_ceiling_exceeded"
+                                    stop_reason = "normalization_hard_ceiling_exceeded"
                                 if receiver_valid and response.get("request_hash") != state.request_hash:
                                     receiver_valid = False
                                     receiver_error_class = "request_hash_drift"
                                     stop_reason = "request_hash_drift"
+                                validation_error = (_receiver_response_error(response, state)
+                                                    or caps.reason_after_call("jev"))
+                                if validation_error is not None:
+                                    receiver_valid = False
+                                    receiver_error_class = validation_error
+                                    stop_reason = validation_error
                                 if not receiver_valid and stop_reason is None:
                                     stop_reason = receiver_error_class or "receiver_invalid"
 
@@ -835,7 +1331,8 @@ def execute_discovery_run(
                         "reads": evidence["reads"],
                     }
                     row["emission"] = {
-                        "writer_outcomes": writer_outcomes,
+                          "writer_outcomes": writer_outcomes,
+                          "writer_request_identities": writer_request_identities,
                         "board_messages": len(board),
                         "silence": all(o["outcome"] == "deliberate_silence"
                                        for o in writer_outcomes),
@@ -858,7 +1355,7 @@ def execute_discovery_run(
                         "ling_attempts": row["physical_attempts"]["ling"],
                         "jev_attempts": row["physical_attempts"]["jev"],
                     }
-                    row["cost"] = {"usd": round(caps.cost_usd - float(row["cost"]["cumulative_usd"]), 12),
+                    row["cost"] = {"usd": round(caps.cost_usd - cost_before_row, 12),
                                    "cumulative_usd": round(caps.cost_usd, 12)}
                     row["provider_calls"] = (row["physical_attempts"]["ling"]
                                               + row["physical_attempts"]["jev"])
@@ -893,13 +1390,22 @@ def execute_discovery_run(
                     row["status"] = "failed"
                     row["failure_reason"] = f"writer_error:{type(exc).__name__}"
                     completed["failed"] += 1
-                    caps.record("ling", attempts=1, cost_usd=0.0)
-                    row["physical_attempts"]["ling"] += 1
-                    row["physical_attempts"]["combined"] += 1
-                    provider_calls += 1
+                    if call_started and not call_accounted:
+                        cost_key = f"{active_provider}_worst_physical_call_usd"
+                        failed_cost = float((registration.get("budgets") or {})
+                                            .get("cost_model", {}).get(cost_key, 0.0))
+                        caps.record(active_provider, attempts=1, cost_usd=failed_cost)
+                        row["cost"]["usd"] += failed_cost
+                        row["physical_attempts"][active_provider] += 1
+                        provider_calls += 1
                     consecutive_terminal_failures += 1
                     if consecutive_terminal_failures >= 2:
                         stop_reason = "two_consecutive_terminal_provider_failures"
+                row["physical_attempts"]["combined"] = (
+                      row["physical_attempts"]["ling"] + row["physical_attempts"]["jev"])
+                row["provider_calls"] = row["physical_attempts"]["combined"]
+                row["cost"] = {"usd": round(caps.cost_usd - cost_before_row, 12),
+                               "cumulative_usd": round(caps.cost_usd, 12)}
                 if row_hook:
                     row_hook(row)
                 journal.write(row)
@@ -981,7 +1487,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         registration, lock, auth, repo_root=root, approval=args.approval,
         preflight=preflight,
         # Constructed only after every gate passes; a pending record never reaches it.
-        transport_factory=(lambda: DiscoveryTransport()) if args.live else None)
+        transport_factory=(lambda: ConfiguredDiscoveryTransport(registration))
+        if args.live else None)
     print(json.dumps({key: report.get(key) for key in
                       ("mode", "status", "stop_reason", "authorization_state",
                        "planned_seeds", "journaled_seeds", "provider_calls")},
@@ -1005,6 +1512,6 @@ __all__ = [
     "REGISTRATION_HASH", "LOCK_HASH", "SCOPE_DIGEST", "AUTH_STATE_PENDING",
     "AUTH_STATE_AUTHORIZED", "MUST_COVER", "BLOCK_N", "INSTANCES_PER_FORM",
     "FORM_COUNT", "STAGE", "DiscoveryRunError", "DiscoveryJournal",
-    "DiscoveryTransport", "CapTracker", "scope_digest", "reference_binds_scope_digest",
+      "DiscoveryTransport", "ConfiguredDiscoveryTransport", "CapTracker", "scope_digest", "reference_binds_scope_digest",
     "evaluate_authorization", "run_preflight", "execute_discovery_run", "main",
 ]
