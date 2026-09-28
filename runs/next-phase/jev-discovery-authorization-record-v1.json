@@ -1,7 +1,7 @@
 {
   "authorization_scope_changes_require": "a new version of this record plus fresh registration and lock review; a stopped run requires a new registration and fresh paths",
-  "authorized": false,
-  "decision": null,
+  "authorized": true,
+  "decision": "The workspace user explicitly authorized the live run and approved #206 in this conversation on 2026-09-28, in direct response to the locked hypothesis:low discovery scope: paid Ling/OpenRouter and Jev routes, up to 384 retry-inclusive physical requests, and a $0.30 program cost ceiling. This authorizes the discovery screen and its registered optional exploratory replay only; it does not authorize the later held-out replay gate #211.",
   "derived_from": {
     "locked_registration_file_sha256": "78f7cd03c3afc12c94c3ba09839e4ac6ba667a3f68b96871571b274ae7d3ab11",
     "locked_registration_hash": "6fa6149770b620cd3a026a6415f8e4d97e800e8af5237794de7b29fca6dacfac",
@@ -65,7 +65,7 @@
   "provider_calls": 0,
   "purpose": "Decision record prepared for a human to supply an explicit live authorization reference for the hypothesis:low discovery screen. Preparing it grants nothing.",
   "record_version": "jev-discovery-authorization-record-v1",
-  "reference": null,
+  "reference": "user-chat-authorization-2026-09-28T15:28:15Z|scope_digest_sha256=938da9116805967253417c53709cd85d56d1913ac0142032d0d4732f50c04061",
   "root_issue": "#159",
   "scope": {
     "cost_caps": {
@@ -311,9 +311,9 @@
   },
   "scope_digest_sha256": "938da9116805967253417c53709cd85d56d1913ac0142032d0d4732f50c04061",
   "scope_provenance": "copied verbatim from authorization_scope of the P05 lock; verify_scope_matches_lock() in tests fails closed on any drift",
-  "state": "awaiting_explicit_reference",
-  "supplied_at": null,
-  "supplied_by": null,
+  "state": "authorized",
+  "supplied_at": "2026-09-28T15:28:15Z",
+  "supplied_by": "workspace user, via explicit conversation instruction",
   "what_a_reference_must_state": {
     "cost_caps": {
       "discovery_collection_ceiling_usd": 0.2,
