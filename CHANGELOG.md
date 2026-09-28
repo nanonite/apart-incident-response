@@ -37,6 +37,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix board IPC integration and CLI tool wiring (#58)
 
 ### Changed
+- P06 offline runner repair before live discovery (#216)
 - Prepare P06 discovery collection runner with a fail-closed authorization gate [hypothesis:low] (#207)
 - Add `jev-p06-discovery-runner-v1`: a 24-check offline preflight bound to registration hash `6fa61497…dacfac`, lock hash `9de4a61f…a18b3` and scope digest `938da911…04061`, plus a runner that refuses every provider call until the authorization record is `authorized` with a supplied reference matching that digest; one durable journal row per planned seed (16/16, including silence and failures) carrying ownership, exposure, information, request and cost evidence; retry-inclusive request and cost caps enforced before each call with the full ×3 physical budget reserved; output-collision refusal with no resume, append, overwrite or outcome-based extension; mocked transport tests for authorization refusal, cap and stop enforcement, journal completeness and collisions; gate tests extended to accept a future authorized post-run state without weakening the pre-call checks or rewriting historical claims (#207)
 - Resolve the P04 registration review and prepare the #206 authorization decision record [hypothesis:low] (#206)
