@@ -3,9 +3,18 @@ hypothesis:low discovery collection.
 
 Offline by construction. The live transport is never constructed until every
 gate has passed: authorization record in ``authorized`` state, a supplied
-reference matching the registered scope digest, a green preflight, and fresh
-output paths. A pending record therefore cannot make a provider call even if
-``--live`` is passed.
+reference matching the registered scope digest *and binding the digest in the
+reference itself*, a green preflight, and fresh output paths. A pending record
+therefore cannot make a provider call even if ``--live`` is passed.
+
+The locked treatment is the original L4X communication bridge: for each of the
+fixed 16 registered seeds, agents A and B each act on two turns (four Ling
+writer calls per seed, 64 total), accepted board writes only for exact
+writer-owned claims, peer-only board visibility, then one Jev Choice wire v2
+final receiver A call per seed (16 total). Structural need and form identity
+are derived from the deterministic instance and the pre-read request. B-to-A
+ownership and A read-after-write exposure are verified from real event
+evidence, never from transport-supplied booleans.
 
 Seeds are never substituted, and the journal is never resumed, appended,
 overwritten, or extended from outcomes: it is opened with ``"x"`` so an
@@ -25,7 +34,7 @@ from typing import Any
 from apart_incident_response import jev_p04_design_classification as p04
 from apart_incident_response import jev_p05_discovery_lock as p05
 
-RUNNER_VERSION = "jev-p06-discovery-runner-v1"
+RUNNER_VERSION = "jev-p06-discovery-runner-v2"
 
 REGISTRATION_PATH = str(p04.REGISTRATION_PATH)
 LOCK_PATH = str(p05.LOCK_PATH)
@@ -43,6 +52,46 @@ BLOCK_N = 16
 INSTANCES_PER_FORM = 4
 FORM_COUNT = 4
 STAGE = "hypothesis:low discovery screen and optional exploratory replay"
+
+# L4X treatment constants (frozen in the P04 registration).
+L4X_TURNS = 2
+L4X_AGENTS = ("A", "B")
+L4X_LING_CALLS_PER_SEED = len(L4X_AGENTS) * L4X_TURNS  # 4
+L4X_JEV_CALLS_PER_SEED = 1
+L4X_TOTAL_LING_CALLS = BLOCK_N * L4X_LING_CALLS_PER_SEED  # 64
+L4X_TOTAL_JEV_CALLS = BLOCK_N * L4X_JEV_CALLS_PER_SEED  # 16
+L4X_TOTAL_LOGICAL_CALLS = L4X_TOTAL_LING_CALLS + L4X_TOTAL_JEV_CALLS  # 80
+
+# Collection caps (retry-inclusive: up to 3 physical attempts per logical call).
+COLLECTION_PLANNED_LING = L4X_TOTAL_LING_CALLS
+COLLECTION_PLANNED_JEV = L4X_TOTAL_JEV_CALLS
+COLLECTION_PHYSICAL_LING = COLLECTION_PLANNED_LING * 3  # 192
+COLLECTION_PHYSICAL_JEV = COLLECTION_PLANNED_JEV * 3  # 48
+COLLECTION_PHYSICAL_COMBINED = COLLECTION_PHYSICAL_LING + COLLECTION_PHYSICAL_JEV  # 240
+COLLECTION_COST_CEILING_USD = 0.20
+
+# Program ceilings (separately registered aggregate scope).
+PROGRAM_PHYSICAL_CEILING = 384
+PROGRAM_COST_CEILING_USD = 0.30
+
+# Registered route identity.
+LING_MODEL = "inclusionai/ling-3.0-flash-vl"
+LING_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
+JEV_MODEL = "jev-1.13.0"
+JEV_ENDPOINT = "https://api.typesafe.ai/v1/systemone"
+JEV_CODEC_VERSION = "jev-choice-wire-v2"
+NORMALIZATION_HARD_CEILING = 0.05
+NORMALIZATION_POLICY_HASH = "292ac217f1cf54083252e6363a16a48596daab72a8ca06d4569c20f861b7e1e9"
+PROTOCOL_KEY = "jev-choice-wire-v2|75190e251aa2ecf8fdbb79fb0ae823992159c227dc47dfc378dad660969d7aa0"
+
+# Frozen exposure id for the Jev finalizer read of the bridge board.
+JEV_FINALIZER_EXPOSURE_ID = "jev-finalizer"
+
+# Writer terminal outcomes that stop the run before the Jev receiver is called.
+WRITER_TERMINAL_OUTCOMES = frozenset({
+    "empty_output", "truncated_output", "unparsed_output", "invalid_answer",
+    "writer_error",
+})
 
 
 class DiscoveryRunError(RuntimeError):
@@ -118,7 +167,12 @@ class DiscoveryTransport:
 # --------------------------------------------------------------------------
 
 class CapTracker:
-    """Retry-inclusive request and cost caps, enforced before every call."""
+    """Retry-inclusive request and cost caps, enforced before every call.
+
+    Collection caps: 64 Ling + 16 Jev planned, 192 Ling + 48 Jev physical,
+    $0.20 collection cost ceiling. Program ceilings (384 physical, $0.30) are
+    preserved as the separately registered aggregate scope.
+    """
 
     #: Every logical call may execute 1 + max_retries 2 physical attempts, so the
     #: whole retry-inclusive worst case is reserved before the call is allowed.
@@ -155,6 +209,8 @@ class CapTracker:
         self.cost_usd += float(cost_usd)
 
     def snapshot(self) -> dict[str, Any]:
+        combined_physical = self.physical_used["ling"] + self.physical_used["jev"]
+        combined_planned = self.planned_used["ling"] + self.planned_used["jev"]
         return {
             "planned_used": dict(self.planned_used),
             "physical_used": dict(self.physical_used),
@@ -163,6 +219,12 @@ class CapTracker:
             "cost_usd": round(self.cost_usd, 12),
             "cost_ceiling_usd": self.ceiling,
             "within_ceiling": self.cost_usd <= self.ceiling,
+            "combined_planned_used": combined_planned,
+            "combined_physical_used": combined_physical,
+            "program_physical_ceiling": PROGRAM_PHYSICAL_CEILING,
+            "program_cost_ceiling_usd": PROGRAM_COST_CEILING_USD,
+            "within_program_physical_ceiling": combined_physical <= PROGRAM_PHYSICAL_CEILING,
+            "within_program_cost_ceiling": self.cost_usd <= PROGRAM_COST_CEILING_USD,
         }
 
 
@@ -181,8 +243,20 @@ def scope_digest(scope: Mapping[str, Any]) -> str:
     return hashlib.sha256(json.dumps(scope, sort_keys=True).encode("utf-8")).hexdigest()
 
 
+def reference_binds_scope_digest(reference: str, digest: str) -> bool:
+    """Whether the supplied reference itself binds the scope digest.
+
+    The reference must embed the full digest hex so presenting the reference
+    proves knowledge of the exact authorized scope. Checking only the static
+    ``what_a_reference_must_state`` template field is insufficient: the
+    template is a constant and does not prove the actual supplied reference
+    binds the digest.
+    """
+    return digest in reference
+
+
 def evaluate_authorization(auth: Mapping[str, Any], *, approval: str | None,
-                           lock: Mapping[str, Any]) -> str | None:
+                            lock: Mapping[str, Any]) -> str | None:
     """Return a stop reason, or None when the record authorizes this exact scope."""
     if auth.get("state") != AUTH_STATE_AUTHORIZED:
         return "authorization_pending"
@@ -207,11 +281,15 @@ def evaluate_authorization(auth: Mapping[str, Any], *, approval: str | None,
         return "approval_reference_not_supplied"
     if approval.strip() != reference.strip():
         return "approval_reference_mismatch"
+    # The supplied reference itself must bind the scope digest; the static
+    # template field alone is insufficient.
+    if not reference_binds_scope_digest(approval.strip(), SCOPE_DIGEST):
+        return "approval_reference_does_not_bind_scope_digest"
     return None
 
 
 def _blocked(reason: str, *, auth: Mapping[str, Any] | None = None,
-             extra: Mapping[str, Any] | None = None) -> dict[str, Any]:
+              extra: Mapping[str, Any] | None = None) -> dict[str, Any]:
     payload: dict[str, Any] = {
         "mode": RUNNER_VERSION,
         "status": "blocked",
@@ -299,6 +377,9 @@ def run_preflight(repo_root: Path, *, approval: str | None = None) -> dict[str, 
         check("approval_matches_record_reference",
               approval.strip() == str(auth.get("reference") or "").strip(),
               "supplied approval does not match the record reference")
+        check("approval_binds_scope_digest",
+              reference_binds_scope_digest(approval.strip(), SCOPE_DIGEST),
+              "supplied approval does not bind the scope digest")
 
     fixed_n = registration.get("fixed_n") or {}
     manifest = fixed_n.get("manifest") or []
@@ -317,10 +398,20 @@ def run_preflight(repo_root: Path, *, approval: str | None = None) -> dict[str, 
     route = registration.get("route") or {}
     check("route_ling_paid_openrouter",
           "paid OpenRouter SKU" in str((route.get("ling") or {}).get("route"))
-          and (route.get("ling") or {}).get("model") == "inclusionai/ling-3.0-flash-vl", None)
+          and (route.get("ling") or {}).get("model") == LING_MODEL, None)
     check("route_jev_systemone",
-          (route.get("jev") or {}).get("model") == "jev-1.13.0"
+          (route.get("jev") or {}).get("model") == JEV_MODEL
           and "api.typesafe.ai" in str((route.get("jev") or {}).get("endpoint")), None)
+    check("route_jev_codec_v2",
+          (route.get("jev") or {}).get("codec_version") == JEV_CODEC_VERSION, None)
+    check("route_jev_protocol_key",
+          (route.get("jev") or {}).get("protocol_key") == PROTOCOL_KEY, None)
+    check("route_normalization_policy_hash",
+          (route.get("normalization") or {}).get("policy_hash") == NORMALIZATION_POLICY_HASH,
+          None)
+    check("route_normalization_hard_ceiling",
+          (route.get("normalization") or {}).get("hard_ceiling") == NORMALIZATION_HARD_CEILING,
+          None)
 
     check("request_caps_match_lock",
           scope.get("request_caps") == (lock.get("authorization_scope") or {}).get(
@@ -372,8 +463,115 @@ def run_preflight(repo_root: Path, *, approval: str | None = None) -> dict[str, 
 
 
 # --------------------------------------------------------------------------
-# execution
+# L4X execution helpers
 # --------------------------------------------------------------------------
+
+def _derive_instance(instance_id: str, seed: int) -> Any:
+    """Regenerate the deterministic FamilyInstance for a registered seed."""
+    from apart_incident_response import task_families as tf
+    from apart_incident_response.communication_protocol import DependenceRegime, ReasoningComplexity
+    return tf.generate_instance("hypothesis", int(seed), DependenceRegime.N,
+                                ReasoningComplexity.LOW)
+
+
+def _derive_structural_need(instance: Any) -> dict[str, Any]:
+    """Derive structural need from the deterministic instance."""
+    analysis = instance.channel_analysis()
+    return {
+        "finalizer_needs_peer": bool(analysis["finalizer_needs_peer"]),
+        "both_agents_needed": bool(analysis["both_agents_needed"]),
+        "channel_complete": bool(analysis["channel_complete"]),
+        "pooled_equals_joint": bool(analysis["pooled_equals_joint"]),
+    }
+
+
+def _derive_form_identity(instance: Any) -> dict[str, Any]:
+    """Derive form identity from the pre-read request."""
+    from apart_incident_response import jev_replication_preregistration as rep
+    from apart_incident_response import jev_replay_preregistration_v4 as prv4
+    from apart_incident_response import jev_replay as jr
+    body, state = prv4.pre_read_body(instance, "jev-1.13.0")
+    return {
+        "prompt_form_id": rep.pre_read_form_id(instance),
+        "pre_read_request_hash": jr.prompt_form_id(body),
+        "pre_read_state_hash": jr.canonical_hash(dict(state.state)),
+        "option_ids": sorted(str(label) for label in instance.solutions),
+        "target_id": str(instance.target),
+    }
+
+
+def _build_writer_prompt(instance: Any, agent: str, turn: int,
+                         board: Sequence[Mapping[str, Any]], run_id: str) -> str:
+    """Build the writer prompt through the original AgentContext -> treatment_prompt path."""
+    from apart_incident_response import behavioral_discovery as bd
+    from apart_incident_response.communication_runner import AgentContext
+    from apart_incident_response.communication_protocol import BatteryCondition
+    from apart_incident_response import jev_writer_ladder_v5 as ladder
+    view = {**instance.agent_view(agent, "COMM"), "is_finalizer": agent == bd.FINALIZER_AGENT,
+            "finalizing_agent": bd.FINALIZER_AGENT}
+    visible = tuple(dict(row) for row in board if row["author"] != agent)
+    context = AgentContext(run_id, instance.instance_id, agent, BatteryCondition.COMM, turn,
+                           view, visible, bd.PROMPT_SCHEMA_VERSION,
+                           ladder.EXACT_BRIDGE_TOKEN_BUDGET)
+    return json.dumps(bd.treatment_prompt(context), sort_keys=True)
+
+
+def _build_receiver_state(instance: Any, board: Sequence[Mapping[str, Any]]) -> Any:
+    """Build the Jev Choice v2 receiver state for final receiver A."""
+    from apart_incident_response import jev_choice_v2 as jc2
+    from apart_incident_response import jev_replay as jr
+    b_rows = [row for row in board if row["author"] == "B" and row["status"] == "accepted"]
+    visible = [{"text": jr.serialize_message(str(row["text"]))} for row in b_rows]
+    adapter = jc2.JevChoiceAdapterV2(object(), model=JEV_MODEL)
+    return adapter.build_state(instance, "A", "COMM", visible_messages=visible)
+
+
+def _verify_board_evidence(events: Sequence[Any]) -> dict[str, Any]:
+    """Verify B-to-A ownership and A read-after-write exposure from real events.
+
+    An accepted board_write by writer B whose normalized_claim and raw_text
+    equal the claim and whose receiver_id is A, followed by an A
+    peer_read_exposure with a nonempty exposure_id and read sequence strictly
+    after the write. Rejected or missing evidence yields no event.
+    """
+    writes = [e for e in events if e.kind == "board_write"]
+    reads = [e for e in events if e.kind == "peer_read_exposure"]
+    accepted_writes = []
+    for write in writes:
+        payload = write.payload or {}
+        if payload.get("receiver_id") != "A":
+            continue
+        accepted_writes.append(write)
+    verified_reads = []
+    for read in reads:
+        payload = read.payload or {}
+        exposure_id = payload.get("exposure_id")
+        if not exposure_id:
+            continue
+        # Find the matching write by message_id
+        matching = [w for w in accepted_writes if w.message_id == read.message_id]
+        if not matching:
+            continue
+        write = matching[0]
+        if read.sequence <= write.sequence:
+            continue
+        verified_reads.append({
+            "message_id": read.message_id,
+            "write_sequence": write.sequence,
+            "read_sequence": read.sequence,
+            "exposure_id": exposure_id,
+            "writer_agent": write.agent_id,
+            "reader_agent": read.agent_id,
+            "raw_text": (write.payload or {}).get("raw_text"),
+            "normalized_claim": (write.payload or {}).get("normalized_claim"),
+        })
+    return {
+        "accepted_b_to_a_writes": len(accepted_writes),
+        "verified_read_exposures": len(verified_reads),
+        "read_after_write_verified": len(verified_reads) > 0,
+        "reads": verified_reads,
+    }
+
 
 def _seed_row(instance: Mapping[str, Any], *, sequence: int) -> dict[str, Any]:
     return {
@@ -386,13 +584,18 @@ def _seed_row(instance: Mapping[str, Any], *, sequence: int) -> dict[str, Any]:
         "status": "not_attempted",
         "failure_reason": None,
         "structural_need": None,
+        "form_identity": None,
         "emission": None,
         "ownership": None,
         "exposure": None,
         "information": None,
+        "receiver": None,
         "request": None,
         "cost": {"usd": 0.0, "cumulative_usd": 0.0},
         "provider_calls": 0,
+        "physical_attempts": {"ling": 0, "jev": 0, "combined": 0},
+        "token_usage": {"ling_input_tokens": 0, "ling_output_tokens": 0,
+                        "jev_input_tokens": 0, "jev_output_tokens": 0},
     }
 
 
@@ -444,10 +647,11 @@ def execute_discovery_run(
     completed = {"ok": 0, "silence": 0, "failed": 0, "not_attempted": 0}
     stop_reason: str | None = None
     provider_calls = 0
+    consecutive_terminal_failures = 0
 
     try:
-        for index, instance in enumerate(manifest):
-            row = _seed_row(instance, sequence=index + 1)
+        for index, entry in enumerate(manifest):
+            row = _seed_row(entry, sequence=index + 1)
             if stop_reason is None:
                 reason = caps.reason_before_call("ling")
                 if reason is not None:
@@ -455,49 +659,266 @@ def execute_discovery_run(
             if stop_reason is None:
                 row["attempted"] = True
                 try:
-                    result = transport.writer_completion(
-                        request={"instance_id": instance.get("instance_id"),
-                                 "seed": instance.get("seed"),
-                                 "model": "inclusionai/ling-3.0-flash-vl"})
+                    instance = _derive_instance(entry["instance_id"], entry["seed"])
+                    structural_need = _derive_structural_need(instance)
+                    form_identity = _derive_form_identity(instance)
+                    row["structural_need"] = structural_need
+                    row["form_identity"] = form_identity
+
+                    # L4X: A and B on each of two turns (4 Ling writer calls).
+                    from apart_incident_response.communication_events import CommunicationEventLog
+                    run_id = f"discovery-{instance.instance_id}"
+                    log = CommunicationEventLog(run_id)
+                    board: list[dict[str, Any]] = []
+                    board_info: dict[str, Any] = {}
+                    rejected: list[dict[str, Any]] = []
+                    writer_outcomes: list[dict[str, Any]] = []
+                    invalid: str | None = None
+
+                    for turn in range(L4X_TURNS):
+                        for agent in L4X_AGENTS:
+                            # Peer-only board visibility: each agent sees only
+                            # rows authored by the other agent. No peer_read
+                            # event is recorded here; the Jev finalizer read
+                            # below is the evidence-bearing exposure.
+                            reason = caps.reason_before_call("ling")
+                            if reason is not None:
+                                stop_reason = reason
+                                invalid = reason
+                                break
+                            prompt = _build_writer_prompt(instance, agent, turn, board, run_id)
+                            result = transport.writer_completion(
+                                request={"instance_id": instance.instance_id,
+                                         "seed": instance.seed,
+                                         "agent": agent,
+                                         "turn": turn,
+                                         "prompt": prompt,
+                                         "model": LING_MODEL,
+                                         "endpoint": LING_ENDPOINT})
+                            attempts = int(result.get("attempts", 1))
+                            cost = float(result.get("cost_usd", 0.0))
+                            provider_calls += attempts
+                            caps.record("ling", attempts=attempts, cost_usd=cost)
+                            row["physical_attempts"]["ling"] += attempts
+                            row["token_usage"]["ling_input_tokens"] += int(
+                                result.get("input_tokens", 0) or 0)
+                            row["token_usage"]["ling_output_tokens"] += int(
+                                result.get("output_tokens", 0) or 0)
+                            outcome = result.get("outcome")
+                            writer_outcomes.append({
+                                "agent": agent, "turn": turn, "outcome": outcome,
+                                "claim": result.get("claim"),
+                                "error_class": result.get("error_class"),
+                                "physical_attempts": attempts,
+                            })
+                            if outcome == "message_candidate":
+                                claim = str(result.get("claim"))
+                                if instance.holds_claim(agent, claim):
+                                    receiver_agent = "B" if agent == "A" else "A"
+                                    message_id = f"message-{agent}-{turn}"
+                                    info = instance.information(receiver_agent, claim, message_id)
+                                    board_row = {"message_id": message_id, "author": agent,
+                                                 "receiver": receiver_agent, "text": claim,
+                                                 "status": info.status,
+                                                 "delta_i_bits": info.delta_i_bits,
+                                                 "message_tokens": len(claim.split())}
+                                    board.append(board_row)
+                                    board_info[message_id] = info
+                                    log.board_write(agent, info,
+                                                    message_tokens=board_row["message_tokens"],
+                                                    receiver_id=receiver_agent)
+                                else:
+                                    rejected.append({"agent": agent, "turn": turn,
+                                                     "claim": claim})
+                                    log.record("board_write_rejected", agent,
+                                               status="rejected",
+                                               payload={"reason": "claim_not_owned_by_writer",
+                                                        "raw_text": claim})
+                            elif outcome == "non_owned_claim":
+                                rejected.append({"agent": agent, "turn": turn,
+                                                 "claim": result.get("claim")})
+                                log.record("board_write_rejected", agent, status="rejected",
+                                           payload={"reason": "claim_not_owned_by_writer",
+                                                    "raw_text": result.get("claim")})
+                            elif outcome == "deliberate_silence":
+                                pass
+                            else:
+                                # Writer terminal error: fail closed.
+                                invalid = str(result.get("error_class") or outcome)
+                                stop_reason = invalid
+                                break
+                        if invalid is not None:
+                            break
+
+                    # Jev Choice wire v2 final receiver A call.
+                    receiver_attempted = False
+                    receiver_valid = False
+                    receiver_error_class: str | None = None
+                    receiver_row: dict[str, Any] = {}
+                    if invalid is None:
+                        reason = caps.reason_before_call("jev")
+                        if reason is not None:
+                            stop_reason = reason
+                            invalid = reason
+                        else:
+                            state = _build_receiver_state(instance, board)
+                            receiver_request = {
+                                "instance_id": instance.instance_id,
+                                "seed": instance.seed,
+                                "agent": "A",
+                                "condition": "COMM",
+                                "model": JEV_MODEL,
+                                "endpoint": JEV_ENDPOINT,
+                                "codec_version": JEV_CODEC_VERSION,
+                                "protocol_key": PROTOCOL_KEY,
+                                "request_hash": state.request_hash,
+                            }
+                            # Record A's exposure to every B-authored message
+                            # passed into visible_messages, using the frozen
+                            # finalizer exposure id.
+                            for board_row in [r for r in board
+                                              if r["author"] == "B"
+                                              and r["status"] == "accepted"]:
+                                log.peer_read("A", board_info[board_row["message_id"]],
+                                              exposure_id=JEV_FINALIZER_EXPOSURE_ID)
+                            try:
+                                response = transport.receiver_choice(request=receiver_request)
+                            except Exception as exc:  # noqa: BLE001 - fail closed
+                                receiver_error_class = f"jev_{type(exc).__name__}"
+                                stop_reason = receiver_error_class
+                                response = None
+                            if response is not None:
+                                receiver_attempted = True
+                                attempts = int(response.get("attempts", 1))
+                                cost = float(response.get("cost_usd", 0.0))
+                                provider_calls += attempts
+                                caps.record("jev", attempts=attempts, cost_usd=cost)
+                                row["physical_attempts"]["jev"] += attempts
+                                usage = response.get("usage") or {}
+                                row["token_usage"]["jev_input_tokens"] += int(
+                                    usage.get("input_tokens", 0) or 0)
+                                row["token_usage"]["jev_output_tokens"] += int(
+                                    usage.get("output_tokens", 0) or 0)
+                                receiver_valid = response.get("status") == "complete"
+                                receiver_error_class = response.get("error_class")
+                                receiver_row = {
+                                    "status": response.get("status"),
+                                    "error_class": receiver_error_class,
+                                    "normalization_tier": response.get("normalization_tier"),
+                                    "renormalized": response.get("renormalized"),
+                                    "resolved_model": response.get("model"),
+                                    "selected_option_id": response.get("selected_option_id"),
+                                    "confidence": response.get("confidence"),
+                                    "probabilities": response.get("probabilities"),
+                                    "raw_probabilities": response.get("raw_probabilities"),
+                                    "usage": response.get("usage"),
+                                    "request_hash": state.request_hash,
+                                    "state_hash": response.get("state_hash"),
+                                }
+                                if receiver_valid and response.get("request_hash") != state.request_hash:
+                                    receiver_valid = False
+                                    receiver_error_class = "request_hash_drift"
+                                    stop_reason = "request_hash_drift"
+                                if not receiver_valid and stop_reason is None:
+                                    stop_reason = receiver_error_class or "receiver_invalid"
+
+                    # Verify board evidence from real events.
+                    evidence = _verify_board_evidence(log.events)
+                    row["ownership"] = {
+                        "b_to_a_ownership_verified": evidence["accepted_b_to_a_writes"] > 0,
+                        "accepted_b_to_a_writes": evidence["accepted_b_to_a_writes"],
+                        "rejected_claims": rejected,
+                    }
+                    row["exposure"] = {
+                        "read_after_write_verified": evidence["read_after_write_verified"],
+                        "verified_read_exposures": evidence["verified_read_exposures"],
+                        "reads": evidence["reads"],
+                    }
+                    row["emission"] = {
+                        "writer_outcomes": writer_outcomes,
+                        "board_messages": len(board),
+                        "silence": all(o["outcome"] == "deliberate_silence"
+                                       for o in writer_outcomes),
+                    }
+                    row["information"] = {
+                        "i_m_bits": sum(float(r.get("delta_i_bits") or 0.0)
+                                        for r in board if r["author"] == "B"),
+                    }
+                    row["receiver"] = receiver_row
+                    row["request"] = {
+                        "provider": "ling+jev",
+                        "ling_model": LING_MODEL,
+                        "ling_endpoint": LING_ENDPOINT,
+                        "jev_model": JEV_MODEL,
+                        "jev_endpoint": JEV_ENDPOINT,
+                        "jev_codec_version": JEV_CODEC_VERSION,
+                        "jev_protocol_key": PROTOCOL_KEY,
+                        "ling_planned_calls": L4X_LING_CALLS_PER_SEED,
+                        "jev_planned_calls": L4X_JEV_CALLS_PER_SEED,
+                        "ling_attempts": row["physical_attempts"]["ling"],
+                        "jev_attempts": row["physical_attempts"]["jev"],
+                    }
+                    row["cost"] = {"usd": round(caps.cost_usd - float(row["cost"]["cumulative_usd"]), 12),
+                                   "cumulative_usd": round(caps.cost_usd, 12)}
+                    row["provider_calls"] = (row["physical_attempts"]["ling"]
+                                              + row["physical_attempts"]["jev"])
+                    row["physical_attempts"]["combined"] = (
+                        row["physical_attempts"]["ling"] + row["physical_attempts"]["jev"])
+
+                    if invalid is not None:
+                        row["status"] = "failed"
+                        row["failure_reason"] = f"writer_error:{invalid}"
+                        completed["failed"] += 1
+                        consecutive_terminal_failures += 1
+                        if consecutive_terminal_failures >= 2:
+                            stop_reason = "two_consecutive_terminal_provider_failures"
+                    elif not receiver_attempted:
+                        row["status"] = "failed"
+                        row["failure_reason"] = f"not_attempted:{stop_reason}"
+                        completed["failed"] += 1
+                    elif not receiver_valid:
+                        row["status"] = "failed"
+                        row["failure_reason"] = f"receiver_error:{receiver_error_class}"
+                        completed["failed"] += 1
+                        consecutive_terminal_failures += 1
+                        if consecutive_terminal_failures >= 2:
+                            stop_reason = "two_consecutive_terminal_provider_failures"
+                    elif row["emission"]["silence"]:
+                        row["status"] = "silence"
+                        completed["silence"] += 1
+                    else:
+                        row["status"] = "ok"
+                        completed["ok"] += 1
                 except Exception as exc:  # noqa: BLE001 - fail closed on transport error
                     row["status"] = "failed"
                     row["failure_reason"] = f"writer_error:{type(exc).__name__}"
                     completed["failed"] += 1
                     caps.record("ling", attempts=1, cost_usd=0.0)
-                    if row_hook:
-                        row_hook(row)
-                    journal.write(row)
-                    continue
-                attempts = int(result.get("attempts", 1))
-                provider_calls += attempts
-                caps.record("ling", attempts=attempts,
-                            cost_usd=float(result.get("cost_usd", 0.0)))
-                emission = result.get("emission") or {}
-                row["structural_need"] = bool(result.get("structural_need"))
-                row["emission"] = emission
-                row["ownership"] = result.get("ownership")
-                row["exposure"] = result.get("exposure")
-                row["information"] = result.get("information")
-                row["request"] = {"provider": "ling",
-                                  "model": "inclusionai/ling-3.0-flash-vl",
-                                  "endpoint": "https://openrouter.ai/api/v1/chat/completions",
-                                  "attempts": attempts,
-                                  "request_hash": result.get("request_hash")}
-                row["cost"] = {"usd": float(result.get("cost_usd", 0.0)),
-                               "cumulative_usd": round(caps.cost_usd, 12)}
-                row["provider_calls"] = attempts
-                if not emission:
-                    row["status"] = "silence"
-                    completed["silence"] += 1
-                else:
-                    row["status"] = "ok"
-                    completed["ok"] += 1
+                    row["physical_attempts"]["ling"] += 1
+                    row["physical_attempts"]["combined"] += 1
+                    provider_calls += 1
+                    consecutive_terminal_failures += 1
+                    if consecutive_terminal_failures >= 2:
+                        stop_reason = "two_consecutive_terminal_provider_failures"
+                if row_hook:
+                    row_hook(row)
+                journal.write(row)
+                if stop_reason is not None:
+                    # Journal remaining seeds as not_attempted.
+                    for offset, remaining in enumerate(manifest[index + 1:], start=1):
+                        remaining_row = _seed_row(remaining, sequence=index + 1 + offset)
+                        remaining_row["failure_reason"] = f"not_attempted:{stop_reason}"
+                        completed["not_attempted"] += 1
+                        if row_hook:
+                            row_hook(remaining_row)
+                        journal.write(remaining_row)
+                    break
             else:
                 row["failure_reason"] = f"not_attempted:{stop_reason}"
                 completed["not_attempted"] += 1
-            if row_hook:
-                row_hook(row)
-            journal.write(row)
+                if row_hook:
+                    row_hook(row)
+                journal.write(row)
     finally:
         journal.close()
 
@@ -569,8 +990,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 3
     target = root / str(registration["paths"]["discovery_report"])
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n",
-                      encoding="utf-8")
+    # Never overwrite: the report path was verified fresh before the run.
+    with target.open("x", encoding="utf-8") as handle:
+        handle.write(json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n")
     return 0 if report.get("status") == "completed" else 1
 
 
@@ -583,6 +1005,6 @@ __all__ = [
     "REGISTRATION_HASH", "LOCK_HASH", "SCOPE_DIGEST", "AUTH_STATE_PENDING",
     "AUTH_STATE_AUTHORIZED", "MUST_COVER", "BLOCK_N", "INSTANCES_PER_FORM",
     "FORM_COUNT", "STAGE", "DiscoveryRunError", "DiscoveryJournal",
-    "DiscoveryTransport", "CapTracker", "scope_digest", "evaluate_authorization",
-    "run_preflight", "execute_discovery_run", "main",
+    "DiscoveryTransport", "CapTracker", "scope_digest", "reference_binds_scope_digest",
+    "evaluate_authorization", "run_preflight", "execute_discovery_run", "main",
 ]

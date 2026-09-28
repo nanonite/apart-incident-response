@@ -279,7 +279,9 @@ class AuthorizedAndPostRunStateTests(AuthorizationGateTestCase):
     pre-call checks or rewriting any historical claim. Nothing here writes to
     the record: authorized copies live only in memory."""
 
-    def authorized_copy(self, reference="AUTHREF-JEV-0001"):
+    def authorized_copy(self, reference=None):
+        if reference is None:
+            reference = f"AUTHREF-JEV-0001:{SCOPE_DIGEST}"
         record = json.loads(json.dumps(self.record))
         record.update({
             "state": p06.AUTH_STATE_AUTHORIZED,
@@ -310,14 +312,14 @@ class AuthorizedAndPostRunStateTests(AuthorizationGateTestCase):
     def test_authorized_record_passes_only_with_matching_approval(self):
         record = self.authorized_copy()
         self.assertIsNone(p06.evaluate_authorization(
-            record, approval="AUTHREF-JEV-0001", lock=self.lock))
+            record, approval=f"AUTHREF-JEV-0001:{SCOPE_DIGEST}", lock=self.lock))
         self.assertEqual(p06.evaluate_authorization(
             record, approval="some-other-reference", lock=self.lock),
             "approval_reference_mismatch")
 
     def test_preflight_accepts_authorized_state_without_touching_the_file(self):
         record = self.authorized_copy()
-        result = self.preflight_with(record, approval="AUTHREF-JEV-0001")
+        result = self.preflight_with(record, approval=f"AUTHREF-JEV-0001:{SCOPE_DIGEST}")
         self.assertTrue(result["ok"], result["failed"])
         self.assertEqual(result["authorization_state"], p06.AUTH_STATE_AUTHORIZED)
         self.assertIs(result["authorized"], True)
@@ -350,7 +352,8 @@ class AuthorizedAndPostRunStateTests(AuthorizationGateTestCase):
                 record = self.authorized_copy()
                 mutate(record)
                 self.assertEqual(
-                    p06.evaluate_authorization(record, approval="AUTHREF-JEV-0001",
+                    p06.evaluate_authorization(record,
+                                               approval=f"AUTHREF-JEV-0001:{SCOPE_DIGEST}",
                                                lock=self.lock),
                     expected)
 
@@ -367,7 +370,8 @@ class AuthorizedAndPostRunStateTests(AuthorizationGateTestCase):
             journal.write_text('{"instance_id":"already-ran"}\n', encoding="utf-8")
             result = p06.execute_discovery_run(
                 self.registration, self.lock, record, repo_root=REPO_ROOT,
-                approval="AUTHREF-JEV-0001", preflight=p06.run_preflight(REPO_ROOT),
+                approval=f"AUTHREF-JEV-0001:{SCOPE_DIGEST}",
+                preflight=p06.run_preflight(REPO_ROOT),
                 transport_factory=forbidden,
                 journal_path=journal, report_path=report_path)
             self.assertEqual(journal.read_text(encoding="utf-8"),
