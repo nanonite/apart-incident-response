@@ -1,0 +1,77 @@
+{
+  "blocking_findings": [],
+  "checks": [
+    {"check": "registration_hash_recomputes", "ok": true, "detail": "sha256 of the JSON with registration_hash excluded, sort_keys=True (default separators) = 6fa6149770b620cd3a026a6415f8e4d97e800e8af5237794de7b29fca6dacfac, matches artifact and docs/jev-p04-design-classification.md"},
+    {"check": "status_and_pending_review_exact", "ok": true, "detail": "status draft_pending_review; exactly 4 pending_review items, verbatim as specified"},
+    {"check": "no_authorization_claim_offline_only", "ok": true, "detail": "offline_only true; authorizes disclaims provider call, collection, registration lock and live run; no approval/live_collection_authorized field present"},
+    {"check": "design_classification_k_and_floor", "ok": true, "detail": "k=4 from P03 census, floor 0.125 recomputed, classification pilot, floor_above_0_05 true"},
+    {"check": "hypotheses_and_estimand", "ok": true, "detail": "H0 Delta=0 / H1 Delta<0; equal-weight form mean of real-minus-placebo entropy; alpha 0.05 with two-sided cluster sign-flip plus negative-direction requirement"},
+    {"check": "guards_prior_and_units", "ok": true, "detail": "guards_never_filter_the_estimate true and guards.reporting says never used to filter; no_planning_low_effect_size_prior true and interval_half_width labeled not_a_prior/not an MDE; distinct_seed_ids_are_not_independent_forms true, experimental_unit prompt form"},
+    {"check": "fixed_n_window_and_counts", "ok": true, "detail": "block_n 16, instances_per_form 4, form_count 4, window 85000-85511 (512), all 16 seeds inside the window and unique"},
+    {"check": "selection_rule_matches_200_audit", "ok": true, "detail": "selection_rule verbatim equal to #200 audit blocks.selection_rule; manifest, form_membership and manifest_hash identical to audit blocks.primary; matches_200_audit_primary_block true and now independently substantiated"},
+    {"check": "selection_rule_regenerated_from_census", "ok": true, "detail": "first 4 ascending seeds per form recomputed from P03 census forms dict equals the registered manifest for all 4 forms; census covers all 512 window seeds exactly once across 4 forms"},
+    {"check": "instance_id_disjointness", "ok": true, "detail": "independent regex scan of 136 accessible prior artifacts (runs/epic-126/**, runs/*.json[l], runs/discovery-145/**) found zero of the 16 instance ids outside the authorized source files; documented prior seed ranges top out at 80016; only runs/container-isolation.json was permission-denied, as recorded in the #200 audit and P02 inventory"},
+    {"check": "frozen_200_artifacts_byte_unchanged", "ok": true, "detail": "file_sha256 of the #200 audit (cb529cd6...) and #200 registration (bddf46ed...) match the input_evidence pins and the P05 lock evidence pins; git history shows each was last touched only by commit 1e854ad (#200); worktree clean"},
+    {"check": "input_evidence_content_hashes", "ok": true, "detail": "audit_content_hash 5242e9cf..., census content_hash ee0ba3a1..., scope_freeze content_hash 4cf5556c..., preregistration_hash ff186a06... all recomputed from disk and equal the pins"},
+    {"check": "treatment_matches_frozen_l4x", "ok": true, "detail": "treatment dict is byte-identical to #200 treatment: exact-original-comm-bridge, family hypothesis, complexity low, regime N, agents A/B, turns 2, one-way B->A, final_receiver 'A via Jev Choice wire v2', prompt_schema_version treatment-prompt-v2, prompt_hash 80072617... also in v6/v7/#200"},
+    {"check": "route_and_codec", "ok": true, "detail": "route.jev and route.normalization identical to #200 operational_settings; route.ling adds only retry/pacing fields already present in the writer transport and in the P05 lock; Ling paid-SKU claim corroborated (free SKU absent from catalog per docs/jev-coverage-manifest-v7.md); protocol_key 75190e25... present in prior frozen artifacts"},
+    {"check": "normalization_policy_and_ceiling", "ok": true, "detail": "policy_hash 292ac217f1cf54083252e6363a16a48596daab72a8ca06d4569c20f861b7e1e9 matches prior artifacts and the P05 lock; hard_ceiling 0.05 consistent across route, policy, tier boundaries and the registered stop; sensitivity grid 1e-6/.01/.03/.05 matches the protocol"},
+    {"check": "budget_arithmetic_and_ceilings", "ok": true, "detail": "cost model, planned/physical counts, worst-case costs and next-call reservations all re-derived independently and equal the artifact; worst cases 0.146276352<=0.20, 0.049545216<=0.10, 0.195821568<=0.30; retry-inclusive x3 physical confirmed (240/144/384)"},
+    {"check": "terminal_stops_present", "ok": true, "detail": "11 stops, exactly equal to the #200 terminal_stops list, covering cost cap, drift, vector invalidity, hard normalization >0.05, argmax shift, output collision, hash drift, writer terminal errors and two consecutive terminal failures"},
+    {"check": "paths_absent_and_outside_epic126", "ok": true, "detail": "all four live output paths do not exist on disk; none start with runs/epic-126/; registration path resolves to the reviewed file"},
+    {"check": "path_lifecycle", "ok": true, "detail": "append false, overwrite false, resume false, path_overrides false, fresh_paths true, stopped run requires a new registration and a new review; identical to the P05 lock path_lifecycle"},
+    {"check": "coverage_rules", "ok": true, "detail": "no_imputation, no_seed_replacement, no_form_removal_after_outcomes true; min_complete_per_form 1 with up to 3 of 4 missing; missing_entire_form blocks the full-form estimand and labels available-form estimates descriptive; discovery-screen and replay coverage requirements registered"},
+    {"check": "multiplicity_policy", "ok": true, "detail": "single frozen family set (hypothesis), Holm step-down, forbidden post-hoc family sweep/add/remove, future families need their own preregistration, single_family_reduction explicitly limits the claim - consistent with the protocol's discovery/registration/multiplicity policy section"},
+    {"check": "p05_lock_pins_this_registration", "ok": true, "detail": "locked_registration.registration_hash 6fa61497... and file_sha256 78f7cd03... both match the reviewed file; lock_hash 9de4a61f... recomputes; lock route/stops/paths/path_lifecycle/stage/budget figures are exact-equal to the registration; lock authorization_reference state pending_not_supplied"},
+    {"check": "offline_verifier_green", "ok": true, "detail": "PYTHONPATH=src .venv/bin/python -m apart_incident_response.jev_p04_design_classification --repo-root . exited 0 with 41/41 checks ok, 0 failed, provider_calls 0 (read-only mode, no --build)"},
+    {"check": "docs_consistency", "ok": true, "detail": "docs/jev-p04-design-classification.md sha256 d110547c... and docs/jev-discovery-confirmation-plan.md sha256 501e21b6... match the P05 lock pins; P04/P05 decomposition rows and the multiplicity/missingness policy sections are consistent with the registration; documented registration_hash matches"}
+  ],
+  "findings": [
+    "Non-blocking: the protocol suggests example paths of the form runs/epic-126/next-phase/<family>/<registration-id>/ while this registration reserves runs/next-phase/hypothesis/jev-discovery-v1/...; the deviation is explicitly recorded in path_lifecycle.location_note with a sound rationale (a live journal under runs/epic-126/ would break the frozen #200 prior-instance-id scan) and matches the P02/P03 precedent.",
+    "Non-blocking: k_bands label k=4 as 'pilot (descriptive/estimation only)' whereas the protocol table, P02 and P03 use 'descriptive/estimation only'; the protocol's decision-output section explicitly calls the four-form hypothesis design a deliberate pilot, so the labels are substantively equivalent.",
+    "Non-blocking: inference_plan.minimum_form_rule reads 'fewer than six is descriptive (k = 4 and k = 5) or replay-coverage failure', leaving the k <= 3 case implicit; moot because the census closed the space at k = 4.",
+    "Non-blocking: the CLI check 'manifest_matches_200_audit_primary_block' only asserts the self-declared boolean; the structural comparison against the #200 audit primary block was therefore recomputed independently by this review and passes.",
+    "Non-blocking: the P05 lock and its approved review already pin this registration while its status is still draft_pending_review; the pin is byte-consistent (file_sha256 78f7cd03..., registration_hash 6fa61497... both verified), so approving items 1-3 changes no bytes, but the ordering should be understood as lock-before-registration-review, and this approval still does not supply the separate live authorization required by item 4.",
+    "Non-blocking: runs/container-isolation.json remains permission-denied for this reviewer; it is recorded as an audit exception in the #200 audit and the P02 inventory (covered by the frozen #200 pin) rather than treated as an empty set, per protocol."
+  ],
+  "item_decisions": [
+    {
+      "item": 1,
+      "pending_review": "reviewer decision on the design classification (k = 4, floor 0.125, pilot)",
+      "verdict": "approved",
+      "detail": "k=4 confirmed from P03 census (form_capacity.k=4, closure by exhaustive enumeration of the finite generator space); floor recomputed 2/2^4=0.125>0.05; classification pilot (descriptive/estimation only), k_bands and floor-by-k table recomputed (0.125/0.0625/0.03125/0.015625); fresh-seed replication descriptive only; H0 Delta=0, H1 Delta<0; estimand equal-weight form mean of real-minus-placebo entropy; guards_never_filter_the_estimate, no_planning_low_effect_size_prior and distinct_seed_ids_are_not_independent_forms all true and mirrored in inference_plan and non_claims."
+    },
+    {
+      "item": 2,
+      "pending_review": "reviewer decision on the fixed-N discovery manifest and selection rule",
+      "verdict": "approved",
+      "detail": "N=16, 4 instances x 4 forms, window base 85000 / end 85511 (512, inclusive); manifest, form_membership and manifest_hash (recomputed 60b31896...) are structurally identical to the frozen #200 audit primary block and the selection_rule string is verbatim equal to the #200 audit rule; independently regenerating 'first 4 seeds per form ascending' from the P03 census per-form seed lists reproduces all 16 entries; disjointness independently re-verified by scanning 136 prior artifacts (zero occurrences of the 16 ids outside the authorized source files) and by documented prior seed ranges (max high 80016 < 85000)."
+    },
+    {
+      "item": 3,
+      "pending_review": "reviewer decision on treatment/route, budgets, stops, paths and coverage rules",
+      "verdict": "approved",
+      "detail": "treatment byte-equal to the frozen #200 treatment (L4X exact-original-comm-bridge, regime N, 2 turns, one-way B->A, final receiver A via Jev Choice wire v2, prompt_schema_version treatment-prompt-v2, prompt_hash 80072617... also present in v6/v7/#200); route equal to the #200 operational settings and to the P05 lock route (Ling inclusionai/ling-3.0-flash-vl on the paid SKU with the free SKU recorded as not routable and corroborated by docs/jev-coverage-manifest-v7.md; Jev jev-1.13.0 at api.typesafe.ai/systemone, codec and protocol_key jev-choice-wire-v2|75190e25..., normalization policy_hash 292ac217..., hard ceiling 0.05); all budget numbers re-derived independently (per-call worst 0.00067584/0.000344064, planned 80/48/128, physical x3 240/144/384, worst-case 0.146276352/0.049545216/0.195821568, reservations 0.00202752/0.001032192) and all within the $0.20/$0.10/$0.30 ceilings; 11 terminal stops present (identical to #200); all four live output paths absent on disk and outside runs/epic-126/; path_lifecycle resume/append/overwrite/path_overrides false with fresh_paths true; coverage rules no_imputation, no_seed_replacement, no_form_removal_after_outcomes, min_complete_per_form=1, permissible missingness 3-of-4 and the missing-entire-form rule all present."
+    },
+    {
+      "item": 4,
+      "pending_review": "a separate explicit live authorization reference is required before any provider call; locking this registration is not that authorization",
+      "verdict": "approved",
+      "detail": "Standing requirement confirmed as correctly and prominently recorded, not granted: top-level authorization block carries locking_is_not_authorization, approval_may_not_be_inferred_from_locking, approval_must_be_a_supplied_reference and separate_live_authorization_required_after_locking all true, pending_review has exactly 4 entries, offline_only=true, authorizes='nothing beyond P05 planning; no provider call, no collection, no registration lock, no live run', status remains draft_pending_review, and no field anywhere in the JSON claims approval, a lock, or live authority; the P05 lock independently records authorization_reference state pending_not_supplied with reference null."
+    }
+  ],
+  "provider_calls": 0,
+  "registration_bytes_unchanged": true,
+  "registration_status_field_unchanged": "draft_pending_review",
+  "resolution_note": "The four pending_review items are resolved by this record. The registration document itself is byte-unchanged because its file_sha256 78f7cd03c3afc12c94c3ba09839e4ac6ba667a3f68b96871571b274ae7d3ab11 and registration_hash 6fa6149770b620cd3a026a6415f8e4d97e800e8af5237794de7b29fca6dacfac are pinned by the P05 lock; editing its status field would invalidate the lock. This approval covers the offline registration review only and supplies NO live authorization.",
+  "requires_new_version": false,
+  "review_version": "jev-discovery-registration-review-v1",
+  "reviewed_items_count": 4,
+  "subject": {
+    "path": "runs/next-phase/jev-p04-discovery-registration-v1.json",
+    "preregistration_version": "jev-discovery-registration-v1",
+    "registration_hash": "6fa6149770b620cd3a026a6415f8e4d97e800e8af5237794de7b29fca6dacfac",
+    "status_at_review": "draft_pending_review"
+  },
+  "verdict": "approved"
+}

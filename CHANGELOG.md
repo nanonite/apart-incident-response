@@ -37,6 +37,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix board IPC integration and CLI tool wiring (#58)
 
 ### Changed
+- Resolve the P04 registration review and prepare the #206 authorization decision record [hypothesis:low] (#206)
+- Record the independent P04 registration review (4/4 pending items approved, 24 checks, `requires_new_version: false`, no blocking findings) with the registration bytes left unchanged, and publish the decision-ready authorization record `jev-discovery-authorization-record-v1` (`scope_digest_sha256` `938da9116805967253417c53709cd85d56d1913ac0142032d0d4732f50c04061`) carrying verbatim the stage, paid Ling/OpenRouter and Jev route, retry-inclusive request caps and cost caps of the P05 lock; state stays `awaiting_explicit_reference` with `authorized: false`, so zero provider calls, #206 open and #207 blocked (#206)
 - P05 — Lock discovery design and record live authorization [hypothesis:low] (#206)
 - Run the offline preflight (51 checks, `provider_calls: 0`), publish the versioned discovery lock `jev-p05-discovery-lock-v1` (`lock_hash` `9de4a61f9d46c47b55bbe7b8da9903c677c6461bf4af353007277835ed6a18b3`) over the P04 registration, freeze the exact stage, route, request caps and cost caps ($0.20 collection / $0.10 exploratory replay / $0.30 program) that a separate authorization reference must cover, and attach an independent approved review record; locking is not authorization, so #206 stays open and #207 stays blocked (#206)
 - P04 — Classify design and plan discovery [hypothesis:low] (#205)
