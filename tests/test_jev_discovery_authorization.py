@@ -2,12 +2,14 @@ import contextlib
 import hashlib
 import io
 import json
+import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
 from apart_incident_response import jev_p04_design_classification as p04
 from apart_incident_response import jev_p05_discovery_lock as p05
+from apart_incident_response import jev_p06_discovery_runner as p06
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -270,6 +272,124 @@ class DocContentTests(AuthorizationGateTestCase):
         for field in ("Stage", "Route", "Request caps", "Cost caps"):
             with self.subTest(field=field):
                 self.assertIn(field, section)
+
+
+class AuthorizedAndPostRunStateTests(AuthorizationGateTestCase):
+    """The gate must accept a future authorized state without weakening the
+    pre-call checks or rewriting any historical claim. Nothing here writes to
+    the record: authorized copies live only in memory."""
+
+    def authorized_copy(self, reference="AUTHREF-JEV-0001"):
+        record = json.loads(json.dumps(self.record))
+        record.update({
+            "state": p06.AUTH_STATE_AUTHORIZED,
+            "authorized": True,
+            "reference": reference,
+            "supplied_by": "test-authorizer@example",
+            "supplied_at": "2026-09-28T00:00:00Z",
+            "decision": "approve the registered discovery block at the recorded scope",
+        })
+        return record
+
+    def preflight_with(self, record, approval=None):
+        original = p06._load
+
+        def fake(root, rel):
+            data = original(root, rel)
+            return record if rel == p06.AUTH_PATH else data
+
+        with patch.object(p06, "_load", side_effect=fake):
+            return p06.run_preflight(REPO_ROOT, approval=approval)
+
+    def test_pending_record_is_refused_by_the_gate(self):
+        self.assertEqual(
+            p06.evaluate_authorization(self.record, approval="anything",
+                                       lock=self.lock),
+            "authorization_pending")
+
+    def test_authorized_record_passes_only_with_matching_approval(self):
+        record = self.authorized_copy()
+        self.assertIsNone(p06.evaluate_authorization(
+            record, approval="AUTHREF-JEV-0001", lock=self.lock))
+        self.assertEqual(p06.evaluate_authorization(
+            record, approval="some-other-reference", lock=self.lock),
+            "approval_reference_mismatch")
+
+    def test_preflight_accepts_authorized_state_without_touching_the_file(self):
+        record = self.authorized_copy()
+        result = self.preflight_with(record, approval="AUTHREF-JEV-0001")
+        self.assertTrue(result["ok"], result["failed"])
+        self.assertEqual(result["authorization_state"], p06.AUTH_STATE_AUTHORIZED)
+        self.assertIs(result["authorized"], True)
+        self.assertIsNone(result["authorization_stop_reason"])
+        self.assertEqual(result["scope_digest_sha256"], SCOPE_DIGEST)
+        # the record on disk is untouched by this simulation
+        self.assertEqual(json.loads(AUTH_RECORD.read_text(encoding="utf-8")), self.record)
+
+    def test_authorized_without_approval_still_reports_missing_approval(self):
+        result = self.preflight_with(self.authorized_copy(), approval=None)
+        self.assertTrue(result["ok"], result["failed"])
+        self.assertEqual(result["authorization_stop_reason"],
+                         "approval_reference_not_supplied")
+
+    def test_half_populated_authorized_states_are_refused(self):
+        cases = [
+            (lambda r: r.update(reference=None), "authorization_reference_missing"),
+            (lambda r: r.update(authorized=False), "authorization_flag_not_set"),
+            (lambda r: r.update(supplied_by=""), "authorization_supplied_by_missing"),
+            (lambda r: r.update(supplied_at=None), "authorization_supplied_at_missing"),
+            (lambda r: r.update(decision=None), "authorization_decision_missing"),
+            (lambda r: r.update(scope_digest_sha256="0" * 64), "scope_digest_mismatch"),
+            (lambda r: r.update(must_cover=["stage"]), "authorization_must_cover_drift"),
+            (lambda r: r.update(scope=dict(r["scope"],
+                                           cost_caps={"program_ceiling_usd": 999.0})),
+             "authorization_scope_drift_from_lock"),
+        ]
+        for mutate, expected in cases:
+            with self.subTest(expected=expected):
+                record = self.authorized_copy()
+                mutate(record)
+                self.assertEqual(
+                    p06.evaluate_authorization(record, approval="AUTHREF-JEV-0001",
+                                               lock=self.lock),
+                    expected)
+
+    def test_post_run_second_execution_is_still_refused(self):
+        """Authorized and already-run: the pre-call checks must still refuse."""
+        record = self.authorized_copy()
+
+        def forbidden():
+            raise AssertionError("transport must not be constructed")
+
+        with tempfile.TemporaryDirectory() as tmp:
+            journal = Path(tmp) / "collection.jsonl"
+            report_path = Path(tmp) / "report.json"
+            journal.write_text('{"instance_id":"already-ran"}\n', encoding="utf-8")
+            result = p06.execute_discovery_run(
+                self.registration, self.lock, record, repo_root=REPO_ROOT,
+                approval="AUTHREF-JEV-0001", preflight=p06.run_preflight(REPO_ROOT),
+                transport_factory=forbidden,
+                journal_path=journal, report_path=report_path)
+            self.assertEqual(journal.read_text(encoding="utf-8"),
+                             '{"instance_id":"already-ran"}\n')
+        self.assertEqual(result["status"], "blocked")
+        self.assertEqual(result["stop_reason"], "output_collision:journal_exists")
+        self.assertEqual(result["provider_calls"], 0)
+
+    def test_historical_claims_are_not_rewritten(self):
+        self.assertEqual(hashlib.sha256(LOCK.read_bytes()).hexdigest(),
+                         "75d12f7b1068c90d464da0145b0ff5f7f4bb20b116efcb5020077140a302c1d2")
+        self.assertEqual(hashlib.sha256(REGISTRATION.read_bytes()).hexdigest(),
+                         "78f7cd03c3afc12c94c3ba09839e4ac6ba667a3f68b96871571b274ae7d3ab11")
+        self.assertEqual(p05._lock_hash(self.lock), LOCK_HASH)
+        self.assertEqual(self.record["scope_digest_sha256"], SCOPE_DIGEST)
+        lock_review = json.loads(LOCK_REVIEW.read_text(encoding="utf-8"))
+        self.assertEqual(lock_review["verdict"], "approved")
+        self.assertEqual(lock_review["reviewed_lock_hash"], LOCK_HASH)
+        reg_review = json.loads(REG_REVIEW.read_text(encoding="utf-8"))
+        self.assertEqual(reg_review["verdict"], "approved")
+        self.assertIs(reg_review["requires_new_version"], False)
+        self.assertTrue(reg_review["registration_bytes_unchanged"])
 
 
 if __name__ == "__main__":
