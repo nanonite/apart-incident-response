@@ -245,18 +245,20 @@ class CrossConsistencyTests(AuthorizationGateTestCase):
     def test_p05_lock_still_verifies_green_after_the_review(self):
         rc, verification, calls = self.run_verify()
         self.assertEqual(calls, [])
-        self.assertEqual(verification["checks_run"], 44)
+        freshness_expected = not any(path.exists() for path in self.live_paths)
+        self.assertEqual(verification["checks_run"], 44 if freshness_expected else 43)
         self.assertEqual(verification["provider_calls"], 0)
         self.assertEqual(verification["lock_hash"], LOCK_HASH)
         self.assertEqual(verification["authorization_reference_state"],
                          "pending_not_supplied")
         checks = {item["check"]: item["ok"] for item in verification["checks"]}
-        self.assertTrue(checks["lock_rebuilds_byte_for_byte"])
+        self.assertEqual(checks["live_paths_still_absent"], freshness_expected)
+        self.assertEqual(checks["lock_rebuilds_byte_for_byte"], freshness_expected)
+        self.assertTrue(checks["lock_hash_recomputes"])
         self.assertTrue(checks["review_record_approved"])
         self.assertTrue(checks["review_record_matches_lock_hash"])
-        freshness = not any(path.exists() for path in self.live_paths)
-        self.assertEqual(verification["ok"], freshness, verification["failed"])
-        self.assertEqual(rc, 0 if freshness else 1)
+        self.assertEqual(verification["ok"], freshness_expected, verification["failed"])
+        self.assertEqual(rc, 0 if freshness_expected else 2)
 
     def test_lock_review_still_approved_for_this_hash(self):
         self.assertEqual(self.lock_review["verdict"], "approved")

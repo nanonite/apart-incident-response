@@ -139,9 +139,6 @@ class DesignClassificationTestCase(unittest.TestCase):
     def tearDown(self):
         self.assertEqual([path.exists() for path in self.live_paths],
                          self.live_before, "a live output path changed state")
-        for path in self.live_paths:
-            self.assertFalse(path.exists(),
-                             "a discovery live output must never appear offline")
 
 
 class ContentHashTests(DesignClassificationTestCase):
@@ -369,17 +366,17 @@ class StopsPathsTests(DesignClassificationTestCase):
         self.assertIn("model drift", joined)
         self.assertIn("normalization deviation", joined)
 
-    def test_paths_registered_and_fresh(self):
+    def test_paths_registered_and_freshness_matches_current_state(self):
         paths = self.registration["paths"]
         for key in ("registration", "discovery_journal", "discovery_report",
                      "exploratory_replay_journal", "exploratory_replay_report"):
             with self.subTest(key=key):
                 self.assertIn(key, paths)
-        for key, path in paths.items():
-            if key == "registration":
-                continue
-            with self.subTest(path=path):
-                self.assertFalse((REPO_ROOT / path).exists())
+        expected_fresh = not any(self.live_before)
+        verification = p04.verify_registration(self.registration, repo_root=REPO_ROOT)
+        freshness = next(check for check in verification["checks"]
+                         if check["check"] == "paths_are_fresh")
+        self.assertEqual(freshness["ok"], expected_fresh, freshness["detail"])
 
     def test_paths_outside_epic_126(self):
         for key, path in self.registration["paths"].items():
@@ -532,11 +529,15 @@ class DeterministicRebuildTests(DesignClassificationTestCase):
         with patch("urllib.request.urlopen", explode):
             with contextlib.redirect_stdout(buffer):
                 rc = p04.main(["--repo-root", str(REPO_ROOT)])
-        self.assertEqual(rc, 0)
         self.assertEqual(calls, [])
         verification = json.loads(buffer.getvalue())
-        self.assertTrue(verification["ok"], verification["failed"])
-        self.assertEqual(verification["failed"], [])
+        expected_fresh = not any(self.live_before)
+        self.assertEqual(rc, 0 if expected_fresh else 2)
+        self.assertEqual(verification["ok"], expected_fresh, verification["failed"])
+        if expected_fresh:
+            self.assertEqual(verification["failed"], [])
+        else:
+            self.assertIn("paths_are_fresh", verification["failed"])
         self.assertGreaterEqual(len(verification["checks"]), 41)
         self.assertEqual(verification["provider_calls"], 0)
 

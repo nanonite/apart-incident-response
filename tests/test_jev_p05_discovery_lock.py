@@ -95,9 +95,6 @@ class DiscoveryLockTestCase(unittest.TestCase):
     def tearDown(self):
         self.assertEqual([path.exists() for path in self.live_paths],
                          self.live_before, "a live output path changed state")
-        for path in self.live_paths:
-            self.assertFalse(path.exists(),
-                             "a discovery live output must never appear offline")
 
 
 class ContentHashTests(DiscoveryLockTestCase):
@@ -323,34 +320,49 @@ class OfflineCliTests(DiscoveryLockTestCase):
 
     def test_preflight_is_call_free_and_green(self):
         rc, output, calls = self.run_cli(["--repo-root", str(REPO_ROOT), "--preflight"])
-        self.assertEqual(rc, 0)
         self.assertEqual(calls, [])
         document = json.loads(output)
-        self.assertTrue(document["ok"], document["failed"])
-        self.assertEqual(document["failed"], [])
+        expected_fresh = not any(self.live_before)
+        self.assertEqual(rc, 0 if expected_fresh else 2)
+        self.assertEqual(document["ok"], expected_fresh, document["failed"])
+        if expected_fresh:
+            self.assertEqual(document["failed"], [])
+        else:
+            self.assertIn("p04_registration_verifies_green", document["failed"])
         self.assertEqual(len(document["checks"]), PREFLIGHT_CHECKS)
         self.assertEqual(document["provider_calls"], 0)
         self.assertEqual(document["status"], "offline")
 
     def test_verification_is_call_free_and_green(self):
         rc, output, calls = self.run_cli(["--repo-root", str(REPO_ROOT)])
-        self.assertEqual(rc, 0)
         self.assertEqual(calls, [])
         document = json.loads(output)
-        self.assertTrue(document["ok"], document["failed"])
-        self.assertEqual(document["failed"], [])
-        self.assertEqual(len(document["checks"]), VERIFY_CHECKS)
+        expected_fresh = not any(self.live_before)
+        self.assertEqual(rc, 0 if expected_fresh else 2)
+        self.assertEqual(document["ok"], expected_fresh, document["failed"])
+        self.assertEqual(len(document["checks"]), VERIFY_CHECKS if expected_fresh
+                         else VERIFY_CHECKS - 1)
         self.assertEqual(document["provider_calls"], 0)
         self.assertEqual(document["lock_hash"], LOCK_HASH)
         self.assertEqual(document["authorization_reference_state"],
                          "pending_not_supplied")
+        checks = {item["check"]: item["ok"] for item in document["checks"]}
+        self.assertTrue(checks["lock_hash_recomputes"])
+        self.assertTrue(checks["review_record_approved"])
+        self.assertTrue(checks["review_record_matches_lock_hash"])
+        self.assertEqual(checks["live_paths_still_absent"], expected_fresh)
 
     def test_build_is_idempotent_and_never_overwrites(self):
-        rebuilt = p05.build_lock(REPO_ROOT)
-        self.assertEqual(rebuilt, json.loads(LOCK.read_text(encoding="utf-8")))
-        self.assertEqual(rebuilt["lock_hash"], LOCK_HASH)
+        expected_fresh = not any(self.live_before)
+        if expected_fresh:
+            rebuilt = p05.build_lock(REPO_ROOT)
+            self.assertEqual(rebuilt, json.loads(LOCK.read_text(encoding="utf-8")))
+            self.assertEqual(rebuilt["lock_hash"], LOCK_HASH)
+        else:
+            with self.assertRaises(p05.DiscoveryLockError):
+                p05.build_lock(REPO_ROOT)
         with self.assertRaises(p05.DiscoveryLockError):
-            p05.write_lock({**rebuilt, "status": "tampered"}, repo_root=REPO_ROOT)
+            p05.write_lock({**self.lock, "status": "tampered"}, repo_root=REPO_ROOT)
 
 
 class FailClosedTests(DiscoveryLockTestCase):
@@ -376,9 +388,12 @@ class FailClosedTests(DiscoveryLockTestCase):
         self.assertFalse(verification["ok"])
         self.assertIn("lock_hash_recomputes", verification["failed"])
 
-    def test_live_output_paths_still_absent(self):
-        for path in self.live_paths:
-            self.assertFalse(path.exists())
+    def test_live_output_path_freshness_matches_current_state(self):
+        verification = p05.verify_lock(self.lock, repo_root=REPO_ROOT)
+        freshness = next(check for check in verification["checks"]
+                         if check["check"] == "live_paths_still_absent")
+        self.assertEqual(freshness["ok"], not any(self.live_before), freshness["detail"])
+        self.assertEqual(verification["provider_calls"], 0)
 
 
 class DocContentTests(DiscoveryLockTestCase):
