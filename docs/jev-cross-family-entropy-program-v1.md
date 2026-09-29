@@ -70,11 +70,17 @@ reorder the active legal chain or retrofit a prior registration.
    Inventory prior IDs/seeds and inaccessible artifacts. Publish failures and
    descriptive-only classifications, not just promising families.
 2. Specify one or two **additional** task families only after an offline design
-   review shows distinct objectives, objective progress checks, an authentic
-   peer-owned information opportunity, a matched inert placebo, and measurable
-   receiver Choice uncertainty on a fixed option set. Audit them like existing
-   families before assigning them a place in a new prospective queue. A paper's
-   benchmark name is not by itself a Jev task family or an independent form.
+   review shows substantial, multi-step tasks with distinct objectives,
+   objective progress checks, an authentic peer-owned information opportunity,
+   a matched inert placebo, and measurable receiver Choice uncertainty on a
+   fixed option set. The task must preserve the open-ended work and meaningful
+   intermediate artifact or decision; a tiny clue puzzle or synthetic
+   microbenchmark does not satisfy the expansion goal. The fixed receiver
+   decision can be a registered checkpoint within the larger task, but its
+   validity and relationship to end-task success must be audited. Audit new
+   families like existing ones before assigning them a place in a prospective
+   queue. A paper's benchmark name is not by itself a Jev task family or an
+   independent form.
 3. Freeze which families and hypotheses enter any new confirmatory set, the
    family-level multiplicity rule (default Holm at `.05` unless a different
    interpretation is registered), attainable adjusted decisions, treatment,
@@ -111,10 +117,12 @@ template, treatment and evaluation audit before it becomes a family here.
 
 * #221 makes the legal four-form attainability decision offline. It cannot
   promote this generator version to confirmatory status or authorize calls.
-* A separate offline cross-family capacity and expansion audit under #159
-  supplies the prospective breadth inventory. It must finish before #225 can
-  release any legal live collection; its outcome can demand a new program
-  version, but cannot mutate #221's historical census or the L04 lock.
+* #227 is the separate offline cross-family capacity and expansion audit under
+  #159. The worker order is #221 → #227 → #222 → #223 → #224; the legal loop
+  dispatches one issue at a time and stops before #225. The audit supplies the
+  prospective breadth inventory before legal registration work continues. Its
+  outcome can demand a new program version, but cannot mutate #221's historical
+  census or an eventual L04 lock.
 * #218 retains L04–L08's sequential legal gates. #225 remains the explicit
   legal live-authorization pause; the previous hypothesis reference never
   carries forward. A completed legal discovery block is not held-out

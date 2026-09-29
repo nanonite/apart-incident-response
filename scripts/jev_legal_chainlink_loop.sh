@@ -5,7 +5,7 @@ set -euo pipefail
 usage() {
   printf '%s\n' \
     'Usage: bash scripts/jev_legal_chainlink_loop.sh [--dry-run|--run]' \
-    'Dispatches only #219-#224 under #218, one task at a time.' \
+    'Dispatches #219 #220 #221 #227 #222 #223 #224, one task at a time.' \
     'Stops before #225, the separate user authorization gate.' \
     'Env: JEV_LEGAL_WORKER_MODEL and JEV_LEGAL_REVIEWER_MODEL' \
     '     default to opencode-go/mimo-v2.6-flash.'
@@ -41,32 +41,38 @@ done
   printf 'Missing loop CLI or issue database\n' >&2; exit 1;
 }
 
-for task_id in {219..226}; do
+task_ids=(219 220 221 227 222 223 224 225 226)
+predecessors=(215 219 220 221 227 222 223 224 225)
+for index in "${!task_ids[@]}"; do
+  task_id=${task_ids[$index]}
   issue=$(chainlink --json issue show "$task_id")
+  expected_parent=218
+  if [[ "$task_id" == 227 ]]; then expected_parent=159; fi
   jq -e --argjson id "$task_id" \
-    '.id == $id and .parent_id == 218 and (.status == "open" or .status == "closed")' \
+    --argjson parent "$expected_parent" \
+    '.id == $id and .parent_id == $parent and (.status == "open" or .status == "closed")' \
     <<<"$issue" >/dev/null || {
       printf 'Unexpected task identity/status: #%s\n' "$task_id" >&2; exit 1;
     }
-  expected_blocker=$((task_id - 1))
-  if [[ "$task_id" == 219 ]]; then expected_blocker=215; fi
+  expected_blocker=${predecessors[$index]}
   jq -e --argjson blocker "$expected_blocker" \
     '.blocked_by == [$blocker]' <<<"$issue" >/dev/null || {
       printf 'Unexpected dependency on #%s\n' "$task_id" >&2; exit 1;
     }
 done
 
-for task_id in {219..224}; do
+for index in 0 1 2 3 4 5 6; do
+  task_id=${task_ids[$index]}
   issue=$(chainlink --json issue show "$task_id")
   [[ $(jq -r '.status' <<<"$issue") == closed ]] && continue
-  predecessor=$((task_id - 1))
-  if [[ "$task_id" == 219 ]]; then predecessor=215; fi
+  predecessor=${predecessors[$index]}
   before=$(chainlink --json issue show "$predecessor")
   if [[ $(jq -r '.status' <<<"$before") != closed ]]; then
     printf 'PAUSED: #%s is blocked by open #%s.\n' "$task_id" "$predecessor"
     exit 0
   fi
-  if (( task_id > 222 )) && [[ ! -f runs/next-phase/legal/jev-legal-p04-discovery-registration-v1.json ]]; then
+  if [[ "$task_id" == 223 || "$task_id" == 224 ]] && \
+     [[ ! -f runs/next-phase/legal/jev-legal-p04-discovery-registration-v1.json ]]; then
     printf 'PAUSED: #222 has no runnable legal discovery registration.\n'
     exit 0
   fi
@@ -82,7 +88,7 @@ for task_id in {219..224}; do
     --review-first never --worker-model "$worker_model" \
     --reviewer-model "$reviewer_model" --worker-timeout "$worker_timeout" \
     --reviewer-timeout "$reviewer_timeout" \
-    --prompt 'Legal:low offline design only. No provider calls, probes, live journals, authorization inference, or modification of frozen hypothesis artifacts. Verify evidence and acceptance checks before closing.' || cli_status=$?
+    --prompt 'Offline Jev research design only. For #227 audit complete task families and prospective full tasks, not microbenchmarks. No provider calls, probes, live journals, authorization inference, or modification of frozen hypothesis artifacts. Verify evidence and acceptance checks before closing.' || cli_status=$?
   after=$(chainlink --json issue show "$task_id")
   if (( cli_status != 0 )) || [[ $(jq -r '.status' <<<"$after") != closed ]]; then
     printf 'PAUSED: #%s unfinished after loop (CLI exit %s); no successor dispatched.\n' "$task_id" "$cli_status"
