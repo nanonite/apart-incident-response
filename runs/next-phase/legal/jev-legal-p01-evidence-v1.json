@@ -1,0 +1,617 @@
+{
+  "artifact": "jev-legal-p01-evidence-v1",
+  "chain": {
+    "task": 219,
+    "title": "L01 \u2014 Reconcile legal baseline and diagnose P06 truncation",
+    "parent_issue": 218,
+    "root_issue": 159,
+    "family": "legal:low",
+    "milestone": "L01",
+    "predecessor_issue": 215,
+    "successor_issue": 220,
+    "protocol": "docs/jev-discovery-confirmation-plan.md",
+    "baseline_doc": "docs/jev-legal-p01-baseline.md"
+  },
+  "scope": "offline evidence reconciliation and truncation diagnosis only; no provider call, no probe, no live journal, no authorization inference and no modification of frozen hypothesis artifacts",
+  "inputs": [
+    {
+      "path": "docs/jev-hypothesis-low-terminal-decision.md",
+      "role": "#215 terminal family report (P14)",
+      "expected_sha256_prefix": "89ef2aaf",
+      "sha256": "89ef2aafb5e28f12d0db707499c583d89cdcc490d105c23c3c56b39e11818d0b",
+      "prefix_match": true,
+      "pin_source": "Chainlink #219 task text"
+    },
+    {
+      "path": "runs/next-phase/hypothesis/jev-discovery-v1/jev-discovery-collection.jsonl",
+      "role": "#207 P06 discovery journal (16 rows)",
+      "expected_sha256_prefix": "4e8de096",
+      "sha256": "4e8de096f2c30a6a36a94a0f79e5f450c2e196123e3eafe1c310a92c4f334c83",
+      "prefix_match": true,
+      "pin_source": "Chainlink #219 task text; scope table of #215 terminal report"
+    },
+    {
+      "path": "runs/next-phase/hypothesis/jev-discovery-v1/jev-discovery-collection-report.json",
+      "role": "#207 P06 collection report",
+      "expected_sha256_prefix": "3086ceac",
+      "sha256": "3086ceac558ff922bd083db3795f5f1aa5c7127813daba8bfd71ae1fbef09d3c",
+      "prefix_match": true,
+      "pin_source": "Chainlink #219 task text; scope table of #215 terminal report"
+    },
+    {
+      "path": "runs/epic-126/replication/jev-replication-form-audit-v1.json",
+      "role": "#200 frozen form-capacity audit",
+      "expected_sha256_prefix": "cb529cd6",
+      "sha256": "cb529cd61e0e662bfa19fc4998e89fa59a0bf0d63e14f77498035466d6bce89d",
+      "prefix_match": true,
+      "pin_source": "Chainlink #219 task text; docs/jev-p01-evidence-index.md section 1"
+    },
+    {
+      "path": "docs/jev-discovery-confirmation-plan.md",
+      "role": "research protocol for the discovery/confirmation chain",
+      "expected_sha256_prefix": "501e21b6",
+      "sha256": "501e21b6dea760371b0bf368046d8bacd203f6b92f0af754a7955d1f738677f7",
+      "prefix_match": true,
+      "pin_source": "Chainlink #219 task text; scope table of #215 terminal report"
+    }
+  ],
+  "supporting_inputs": [
+    {
+      "path": "runs/next-phase/jev-p04-discovery-registration-v1.json",
+      "role": "#207 registered design (manifest, treatment, route, budgets)",
+      "expected_sha256_prefix": "78f7cd03",
+      "sha256": "78f7cd03c3afc12c94c3ba09839e4ac6ba667a3f68b96871571b274ae7d3ab11",
+      "prefix_match": true,
+      "pin_source": "scope table of #215 terminal report"
+    },
+    {
+      "path": "runs/next-phase/jev-p05-discovery-lock-v1.json",
+      "role": "#207 discovery lock",
+      "expected_sha256_prefix": "75d12f7b",
+      "sha256": "75d12f7b1068c90d464da0145b0ff5f7f4bb20b116efcb5020077140a302c1d2",
+      "prefix_match": true,
+      "pin_source": "scope table of #215 terminal report"
+    },
+    {
+      "path": "runs/next-phase/jev-discovery-authorization-record-v1.json",
+      "role": "hypothesis:low authorization record (historical, not carried forward)",
+      "expected_sha256_prefix": "77962311",
+      "sha256": "77962311dc723b7bf0eab0bda042078ec5d8a903120dd37b023c7b93d2e6d8eb",
+      "prefix_match": true,
+      "pin_source": "scope table of #215 terminal report"
+    },
+    {
+      "path": "src/apart_incident_response/jev_ling_writer_v5.py",
+      "role": "writer-v5 finish_reason / output-cap classification source",
+      "expected_sha256_prefix": null,
+      "sha256": "7ad131ab533dfbd2e3dcdbb23fefee57519226e79ba1d7b24733819560be944b",
+      "prefix_match": null,
+      "pin_source": "recomputed and pinned by L01"
+    },
+    {
+      "path": "src/apart_incident_response/jev_p06_discovery_runner.py",
+      "role": "P06 runner: request identity, token ceilings, terminal stops",
+      "expected_sha256_prefix": null,
+      "sha256": "bd93ae420c5fc9abdaca731b7d8020daba18f95dc124cac7d55d22cdc69616e2",
+      "prefix_match": null,
+      "pin_source": "recomputed and pinned by L01"
+    },
+    {
+      "path": "docs/jev-legal-p01-baseline.md",
+      "role": "L01 baseline narrative (this task's second deliverable)",
+      "expected_sha256_prefix": null,
+      "sha256": "8926f48d85338163fae0f9434f63c62b380f6402580bb57cd1d35b25d0471870",
+      "prefix_match": null,
+      "pin_source": "recomputed and pinned by L01"
+    }
+  ],
+  "recomputation": {
+    "journal": {
+      "rows": 16,
+      "instance_ids_unique": 16,
+      "sequence": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "matches_registered_manifest": true,
+      "seeds": [
+        85003,
+        85009,
+        85023,
+        85025,
+        85004,
+        85005,
+        85006,
+        85008,
+        85002,
+        85012,
+        85013,
+        85017,
+        85000,
+        85001,
+        85007,
+        85011
+      ],
+      "status_counts": {
+        "failed": 1,
+        "not_attempted": 15,
+        "ok": 0,
+        "silence": 0
+      },
+      "provider_calls": 3,
+      "physical_attempts": {
+        "ling": 3,
+        "jev": 0,
+        "combined": 3
+      },
+      "token_totals": {
+        "ling_input_tokens": 534,
+        "ling_output_tokens": 2029,
+        "jev_input_tokens": 0,
+        "jev_output_tokens": 0
+      },
+      "recorded_cost_usd": 0.00039726,
+      "recomputed_cost_usd": 0.00039726,
+      "cost_matches_registered_rates": true,
+      "failure_reasons": {
+        "failed_row": "writer_error:truncated_output",
+        "not_attempted_rows": [
+          "not_attempted:truncated_output"
+        ]
+      },
+      "writer_outcomes": [
+        {
+          "agent": "A",
+          "turn": 0,
+          "outcome": "deliberate_silence"
+        },
+        {
+          "agent": "B",
+          "turn": 0,
+          "outcome": "deliberate_silence"
+        },
+        {
+          "agent": "A",
+          "turn": 1,
+          "outcome": "truncated_output"
+        }
+      ],
+      "attempt_diagnostics": {
+        "records": 3,
+        "statuses": [
+          200,
+          200,
+          200
+        ],
+        "error_classes": [
+          null,
+          null,
+          null
+        ],
+        "retry_ordinals": [
+          0,
+          0,
+          0
+        ],
+        "retry_after_present_any": false,
+        "retry_after_ms_present_any": false,
+        "delay_sources": [
+          "min_interval"
+        ],
+        "delay_source_values": [
+          "none",
+          "none",
+          "min_interval"
+        ]
+      },
+      "output_token_bound": {
+        "registered_output_token_ceiling": 1024,
+        "truncated_call_output_tokens_upper_bound": 1024,
+        "silence_calls_output_tokens_lower_bound": 1005
+      }
+    },
+    "report_cross_checks": {
+      "journaled_seeds": true,
+      "planned_seeds": true,
+      "seed_order": true,
+      "status_counts": true,
+      "provider_calls": true,
+      "physical_used": true,
+      "cost": true,
+      "stop": true,
+      "registration_hash": true,
+      "lock_hash": true,
+      "scope_digest": true
+    },
+    "registration_hash": "6fa6149770b620cd3a026a6415f8e4d97e800e8af5237794de7b29fca6dacfac",
+    "lock_hash": "9de4a61f9d46c47b55bbe7b8da9903c677c6461bf4af353007277835ed6a18b3",
+    "scope_digest_sha256": "938da9116805967253417c53709cd85d56d1913ac0142032d0d4732f50c04061"
+  },
+  "truncation_diagnosis": {
+    "stop_kind": "http_200_writer_output_cap",
+    "recorded_stop_reason": "truncated_output",
+    "rate_limit_distinction": {
+      "statuses": [
+        200,
+        200,
+        200
+      ],
+      "retry_ordinals": [
+        0,
+        0,
+        0
+      ],
+      "retry_after_present_any": false,
+      "retry_after_ms_present_any": false,
+      "error_classes": [
+        null,
+        null,
+        null
+      ],
+      "delay_sources": [
+        "min_interval"
+      ],
+      "rate_limited_error_class_seen": false,
+      "conclusion": "The stop is an HTTP 200 writer output-cap classification, not rate limiting: all recorded attempts returned 200 with no error class, no retry-after header, retry_ordinal 0 and only client-side min_interval pacing.",
+      "counterfactual_signal": "A rate-limit stop under this writer would be journaled as HTTP 429 with error_class writer_http_429_rate_limited, retry_after_present true and retry_ordinal > 0; 429 is a registered retryable status and 'rate-limited' is a registered writer terminal stop.",
+      "scope": "Distinctions hold for the three recorded attempts only; absence of a rate-limit signal is not proof that no provider-side throttling existed."
+    },
+    "output_cap_budget": {
+      "max_tokens_sent_per_request": 1024,
+      "registered_output_token_ceiling": 1024,
+      "recorded_token_totals": {
+        "ling_input_tokens": 534,
+        "ling_output_tokens": 2029,
+        "jev_input_tokens": 0,
+        "jev_output_tokens": 0
+      },
+      "bound": {
+        "registered_output_token_ceiling": 1024,
+        "truncated_call_output_tokens_upper_bound": 1024,
+        "silence_calls_output_tokens_lower_bound": 1005
+      }
+    },
+    "can_infer": [
+      "Every recorded Ling request was sent with max_tokens 1024: the runner rejects any request identity whose max_tokens differs from 1024 (writer_request_identity_drift stops the run), the offline preflight requires writer_contract token_budget == 1024 and cost model ling_output_token_ceiling == 1024, and the journal records max_tokens 1024 on all attempts.",
+      "The third attempt returned HTTP 200 with non-empty content and finish_reason 'length': the writer-v5 classifier assigns truncated_output only when finish_reason == 'length' on non-empty content, so the recorded outcome entails that provider field.",
+      "finish_reason 'length' means generation stopped at the output cap instead of a natural end, so the registered 1024-token output budget was the binding constraint on that call.",
+      "truncated_output is a registered writer terminal outcome: the run stopped with stop_reason truncated_output, the failed row carries writer_error:truncated_output and the 15 unattempted rows carry not_attempted:truncated_output.",
+      "The truncated call cannot have exceeded the 1024 output-token ceiling, because an over-ceiling usage is rewritten to writer_error/writer_token_budget_exceeded; with 2029 recorded output tokens over three calls, the two deliberate_silence calls together produced at least 1005 output tokens."
+    ],
+    "cannot_infer": [
+      "finish_reason, content_length and per-call completion_tokens are not persisted in the journal or report: the 'length' field is a code-level inference from the pinned writer-v5 source, not an observed value in the artifact.",
+      "The exact number of tokens the truncated call emitted is unknown; only row-level totals (534 input / 2029 output) exist, so only the bound above is derivable.",
+      "Raw response bodies are never retained (raw_response_retained false), so the truncated text cannot be re-examined or re-classified offline.",
+      "Nothing here shows what a larger budget would have produced: no counterfactual completion exists, and one truncated call from one attempted seed cannot show that 1024 tokens is systematically too small.",
+      "No scientific interpretation follows: the registered ladder rule treats truncated_output as an instrumentation/token-budget repair item before interpretation, and the run completed zero instances.",
+      "The diagnosis cannot be generalized to the legal:low family, whose route, budget and stop rules are not yet registered."
+    ],
+    "classification_trace": {
+      "writer_outcomes_version": "ling-writer-outcomes-v5",
+      "writer_parser_version": "ling-writer-parser-v5",
+      "classification_order": [
+        "empty_output",
+        "truncated_output",
+        "deliberate_silence",
+        "message_candidate",
+        "non_owned_claim",
+        "invalid_answer",
+        "unparsed_output",
+        "writer_error"
+      ],
+      "probes": 56,
+      "outcomes_by_finish_reason": {
+        "None": [
+          "deliberate_silence",
+          "empty_output",
+          "message_candidate",
+          "unparsed_output"
+        ],
+        "stop": [
+          "deliberate_silence",
+          "empty_output",
+          "message_candidate",
+          "unparsed_output"
+        ],
+        "length": [
+          "empty_output",
+          "truncated_output"
+        ],
+        "content_filter": [
+          "deliberate_silence",
+          "empty_output",
+          "message_candidate",
+          "unparsed_output"
+        ]
+      },
+      "truncated_output_requires_finish_reason_length": true,
+      "truncated_output_requires_non_empty_content": true,
+      "length_with_non_empty_content_is_always_truncated": true,
+      "truncated_probes": 10
+    }
+  },
+  "historical_facts": {
+    "status": "historical fact recorded for L01 reconciliation; not a new approval",
+    "authorization_carried_into_legal_family": false,
+    "l4x_treatment": {
+      "rung": "L4X",
+      "description": "exact original COMM bridge: two agents x two turns, provider_seed, 1024 max tokens, evolving visible-message state, original ANSWER/optional-MESSAGE grammar",
+      "mode": "exact-original-comm-bridge",
+      "agents": [
+        "A",
+        "B"
+      ],
+      "turns": 2,
+      "grammar": "ANSWER: <label> + optional MESSAGE: <claim>; answer-only = silence",
+      "max_tokens": 1024,
+      "temperature": 0.0,
+      "seed_behavior": {
+        "algorithm": "sha256-truncated-signed31-v1",
+        "inputs": "provider_seed(instance_id, 'COMM', turn, agent_id)",
+        "sent_as_seed_field": true
+      },
+      "registered_calls": {
+        "ling_per_seed": 4,
+        "jev_per_seed": 1,
+        "ling_total": 64,
+        "jev_total": 16
+      }
+    },
+    "route_used_by_stopped_hypothesis_run": {
+      "ling": {
+        "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+        "model": "inclusionai/ling-3.0-flash-vl",
+        "sku": "paid OpenRouter SKU (the free SKU is not routable)",
+        "temperature": 0.0,
+        "pacing": "ling-writer-openrouter-pacing-v3, 3.25 s between physical attempts"
+      },
+      "jev": {
+        "endpoint": "https://api.typesafe.ai/v1/systemone",
+        "model": "jev-1.13.0",
+        "codec_version": "jev-choice-wire-v2"
+      },
+      "registration": "runs/next-phase/jev-p04-discovery-registration-v1.json"
+    },
+    "legal_family_route_status": {
+      "registered": false,
+      "authorized": false,
+      "statement": "legal:low has no registered or authorized route; L04 must register one and L07 must supply a separate scope-bound user authorization before any provider call",
+      "opencode_go_note": "OpenCode Go has no interchangeable Ling route in the current registration (docs/jev-legal-task-sequence.md)",
+      "rate_limit_note": "the hypothesis run's paid OpenRouter route and its observed 200 responses carry no authorization and no rate-limit claim into legal:low"
+    }
+  },
+  "limitations": [
+    "Offline only: no provider call, probe, live journal or network event was made or authorized.",
+    "Frozen #200 and terminal #207/#215 files are read-only inputs here and were preserved byte-identically.",
+    "The #215 terminal report digest is pinned by an 8-character prefix in the #219 task text; the full digest recomputed here is recorded and cross-checked against the task prefix only.",
+    "finish_reason, content_length and per-call token usage are not persisted by the P06 journal, so the output-cap diagnosis rests on the pinned writer-v5 source plus the recorded outcome.",
+    "One attempted seed out of sixteen; the truncation diagnosis has n = 1 and no counterfactual retry.",
+    "A failed or stopped predecessor never authorizes a successor: nothing here approves legal:low collection, a route, a budget or any provider call."
+  ],
+  "checks": [
+    {
+      "check": "pinned_input_sha256_prefixes_match",
+      "ok": true,
+      "detail": {
+        "docs/jev-hypothesis-low-terminal-decision.md": "89ef2aafb5e28f12d0db707499c583d89cdcc490d105c23c3c56b39e11818d0b",
+        "runs/next-phase/hypothesis/jev-discovery-v1/jev-discovery-collection.jsonl": "4e8de096f2c30a6a36a94a0f79e5f450c2e196123e3eafe1c310a92c4f334c83",
+        "runs/next-phase/hypothesis/jev-discovery-v1/jev-discovery-collection-report.json": "3086ceac558ff922bd083db3795f5f1aa5c7127813daba8bfd71ae1fbef09d3c",
+        "runs/epic-126/replication/jev-replication-form-audit-v1.json": "cb529cd61e0e662bfa19fc4998e89fa59a0bf0d63e14f77498035466d6bce89d",
+        "docs/jev-discovery-confirmation-plan.md": "501e21b6dea760371b0bf368046d8bacd203f6b92f0af754a7955d1f738677f7"
+      }
+    },
+    {
+      "check": "supporting_input_hashes_recomputed",
+      "ok": true,
+      "detail": {
+        "runs/next-phase/jev-p04-discovery-registration-v1.json": "78f7cd03c3afc12c94c3ba09839e4ac6ba667a3f68b96871571b274ae7d3ab11",
+        "runs/next-phase/jev-p05-discovery-lock-v1.json": "75d12f7b1068c90d464da0145b0ff5f7f4bb20b116efcb5020077140a302c1d2",
+        "runs/next-phase/jev-discovery-authorization-record-v1.json": "77962311dc723b7bf0eab0bda042078ec5d8a903120dd37b023c7b93d2e6d8eb",
+        "src/apart_incident_response/jev_ling_writer_v5.py": "7ad131ab533dfbd2e3dcdbb23fefee57519226e79ba1d7b24733819560be944b",
+        "src/apart_incident_response/jev_p06_discovery_runner.py": "bd93ae420c5fc9abdaca731b7d8020daba18f95dc124cac7d55d22cdc69616e2",
+        "docs/jev-legal-p01-baseline.md": "8926f48d85338163fae0f9434f63c62b380f6402580bb57cd1d35b25d0471870"
+      }
+    },
+    {
+      "check": "terminal_report_pins_match_recomputed_bytes",
+      "ok": true,
+      "detail": "the #215 scope table cites the recomputed journal, report and protocol digests"
+    },
+    {
+      "check": "registration_and_lock_content_hashes_recompute",
+      "ok": true,
+      "detail": {
+        "registration_hash": "6fa6149770b620cd3a026a6415f8e4d97e800e8af5237794de7b29fca6dacfac",
+        "lock_hash": "9de4a61f9d46c47b55bbe7b8da9903c677c6461bf4af353007277835ed6a18b3"
+      }
+    },
+    {
+      "check": "authorization_scope_digest_matches",
+      "ok": true,
+      "detail": "938da9116805967253417c53709cd85d56d1913ac0142032d0d4732f50c04061"
+    },
+    {
+      "check": "journal_matches_registered_manifest",
+      "ok": true,
+      "detail": {
+        "rows": 16,
+        "unique_ids": 16,
+        "manifest_order": true
+      }
+    },
+    {
+      "check": "journal_status_counts",
+      "ok": true,
+      "detail": {
+        "failed": 1,
+        "not_attempted": 15,
+        "ok": 0,
+        "silence": 0
+      }
+    },
+    {
+      "check": "provider_call_accounting",
+      "ok": true,
+      "detail": {
+        "provider_calls": 3,
+        "physical_attempts": {
+          "ling": 3,
+          "jev": 0,
+          "combined": 3
+        }
+      }
+    },
+    {
+      "check": "cost_recomputes_from_registered_rates",
+      "ok": true,
+      "detail": {
+        "recorded": 0.00039726,
+        "recomputed": 0.00039726,
+        "tokens": {
+          "ling_input_tokens": 534,
+          "ling_output_tokens": 2029,
+          "jev_input_tokens": 0,
+          "jev_output_tokens": 0
+        },
+        "rates": {
+          "ling_prompt_usd_per_mtok": 0.06,
+          "ling_completion_usd_per_mtok": 0.18
+        }
+      }
+    },
+    {
+      "check": "report_cross_checks_journal",
+      "ok": true,
+      "detail": {
+        "journaled_seeds": true,
+        "planned_seeds": true,
+        "seed_order": true,
+        "status_counts": true,
+        "provider_calls": true,
+        "physical_used": true,
+        "cost": true,
+        "stop": true,
+        "registration_hash": true,
+        "lock_hash": true,
+        "scope_digest": true
+      }
+    },
+    {
+      "check": "no_rate_limit_signal_on_any_attempt",
+      "ok": true,
+      "detail": "The stop is an HTTP 200 writer output-cap classification, not rate limiting: all recorded attempts returned 200 with no error class, no retry-after header, retry_ordinal 0 and only client-side min_interval pacing."
+    },
+    {
+      "check": "truncated_output_requires_finish_reason_length",
+      "ok": true,
+      "detail": {
+        "probes": 56,
+        "truncated_probes": 10,
+        "outcomes_by_finish_reason": {
+          "None": [
+            "deliberate_silence",
+            "empty_output",
+            "message_candidate",
+            "unparsed_output"
+          ],
+          "stop": [
+            "deliberate_silence",
+            "empty_output",
+            "message_candidate",
+            "unparsed_output"
+          ],
+          "length": [
+            "empty_output",
+            "truncated_output"
+          ],
+          "content_filter": [
+            "deliberate_silence",
+            "empty_output",
+            "message_candidate",
+            "unparsed_output"
+          ]
+        }
+      }
+    },
+    {
+      "check": "truncated_output_is_a_registered_terminal_outcome",
+      "ok": true,
+      "detail": {
+        "failed_row": "writer_error:truncated_output",
+        "not_attempted_rows": [
+          "not_attempted:truncated_output"
+        ]
+      }
+    },
+    {
+      "check": "max_tokens_1024_pinned_by_gates_and_request_identity",
+      "ok": true,
+      "detail": {
+        "classification_branch_present": true,
+        "request_identity_max_tokens_gate": true,
+        "preflight_token_budget_gate": true,
+        "output_ceiling_gate": true
+      }
+    },
+    {
+      "check": "finish_reason_not_persisted_recorded_as_limitation",
+      "ok": true,
+      "detail": "diagnosis is a code-level inference from the pinned writer-v5 source"
+    },
+    {
+      "check": "frozen_inputs_byte_identical_after_build",
+      "ok": true,
+      "detail": "every input digest recomputed at the end of the build equals the digest read at the start"
+    },
+    {
+      "check": "zero_network_events_under_audit_hook",
+      "ok": true,
+      "detail": {
+        "events": [],
+        "provider_calls": 0
+      }
+    },
+    {
+      "check": "baseline_doc_pins_the_recomputed_hashes",
+      "ok": true,
+      "detail": "docs/jev-legal-p01-baseline.md"
+    },
+    {
+      "check": "no_approval_recorded_for_legal_family",
+      "ok": true,
+      "detail": "historical fact recorded for L01 reconciliation; not a new approval"
+    }
+  ],
+  "network_audit": {
+    "hook": "sys.addaudithook(socket., urllib., http.client., ftplib.)",
+    "events": 0,
+    "event_names": [],
+    "provider_calls": 0
+  },
+  "handoff": {
+    "to": "L02",
+    "issue": 220,
+    "deliverable": "runs/next-phase/legal/jev-legal-p02-form-census-v1.json",
+    "conditions": [
+      "#219 must be closed by the plugin after reviewer approval before L02 runs",
+      "legal form count, independence, closure and fresh seed windows are findings to derive, not assumptions inherited from the hypothesis family audit",
+      "the hypothesis 85000-87511 windows, instance ids and output paths must not be reused",
+      "no provider call is authorized by this artifact; L07 supplies a separate scope-bound user authorization",
+      "a failed or stopped predecessor never authorizes its successor"
+    ]
+  }
+}
