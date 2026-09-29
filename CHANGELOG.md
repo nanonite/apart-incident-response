@@ -37,6 +37,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix board IPC integration and CLI tool wiring (#58)
 
 ### Changed
+- L02 — Audit legal:low form capacity and independence: reproducible four-form census, fresh 88000/89000 windows, qualified prior-manifest exceptions, and offline tests (#220)
 - L01 — Reconcile legal baseline and diagnose P06 truncation [legal:low] (#219)
 - Publish the offline L01 evidence index `runs/next-phase/legal/jev-legal-p01-evidence-v1.json` and `docs/jev-legal-p01-baseline.md`: 19/19 recomputed checks over the pinned #215 terminal report, #207 journal/report, #200 audit and protocol hashes, the 16-row stop with 3 Ling / 0 Jev calls and $0.00039726 recomputed from registered rates, a proof that the HTTP 200 `truncated_output` stop is not rate limiting, an offline writer-v5 `finish_reason` / 1024-token output-cap trace stating what can and cannot be inferred, the original L4X treatment and observed route recorded as historical fact with no approval, and an audit-hook build with zero network events plus focused validation in `tests/test_jev_legal_p01_baseline.py` (#219)
 - P14 — Publish family decision and next-family handoff [hypothesis:low] (#215)

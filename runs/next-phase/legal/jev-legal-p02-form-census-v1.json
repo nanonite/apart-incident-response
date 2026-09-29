@@ -1,0 +1,3111 @@
+{
+  "authorizes": "nothing beyond L03 planning; no provider call, no probe, no collection, no registration lock, no live run, no successor execution",
+  "capacity_consequence_for_l03": {
+    "attainable_two_sided_sign_flip_floor": "0.125",
+    "classification_owned_by": "L03 (#221)",
+    "estimand": "equal-weight form mean of real-minus-placebo entropy",
+    "floor_above_0_05": true,
+    "h0": "Delta = 0",
+    "h1": "Delta < 0",
+    "k": 4,
+    "k_below_six": true,
+    "no_legal_effect_size_prior": "planning-low and hypothesis-low outcomes supply no legal-family effect-size prior",
+    "statement": "with k = 4 the attainable exact two-sided sign-flip floor is 2/2^4 = 0.125 > 0.05, so no dichotomous rejection at alpha = 0.05 is attainable at any effect size on this family, and adjusted multiplicity can only demand more forms; distinct seeds never add form units. The formal pilot-versus-confirmatory classification, attainability grid and discovery design belong to L03 (#221)."
+  },
+  "census": {
+    "closure_probe": {
+      "distinct_forms": 4,
+      "forms": {
+        "309706db278f790720bf76f19b248ff43e5eaf178d250cd60f9defccfb7b00c9": [
+          89002,
+          89003,
+          89007,
+          89015,
+          89023,
+          89028,
+          89029,
+          89030,
+          89033,
+          89034,
+          89035,
+          89048,
+          89053,
+          89055,
+          89057,
+          89060,
+          89063,
+          89066,
+          89071,
+          89074,
+          89080,
+          89084,
+          89093,
+          89097,
+          89101,
+          89102,
+          89103,
+          89105,
+          89110,
+          89111,
+          89116,
+          89118,
+          89119,
+          89122,
+          89137,
+          89139,
+          89141,
+          89144,
+          89149,
+          89154,
+          89160,
+          89166,
+          89167,
+          89170,
+          89175,
+          89176,
+          89178,
+          89179,
+          89182,
+          89184,
+          89187,
+          89191,
+          89194,
+          89195,
+          89200,
+          89202,
+          89206,
+          89207,
+          89209,
+          89210,
+          89212,
+          89219,
+          89224,
+          89227,
+          89228,
+          89231,
+          89232,
+          89235,
+          89252,
+          89253,
+          89255,
+          89262,
+          89266,
+          89267,
+          89275,
+          89280,
+          89281,
+          89285,
+          89288,
+          89290,
+          89295,
+          89296,
+          89300,
+          89302,
+          89303,
+          89304,
+          89311,
+          89329,
+          89333,
+          89345,
+          89351,
+          89353,
+          89354,
+          89364,
+          89370,
+          89376,
+          89385,
+          89386,
+          89393,
+          89397,
+          89408,
+          89411,
+          89413,
+          89417,
+          89433,
+          89435,
+          89436,
+          89443,
+          89451,
+          89452,
+          89458,
+          89459,
+          89467,
+          89470,
+          89474,
+          89492,
+          89494,
+          89496,
+          89503,
+          89504,
+          89505,
+          89508,
+          89509
+        ],
+        "3ca0223020c4113d4a8147d3b611c414248eb64369497f9a5f6a4a7f78a0df9f": [
+          89005,
+          89009,
+          89010,
+          89012,
+          89013,
+          89016,
+          89018,
+          89019,
+          89020,
+          89022,
+          89031,
+          89037,
+          89040,
+          89045,
+          89046,
+          89052,
+          89070,
+          89075,
+          89076,
+          89079,
+          89083,
+          89085,
+          89089,
+          89091,
+          89096,
+          89098,
+          89100,
+          89106,
+          89108,
+          89109,
+          89112,
+          89114,
+          89127,
+          89128,
+          89134,
+          89143,
+          89145,
+          89148,
+          89152,
+          89157,
+          89162,
+          89169,
+          89172,
+          89174,
+          89177,
+          89180,
+          89181,
+          89183,
+          89188,
+          89190,
+          89193,
+          89197,
+          89203,
+          89204,
+          89205,
+          89213,
+          89217,
+          89220,
+          89221,
+          89223,
+          89225,
+          89230,
+          89233,
+          89234,
+          89240,
+          89241,
+          89244,
+          89247,
+          89248,
+          89256,
+          89257,
+          89258,
+          89259,
+          89268,
+          89270,
+          89272,
+          89276,
+          89283,
+          89286,
+          89292,
+          89301,
+          89306,
+          89310,
+          89316,
+          89317,
+          89318,
+          89319,
+          89322,
+          89330,
+          89332,
+          89334,
+          89335,
+          89336,
+          89337,
+          89338,
+          89340,
+          89346,
+          89349,
+          89352,
+          89358,
+          89361,
+          89362,
+          89365,
+          89367,
+          89373,
+          89381,
+          89382,
+          89388,
+          89394,
+          89396,
+          89398,
+          89401,
+          89402,
+          89403,
+          89404,
+          89405,
+          89407,
+          89414,
+          89416,
+          89423,
+          89424,
+          89428,
+          89429,
+          89432,
+          89434,
+          89439,
+          89442,
+          89444,
+          89446,
+          89448,
+          89453,
+          89454,
+          89455,
+          89456,
+          89460,
+          89464,
+          89465,
+          89466,
+          89468,
+          89481,
+          89497,
+          89500,
+          89511
+        ],
+        "935f84146a383fa027fb55446dd011c55d81f32151477d56ca85d7e155b8c809": [
+          89000,
+          89001,
+          89004,
+          89006,
+          89008,
+          89017,
+          89026,
+          89027,
+          89036,
+          89038,
+          89042,
+          89043,
+          89044,
+          89047,
+          89051,
+          89056,
+          89058,
+          89061,
+          89062,
+          89072,
+          89078,
+          89086,
+          89087,
+          89090,
+          89095,
+          89104,
+          89107,
+          89113,
+          89117,
+          89121,
+          89124,
+          89125,
+          89126,
+          89131,
+          89132,
+          89138,
+          89142,
+          89146,
+          89147,
+          89151,
+          89158,
+          89159,
+          89161,
+          89163,
+          89164,
+          89168,
+          89173,
+          89185,
+          89196,
+          89198,
+          89201,
+          89208,
+          89215,
+          89216,
+          89218,
+          89222,
+          89226,
+          89229,
+          89238,
+          89242,
+          89243,
+          89245,
+          89246,
+          89249,
+          89250,
+          89251,
+          89254,
+          89260,
+          89263,
+          89264,
+          89265,
+          89269,
+          89271,
+          89274,
+          89277,
+          89278,
+          89279,
+          89282,
+          89284,
+          89289,
+          89299,
+          89308,
+          89312,
+          89313,
+          89315,
+          89320,
+          89321,
+          89325,
+          89327,
+          89339,
+          89341,
+          89342,
+          89343,
+          89344,
+          89347,
+          89348,
+          89350,
+          89355,
+          89359,
+          89360,
+          89369,
+          89372,
+          89374,
+          89375,
+          89377,
+          89379,
+          89380,
+          89383,
+          89384,
+          89389,
+          89391,
+          89392,
+          89395,
+          89409,
+          89410,
+          89415,
+          89422,
+          89425,
+          89438,
+          89440,
+          89441,
+          89445,
+          89447,
+          89449,
+          89457,
+          89461,
+          89469,
+          89471,
+          89476,
+          89477,
+          89478,
+          89482,
+          89483,
+          89485,
+          89487,
+          89488,
+          89490,
+          89498,
+          89499,
+          89506,
+          89510
+        ],
+        "bb6fcd3ffb95e480cd779f380549bfca873e86b8c313825d97d14c6ea7b6ca07": [
+          89011,
+          89014,
+          89021,
+          89024,
+          89025,
+          89032,
+          89039,
+          89041,
+          89049,
+          89050,
+          89054,
+          89059,
+          89064,
+          89065,
+          89067,
+          89068,
+          89069,
+          89073,
+          89077,
+          89081,
+          89082,
+          89088,
+          89092,
+          89094,
+          89099,
+          89115,
+          89120,
+          89123,
+          89129,
+          89130,
+          89133,
+          89135,
+          89136,
+          89140,
+          89150,
+          89153,
+          89155,
+          89156,
+          89165,
+          89171,
+          89186,
+          89189,
+          89192,
+          89199,
+          89211,
+          89214,
+          89236,
+          89237,
+          89239,
+          89261,
+          89273,
+          89287,
+          89291,
+          89293,
+          89294,
+          89297,
+          89298,
+          89305,
+          89307,
+          89309,
+          89314,
+          89323,
+          89324,
+          89326,
+          89328,
+          89331,
+          89356,
+          89357,
+          89363,
+          89366,
+          89368,
+          89371,
+          89378,
+          89387,
+          89390,
+          89399,
+          89400,
+          89406,
+          89412,
+          89418,
+          89419,
+          89420,
+          89421,
+          89426,
+          89427,
+          89430,
+          89431,
+          89437,
+          89450,
+          89462,
+          89463,
+          89472,
+          89473,
+          89475,
+          89479,
+          89480,
+          89484,
+          89486,
+          89489,
+          89491,
+          89493,
+          89495,
+          89501,
+          89502,
+          89507
+        ]
+      },
+      "growth_checkpoints": [
+        [
+          32,
+          4
+        ],
+        [
+          64,
+          4
+        ],
+        [
+          128,
+          4
+        ],
+        [
+          256,
+          4
+        ],
+        [
+          512,
+          4
+        ]
+      ],
+      "per_form_seed_counts": {
+        "309706db278f790720bf76f19b248ff43e5eaf178d250cd60f9defccfb7b00c9": 123,
+        "3ca0223020c4113d4a8147d3b611c414248eb64369497f9a5f6a4a7f78a0df9f": 143,
+        "935f84146a383fa027fb55446dd011c55d81f32151477d56ca85d7e155b8c809": 141,
+        "bb6fcd3ffb95e480cd779f380549bfca873e86b8c313825d97d14c6ea7b6ca07": 105
+      }
+    },
+    "discovery": {
+      "distinct_forms": 4,
+      "forms": {
+        "309706db278f790720bf76f19b248ff43e5eaf178d250cd60f9defccfb7b00c9": [
+          88008,
+          88020,
+          88026,
+          88031,
+          88040,
+          88041,
+          88043,
+          88048,
+          88049,
+          88051,
+          88056,
+          88063,
+          88064,
+          88066,
+          88070,
+          88071,
+          88074,
+          88079,
+          88088,
+          88091,
+          88094,
+          88102,
+          88105,
+          88110,
+          88113,
+          88120,
+          88121,
+          88133,
+          88149,
+          88154,
+          88155,
+          88156,
+          88159,
+          88163,
+          88172,
+          88183,
+          88190,
+          88192,
+          88201,
+          88202,
+          88203,
+          88213,
+          88214,
+          88220,
+          88230,
+          88236,
+          88237,
+          88242,
+          88248,
+          88249,
+          88252,
+          88254,
+          88265,
+          88269,
+          88277,
+          88280,
+          88287,
+          88291,
+          88292,
+          88293,
+          88296,
+          88303,
+          88305,
+          88309,
+          88311,
+          88320,
+          88321,
+          88322,
+          88323,
+          88324,
+          88327,
+          88339,
+          88340,
+          88343,
+          88344,
+          88348,
+          88349,
+          88351,
+          88353,
+          88356,
+          88358,
+          88359,
+          88365,
+          88367,
+          88368,
+          88374,
+          88378,
+          88383,
+          88386,
+          88393,
+          88395,
+          88396,
+          88398,
+          88399,
+          88401,
+          88406,
+          88409,
+          88410,
+          88411,
+          88413,
+          88415,
+          88418,
+          88420,
+          88423,
+          88425,
+          88427,
+          88429,
+          88432,
+          88441,
+          88445,
+          88446,
+          88447,
+          88451,
+          88456,
+          88468,
+          88471,
+          88472,
+          88474,
+          88479,
+          88481,
+          88488,
+          88491,
+          88492,
+          88493,
+          88494,
+          88495,
+          88506,
+          88508,
+          88509
+        ],
+        "3ca0223020c4113d4a8147d3b611c414248eb64369497f9a5f6a4a7f78a0df9f": [
+          88006,
+          88009,
+          88011,
+          88017,
+          88018,
+          88019,
+          88024,
+          88025,
+          88027,
+          88028,
+          88038,
+          88042,
+          88046,
+          88060,
+          88065,
+          88068,
+          88069,
+          88075,
+          88078,
+          88084,
+          88087,
+          88095,
+          88100,
+          88106,
+          88116,
+          88118,
+          88122,
+          88126,
+          88128,
+          88129,
+          88140,
+          88144,
+          88146,
+          88150,
+          88151,
+          88152,
+          88162,
+          88168,
+          88169,
+          88170,
+          88171,
+          88173,
+          88176,
+          88177,
+          88180,
+          88185,
+          88195,
+          88206,
+          88207,
+          88209,
+          88211,
+          88216,
+          88224,
+          88227,
+          88231,
+          88232,
+          88233,
+          88234,
+          88235,
+          88241,
+          88244,
+          88246,
+          88256,
+          88261,
+          88264,
+          88266,
+          88267,
+          88278,
+          88279,
+          88283,
+          88284,
+          88285,
+          88289,
+          88294,
+          88297,
+          88298,
+          88300,
+          88301,
+          88307,
+          88310,
+          88312,
+          88314,
+          88318,
+          88330,
+          88331,
+          88335,
+          88337,
+          88342,
+          88347,
+          88352,
+          88361,
+          88362,
+          88370,
+          88371,
+          88373,
+          88375,
+          88377,
+          88384,
+          88387,
+          88388,
+          88389,
+          88397,
+          88400,
+          88402,
+          88421,
+          88426,
+          88428,
+          88431,
+          88434,
+          88444,
+          88449,
+          88452,
+          88453,
+          88457,
+          88459,
+          88460,
+          88462,
+          88464,
+          88475,
+          88477,
+          88482,
+          88484,
+          88486,
+          88489,
+          88498,
+          88500
+        ],
+        "935f84146a383fa027fb55446dd011c55d81f32151477d56ca85d7e155b8c809": [
+          88004,
+          88005,
+          88010,
+          88013,
+          88014,
+          88016,
+          88021,
+          88022,
+          88029,
+          88030,
+          88034,
+          88036,
+          88039,
+          88045,
+          88047,
+          88052,
+          88053,
+          88054,
+          88057,
+          88058,
+          88061,
+          88073,
+          88081,
+          88083,
+          88086,
+          88096,
+          88097,
+          88098,
+          88099,
+          88104,
+          88107,
+          88109,
+          88112,
+          88119,
+          88123,
+          88125,
+          88127,
+          88130,
+          88134,
+          88135,
+          88136,
+          88138,
+          88139,
+          88141,
+          88147,
+          88148,
+          88160,
+          88175,
+          88178,
+          88181,
+          88182,
+          88187,
+          88193,
+          88194,
+          88199,
+          88204,
+          88208,
+          88210,
+          88222,
+          88228,
+          88239,
+          88250,
+          88251,
+          88253,
+          88255,
+          88257,
+          88268,
+          88272,
+          88273,
+          88274,
+          88275,
+          88281,
+          88282,
+          88299,
+          88302,
+          88304,
+          88315,
+          88326,
+          88328,
+          88333,
+          88336,
+          88338,
+          88346,
+          88354,
+          88357,
+          88360,
+          88364,
+          88366,
+          88376,
+          88391,
+          88392,
+          88394,
+          88405,
+          88416,
+          88419,
+          88422,
+          88424,
+          88433,
+          88435,
+          88436,
+          88437,
+          88438,
+          88439,
+          88440,
+          88443,
+          88448,
+          88454,
+          88455,
+          88458,
+          88466,
+          88467,
+          88470,
+          88476,
+          88478,
+          88483,
+          88485,
+          88490,
+          88497,
+          88501,
+          88503,
+          88511
+        ],
+        "bb6fcd3ffb95e480cd779f380549bfca873e86b8c313825d97d14c6ea7b6ca07": [
+          88000,
+          88001,
+          88002,
+          88003,
+          88007,
+          88012,
+          88015,
+          88023,
+          88032,
+          88033,
+          88035,
+          88037,
+          88044,
+          88050,
+          88055,
+          88059,
+          88062,
+          88067,
+          88072,
+          88076,
+          88077,
+          88080,
+          88082,
+          88085,
+          88089,
+          88090,
+          88092,
+          88093,
+          88101,
+          88103,
+          88108,
+          88111,
+          88114,
+          88115,
+          88117,
+          88124,
+          88131,
+          88132,
+          88137,
+          88142,
+          88143,
+          88145,
+          88153,
+          88157,
+          88158,
+          88161,
+          88164,
+          88165,
+          88166,
+          88167,
+          88174,
+          88179,
+          88184,
+          88186,
+          88188,
+          88189,
+          88191,
+          88196,
+          88197,
+          88198,
+          88200,
+          88205,
+          88212,
+          88215,
+          88217,
+          88218,
+          88219,
+          88221,
+          88223,
+          88225,
+          88226,
+          88229,
+          88238,
+          88240,
+          88243,
+          88245,
+          88247,
+          88258,
+          88259,
+          88260,
+          88262,
+          88263,
+          88270,
+          88271,
+          88276,
+          88286,
+          88288,
+          88290,
+          88295,
+          88306,
+          88308,
+          88313,
+          88316,
+          88317,
+          88319,
+          88325,
+          88329,
+          88332,
+          88334,
+          88341,
+          88345,
+          88350,
+          88355,
+          88363,
+          88369,
+          88372,
+          88379,
+          88380,
+          88381,
+          88382,
+          88385,
+          88390,
+          88403,
+          88404,
+          88407,
+          88408,
+          88412,
+          88414,
+          88417,
+          88430,
+          88442,
+          88450,
+          88461,
+          88463,
+          88465,
+          88469,
+          88473,
+          88480,
+          88487,
+          88496,
+          88499,
+          88502,
+          88504,
+          88505,
+          88507,
+          88510
+        ]
+      },
+      "growth_checkpoints": [
+        [
+          32,
+          4
+        ],
+        [
+          64,
+          4
+        ],
+        [
+          128,
+          4
+        ],
+        [
+          256,
+          4
+        ],
+        [
+          512,
+          4
+        ]
+      ],
+      "per_form_seed_counts": {
+        "309706db278f790720bf76f19b248ff43e5eaf178d250cd60f9defccfb7b00c9": 129,
+        "3ca0223020c4113d4a8147d3b611c414248eb64369497f9a5f6a4a7f78a0df9f": 126,
+        "935f84146a383fa027fb55446dd011c55d81f32151477d56ca85d7e155b8c809": 121,
+        "bb6fcd3ffb95e480cd779f380549bfca873e86b8c313825d97d14c6ea7b6ca07": 136
+      }
+    }
+  },
+  "census_version": "jev-legal-p02-form-census-v1",
+  "checks": [
+    {
+      "check": "census_version_matches",
+      "detail": "jev-legal-p02-form-census-v1",
+      "ok": true
+    },
+    {
+      "check": "frozen_input_prefixes_match",
+      "detail": {
+        "docs/jev-discovery-confirmation-plan.md": {
+          "prefix_match": true,
+          "sha256": "501e21b6dea760371b0bf368046d8bacd203f6b92f0af754a7955d1f738677f7"
+        },
+        "docs/jev-hypothesis-low-terminal-decision.md": {
+          "prefix_match": true,
+          "sha256": "89ef2aafb5e28f12d0db707499c583d89cdcc490d105c23c3c56b39e11818d0b"
+        },
+        "docs/jev-legal-p01-baseline.md": {
+          "prefix_match": null,
+          "sha256": "8926f48d85338163fae0f9434f63c62b380f6402580bb57cd1d35b25d0471870"
+        },
+        "docs/jev-legal-task-sequence.md": {
+          "prefix_match": null,
+          "sha256": "884b0ed4329cc47888e797478f8f00b57f7f5c9d679998d154f5a789397d0394"
+        },
+        "runs/epic-126/replication/jev-replication-form-audit-v1.json": {
+          "prefix_match": true,
+          "sha256": "cb529cd61e0e662bfa19fc4998e89fa59a0bf0d63e14f77498035466d6bce89d"
+        },
+        "runs/next-phase/hypothesis/jev-discovery-v1/jev-discovery-collection-report.json": {
+          "prefix_match": true,
+          "sha256": "3086ceac558ff922bd083db3795f5f1aa5c7127813daba8bfd71ae1fbef09d3c"
+        },
+        "runs/next-phase/hypothesis/jev-discovery-v1/jev-discovery-collection.jsonl": {
+          "prefix_match": true,
+          "sha256": "4e8de096f2c30a6a36a94a0f79e5f450c2e196123e3eafe1c310a92c4f334c83"
+        },
+        "runs/next-phase/legal/jev-legal-p01-evidence-v1.json": {
+          "prefix_match": null,
+          "sha256": "b2d0726619f5a18ce1ed5a54c5197d51709b1e0473b58ee129c74592b7b707e3"
+        }
+      },
+      "ok": true
+    },
+    {
+      "check": "generator_sources_recomputed",
+      "detail": {
+        "src/apart_incident_response/jev_choice.py": "9ce9920e5b902e4f68b5723a70f61f4cc8765c4d4fdae557ed93fbf7d3fb3695",
+        "src/apart_incident_response/jev_form_census.py": "a1a5839a1527ef7c1627305a531ac409acf252a53a9550292b28b46fad113c4a",
+        "src/apart_incident_response/jev_legal_form_census.py": "cdd729cdae891584e8ad7e2df9039d1f4432789a6c660f47c331fc188246cda3",
+        "src/apart_incident_response/jev_replay.py": "5c1c2dfd68beb75e1ccdbbe281c88f879b4b34c98109d003ac3547c6c9d8a862",
+        "src/apart_incident_response/jev_replay_preregistration_v4.py": "18213126c17746de44158c96fb2cb0c40812985c51b1c35233b57a09418302d3",
+        "src/apart_incident_response/jev_replication_preregistration.py": "d91c0e3ad13fc3049240ab76f13214997872681485ef24b60627763f7ec06133",
+        "src/apart_incident_response/task_families.py": "b399bb15c96be98d2c4c7e00012448d9a3df9f1cd7deac0ff1375ecb3e1ea6c4"
+      },
+      "ok": true
+    },
+    {
+      "check": "l01_handoff_targets_this_task",
+      "detail": {
+        "artifact": "jev-legal-p01-evidence-v1",
+        "handoff": {
+          "conditions": [
+            "#219 must be closed by the plugin after reviewer approval before L02 runs",
+            "legal form count, independence, closure and fresh seed windows are findings to derive, not assumptions inherited from the hypothesis family audit",
+            "the hypothesis 85000-87511 windows, instance ids and output paths must not be reused",
+            "no provider call is authorized by this artifact; L07 supplies a separate scope-bound user authorization",
+            "a failed or stopped predecessor never authorizes its successor"
+          ],
+          "deliverable": "runs/next-phase/legal/jev-legal-p02-form-census-v1.json",
+          "issue": 220,
+          "to": "L02"
+        }
+      },
+      "ok": true
+    },
+    {
+      "check": "l01_checks_all_pass_with_zero_network",
+      "detail": {
+        "checks": 19,
+        "failed": [],
+        "network_audit": {
+          "event_names": [],
+          "events": 0,
+          "hook": "sys.addaudithook(socket., urllib., http.client., ftplib.)",
+          "provider_calls": 0
+        }
+      },
+      "ok": true
+    },
+    {
+      "check": "l01_recorded_hashes_match_current_bytes",
+      "detail": "every input and supporting input pinned by L01 recomputes from disk",
+      "ok": true
+    },
+    {
+      "check": "prior_manifest_inventory_completed",
+      "detail": {
+        "manifest_files_discovered": 1074,
+        "manifest_files_scanned": 1069,
+        "prior_seed_union_count": 3152
+      },
+      "ok": true
+    },
+    {
+      "check": "inaccessible_manifests_recorded_as_audit_exceptions",
+      "detail": {
+        "directories": [
+          "runs/codex-c0/codex-c0-C0/",
+          "runs/container-harness/",
+          "runs/opencode-go-container-retry/",
+          "runs/opencode-go-container/",
+          "runs/opencode-qwen-container/",
+          "runs/openrouter/pilot-container-2/",
+          "runs/openrouter/pilot-container-3/",
+          "runs/openrouter/pilot-container-4/",
+          "runs/openrouter/pilot-container/",
+          "runs/t1-container-retry/s0001-C0/",
+          "runs/t1-container-retry/s0001-C1/",
+          "runs/t1-container-retry/s0001-C2/",
+          "runs/t1-container/s0001-C0/",
+          "runs/t1-container/s0001-C1/",
+          "runs/t1-container/s0001-C2/"
+        ],
+        "files": [
+          "runs/container-isolation.json",
+          "runs/t1-container-retry/matrix.json",
+          "runs/t1-container-retry/s0001.json",
+          "runs/t1-container/matrix.json",
+          "runs/t1-container/s0001.json"
+        ]
+      },
+      "ok": true
+    },
+    {
+      "check": "excluded_sources_stated_not_silent",
+      "detail": [
+        "runs/next-phase/legal/**",
+        ".chainlink/issues.db",
+        "docs/**, src/**, tests/**, *.md"
+      ],
+      "ok": true
+    },
+    {
+      "check": "windows_derived_after_inventory",
+      "detail": {
+        "candidate_floor": 88000,
+        "max_prior_seed": 87511,
+        "windows": {
+          "closure_probe": [
+            89000,
+            89511
+          ],
+          "discovery": [
+            88000,
+            88511
+          ]
+        }
+      },
+      "ok": true
+    },
+    {
+      "check": "windows_disjoint_from_prior_seed_union",
+      "detail": {
+        "closure_probe": {
+          "base": 89000,
+          "end": 89511
+        },
+        "discovery": {
+          "base": 88000,
+          "end": 88511
+        }
+      },
+      "ok": true
+    },
+    {
+      "check": "discovery_and_closure_probe_windows_disjoint",
+      "detail": {
+        "closure_probe_base": 89000,
+        "discovery_end": 88511
+      },
+      "ok": true
+    },
+    {
+      "check": "hypothesis_windows_not_reused",
+      "detail": {
+        "overlap": [],
+        "reserved_hypothesis_span": [
+          85000,
+          87511
+        ],
+        "selected_seeds_in_span": []
+      },
+      "ok": true
+    },
+    {
+      "check": "no_seed_or_id_overlap_with_prior_artifacts",
+      "detail": {
+        "disjoint_from_all_accessible_prior_artifacts": true,
+        "documented_seed_range_overlaps": [],
+        "reserved_hypothesis_window_overlaps": [],
+        "selected_ids_overlapping_prior": [],
+        "selected_legal_instance_ids_overlapping_prior_legal_ids": [],
+        "selected_seeds_overlapping_prior": []
+      },
+      "ok": true
+    },
+    {
+      "check": "instance_ids_unique",
+      "detail": {
+        "count": 1024,
+        "unique": 1024
+      },
+      "ok": true
+    },
+    {
+      "check": "form_counts_agree_across_windows_and_enumeration",
+      "detail": {
+        "enumerated": 4,
+        "k": 4,
+        "per_window": {
+          "closure_probe": 4,
+          "discovery": 4
+        }
+      },
+      "ok": true
+    },
+    {
+      "check": "closure_status_proven_not_merely_observed",
+      "detail": {
+        "basis": "generator-level exhaustive enumeration of the finite form space",
+        "observed": {
+          "all_windows_distinct_forms": [
+            4,
+            4
+          ],
+          "closure_probe_distinct_forms": 4,
+          "closure_probe_growth_checkpoints": [
+            [
+              32,
+              4
+            ],
+            [
+              64,
+              4
+            ],
+            [
+              128,
+              4
+            ],
+            [
+              256,
+              4
+            ],
+            [
+              512,
+              4
+            ]
+          ],
+          "closure_probe_new_forms": 0,
+          "discovery_growth_checkpoints": [
+            [
+              32,
+              4
+            ],
+            [
+              64,
+              4
+            ],
+            [
+              128,
+              4
+            ],
+            [
+              256,
+              4
+            ],
+            [
+              512,
+              4
+            ]
+          ]
+        }
+      },
+      "ok": true
+    },
+    {
+      "check": "closure_enumeration_covers_all_eight_targets",
+      "detail": 8,
+      "ok": true
+    },
+    {
+      "check": "pre_read_option_and_state_hashes_recorded",
+      "detail": {
+        "forms": [
+          "309706db278f790720bf76f19b248ff43e5eaf178d250cd60f9defccfb7b00c9",
+          "3ca0223020c4113d4a8147d3b611c414248eb64369497f9a5f6a4a7f78a0df9f",
+          "935f84146a383fa027fb55446dd011c55d81f32151477d56ca85d7e155b8c809",
+          "bb6fcd3ffb95e480cd779f380549bfca873e86b8c313825d97d14c6ea7b6ca07"
+        ]
+      },
+      "ok": true
+    },
+    {
+      "check": "a_finalizer_peer_need_true_for_every_form",
+      "detail": {
+        "closure_probe": true,
+        "discovery": true
+      },
+      "ok": true
+    },
+    {
+      "check": "authoritative_b_owned_informative_claim_verified",
+      "detail": {
+        "closure_probe": {
+          "b_to_a_information_bits": [
+            1.0
+          ],
+          "informative_b_owned_claims": 512
+        },
+        "discovery": {
+          "b_to_a_information_bits": [
+            1.0
+          ],
+          "informative_b_owned_claims": 512
+        }
+      },
+      "ok": true
+    },
+    {
+      "check": "closed_finite_solution_set_and_channel_complete",
+      "detail": {
+        "closure_probe": {
+          "closed_finite_solution_set": true,
+          "eligible": true
+        },
+        "discovery": {
+          "closed_finite_solution_set": true,
+          "eligible": true
+        }
+      },
+      "ok": true
+    },
+    {
+      "check": "shared_template_identical_except_state_clues",
+      "detail": {
+        "identical_except": [
+          "state.clues"
+        ],
+        "template_hash": "35b03db195dd6aed416005b5fa3f985e08572c66d058fed6572d9bff975ef6f6"
+      },
+      "ok": true
+    },
+    {
+      "check": "sign_flip_inference_labeled_assumption_dependent",
+      "detail": "dependence consequence carries the k = 4 floor and the exchangeability label",
+      "ok": true
+    },
+    {
+      "check": "legal_forms_disjoint_from_hypothesis_forms",
+      "detail": {
+        "hypothesis_form_count": 4,
+        "legal_form_count": 4
+      },
+      "ok": true
+    },
+    {
+      "check": "per_form_capacity_sums_to_window_sizes",
+      "detail": {
+        "k": 4,
+        "window_size": 512
+      },
+      "ok": true
+    },
+    {
+      "check": "per_form_capacity_satisfies_selection_quantum",
+      "detail": {
+        "instances_per_form_reference": 4,
+        "min_seeds_per_form": 105
+      },
+      "ok": true
+    },
+    {
+      "check": "no_outcome_based_selection",
+      "detail": {
+        "consulted_live_outcomes": [],
+        "rule": "first 1000-multiple at or above the floor that shares no seed with the completed prior inventory; stride 1000 > window 512 so consecutive windows are disjoint by construction"
+      },
+      "ok": true
+    },
+    {
+      "check": "output_path_is_fresh_and_not_reused",
+      "detail": {
+        "census_path": "runs/next-phase/legal/jev-legal-p02-form-census-v1.json",
+        "hypothesis_output_paths": [
+          "runs/next-phase/jev-form-census-v1.json",
+          "runs/next-phase/jev-p02-scope-freeze.json",
+          "runs/next-phase/jev-p04-discovery-registration-v1.json",
+          "runs/next-phase/jev-p05-discovery-lock-v1.json",
+          "runs/next-phase/jev-discovery-authorization-record-v1.json",
+          "runs/next-phase/hypothesis/jev-discovery-v1/jev-discovery-collection.jsonl",
+          "runs/next-phase/hypothesis/jev-discovery-v1/jev-discovery-collection-report.json",
+          "runs/epic-126/replication/jev-replication-form-audit-v1.json",
+          "runs/epic-126/replication/jev-replication-preregistration-v1.json"
+        ]
+      },
+      "ok": true
+    },
+    {
+      "check": "capacity_reported_per_form_and_window",
+      "detail": {
+        "k": 4,
+        "total_seeds": 1024
+      },
+      "ok": true
+    },
+    {
+      "check": "closure_probe_is_never_selectable",
+      "detail": "independent closure-probe window: offline closure evidence only; disjoint from the discovery window and no seed may ever be selected from it",
+      "ok": true
+    },
+    {
+      "check": "doc_pins_recomputed_input_hashes",
+      "detail": {
+        "digests": {
+          "docs/jev-discovery-confirmation-plan.md": "501e21b6dea760371b0bf368046d8bacd203f6b92f0af754a7955d1f738677f7",
+          "docs/jev-hypothesis-low-terminal-decision.md": "89ef2aafb5e28f12d0db707499c583d89cdcc490d105c23c3c56b39e11818d0b",
+          "docs/jev-legal-p01-baseline.md": "8926f48d85338163fae0f9434f63c62b380f6402580bb57cd1d35b25d0471870",
+          "docs/jev-legal-task-sequence.md": "884b0ed4329cc47888e797478f8f00b57f7f5c9d679998d154f5a789397d0394",
+          "runs/epic-126/replication/jev-replication-form-audit-v1.json": "cb529cd61e0e662bfa19fc4998e89fa59a0bf0d63e14f77498035466d6bce89d",
+          "runs/next-phase/hypothesis/jev-discovery-v1/jev-discovery-collection-report.json": "3086ceac558ff922bd083db3795f5f1aa5c7127813daba8bfd71ae1fbef09d3c",
+          "runs/next-phase/hypothesis/jev-discovery-v1/jev-discovery-collection.jsonl": "4e8de096f2c30a6a36a94a0f79e5f450c2e196123e3eafe1c310a92c4f334c83",
+          "runs/next-phase/legal/jev-legal-p01-evidence-v1.json": "b2d0726619f5a18ce1ed5a54c5197d51709b1e0473b58ee129c74592b7b707e3"
+        },
+        "doc": "docs/jev-legal-p02-capacity.md"
+      },
+      "ok": true
+    },
+    {
+      "check": "frozen_inputs_byte_identical_after_build",
+      "detail": "every frozen and source digest recomputed at the end equals the digest read at start",
+      "ok": true
+    },
+    {
+      "check": "zero_network_events_under_audit_hook",
+      "detail": {
+        "events": [],
+        "provider_calls": 0
+      },
+      "ok": true
+    },
+    {
+      "check": "no_authorization_recorded",
+      "detail": "nothing beyond L03 planning; no provider call, no probe, no collection, no registration lock, no live run, no successor execution",
+      "ok": true
+    }
+  ],
+  "closure": {
+    "basis": "generator-level exhaustive enumeration of the finite form space",
+    "generator_argument": {
+      "conclusion": "the prompt form is a deterministic function of (bit0, bit2) of the target, which has exactly four values; exhaustive enumeration of all eight disposition targets realizes exactly four distinct forms, matching the form set observed in both fresh windows. The legal:low form space is therefore closed at k = 4, proven by generator-level enumeration of the finite state space, not merely observed saturation.",
+      "distinct_forms_enumerated": 4,
+      "exhaustive_enumeration": [
+        {
+          "bit0": 0,
+          "bit0_bit2": [
+            0,
+            0
+          ],
+          "bit1": 0,
+          "bit2": 0,
+          "first_seed_in_discovery_window": 88041,
+          "form_id": "309706db278f790720bf76f19b248ff43e5eaf178d250cd60f9defccfb7b00c9",
+          "target": "disposition-0",
+          "target_number": 0
+        },
+        {
+          "bit0": 1,
+          "bit0_bit2": [
+            1,
+            0
+          ],
+          "bit1": 0,
+          "bit2": 0,
+          "first_seed_in_discovery_window": 88001,
+          "form_id": "bb6fcd3ffb95e480cd779f380549bfca873e86b8c313825d97d14c6ea7b6ca07",
+          "target": "disposition-1",
+          "target_number": 1
+        },
+        {
+          "bit0": 0,
+          "bit0_bit2": [
+            0,
+            0
+          ],
+          "bit1": 1,
+          "bit2": 0,
+          "first_seed_in_discovery_window": 88008,
+          "form_id": "309706db278f790720bf76f19b248ff43e5eaf178d250cd60f9defccfb7b00c9",
+          "target": "disposition-2",
+          "target_number": 2
+        },
+        {
+          "bit0": 1,
+          "bit0_bit2": [
+            1,
+            0
+          ],
+          "bit1": 1,
+          "bit2": 0,
+          "first_seed_in_discovery_window": 88000,
+          "form_id": "bb6fcd3ffb95e480cd779f380549bfca873e86b8c313825d97d14c6ea7b6ca07",
+          "target": "disposition-3",
+          "target_number": 3
+        },
+        {
+          "bit0": 0,
+          "bit0_bit2": [
+            0,
+            1
+          ],
+          "bit1": 0,
+          "bit2": 1,
+          "first_seed_in_discovery_window": 88013,
+          "form_id": "935f84146a383fa027fb55446dd011c55d81f32151477d56ca85d7e155b8c809",
+          "target": "disposition-4",
+          "target_number": 4
+        },
+        {
+          "bit0": 1,
+          "bit0_bit2": [
+            1,
+            1
+          ],
+          "bit1": 0,
+          "bit2": 1,
+          "first_seed_in_discovery_window": 88006,
+          "form_id": "3ca0223020c4113d4a8147d3b611c414248eb64369497f9a5f6a4a7f78a0df9f",
+          "target": "disposition-5",
+          "target_number": 5
+        },
+        {
+          "bit0": 0,
+          "bit0_bit2": [
+            0,
+            1
+          ],
+          "bit1": 1,
+          "bit2": 1,
+          "first_seed_in_discovery_window": 88004,
+          "form_id": "935f84146a383fa027fb55446dd011c55d81f32151477d56ca85d7e155b8c809",
+          "target": "disposition-6",
+          "target_number": 6
+        },
+        {
+          "bit0": 1,
+          "bit0_bit2": [
+            1,
+            1
+          ],
+          "bit1": 1,
+          "bit2": 1,
+          "first_seed_in_discovery_window": 88009,
+          "form_id": "3ca0223020c4113d4a8147d3b611c414248eb64369497f9a5f6a4a7f78a0df9f",
+          "target": "disposition-7",
+          "target_number": 7
+        }
+      ],
+      "finite_state_space": "(bit0, bit2) in {0,1} x {0,1}",
+      "fixed_components": [
+        "model",
+        "question_id",
+        "instructions",
+        "criteria/options (disposition-0..disposition-7)",
+        "state.family",
+        "state.complexity",
+        "state.agent_id"
+      ],
+      "form_derivation": "sha256 of the model-visible ISO pre-read request body (model + state + question/instructions/criteria) produced only from generator/task structure; no outcome enters the hash",
+      "form_is_function_of_bit0_bit2": true,
+      "form_to_targets": {
+        "309706db278f790720bf76f19b248ff43e5eaf178d250cd60f9defccfb7b00c9": [
+          "disposition-0",
+          "disposition-2"
+        ],
+        "3ca0223020c4113d4a8147d3b611c414248eb64369497f9a5f6a4a7f78a0df9f": [
+          "disposition-5",
+          "disposition-7"
+        ],
+        "935f84146a383fa027fb55446dd011c55d81f32151477d56ca85d7e155b8c809": [
+          "disposition-4",
+          "disposition-6"
+        ],
+        "bb6fcd3ffb95e480cd779f380549bfca873e86b8c313825d97d14c6ea7b6ca07": [
+          "disposition-1",
+          "disposition-3"
+        ]
+      },
+      "realized_forms": 4,
+      "upper_bound_distinct_forms": 4,
+      "varying_component": "state.clues = A's private clues = (bit0, bit2) of the target; B's clue (bit1) is not in the pre-read body"
+    },
+    "observed_saturation": {
+      "all_windows_distinct_forms": [
+        4,
+        4
+      ],
+      "closure_probe_distinct_forms": 4,
+      "closure_probe_growth_checkpoints": [
+        [
+          32,
+          4
+        ],
+        [
+          64,
+          4
+        ],
+        [
+          128,
+          4
+        ],
+        [
+          256,
+          4
+        ],
+        [
+          512,
+          4
+        ]
+      ],
+      "closure_probe_new_forms": 0,
+      "discovery_growth_checkpoints": [
+        [
+          32,
+          4
+        ],
+        [
+          64,
+          4
+        ],
+        [
+          128,
+          4
+        ],
+        [
+          256,
+          4
+        ],
+        [
+          512,
+          4
+        ]
+      ]
+    },
+    "proven": true,
+    "residual_unknowns": [
+      "the closure proof covers only this generator configuration (legal family, LOW complexity, regime N, Jev ISO pre-read); it does not extend to other families, complexities, regimes or receiver conditions",
+      "closure of the form space does not establish statistical independence of the four forms; they share one template and differ only in state.clues",
+      "the census is a deterministic offline artifact; it contains no live outcome and authorizes no collection"
+    ],
+    "statement": "the legal:low prompt-form space is closed at k = 4, proven by exhaustive enumeration of the finite generator state space and corroborated by an independent closure-probe window that added zero new forms; observed saturation alone would have left closure unproven",
+    "status": "closed"
+  },
+  "complexity": "low",
+  "content_hash": "5fee9d0173dbdcc8ea3f5783f5ee578f1a0cf697742f8de7c4d71d0bcccfb6f2",
+  "dependence_assessment": {
+    "consequence": "the four forms are hash-distinct but template-identical: they share model, question, instructions, the disposition-0..7 options and state structure, and differ only in the state clue values (bit0, bit2). They are therefore not independent prompts; a template-level effect would shift all four forms together. Form-level sign flips are assumption-dependent: the exact two-sided sign-flip p is a descriptive statistic with the exchangeability assumption labeled, never assumption-free inference. With k = 4 the attainable exact two-sided sign-flip floor is 2/2^4 = 0.125 > 0.05, so no dichotomous rejection at alpha = 0.05 is attainable at any effect size on this family; formal classification is L03's (#221) deliverable.",
+    "factorial_pairs": [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        1
+      ]
+    ],
+    "form_cells": {
+      "309706db278f790720bf76f19b248ff43e5eaf178d250cd60f9defccfb7b00c9": {
+        "bit0": 0,
+        "bit2": 0,
+        "clues": [
+          "fictional_fact_0=0",
+          "fictional_fact_2=0"
+        ]
+      },
+      "3ca0223020c4113d4a8147d3b611c414248eb64369497f9a5f6a4a7f78a0df9f": {
+        "bit0": 1,
+        "bit2": 1,
+        "clues": [
+          "fictional_fact_0=1",
+          "fictional_fact_2=1"
+        ]
+      },
+      "935f84146a383fa027fb55446dd011c55d81f32151477d56ca85d7e155b8c809": {
+        "bit0": 0,
+        "bit2": 1,
+        "clues": [
+          "fictional_fact_0=0",
+          "fictional_fact_2=1"
+        ]
+      },
+      "bb6fcd3ffb95e480cd779f380549bfca873e86b8c313825d97d14c6ea7b6ca07": {
+        "bit0": 1,
+        "bit2": 0,
+        "clues": [
+          "fictional_fact_0=1",
+          "fictional_fact_2=0"
+        ]
+      }
+    },
+    "hash_distinct_not_independent": true,
+    "identical_except": [
+      "state.clues"
+    ],
+    "shared_template": true,
+    "structure": "complete 2x2 factorial over (bit0, bit2) of the target; the four forms are the entire finite legal form space, not a sample from a larger prompt population",
+    "template": {
+      "instructions": "Using the clues in `state`, assess how well each candidate in `criteria` fits those clues. Return a probability for every candidate in `criteria`.",
+      "model": "jev-1.13.0",
+      "option_count": 8,
+      "option_ids": [
+        "disposition-0",
+        "disposition-1",
+        "disposition-2",
+        "disposition-3",
+        "disposition-4",
+        "disposition-5",
+        "disposition-6",
+        "disposition-7"
+      ],
+      "question_id": "candidate",
+      "state_keys_except_clues": [
+        "agent_id",
+        "complexity",
+        "family"
+      ]
+    },
+    "template_hash": "35b03db195dd6aed416005b5fa3f985e08572c66d058fed6572d9bff975ef6f6"
+  },
+  "deterministic_rebuild": {
+    "builder": "src/apart_incident_response/jev_legal_form_census.py",
+    "byte_reproducible": true,
+    "fail_closed_on_drift": true,
+    "rebuild_command": "python -m apart_incident_response.jev_legal_form_census --repo-root ."
+  },
+  "family": "legal",
+  "form_capacity": {
+    "distinct_seeds_are_not_form_units": true,
+    "family": "legal",
+    "form_ids": [
+      "309706db278f790720bf76f19b248ff43e5eaf178d250cd60f9defccfb7b00c9",
+      "3ca0223020c4113d4a8147d3b611c414248eb64369497f9a5f6a4a7f78a0df9f",
+      "935f84146a383fa027fb55446dd011c55d81f32151477d56ca85d7e155b8c809",
+      "bb6fcd3ffb95e480cd779f380549bfca873e86b8c313825d97d14c6ea7b6ca07"
+    ],
+    "form_set_hash": "ad2f6bee676229527b067912c4259f8fb7f9e4e0e989685d5afa8613f48e5633",
+    "instances_per_form_reference": 4,
+    "k": 4,
+    "min_seeds_per_form": 105,
+    "per_form_capacity": {
+      "309706db278f790720bf76f19b248ff43e5eaf178d250cd60f9defccfb7b00c9": {
+        "closure_probe": 123,
+        "discovery": 129,
+        "total_seeds": 252
+      },
+      "3ca0223020c4113d4a8147d3b611c414248eb64369497f9a5f6a4a7f78a0df9f": {
+        "closure_probe": 143,
+        "discovery": 126,
+        "total_seeds": 269
+      },
+      "935f84146a383fa027fb55446dd011c55d81f32151477d56ca85d7e155b8c809": {
+        "closure_probe": 141,
+        "discovery": 121,
+        "total_seeds": 262
+      },
+      "bb6fcd3ffb95e480cd779f380549bfca873e86b8c313825d97d14c6ea7b6ca07": {
+        "closure_probe": 105,
+        "discovery": 136,
+        "total_seeds": 241
+      }
+    },
+    "seed_growth_checkpoints": [
+      32,
+      64,
+      128,
+      256,
+      512
+    ],
+    "selection_rule": "first INSTANCES_PER_FORM seeds per form in ascending seed order within a registered window; fixed N; no outcome-based stopping; selection itself happens only at a later registered gate"
+  },
+  "form_records": {
+    "derivation": "one representative instance per form (first discovery-window seed); option/state/branch hashes via jev_replication_preregistration.branch_hashes, ownership via the family oracle",
+    "per_form": {
+      "309706db278f790720bf76f19b248ff43e5eaf178d250cd60f9defccfb7b00c9": {
+        "a_finalizer_peer_need": {
+          "both_agents_needed": true,
+          "channel_complete": true,
+          "derived": "instance.channel_analysis() on the generator's clue-consistent sets",
+          "finalizer_needs_peer": true,
+          "joint_size": 1,
+          "private_a_size": 2
+        },
+        "authoritative_b_owned_informative_claim": {
+          "after_count": 1,
+          "before_count": 2,
+          "claim": "fictional_fact_1=1",
+          "claim_owner": "B",
+          "evaluator": "ExactInformationEvaluator",
+          "held_by_a_before_message": false,
+          "i_m_bits": 1.0,
+          "information_status": "accepted",
+          "owned_by_b": true,
+          "ownership_source": "family oracle instance.claim_owner, never a writer assertion"
+        },
+        "branch_request_hashes": {
+          "null": "fe862e0120b5931b0a51c20ca5328e1068f2585984b645a0f84ffa33ed24edfa",
+          "placebo": "f931695663ca4d8483f9add941d8033e29c09ad9bf529841e0ad0ef5ad62aacd",
+          "real": "58b8fca4775ecb0ea0754a3481c439a1100a9a604505ddadf8dc4992b4814416"
+        },
+        "branch_state_hashes": {
+          "null": "b9fd801f3e68bd0fb8982aede69fd23eb58620bf6faa3aa9e4b98b9e3f09b3c7",
+          "placebo": "ee93ea036a46b479dfc0757aa0645a3c59ae9eb22d523870648e2dfae2464c3e",
+          "real": "a85ea6fa0b223bbbd046b9ce4d9a1d18aada0a6e9093fc88cd206ba7edf88a51"
+        },
+        "form_cell": {
+          "bit0": 0,
+          "bit2": 0,
+          "clues": [
+            "fictional_fact_0=0",
+            "fictional_fact_2=0"
+          ]
+        },
+        "option_count": 8,
+        "option_ids": [
+          "disposition-0",
+          "disposition-1",
+          "disposition-2",
+          "disposition-3",
+          "disposition-4",
+          "disposition-5",
+          "disposition-6",
+          "disposition-7"
+        ],
+        "option_set_hash": "04740042a5ee268940966b919c1fed29eb8a42503de2973bbc39178ae7b9bcb6",
+        "placebo_claim": {
+          "claim": "fictional_fact_0=0",
+          "claim_owner": "A",
+          "i_m_bits": 0.0,
+          "inert": true,
+          "owned_by_a": true
+        },
+        "pre_read_request_body_hash": "309706db278f790720bf76f19b248ff43e5eaf178d250cd60f9defccfb7b00c9",
+        "pre_read_state_hash": "b050087e3479be5da0fac7aa6fe5bebe1f3efca82cb81e608bdddcecfa70cb5d",
+        "representative_instance": "legal-000157c8",
+        "representative_seed": 88008,
+        "target": "disposition-2"
+      },
+      "3ca0223020c4113d4a8147d3b611c414248eb64369497f9a5f6a4a7f78a0df9f": {
+        "a_finalizer_peer_need": {
+          "both_agents_needed": true,
+          "channel_complete": true,
+          "derived": "instance.channel_analysis() on the generator's clue-consistent sets",
+          "finalizer_needs_peer": true,
+          "joint_size": 1,
+          "private_a_size": 2
+        },
+        "authoritative_b_owned_informative_claim": {
+          "after_count": 1,
+          "before_count": 2,
+          "claim": "fictional_fact_1=0",
+          "claim_owner": "B",
+          "evaluator": "ExactInformationEvaluator",
+          "held_by_a_before_message": false,
+          "i_m_bits": 1.0,
+          "information_status": "accepted",
+          "owned_by_b": true,
+          "ownership_source": "family oracle instance.claim_owner, never a writer assertion"
+        },
+        "branch_request_hashes": {
+          "null": "6e4772175df1c4796c44880f30a4f45c611b4bb5487815c8dea27ecf67844efb",
+          "placebo": "86eb0a1d2a0cb6bf6b251a4f973d3c1d7606da990cd783609facf5f031208e5c",
+          "real": "48832aac08aa5a9f3d4f5882b3d07fa02c3eaedb14bf37487229bca5428028e7"
+        },
+        "branch_state_hashes": {
+          "null": "95505af0ce9c03061b6290f63da9ecbba93783e48df167ec022fce741f83666b",
+          "placebo": "7b3a0f60a5e223f66e5d92e2333b55f146746718e8fac8e48d3f32636b31dc5e",
+          "real": "df942900d7c1ea65a639c3191398a8fd1b784ce97b2db096639d89cd76bf1fde"
+        },
+        "form_cell": {
+          "bit0": 1,
+          "bit2": 1,
+          "clues": [
+            "fictional_fact_0=1",
+            "fictional_fact_2=1"
+          ]
+        },
+        "option_count": 8,
+        "option_ids": [
+          "disposition-0",
+          "disposition-1",
+          "disposition-2",
+          "disposition-3",
+          "disposition-4",
+          "disposition-5",
+          "disposition-6",
+          "disposition-7"
+        ],
+        "option_set_hash": "04740042a5ee268940966b919c1fed29eb8a42503de2973bbc39178ae7b9bcb6",
+        "placebo_claim": {
+          "claim": "fictional_fact_0=1",
+          "claim_owner": "A",
+          "i_m_bits": 0.0,
+          "inert": true,
+          "owned_by_a": true
+        },
+        "pre_read_request_body_hash": "3ca0223020c4113d4a8147d3b611c414248eb64369497f9a5f6a4a7f78a0df9f",
+        "pre_read_state_hash": "9e7244cafb4f9596824d9f551a7b80a985d5b0638d63efbd9d9184dd0413601b",
+        "representative_instance": "legal-000157c6",
+        "representative_seed": 88006,
+        "target": "disposition-5"
+      },
+      "935f84146a383fa027fb55446dd011c55d81f32151477d56ca85d7e155b8c809": {
+        "a_finalizer_peer_need": {
+          "both_agents_needed": true,
+          "channel_complete": true,
+          "derived": "instance.channel_analysis() on the generator's clue-consistent sets",
+          "finalizer_needs_peer": true,
+          "joint_size": 1,
+          "private_a_size": 2
+        },
+        "authoritative_b_owned_informative_claim": {
+          "after_count": 1,
+          "before_count": 2,
+          "claim": "fictional_fact_1=1",
+          "claim_owner": "B",
+          "evaluator": "ExactInformationEvaluator",
+          "held_by_a_before_message": false,
+          "i_m_bits": 1.0,
+          "information_status": "accepted",
+          "owned_by_b": true,
+          "ownership_source": "family oracle instance.claim_owner, never a writer assertion"
+        },
+        "branch_request_hashes": {
+          "null": "774fc8e226cfe5aca17818c9e29bfb81bf3076f805299d1cce79c93118687a69",
+          "placebo": "5fe28ca2cb4892d888ea65b0b9f9cbcbb486d9c5eadcac96adc3282cd4822894",
+          "real": "7e37a198a3da5f00a60e943333b465f8b330998f64c4b3c1f828e19012143c42"
+        },
+        "branch_state_hashes": {
+          "null": "9b6d2923e6d155347668c91725cdceaa645994f7d2c22c9ed1b7f9a53ffd5c1a",
+          "placebo": "9f80242db95f0a3fd2b138e5e99e6bbf586701052e3ff97537f4bf9451b8a2b1",
+          "real": "6a7049b5fa9de767f0578ddd47877957f8311bbcb701cf01fe9348b2e9b50d42"
+        },
+        "form_cell": {
+          "bit0": 0,
+          "bit2": 1,
+          "clues": [
+            "fictional_fact_0=0",
+            "fictional_fact_2=1"
+          ]
+        },
+        "option_count": 8,
+        "option_ids": [
+          "disposition-0",
+          "disposition-1",
+          "disposition-2",
+          "disposition-3",
+          "disposition-4",
+          "disposition-5",
+          "disposition-6",
+          "disposition-7"
+        ],
+        "option_set_hash": "04740042a5ee268940966b919c1fed29eb8a42503de2973bbc39178ae7b9bcb6",
+        "placebo_claim": {
+          "claim": "fictional_fact_0=0",
+          "claim_owner": "A",
+          "i_m_bits": 0.0,
+          "inert": true,
+          "owned_by_a": true
+        },
+        "pre_read_request_body_hash": "935f84146a383fa027fb55446dd011c55d81f32151477d56ca85d7e155b8c809",
+        "pre_read_state_hash": "b159155ca5daee27b4a8c153563076eb1cf97a656b1585f289c792e69f58deb6",
+        "representative_instance": "legal-000157c4",
+        "representative_seed": 88004,
+        "target": "disposition-6"
+      },
+      "bb6fcd3ffb95e480cd779f380549bfca873e86b8c313825d97d14c6ea7b6ca07": {
+        "a_finalizer_peer_need": {
+          "both_agents_needed": true,
+          "channel_complete": true,
+          "derived": "instance.channel_analysis() on the generator's clue-consistent sets",
+          "finalizer_needs_peer": true,
+          "joint_size": 1,
+          "private_a_size": 2
+        },
+        "authoritative_b_owned_informative_claim": {
+          "after_count": 1,
+          "before_count": 2,
+          "claim": "fictional_fact_1=1",
+          "claim_owner": "B",
+          "evaluator": "ExactInformationEvaluator",
+          "held_by_a_before_message": false,
+          "i_m_bits": 1.0,
+          "information_status": "accepted",
+          "owned_by_b": true,
+          "ownership_source": "family oracle instance.claim_owner, never a writer assertion"
+        },
+        "branch_request_hashes": {
+          "null": "986f6c0d19b59f4abae2a7d9a4502d11d200e6beac6674317e7cc49543ac9a23",
+          "placebo": "cd065e1019f4d6a718e1629815cea4e2b820226fe891daf09bfec57e354919bf",
+          "real": "d59eedda3f5bd6474a1f592ce31145dc28c27436f8f3f81259f569c68bc75b69"
+        },
+        "branch_state_hashes": {
+          "null": "59b905c3681bc70ee8a4faa8c0f5e311c2f357c324d061f855b4cee74e25db20",
+          "placebo": "8fe87e9c171f910f81cf7b16d81c45d99632b298fb140b79442e79907b9b81c3",
+          "real": "0d6ee0e81e9e0e69022c30f35497a911f9e481729ae7910d1de6fd8f8b4ca727"
+        },
+        "form_cell": {
+          "bit0": 1,
+          "bit2": 0,
+          "clues": [
+            "fictional_fact_0=1",
+            "fictional_fact_2=0"
+          ]
+        },
+        "option_count": 8,
+        "option_ids": [
+          "disposition-0",
+          "disposition-1",
+          "disposition-2",
+          "disposition-3",
+          "disposition-4",
+          "disposition-5",
+          "disposition-6",
+          "disposition-7"
+        ],
+        "option_set_hash": "04740042a5ee268940966b919c1fed29eb8a42503de2973bbc39178ae7b9bcb6",
+        "placebo_claim": {
+          "claim": "fictional_fact_0=1",
+          "claim_owner": "A",
+          "i_m_bits": 0.0,
+          "inert": true,
+          "owned_by_a": true
+        },
+        "pre_read_request_body_hash": "bb6fcd3ffb95e480cd779f380549bfca873e86b8c313825d97d14c6ea7b6ca07",
+        "pre_read_state_hash": "5b26e40d9c80c6a5b311d265ddd2642e65e276eb33cafb1fa598c236a904e4f0",
+        "representative_instance": "legal-000157c0",
+        "representative_seed": 88000,
+        "target": "disposition-3"
+      }
+    }
+  },
+  "frozen_input_evidence": {
+    "inputs": [
+      {
+        "expected_sha256_prefix": "501e21b6",
+        "path": "docs/jev-discovery-confirmation-plan.md",
+        "prefix_match": true,
+        "role": "research protocol for the discovery/confirmation chain",
+        "sha256": "501e21b6dea760371b0bf368046d8bacd203f6b92f0af754a7955d1f738677f7"
+      },
+      {
+        "expected_sha256_prefix": "cb529cd6",
+        "path": "runs/epic-126/replication/jev-replication-form-audit-v1.json",
+        "prefix_match": true,
+        "role": "#200 frozen form-capacity audit",
+        "sha256": "cb529cd61e0e662bfa19fc4998e89fa59a0bf0d63e14f77498035466d6bce89d"
+      },
+      {
+        "expected_sha256_prefix": "4e8de096",
+        "path": "runs/next-phase/hypothesis/jev-discovery-v1/jev-discovery-collection.jsonl",
+        "prefix_match": true,
+        "role": "#207 P06 discovery journal (terminal, 16 rows)",
+        "sha256": "4e8de096f2c30a6a36a94a0f79e5f450c2e196123e3eafe1c310a92c4f334c83"
+      },
+      {
+        "expected_sha256_prefix": "3086ceac",
+        "path": "runs/next-phase/hypothesis/jev-discovery-v1/jev-discovery-collection-report.json",
+        "prefix_match": true,
+        "role": "#207 P06 collection report (terminal)",
+        "sha256": "3086ceac558ff922bd083db3795f5f1aa5c7127813daba8bfd71ae1fbef09d3c"
+      },
+      {
+        "expected_sha256_prefix": "89ef2aaf",
+        "path": "docs/jev-hypothesis-low-terminal-decision.md",
+        "prefix_match": true,
+        "role": "#215 terminal family report",
+        "sha256": "89ef2aafb5e28f12d0db707499c583d89cdcc490d105c23c3c56b39e11818d0b"
+      },
+      {
+        "expected_sha256_prefix": null,
+        "path": "runs/next-phase/legal/jev-legal-p01-evidence-v1.json",
+        "prefix_match": null,
+        "role": "L01 evidence index (#219), predecessor handoff",
+        "sha256": "b2d0726619f5a18ce1ed5a54c5197d51709b1e0473b58ee129c74592b7b707e3"
+      },
+      {
+        "expected_sha256_prefix": null,
+        "path": "docs/jev-legal-p01-baseline.md",
+        "prefix_match": null,
+        "role": "L01 baseline narrative (#219)",
+        "sha256": "8926f48d85338163fae0f9434f63c62b380f6402580bb57cd1d35b25d0471870"
+      },
+      {
+        "expected_sha256_prefix": null,
+        "path": "docs/jev-legal-task-sequence.md",
+        "prefix_match": null,
+        "role": "legal family task sequence (#218)",
+        "sha256": "884b0ed4329cc47888e797478f8f00b57f7f5c9d679998d154f5a789397d0394"
+      }
+    ],
+    "sources": [
+      {
+        "expected_sha256_prefix": null,
+        "path": "src/apart_incident_response/task_families.py",
+        "prefix_match": null,
+        "role": "generator/hashing source",
+        "sha256": "b399bb15c96be98d2c4c7e00012448d9a3df9f1cd7deac0ff1375ecb3e1ea6c4"
+      },
+      {
+        "expected_sha256_prefix": null,
+        "path": "src/apart_incident_response/jev_replication_preregistration.py",
+        "prefix_match": null,
+        "role": "generator/hashing source",
+        "sha256": "d91c0e3ad13fc3049240ab76f13214997872681485ef24b60627763f7ec06133"
+      },
+      {
+        "expected_sha256_prefix": null,
+        "path": "src/apart_incident_response/jev_replay.py",
+        "prefix_match": null,
+        "role": "generator/hashing source",
+        "sha256": "5c1c2dfd68beb75e1ccdbbe281c88f879b4b34c98109d003ac3547c6c9d8a862"
+      },
+      {
+        "expected_sha256_prefix": null,
+        "path": "src/apart_incident_response/jev_replay_preregistration_v4.py",
+        "prefix_match": null,
+        "role": "generator/hashing source",
+        "sha256": "18213126c17746de44158c96fb2cb0c40812985c51b1c35233b57a09418302d3"
+      },
+      {
+        "expected_sha256_prefix": null,
+        "path": "src/apart_incident_response/jev_choice.py",
+        "prefix_match": null,
+        "role": "generator/hashing source",
+        "sha256": "9ce9920e5b902e4f68b5723a70f61f4cc8765c4d4fdae557ed93fbf7d3fb3695"
+      },
+      {
+        "expected_sha256_prefix": null,
+        "path": "src/apart_incident_response/jev_form_census.py",
+        "prefix_match": null,
+        "role": "generator/hashing source",
+        "sha256": "a1a5839a1527ef7c1627305a531ac409acf252a53a9550292b28b46fad113c4a"
+      },
+      {
+        "expected_sha256_prefix": null,
+        "path": "src/apart_incident_response/jev_legal_form_census.py",
+        "prefix_match": null,
+        "role": "generator/hashing source",
+        "sha256": "cdd729cdae891584e8ad7e2df9039d1f4432789a6c660f47c331fc188246cda3"
+      }
+    ]
+  },
+  "handoff": {
+    "conditions": [
+      "#220 must be closed by the plugin after reviewer approval before L03 runs",
+      "form count, independence, closure and the fresh windows are recorded findings to cite, not assumptions to re-decide",
+      "the hypothesis 85000-87511 windows, instance ids and output paths stay unused",
+      "no provider call is authorized by this artifact; L07 supplies a separate scope-bound user authorization",
+      "a failed or stopped predecessor never authorizes its successor"
+    ],
+    "deliverable": "attainability, classification and outcome-blind discovery design",
+    "issue": 221,
+    "to": "L03"
+  },
+  "issue": "#220",
+  "l01_predecessor_evidence": {
+    "all_checks_pass": true,
+    "artifact": "jev-legal-p01-evidence-v1",
+    "checks": 19,
+    "handoff_deliverable": "runs/next-phase/legal/jev-legal-p02-form-census-v1.json",
+    "network_events": 0,
+    "path": "runs/next-phase/legal/jev-legal-p01-evidence-v1.json",
+    "recorded_hashes_match_current_bytes": true
+  },
+  "limitations": [
+    "Offline only: no provider call, probe, live journal or network event was made or authorized.",
+    "Frozen #200 and terminal #207/#215 files are read-only inputs here and were preserved byte-identically.",
+    "Overlap conclusions are qualified by the recorded inaccessible manifests and directories: their contents are unknown and are never counted as empty sets.",
+    "The windows are chosen by a fixed inventory-first rule; a later artifact that introduces a colliding seed changes the rebuild and fails verification rather than moving the windows silently.",
+    "No held-out/confirmation window is fixed here; a later stage must choose one by the same inventory-first rule before its own outcomes exist.",
+    "A failed or stopped predecessor never authorizes a successor: nothing here approves legal:low collection, a route, a budget or any provider call."
+  ],
+  "milestone": "L02",
+  "network_audit": {
+    "event_names": [],
+    "events": 0,
+    "hook": "sys.addaudithook(socket., urllib., http.client., ftplib.)",
+    "provider_calls": 0
+  },
+  "offline_only": true,
+  "parent_issue": "#218",
+  "pre_read_hashes": {
+    "derivation": "jev_replay.prompt_form_id(jev_replay_preregistration_v4.pre_read_body(...)) for the request body, jev_replay.canonical_hash for the state and option set, branch hashes via jev_replication_preregistration.branch_hashes",
+    "per_form": {
+      "309706db278f790720bf76f19b248ff43e5eaf178d250cd60f9defccfb7b00c9": {
+        "branch_request_hashes": {
+          "null": "fe862e0120b5931b0a51c20ca5328e1068f2585984b645a0f84ffa33ed24edfa",
+          "placebo": "f931695663ca4d8483f9add941d8033e29c09ad9bf529841e0ad0ef5ad62aacd",
+          "real": "58b8fca4775ecb0ea0754a3481c439a1100a9a604505ddadf8dc4992b4814416"
+        },
+        "branch_state_hashes": {
+          "null": "b9fd801f3e68bd0fb8982aede69fd23eb58620bf6faa3aa9e4b98b9e3f09b3c7",
+          "placebo": "ee93ea036a46b479dfc0757aa0645a3c59ae9eb22d523870648e2dfae2464c3e",
+          "real": "a85ea6fa0b223bbbd046b9ce4d9a1d18aada0a6e9093fc88cd206ba7edf88a51"
+        },
+        "option_set_hash": "04740042a5ee268940966b919c1fed29eb8a42503de2973bbc39178ae7b9bcb6",
+        "pre_read_request_body_hash": "309706db278f790720bf76f19b248ff43e5eaf178d250cd60f9defccfb7b00c9",
+        "pre_read_state_hash": "b050087e3479be5da0fac7aa6fe5bebe1f3efca82cb81e608bdddcecfa70cb5d",
+        "representative_instance": "legal-000157c8",
+        "representative_seed": 88008
+      },
+      "3ca0223020c4113d4a8147d3b611c414248eb64369497f9a5f6a4a7f78a0df9f": {
+        "branch_request_hashes": {
+          "null": "6e4772175df1c4796c44880f30a4f45c611b4bb5487815c8dea27ecf67844efb",
+          "placebo": "86eb0a1d2a0cb6bf6b251a4f973d3c1d7606da990cd783609facf5f031208e5c",
+          "real": "48832aac08aa5a9f3d4f5882b3d07fa02c3eaedb14bf37487229bca5428028e7"
+        },
+        "branch_state_hashes": {
+          "null": "95505af0ce9c03061b6290f63da9ecbba93783e48df167ec022fce741f83666b",
+          "placebo": "7b3a0f60a5e223f66e5d92e2333b55f146746718e8fac8e48d3f32636b31dc5e",
+          "real": "df942900d7c1ea65a639c3191398a8fd1b784ce97b2db096639d89cd76bf1fde"
+        },
+        "option_set_hash": "04740042a5ee268940966b919c1fed29eb8a42503de2973bbc39178ae7b9bcb6",
+        "pre_read_request_body_hash": "3ca0223020c4113d4a8147d3b611c414248eb64369497f9a5f6a4a7f78a0df9f",
+        "pre_read_state_hash": "9e7244cafb4f9596824d9f551a7b80a985d5b0638d63efbd9d9184dd0413601b",
+        "representative_instance": "legal-000157c6",
+        "representative_seed": 88006
+      },
+      "935f84146a383fa027fb55446dd011c55d81f32151477d56ca85d7e155b8c809": {
+        "branch_request_hashes": {
+          "null": "774fc8e226cfe5aca17818c9e29bfb81bf3076f805299d1cce79c93118687a69",
+          "placebo": "5fe28ca2cb4892d888ea65b0b9f9cbcbb486d9c5eadcac96adc3282cd4822894",
+          "real": "7e37a198a3da5f00a60e943333b465f8b330998f64c4b3c1f828e19012143c42"
+        },
+        "branch_state_hashes": {
+          "null": "9b6d2923e6d155347668c91725cdceaa645994f7d2c22c9ed1b7f9a53ffd5c1a",
+          "placebo": "9f80242db95f0a3fd2b138e5e99e6bbf586701052e3ff97537f4bf9451b8a2b1",
+          "real": "6a7049b5fa9de767f0578ddd47877957f8311bbcb701cf01fe9348b2e9b50d42"
+        },
+        "option_set_hash": "04740042a5ee268940966b919c1fed29eb8a42503de2973bbc39178ae7b9bcb6",
+        "pre_read_request_body_hash": "935f84146a383fa027fb55446dd011c55d81f32151477d56ca85d7e155b8c809",
+        "pre_read_state_hash": "b159155ca5daee27b4a8c153563076eb1cf97a656b1585f289c792e69f58deb6",
+        "representative_instance": "legal-000157c4",
+        "representative_seed": 88004
+      },
+      "bb6fcd3ffb95e480cd779f380549bfca873e86b8c313825d97d14c6ea7b6ca07": {
+        "branch_request_hashes": {
+          "null": "986f6c0d19b59f4abae2a7d9a4502d11d200e6beac6674317e7cc49543ac9a23",
+          "placebo": "cd065e1019f4d6a718e1629815cea4e2b820226fe891daf09bfec57e354919bf",
+          "real": "d59eedda3f5bd6474a1f592ce31145dc28c27436f8f3f81259f569c68bc75b69"
+        },
+        "branch_state_hashes": {
+          "null": "59b905c3681bc70ee8a4faa8c0f5e311c2f357c324d061f855b4cee74e25db20",
+          "placebo": "8fe87e9c171f910f81cf7b16d81c45d99632b298fb140b79442e79907b9b81c3",
+          "real": "0d6ee0e81e9e0e69022c30f35497a911f9e481729ae7910d1de6fd8f8b4ca727"
+        },
+        "option_set_hash": "04740042a5ee268940966b919c1fed29eb8a42503de2973bbc39178ae7b9bcb6",
+        "pre_read_request_body_hash": "bb6fcd3ffb95e480cd779f380549bfca873e86b8c313825d97d14c6ea7b6ca07",
+        "pre_read_state_hash": "5b26e40d9c80c6a5b311d265ddd2642e65e276eb33cafb1fa598c236a904e4f0",
+        "representative_instance": "legal-000157c0",
+        "representative_seed": 88000
+      }
+    }
+  },
+  "predecessor_issue": "#219",
+  "prior_manifest_inventory": {
+    "chain_own_namespace_excluded": {
+      "known_prior_file_note": "the only file that predates this census inside the chain namespace; it is hash-pinned as a frozen input and its seeds/ids are hypothesis-window values already covered by the reserved ranges below",
+      "known_prior_files": [
+        "runs/next-phase/legal/jev-legal-p01-evidence-v1.json"
+      ],
+      "prefixes": [
+        "runs/next-phase/legal/"
+      ],
+      "statement": "every path under the chain prefix is skipped at walk time, so later legal-chain artifacts recording these windows can neither enter the prior set nor change this rebuild"
+    },
+    "documented_seed_ranges": [
+      [
+        16000,
+        17104
+      ],
+      [
+        39000,
+        39001
+      ],
+      [
+        41000,
+        41001
+      ],
+      [
+        70000,
+        70016
+      ],
+      [
+        71000,
+        71016
+      ],
+      [
+        72000,
+        72016
+      ],
+      [
+        73000,
+        73016
+      ],
+      [
+        74000,
+        74016
+      ],
+      [
+        75000,
+        75255
+      ],
+      [
+        80000,
+        80016
+      ]
+    ],
+    "exceptions_are_audit_exceptions_not_empty_sets": true,
+    "found_seeds": {
+      "count": 1965,
+      "max": 87511,
+      "min": 1,
+      "ranges": [
+        [
+          1,
+          6
+        ],
+        [
+          16,
+          16
+        ],
+        [
+          101,
+          102
+        ],
+        [
+          12000,
+          12001
+        ],
+        [
+          12010,
+          12011
+        ],
+        [
+          12020,
+          12021
+        ],
+        [
+          12030,
+          12031
+        ],
+        [
+          12040,
+          12041
+        ],
+        [
+          12050,
+          12051
+        ],
+        [
+          12060,
+          12061
+        ],
+        [
+          12070,
+          12071
+        ],
+        [
+          12080,
+          12081
+        ],
+        [
+          12090,
+          12091
+        ],
+        [
+          12100,
+          12101
+        ],
+        [
+          12110,
+          12111
+        ],
+        [
+          12120,
+          12121
+        ],
+        [
+          12130,
+          12131
+        ],
+        [
+          12140,
+          12141
+        ],
+        [
+          12150,
+          12151
+        ],
+        [
+          12160,
+          12161
+        ],
+        [
+          12170,
+          12171
+        ],
+        [
+          13000,
+          13001
+        ],
+        [
+          13010,
+          13011
+        ],
+        [
+          13020,
+          13021
+        ],
+        [
+          13030,
+          13031
+        ],
+        [
+          13040,
+          13041
+        ],
+        [
+          13050,
+          13051
+        ],
+        [
+          13060,
+          13061
+        ],
+        [
+          13070,
+          13071
+        ],
+        [
+          13080,
+          13081
+        ],
+        [
+          13090,
+          13091
+        ],
+        [
+          13100,
+          13101
+        ],
+        [
+          13110,
+          13111
+        ],
+        [
+          15000,
+          15007
+        ],
+        [
+          16000,
+          16019
+        ],
+        [
+          16100,
+          16119
+        ],
+        [
+          16200,
+          16219
+        ],
+        [
+          16300,
+          16319
+        ],
+        [
+          16400,
+          16419
+        ],
+        [
+          16500,
+          16519
+        ],
+        [
+          16600,
+          16619
+        ],
+        [
+          16700,
+          16719
+        ],
+        [
+          16800,
+          16819
+        ],
+        [
+          16900,
+          16919
+        ],
+        [
+          17000,
+          17019
+        ],
+        [
+          17100,
+          17119
+        ],
+        [
+          19000,
+          19001
+        ],
+        [
+          20000,
+          20001
+        ],
+        [
+          29000,
+          29001
+        ],
+        [
+          39000,
+          39001
+        ],
+        [
+          41000,
+          41001
+        ],
+        [
+          50000,
+          50016
+        ],
+        [
+          51000,
+          51016
+        ],
+        [
+          60000,
+          60016
+        ],
+        [
+          70000,
+          70016
+        ],
+        [
+          72000,
+          72016
+        ],
+        [
+          80000,
+          80016
+        ],
+        [
+          85000,
+          85511
+        ],
+        [
+          86000,
+          86511
+        ],
+        [
+          87000,
+          87511
+        ]
+      ],
+      "sha256": "1952e7113d4f065c39157f4ab811aa20fde9a4a78bed6ee39ca3bac54cda3d6d"
+    },
+    "inaccessible_directories": [
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/codex-c0/codex-c0-C0/"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/container-harness/"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/opencode-go-container-retry/"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/opencode-go-container/"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/opencode-qwen-container/"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/openrouter/pilot-container-2/"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/openrouter/pilot-container-3/"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/openrouter/pilot-container-4/"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/openrouter/pilot-container/"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/t1-container-retry/s0001-C0/"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/t1-container-retry/s0001-C1/"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/t1-container-retry/s0001-C2/"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/t1-container/s0001-C0/"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/t1-container/s0001-C1/"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/t1-container/s0001-C2/"
+      }
+    ],
+    "inaccessible_manifests": [
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/container-isolation.json"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/t1-container-retry/matrix.json"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/t1-container-retry/s0001.json"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/t1-container/matrix.json"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/t1-container/s0001.json"
+      }
+    ],
+    "instance_ids": {
+      "by_family": {
+        "hypothesis": 149,
+        "legal": 45,
+        "lexicon": 45,
+        "planning": 153,
+        "poetry": 45,
+        "reference": 98
+      },
+      "count": 535,
+      "legal_family_instance_id_count": 45,
+      "legal_family_instance_ids": [
+        "legal-00000065",
+        "legal-00000066",
+        "legal-000041a0",
+        "legal-000041a1",
+        "legal-000041a2",
+        "legal-000041a3",
+        "legal-000041a4",
+        "legal-000041a5",
+        "legal-000041a6",
+        "legal-000041a7",
+        "legal-000041a8",
+        "legal-000041a9",
+        "legal-000041aa",
+        "legal-000041ab",
+        "legal-000041ac",
+        "legal-000041ad",
+        "legal-000041ae",
+        "legal-000041af",
+        "legal-000041b0",
+        "legal-000041b1",
+        "legal-000041b2",
+        "legal-000041b3",
+        "legal-00004204",
+        "legal-00004205",
+        "legal-00004206",
+        "legal-00004207",
+        "legal-00004208",
+        "legal-00004209",
+        "legal-0000420a",
+        "legal-0000420b",
+        "legal-0000420c",
+        "legal-0000420d",
+        "legal-0000420e",
+        "legal-0000420f",
+        "legal-00004210",
+        "legal-00004211",
+        "legal-00004212",
+        "legal-00004213",
+        "legal-00004214",
+        "legal-00004215",
+        "legal-00004216",
+        "legal-00004217",
+        "legal-00004268",
+        "legal-00004269",
+        "legal-0000426a"
+      ],
+      "sha256": "aafdd077730bd057df6746978acbd05dafdc683aebcdf43b5f516fbffb0baf14"
+    },
+    "manifest_files_discovered": 1074,
+    "manifest_files_scanned": 1069,
+    "prior_seed_union": {
+      "count": 3152,
+      "max": 87511,
+      "sha256": "c4c55096579e341add56ba75df56739c458d2e5e46aece1104334ec0e549f2d3",
+      "sources": [
+        "found in accessible run manifests",
+        "documented prior seed ranges",
+        "reserved hypothesis windows"
+      ]
+    },
+    "reserved_hypothesis_span": [
+      85000,
+      87511
+    ],
+    "reserved_hypothesis_windows": [
+      {
+        "description": "hypothesis:low window reserved by #200/#207; never reusable here",
+        "high": 85511,
+        "low": 85000,
+        "role": "primary"
+      },
+      {
+        "description": "hypothesis:low window reserved by #200/#207; never reusable here",
+        "high": 86511,
+        "low": 86000,
+        "role": "closure_probe"
+      },
+      {
+        "description": "hypothesis:low window reserved by #200/#207; never reusable here",
+        "high": 87511,
+        "low": 87000,
+        "role": "confirmation"
+      }
+    ],
+    "scan_scope": {
+      "chain_output_prefixes_excluded": [
+        "runs/next-phase/legal/"
+      ],
+      "excluded_sources": [
+        {
+          "path": "runs/next-phase/legal/**",
+          "reason": "this chain's own outputs (L01 evidence and this census); excluding them keeps the rebuild deterministic once later legal-chain artifacts record the windows chosen here"
+        },
+        {
+          "path": ".chainlink/issues.db",
+          "reason": "mutable task-tracker state rewritten by the plugin on every issue event; it is not a run manifest, and scanning it would make the rebuild depend on future issue text"
+        },
+        {
+          "path": "docs/**, src/**, tests/**, *.md",
+          "reason": "narrative and source files, not run manifests; they reference instance ids that are recorded in the scanned run manifests and covered by the documented and reserved ranges below"
+        }
+      ],
+      "excluded_sources_are_stated_not_empty": true,
+      "own_output_path": "runs/next-phase/legal/jev-legal-p02-form-census-v1.json",
+      "patterns": [
+        "runs/**/*.json",
+        "runs/**/*.jsonl"
+      ],
+      "rationale": "every prior run manifest lives under runs/; the walk is explicit so unlistable directories and unreadable files surface as exceptions instead of silently disappearing from the scan",
+      "root": "runs"
+    },
+    "statement": "The prior-manifest inventory was completed before any window was chosen. 1074 run manifests were discovered under runs/ outside this chain's own namespace; 1069 were read, 5 files and 15 directories were inaccessible and are recorded as audit exceptions whose contents are unknown, never as empty sets. The prior seed union therefore covers every accessible manifest seed, every documented prior seed range and the reserved hypothesis windows 85000-87511; overlap conclusions are qualified by the recorded exceptions."
+  },
+  "protocol": "docs/jev-discovery-confirmation-plan.md",
+  "provider_calls": 0,
+  "regime": "N",
+  "root_issue": "#159",
+  "seed_id_overlap": {
+    "discovery_vs_closure_probe_instance_id_overlap": [],
+    "discovery_vs_closure_probe_seed_overlap": [],
+    "disjoint_from_all_accessible_prior_artifacts": true,
+    "documented_seed_range_overlaps": [],
+    "inaccessible_locations_remaining": 20,
+    "prior_instance_id_count": 535,
+    "prior_instance_ids_sha256": "aafdd077730bd057df6746978acbd05dafdc683aebcdf43b5f516fbffb0baf14",
+    "prior_legal_family_instance_ids": [
+      "legal-00000065",
+      "legal-00000066",
+      "legal-000041a0",
+      "legal-000041a1",
+      "legal-000041a2",
+      "legal-000041a3",
+      "legal-000041a4",
+      "legal-000041a5",
+      "legal-000041a6",
+      "legal-000041a7",
+      "legal-000041a8",
+      "legal-000041a9",
+      "legal-000041aa",
+      "legal-000041ab",
+      "legal-000041ac",
+      "legal-000041ad",
+      "legal-000041ae",
+      "legal-000041af",
+      "legal-000041b0",
+      "legal-000041b1",
+      "legal-000041b2",
+      "legal-000041b3",
+      "legal-00004204",
+      "legal-00004205",
+      "legal-00004206",
+      "legal-00004207",
+      "legal-00004208",
+      "legal-00004209",
+      "legal-0000420a",
+      "legal-0000420b",
+      "legal-0000420c",
+      "legal-0000420d",
+      "legal-0000420e",
+      "legal-0000420f",
+      "legal-00004210",
+      "legal-00004211",
+      "legal-00004212",
+      "legal-00004213",
+      "legal-00004214",
+      "legal-00004215",
+      "legal-00004216",
+      "legal-00004217",
+      "legal-00004268",
+      "legal-00004269",
+      "legal-0000426a"
+    ],
+    "prior_seed_union_count": 3152,
+    "prior_seed_union_sha256": "c4c55096579e341add56ba75df56739c458d2e5e46aece1104334ec0e549f2d3",
+    "qualification": "disjointness is proven against every accessible prior run manifest, every documented prior seed range and the reserved hypothesis windows; 20 inaccessible locations remain unverified audit exceptions and are never treated as empty sets",
+    "reserved_hypothesis_window_overlaps": [],
+    "selected": {
+      "instance_id_count": 1024,
+      "instance_ids_sha256": "39db096ca92ed043c1cec17baf019d0c2f42d58b6a30c1ebf2eee7c400c97a4c",
+      "instance_ids_unique": 1024,
+      "per_window": {
+        "closure_probe": {
+          "first_instance_id": "legal-00015ba8",
+          "instance_id_count": 512,
+          "instance_id_sha256": "b0fcabfa9706257f1517bb81978396324a12b949eb4ec470f927f53d3127b1c0",
+          "last_instance_id": "legal-00015da7",
+          "seed_sha256": "58e1e5ffc3ca48ab354f65da01a3b819cc4b8ecfbedddc17bffbcf04a6c51186"
+        },
+        "discovery": {
+          "first_instance_id": "legal-000157c0",
+          "instance_id_count": 512,
+          "instance_id_sha256": "dbda8388b4862435d9af242170ecbccaf58a7f892fda47c685ee775b771cbdb2",
+          "last_instance_id": "legal-000159bf",
+          "seed_sha256": "fcecc98b995b11ae2c28b511a7ac4fd124701dbae0cac1d12f679a276bc32226"
+        }
+      },
+      "seed_count": 1024,
+      "seeds_sha256": "3fd851f847af5be1b67aaee5e381c764133c20a7c772b97332ad22089c51379f",
+      "windows": [
+        "discovery",
+        "closure_probe"
+      ]
+    },
+    "selected_ids_overlapping_prior": [],
+    "selected_legal_instance_ids_overlapping_prior_legal_ids": [],
+    "selected_seeds_overlapping_prior": []
+  },
+  "stage": "offline form capacity, independence and fresh-window audit",
+  "structural_preconditions": {
+    "derivation": "rep.structural_preconditions(legal, base, window) over each fresh window; closed finite solution set, A-finalizer peer need and B-owned informative claims are generator structure, not outcomes",
+    "per_window": {
+      "closure_probe": {
+        "a_clues_per_instance": 2,
+        "b_clues_per_instance": 1,
+        "b_to_a_information_bits": [
+          1.0
+        ],
+        "closed_finite_solution_set": true,
+        "eligible": true,
+        "family": "legal",
+        "finalizer_needs_peer": true,
+        "informative_b_owned_claims": 512
+      },
+      "discovery": {
+        "a_clues_per_instance": 2,
+        "b_clues_per_instance": 1,
+        "b_to_a_information_bits": [
+          1.0
+        ],
+        "closed_finite_solution_set": true,
+        "eligible": true,
+        "family": "legal",
+        "finalizer_needs_peer": true,
+        "informative_b_owned_claims": 512
+      }
+    }
+  },
+  "successor_issue": "#221",
+  "task_sequence": "docs/jev-legal-task-sequence.md",
+  "windows": {
+    "candidate_floor": 88000,
+    "chosen_after_inventory": true,
+    "discovery_vs_closure_probe_disjoint": true,
+    "floor_derivation": "first 1000-multiple strictly above the largest seed in the completed prior inventory (max 87511)",
+    "held_out_window": {
+      "fixed_by_l02": false,
+      "statement": "L02 fixes only the discovery and independent closure-probe windows required by #220; no held-out/confirmation window is chosen here. Any later held-out window must be chosen by this same inventory-first rule before its own outcomes exist, and no seed may be drawn from either window before a registered gate allows it."
+    },
+    "hypothesis_span_never_reused": [
+      85000,
+      87511
+    ],
+    "hypothesis_windows_reused": false,
+    "inventory_first": true,
+    "roles": [
+      "discovery",
+      "closure_probe"
+    ],
+    "window_size": 512,
+    "window_stride": 1000,
+    "windows": [
+      {
+        "base": 88000,
+        "candidate_floor": 88000,
+        "candidates_skipped": 0,
+        "chosen_after_inventory": true,
+        "description": "fixed discovery window: rebuilt here and the only window from which a later registered block may select seeds",
+        "end": 88511,
+        "role": "discovery",
+        "selection_rule": "first 1000-multiple at or above the floor that shares no seed with the completed prior inventory; stride 1000 > window 512 so consecutive windows are disjoint by construction",
+        "window": 512
+      },
+      {
+        "base": 89000,
+        "candidate_floor": 88000,
+        "candidates_skipped": 0,
+        "chosen_after_inventory": true,
+        "description": "independent closure-probe window: offline closure evidence only; disjoint from the discovery window and no seed may ever be selected from it",
+        "end": 89511,
+        "role": "closure_probe",
+        "selection_rule": "first 1000-multiple at or above the floor that shares no seed with the completed prior inventory; stride 1000 > window 512 so consecutive windows are disjoint by construction",
+        "window": 512
+      }
+    ]
+  }
+}
