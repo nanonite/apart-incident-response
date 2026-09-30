@@ -1,0 +1,7 @@
+model,condition,seed,n_agents,switch_turn_range,close_turn_offset,switch_turn_effective,switch_closed_turn,turns,calls,api_errors,stop,grades,comm,flags,valid,gate_n_calls,gate_frac_flagged,gate_mean_similarity,entropy_valid,A3_provenance_ok,cost_usd
+gpt-4o-mini,base,1,2,None,,8,,12,24,0,max_turns=12,A1:NONE|A2:NONE,-,-,True,24,0.0,1.0,True,,0.002534
+gpt-4o-mini,placebo,1,2,None,,8,,12,23,0,max_turns=12,A1:ONE_ASSET|A2:NONE,-,-,True,23,0.0,1.0,True,,0.002645
+gpt-4o-mini,placebo_inert,1,2,None,,8,,12,24,0,max_turns=12,A1:NONE|A2:NONE,-,-,True,24,0.0,1.0,True,,0.002616
+gpt-4o-mini,switch,1,2,None,,8,,12,24,0,max_turns=12,A1:NONE|A2:NONE,-,-,True,24,0.0,1.0,True,,0.002731
+gpt-4o-mini,switch,2,2,"[4, 7]",3.0,5,8.0,12,24,0,max_turns=12,A1:NONE|A2:NONE,A1->A2,-,True,24,0.0,1.0,True,,0.002846
+gpt-4o-mini,switch,3,3,None,,6,,12,36,0,max_turns=12,A1:NONE|A2:NONE|A3:NONE,A1->A2,-,True,36,0.0,1.0,True,True,0.00422

@@ -1,0 +1,6 @@
+numpy>=2.5
+scipy>=1.18
+pandas>=3.0
+matplotlib>=3.11
+statsmodels>=0.15
+ruptures>=1.1.10

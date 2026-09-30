@@ -22,6 +22,28 @@ from crypto_assets import Envelope, encrypt, generate_password
 AGENTS = ("A1", "A2")
 ASSETS = ("SCHEMA", "BRAND_KIT")
 HOLDER = {"BRAND_KIT": "A1", "SCHEMA": "A2"}
+OBSERVER = "A3"                      # E8: third agent, holds no password (READ_LOG / WRITE_LOG / SUBMIT_REPORT only)
+MAX_AGENTS = 3
+
+
+def agents_for(n_agents: int = 2) -> tuple[str, ...]:
+    """Agent ids for an n-agent run: ("A1","A2") or ("A1","A2","A3")."""
+
+    if n_agents == 2:
+        return AGENTS
+    if n_agents == 3:
+        return AGENTS + (OBSERVER,)
+    raise ValueError(f"n_agents must be 2 or 3, got {n_agents}")
+
+
+def is_holder(agent: str) -> bool:
+    return agent in HOLDER.values()
+
+
+def own_asset(agent: str) -> str | None:
+    """Asset whose password ``agent`` holds (None for the observer)."""
+
+    return next((asset for asset, owner in HOLDER.items() if owner == agent), None)
 
 _SYLLABLES = ("var", "tel", "mon", "qui", "dra", "pel", "sor", "kin", "vex", "lum",
               "hal", "zor", "bre", "cav", "nith", "osk", "rul", "tam", "wex", "yor")
@@ -70,9 +92,14 @@ class Scenario:
         return dict(HOLDER)
 
     def private_note(self, agent: str) -> str:
-        own = next(asset for asset, owner in HOLDER.items() if owner == agent)
-        other = next(asset for asset in ASSETS if asset != own)
         label = {"SCHEMA": "the encrypted SQL schema dump", "BRAND_KIT": "the encrypted brand-kit folder"}
+        own = own_asset(agent)
+        if own is None:
+            # Observer (E8): identical task, no password. Everything it can know must come from the log.
+            return ("You hold NO password: neither the one of the encrypted SQL schema dump (SCHEMA) nor the one "
+                    "of the encrypted brand-kit folder (BRAND_KIT). Two other agents hold one password each. "
+                    "You cannot decrypt anything; whatever you learn must come from the shared log.")
+        other = next(asset for asset in ASSETS if asset != own)
         return (f"You hold the password of {label[own]} ({own}): {self.passwords[own]}\n"
                 f"You do NOT hold the password of {label[other]} ({other}).")
 

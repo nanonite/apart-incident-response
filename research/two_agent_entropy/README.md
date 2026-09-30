@@ -180,3 +180,74 @@ Full run (N=20 per model × condition, 180 runs, $1.32):
 | qwen3-235b | placebo | 0% | 0% | 0% | 0 | 16.4 |
 
 The entropy analysis is still to be done on these tables.
+
+## Extensiones (schema_version 2)
+
+Añadidas sin romper el esquema de salida v1 (véase `CAMBIOS.md` en el paquete de entrega):
+
+| Novedad | Dónde | Cómo se activa |
+|---|---|---|
+| Condición `placebo_inert` (entradas ajenas genéricas, sin hechos) | `harness.make_inert_entries`, `inert_text_is_clean` | `run.py full --conditions placebo_inert` |
+| Switch aleatorizado por semilla y cerrable | `RunConfig.switch_turn_range`, `RunConfig.close_turn_offset`; `meta.json["switch_turn_effective"/"switch_closed_turn"]`; `turns.jsonl["read_policy_this_turn"/"switch_open"]` | `run.py init --switch-range 5,9 --close-offset 4` |
+| Compuerta de integridad de logprobs | `checker.logprob_integrity` → `check.json["logprob_integrity"]`, bandera `LOGPROB_STREAM_INCOMPLETE` (no afecta a `valid`) | siempre; `python3 checker.py <run_dir>` para corridas antiguas |
+| Tres agentes (observador A3 sin contraseña) | `RunConfig.n_agents=3`, `scenario.OBSERVER`, `check.json["observers"]` | `run.py init --n-agents 3` |
+| Proveedor Llama con flujo íntegro | `MODELS["llama-3.3-70b-sambanova"]` (`sambanova-turbo`, `supports_seed=False`) | `--models llama-3.3-70b-sambanova` |
+
+Matriz E1/E5/E8 (ejemplos; cada experimento en su propio directorio porque la configuración se congela en `init`):
+
+```bash
+python3 run.py init --exp artifacts/two-agent-entropy/exp_e1 --scenario-from artifacts/two-agent-entropy/exp1
+python3 run.py full --exp artifacts/two-agent-entropy/exp_e1 --models gpt-4o-mini,qwen3-235b,llama-3.3-70b-sambanova --conditions base,switch,placebo,placebo_inert --runs 20
+python3 run.py init --exp artifacts/two-agent-entropy/exp_e5 --scenario-from artifacts/two-agent-entropy/exp1 --switch-range 5,11 --close-offset 4
+python3 run.py full --exp artifacts/two-agent-entropy/exp_e5 --models gpt-4o-mini,qwen3-235b --conditions base,switch,placebo_inert --runs 20
+python3 run.py init --exp artifacts/two-agent-entropy/exp_e8 --scenario-from artifacts/two-agent-entropy/exp1 --n-agents 3
+python3 run.py full --exp artifacts/two-agent-entropy/exp_e8 --models gpt-4o-mini,qwen3-235b --conditions base,switch --runs 20
+python3 run.py analyze --exp artifacts/two-agent-entropy/exp_e1   # idem e5, e8
+```
+
+`placebo` y `placebo_inert` necesitan `donor/<modelo>/donor_log.json` en el directorio del experimento (cópielo del
+exp1 o ejecute `run.py donor`); `placebo_inert` sólo usa el calendario del donante, nunca su texto.
+
+## Analysis (`analysis/`)
+
+| File | What it does |
+|---|---|
+| `entropy_analysis.py` | General descriptive + exploratory analysis (A–J) of one experiment. Same outputs as the exp1 version (`figures/*.png`, `stats/*.csv`, `stats/summary.json`). |
+| `analisis_e1.py` | The **preregistered** E1 analysis: one inference path, one primary measure, declared secondaries, power. Spanish output tables. |
+| `figuras_informe.py` | Publication-grade report figures built from the `E1_*.csv` tables (no statistics of its own). |
+| `test_entropy_analysis.py` | 11 offline tests of the analysis on synthetic tables (no network, no API). |
+| `build_results_page.py` | Static HTML results page. |
+
+`entropy_analysis.py` is no longer wired to the exp1 matrix. It discovers the models and
+conditions present in the tables (`placebo_inert` and any future arm included), tolerates
+missing model × condition cells, cuts pre/post at each run's own `switch_turn_effective`
+(so the randomised/closable switch of E5 works, and `fig02d_event_aligned_trajectories.png`
+is added when the switch turn varies), handles a third agent (observer `A3`: ground-truth
+columns, and the system decomposition over every agent pair), and seeds every Monte-Carlo
+estimate from a label so a p-value does not depend on how many other cells exist. Column
+names are resolved through aliases, so both `analyze.py` tables (`tables_full/calls.csv`)
+and the flat `exp_*_calls.csv.gz` tables are accepted.
+
+```bash
+python3 analysis/entropy_analysis.py <exp_dir>                     # uses tables_full/
+python3 analysis/entropy_analysis.py --calls exp_e1_calls.csv.gz --runs exp_e1_runs.csv \
+    --out analysis_e1 [--skip-system] [--entropy-valid-only]
+python3 analysis/analisis_e1.py --calls exp_e1_calls.csv.gz --runs exp_e1_runs.csv --out analisis_e1
+python3 analysis/figuras_informe.py analisis_e1 --out figuras_informe
+python3 analysis/test_entropy_analysis.py                          # offline, ~40 s
+```
+
+Reproduction check: run on the exp1 tables, the generalised script reproduces every
+point estimate of the original version exactly (run-level deltas, DiD, Hedges' g, AUC,
+mixed-model coefficients, post-read means) and the permutation p-values within
+Monte-Carlo error (median |Δp| = 0,003, max 0,014 over 36 tests), with every
+significance call at α = 0,05 unchanged.
+
+The preregistered path in `analisis_e1.py`: per-run Δ = mean(post) − mean(pre) of the
+adjusted per-token entropy (residual of `H ~ C(action) + log1p(n_tokens)`, fitted per
+model); six contrasts per model (inert−base, switch−base, decoy−base, switch−inert,
+switch−decoy, inert−decoy); 20 000-replicate permutation over runs; Holm over the whole
+primary family; equivalence declared at δ = 0,02 bits/token; declared secondaries
+(decision entropy, share of complete reports, verified communication, action mix, turn of
+first delivery) corrected in their own family; power reported as observed per-run SD,
+achieved power and the n per cell needed for 0,80.
