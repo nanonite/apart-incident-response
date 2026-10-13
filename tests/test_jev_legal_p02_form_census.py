@@ -13,6 +13,7 @@ import hashlib
 import io
 import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -27,7 +28,7 @@ AUDIT_200 = REPO_ROOT / rep.AUDIT_PATH
 MODULE_PATH = REPO_ROOT / "src/apart_incident_response/jev_legal_form_census.py"
 
 #: Self-recorded content hash of the committed census.
-CENSUS_CONTENT_HASH = "5fee9d0173dbdcc8ea3f5783f5ee578f1a0cf697742f8de7c4d71d0bcccfb6f2"
+CENSUS_CONTENT_HASH = "b01aa7de17cb21d18b7dd83a12764da7ff265a18b7089f2c2be7eaaf6b72b775"
 
 #: sha256 recomputed from disk; the frozen-input table of the census pins these.
 PINNED_SHA256 = {
@@ -287,6 +288,37 @@ class InventoryTests(L02TestCase):
         self.assertEqual(chain["prefixes"], ["runs/next-phase/legal/"])
         self.assertEqual(chain["known_prior_files"],
                          ["runs/next-phase/legal/jev-legal-p01-evidence-v1.json"])
+
+
+class MalformedManifestTests(unittest.TestCase):
+    """Unparseable manifests fail the inventory instead of disappearing from overlap checks."""
+
+    def _root_with_manifest(self, name: str, contents: bytes) -> Path:
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        root = Path(temporary.name)
+        runs = root / "runs"
+        runs.mkdir()
+        (runs / name).write_bytes(contents)
+        return root
+
+    def test_invalid_utf8_fails_closed_with_path(self):
+        root = self._root_with_manifest("bad.json", b'{"seed": 12}\xff')
+        with self.assertRaisesRegex(census.CensusError,
+                                    r"not valid UTF-8: runs/bad\.json"):
+            census.inventory_prior_artifacts(root)
+
+    def test_malformed_json_fails_closed_with_path_and_location(self):
+        root = self._root_with_manifest("bad.json", b'{"seed": 12')
+        with self.assertRaisesRegex(census.CensusError,
+                                    r"malformed JSON manifest: runs/bad\.json: line 1"):
+            census.inventory_prior_artifacts(root)
+
+    def test_malformed_jsonl_row_fails_closed_with_path_and_line(self):
+        root = self._root_with_manifest("bad.jsonl", b'{"seed": 12}\nnot-json\n')
+        with self.assertRaisesRegex(census.CensusError,
+                                    r"malformed JSONL manifest: runs/bad\.jsonl:2:"):
+            census.inventory_prior_artifacts(root)
 
 
 class WindowTests(L02TestCase):

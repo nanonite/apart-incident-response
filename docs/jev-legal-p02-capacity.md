@@ -14,7 +14,7 @@ budget, a lock or any successor execution.
 Machine-readable census:
 [`runs/next-phase/legal/jev-legal-p02-form-census-v1.json`](../runs/next-phase/legal/jev-legal-p02-form-census-v1.json)
 with self-recorded `content_hash`
-**`5fee9d0173dbdcc8ea3f5783f5ee578f1a0cf697742f8de7c4d71d0bcccfb6f2`**, rebuilt byte-for-byte by
+**`b01aa7de17cb21d18b7dd83a12764da7ff265a18b7089f2c2be7eaaf6b72b775`**, rebuilt byte-for-byte by
 `python -m apart_incident_response.jev_legal_form_census --repo-root .`
 (fail closed on drift).
 
@@ -71,6 +71,11 @@ them.
 **Exceptions — audit exceptions, never empty sets.** 20 locations could not be
 read; their contents are *unknown*, are recorded in the census and are never
 treated as an empty set or as "no overlap":
+
+Readable manifests are also checked strictly: invalid UTF-8 or malformed JSON
+or JSONL rows fail the inventory with the file and location, so they cannot be
+silently omitted from seed/ID overlap checks. The current readable scan has no
+parse or UTF-8 errors.
 
 - Unreadable files (5): `runs/container-isolation.json`,
   `runs/t1-container/matrix.json`, `runs/t1-container/s0001.json`,
@@ -331,7 +336,8 @@ outcome, emission or entropy value entered any selection here.
   L01 baseline are byte-identical before and after this build.
 - Inventory checks: prior-manifest inventory completed before window choice,
   20 inaccessible locations recorded as audit exceptions, stated exclusions
-  recorded rather than silently dropped.
+  recorded rather than silently dropped; invalid UTF-8 and malformed JSON/JSONL
+  fail closed with a path and location.
 - Window checks: derived after inventory, disjoint from the prior seed union,
   discovery/probe disjoint, hypothesis 85000–87511 never reused, output path
   fresh.

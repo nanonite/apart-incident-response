@@ -1170,7 +1170,7 @@
       "detail": {
         "src/apart_incident_response/jev_choice.py": "9ce9920e5b902e4f68b5723a70f61f4cc8765c4d4fdae557ed93fbf7d3fb3695",
         "src/apart_incident_response/jev_form_census.py": "a1a5839a1527ef7c1627305a531ac409acf252a53a9550292b28b46fad113c4a",
-        "src/apart_incident_response/jev_legal_form_census.py": "cdd729cdae891584e8ad7e2df9039d1f4432789a6c660f47c331fc188246cda3",
+        "src/apart_incident_response/jev_legal_form_census.py": "216eecde0dd0640451b4f32d2ae866be6db165d2ac8911405d496766ff5256e5",
         "src/apart_incident_response/jev_replay.py": "5c1c2dfd68beb75e1ccdbbe281c88f879b4b34c98109d003ac3547c6c9d8a862",
         "src/apart_incident_response/jev_replay_preregistration_v4.py": "18213126c17746de44158c96fb2cb0c40812985c51b1c35233b57a09418302d3",
         "src/apart_incident_response/jev_replication_preregistration.py": "d91c0e3ad13fc3049240ab76f13214997872681485ef24b60627763f7ec06133",
@@ -1785,7 +1785,7 @@
     "status": "closed"
   },
   "complexity": "low",
-  "content_hash": "5fee9d0173dbdcc8ea3f5783f5ee578f1a0cf697742f8de7c4d71d0bcccfb6f2",
+  "content_hash": "b01aa7de17cb21d18b7dd83a12764da7ff265a18b7089f2c2be7eaaf6b72b775",
   "dependence_assessment": {
     "consequence": "the four forms are hash-distinct but template-identical: they share model, question, instructions, the disposition-0..7 options and state structure, and differ only in the state clue values (bit0, bit2). They are therefore not independent prompts; a template-level effect would shift all four forms together. Form-level sign flips are assumption-dependent: the exact two-sided sign-flip p is a descriptive statistic with the exchangeability assumption labeled, never assumption-free inference. With k = 4 the attainable exact two-sided sign-flip floor is 2/2^4 = 0.125 > 0.05, so no dichotomous rejection at alpha = 0.05 is attainable at any effect size on this family; formal classification is L03's (#221) deliverable.",
     "factorial_pairs": [
@@ -2288,7 +2288,7 @@
         "path": "src/apart_incident_response/jev_legal_form_census.py",
         "prefix_match": null,
         "role": "generator/hashing source",
-        "sha256": "cdd729cdae891584e8ad7e2df9039d1f4432789a6c660f47c331fc188246cda3"
+        "sha256": "216eecde0dd0640451b4f32d2ae866be6db165d2ac8911405d496766ff5256e5"
       }
     ]
   },

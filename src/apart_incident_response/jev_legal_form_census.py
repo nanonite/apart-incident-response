@@ -372,21 +372,29 @@ def inventory_prior_artifacts(root: Path) -> tuple[dict[str, Any], set[int], set
                    for match in FAMILY_ID_RE.findall(data))
         try:
             text = data.decode("utf-8")
-        except UnicodeDecodeError:
-            continue
+        except UnicodeDecodeError as exc:
+            raise CensusError(
+                f"manifest is not valid UTF-8: {relative} (byte {exc.start})"
+            ) from exc
         if relative.endswith(".jsonl"):
-            for line in text.splitlines():
+            for line_number, line in enumerate(text.splitlines(), start=1):
                 if not line.strip():
                     continue
                 try:
                     _walk_manifest(json.loads(line), ids, seeds)
-                except json.JSONDecodeError:
-                    continue
+                except json.JSONDecodeError as exc:
+                    raise CensusError(
+                        f"malformed JSONL manifest: {relative}:{line_number}: "
+                        f"{exc.msg} (column {exc.colno})"
+                    ) from exc
         else:
             try:
                 _walk_manifest(json.loads(text), ids, seeds)
-            except json.JSONDecodeError:
-                continue
+            except json.JSONDecodeError as exc:
+                raise CensusError(
+                    f"malformed JSON manifest: {relative}: line {exc.lineno}, "
+                    f"column {exc.colno}: {exc.msg}"
+                ) from exc
 
     documented = sorted({seed for low, high in DOCUMENTED_PRIOR_SEED_RANGES
                          for seed in range(low, high + 1)})
