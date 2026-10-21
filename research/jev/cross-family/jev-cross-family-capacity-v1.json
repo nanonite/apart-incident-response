@@ -1,0 +1,726 @@
+{
+  "authorization": "none; no live collection or replay permitted",
+  "breadth": {
+    "audited_here": [
+      "lexicon",
+      "poetry",
+      "reference"
+    ],
+    "design_limited": [
+      "legal:low"
+    ],
+    "existing_generator_families": 6,
+    "historical_conditional_support": [
+      "planning:low"
+    ],
+    "inconclusive": [
+      "hypothesis:low"
+    ],
+    "no_cross_family_pooling": true,
+    "proposed_additional_families": 2,
+    "target": "7-8 distinct task families; proposals do not count as audited, runnable or confirmatory"
+  },
+  "cells": [
+    {
+      "classification": "descriptive_only",
+      "closed_form_space": {
+        "all_target_labels_seen": true,
+        "argument": "The pinned source exposes only A-owned bit-0 and bit-2 clue values in the pre-read state, giving at most four form combinations for these cells. Both disjoint 512-seed windows observed all four combinations and every finite target label. This is source-bound capacity for this version, not an independence proof or a claim about changed generators.",
+        "probe_adds_forms": false,
+        "stable_target_to_form": true,
+        "status": "qualified_source_bound_and_two_window_census",
+        "target_count": 8
+      },
+      "closure_probe_per_form_capacity": {
+        "2e85e9fd87b651f37c30c626de67ee9cb33f39e2c29d548fb3fc8b15521e7c90": 127,
+        "448991ff8972a990a348dd8e8dac10357adada3b3ce46108e46ba94a0bff448d": 143,
+        "d435f73ad25f2086d39d6456941792154d47678d7caf4020c14e650fc177b8b8": 118,
+        "ee3769e6d6e5e43d3bf66c3f38ee771fe57fe760538c0e1b9b1a522f53aec3f2": 124
+      },
+      "complexity": "low",
+      "discovery_per_form_capacity": {
+        "2e85e9fd87b651f37c30c626de67ee9cb33f39e2c29d548fb3fc8b15521e7c90": 119,
+        "448991ff8972a990a348dd8e8dac10357adada3b3ce46108e46ba94a0bff448d": 136,
+        "d435f73ad25f2086d39d6456941792154d47678d7caf4020c14e650fc177b8b8": 117,
+        "ee3769e6d6e5e43d3bf66c3f38ee771fe57fe760538c0e1b9b1a522f53aec3f2": 140
+      },
+      "family": "lexicon",
+      "holm_7_or_8_first_step_best_case_attainable": false,
+      "independence_limit": "Forms share a template; exact form sign flips require separately defended exchangeability. Seeds are not additional form units.",
+      "k": 4,
+      "minimum_discovery_per_form": 117,
+      "regime": "N",
+      "state_semantics": {
+        "forms_with_multiple_authoritative_a_sets": [],
+        "hash_distinct_forms_are_not_proven_independent": true,
+        "same_option_set_across_instances": true,
+        "shared_template_hashes": [
+          "3dc14b11d1a29d39c9638a4ff88e32f20f760fe8dcc69fb2a9f17cf47cf830e6"
+        ]
+      },
+      "structural": {
+        "authoritative_b_owned_informative": 1024,
+        "channel_complete": 1024,
+        "eligible_all_instances": true,
+        "finalizer_needs_peer": 1024,
+        "instances": 1024
+      },
+      "two_sided_sign_flip_floor": 0.125,
+      "unadjusted_alpha_0_05_best_case_attainable": false,
+      "unique_instance_ids": 1024
+    },
+    {
+      "classification": "descriptive_only",
+      "closed_form_space": {
+        "all_target_labels_seen": true,
+        "argument": "The pinned source exposes only A-owned bit-0 and bit-2 clue values in the pre-read state, giving at most four form combinations for these cells. Both disjoint 512-seed windows observed all four combinations and every finite target label. This is source-bound capacity for this version, not an independence proof or a claim about changed generators.",
+        "probe_adds_forms": false,
+        "stable_target_to_form": true,
+        "status": "qualified_source_bound_and_two_window_census",
+        "target_count": 8
+      },
+      "closure_probe_per_form_capacity": {
+        "139d35651430a3b78303a71bd387b96d5f5994a236e672b2e079347172854cb5": 118,
+        "8ce5b53996fb24125f8f56a19bfbbf234a9e3f5f1ddd38154d7ddea3487964a3": 143,
+        "989ba1267f28764af797e550309719ae79679462ee0f35e6ed9f3b7820e64671": 127,
+        "a5d456175c76168d1f94f2b06d257a4814136f640999fe984e1123a033183389": 124
+      },
+      "complexity": "medium",
+      "discovery_per_form_capacity": {
+        "139d35651430a3b78303a71bd387b96d5f5994a236e672b2e079347172854cb5": 117,
+        "8ce5b53996fb24125f8f56a19bfbbf234a9e3f5f1ddd38154d7ddea3487964a3": 136,
+        "989ba1267f28764af797e550309719ae79679462ee0f35e6ed9f3b7820e64671": 119,
+        "a5d456175c76168d1f94f2b06d257a4814136f640999fe984e1123a033183389": 140
+      },
+      "family": "lexicon",
+      "holm_7_or_8_first_step_best_case_attainable": false,
+      "independence_limit": "Forms share a template; exact form sign flips require separately defended exchangeability. Seeds are not additional form units.",
+      "k": 4,
+      "minimum_discovery_per_form": 117,
+      "regime": "N",
+      "state_semantics": {
+        "forms_with_multiple_authoritative_a_sets": [],
+        "hash_distinct_forms_are_not_proven_independent": true,
+        "same_option_set_across_instances": true,
+        "shared_template_hashes": [
+          "b6b38c885b296190fa8fd2d5065620dc0280349323048bf83e7eb8880317ad9a"
+        ]
+      },
+      "structural": {
+        "authoritative_b_owned_informative": 1024,
+        "channel_complete": 1024,
+        "eligible_all_instances": true,
+        "finalizer_needs_peer": 1024,
+        "instances": 1024
+      },
+      "two_sided_sign_flip_floor": 0.125,
+      "unadjusted_alpha_0_05_best_case_attainable": false,
+      "unique_instance_ids": 1024
+    },
+    {
+      "classification": "descriptive_only",
+      "closed_form_space": {
+        "all_target_labels_seen": true,
+        "argument": "The pinned source exposes only A-owned bit-0 and bit-2 clue values in the pre-read state, giving at most four form combinations for these cells. Both disjoint 512-seed windows observed all four combinations and every finite target label. This is source-bound capacity for this version, not an independence proof or a claim about changed generators.",
+        "probe_adds_forms": false,
+        "stable_target_to_form": true,
+        "status": "qualified_source_bound_and_two_window_census",
+        "target_count": 8
+      },
+      "closure_probe_per_form_capacity": {
+        "3d1fcfb7c4a643fd386c0a4a90dd8ca18212ca181cf0af8ba15f8fd9360af3be": 143,
+        "4576ce4ce8e511b5fc6f2bd65e3248f85261d89302af12a64097fd62b827c012": 127,
+        "6998bedce8a24e43a82480eab5fa30842f8ac4df8ba3bf74672bcf8cb93a8a76": 118,
+        "b5ecfc9f746ae857584dd13492f7ea677246b8ad308aa98eaab9e509f15ce0ed": 124
+      },
+      "complexity": "high",
+      "discovery_per_form_capacity": {
+        "3d1fcfb7c4a643fd386c0a4a90dd8ca18212ca181cf0af8ba15f8fd9360af3be": 136,
+        "4576ce4ce8e511b5fc6f2bd65e3248f85261d89302af12a64097fd62b827c012": 119,
+        "6998bedce8a24e43a82480eab5fa30842f8ac4df8ba3bf74672bcf8cb93a8a76": 117,
+        "b5ecfc9f746ae857584dd13492f7ea677246b8ad308aa98eaab9e509f15ce0ed": 140
+      },
+      "family": "lexicon",
+      "holm_7_or_8_first_step_best_case_attainable": false,
+      "independence_limit": "Forms share a template; exact form sign flips require separately defended exchangeability. Seeds are not additional form units.",
+      "k": 4,
+      "minimum_discovery_per_form": 117,
+      "regime": "N",
+      "state_semantics": {
+        "forms_with_multiple_authoritative_a_sets": [],
+        "hash_distinct_forms_are_not_proven_independent": true,
+        "same_option_set_across_instances": true,
+        "shared_template_hashes": [
+          "e235d8b831f882e973f553ce10689bd08f2d84e6b1cf6464c4a546633b0e7901"
+        ]
+      },
+      "structural": {
+        "authoritative_b_owned_informative": 1024,
+        "channel_complete": 1024,
+        "eligible_all_instances": true,
+        "finalizer_needs_peer": 1024,
+        "instances": 1024
+      },
+      "two_sided_sign_flip_floor": 0.125,
+      "unadjusted_alpha_0_05_best_case_attainable": false,
+      "unique_instance_ids": 1024
+    },
+    {
+      "classification": "descriptive_only",
+      "closed_form_space": {
+        "all_target_labels_seen": true,
+        "argument": "The pinned source exposes only A-owned bit-0 and bit-2 clue values in the pre-read state, giving at most four form combinations for these cells. Both disjoint 512-seed windows observed all four combinations and every finite target label. This is source-bound capacity for this version, not an independence proof or a claim about changed generators.",
+        "probe_adds_forms": false,
+        "stable_target_to_form": true,
+        "status": "qualified_source_bound_and_two_window_census",
+        "target_count": 8
+      },
+      "closure_probe_per_form_capacity": {
+        "49540cd74363a542015beca8c470aa5d91684a792f2f7968bca86d5a85e1a4a9": 116,
+        "ad35d62b6234b2222d70b79fcb19a748e2748506392609e1f2e13e4ad4e1b71b": 129,
+        "e708e90dae5e6fe65d7b81ef27d8a5079ab10556997c56f9cf8da6fc43e28c2b": 144,
+        "f54429187c29546db9a456b7a353121d71cf85453d72ac7ce3591175137b6a3b": 123
+      },
+      "complexity": "low",
+      "discovery_per_form_capacity": {
+        "49540cd74363a542015beca8c470aa5d91684a792f2f7968bca86d5a85e1a4a9": 119,
+        "ad35d62b6234b2222d70b79fcb19a748e2748506392609e1f2e13e4ad4e1b71b": 117,
+        "e708e90dae5e6fe65d7b81ef27d8a5079ab10556997c56f9cf8da6fc43e28c2b": 136,
+        "f54429187c29546db9a456b7a353121d71cf85453d72ac7ce3591175137b6a3b": 140
+      },
+      "family": "poetry",
+      "holm_7_or_8_first_step_best_case_attainable": false,
+      "independence_limit": "Forms share a template; exact form sign flips require separately defended exchangeability. Seeds are not additional form units.",
+      "k": 4,
+      "minimum_discovery_per_form": 117,
+      "regime": "N",
+      "state_semantics": {
+        "forms_with_multiple_authoritative_a_sets": [],
+        "hash_distinct_forms_are_not_proven_independent": true,
+        "same_option_set_across_instances": true,
+        "shared_template_hashes": [
+          "c9dc2a41d149092f5b3573359e9c432bdaa1490173b4a706ac7a6379285b7512"
+        ]
+      },
+      "structural": {
+        "authoritative_b_owned_informative": 1024,
+        "channel_complete": 1024,
+        "eligible_all_instances": true,
+        "finalizer_needs_peer": 1024,
+        "instances": 1024
+      },
+      "two_sided_sign_flip_floor": 0.125,
+      "unadjusted_alpha_0_05_best_case_attainable": false,
+      "unique_instance_ids": 1024
+    },
+    {
+      "classification": "descriptive_only",
+      "closed_form_space": {
+        "all_target_labels_seen": true,
+        "argument": "The pinned source exposes only A-owned bit-0 and bit-2 clue values in the pre-read state, giving at most four form combinations for these cells. Both disjoint 512-seed windows observed all four combinations and every finite target label. This is source-bound capacity for this version, not an independence proof or a claim about changed generators.",
+        "probe_adds_forms": false,
+        "stable_target_to_form": true,
+        "status": "qualified_source_bound_and_two_window_census",
+        "target_count": 8
+      },
+      "closure_probe_per_form_capacity": {
+        "3164a0996327aadc3c22e55f990f44adf976494a584db81d167b7860d404f63e": 116,
+        "398bc86181b4318fcaf92be679e7f663f4c143912a72878413460c0fff5b849d": 123,
+        "71742b9ac08fee2ef0fe905b59fd3d65fc76573802dec82e54ffa2878d97d030": 129,
+        "e78a03231ebc336bb276669611362b3a73bbc24002c89a8d1ffe69cf7ba7dd60": 144
+      },
+      "complexity": "medium",
+      "discovery_per_form_capacity": {
+        "3164a0996327aadc3c22e55f990f44adf976494a584db81d167b7860d404f63e": 119,
+        "398bc86181b4318fcaf92be679e7f663f4c143912a72878413460c0fff5b849d": 140,
+        "71742b9ac08fee2ef0fe905b59fd3d65fc76573802dec82e54ffa2878d97d030": 117,
+        "e78a03231ebc336bb276669611362b3a73bbc24002c89a8d1ffe69cf7ba7dd60": 136
+      },
+      "family": "poetry",
+      "holm_7_or_8_first_step_best_case_attainable": false,
+      "independence_limit": "Forms share a template; exact form sign flips require separately defended exchangeability. Seeds are not additional form units.",
+      "k": 4,
+      "minimum_discovery_per_form": 117,
+      "regime": "N",
+      "state_semantics": {
+        "forms_with_multiple_authoritative_a_sets": [],
+        "hash_distinct_forms_are_not_proven_independent": true,
+        "same_option_set_across_instances": true,
+        "shared_template_hashes": [
+          "1c0dcc40ee55cf6bc51624fd197e1425b5f6536c1492de9ca83b9d0fb76fd1b7"
+        ]
+      },
+      "structural": {
+        "authoritative_b_owned_informative": 1024,
+        "channel_complete": 1024,
+        "eligible_all_instances": true,
+        "finalizer_needs_peer": 1024,
+        "instances": 1024
+      },
+      "two_sided_sign_flip_floor": 0.125,
+      "unadjusted_alpha_0_05_best_case_attainable": false,
+      "unique_instance_ids": 1024
+    },
+    {
+      "classification": "descriptive_only",
+      "closed_form_space": {
+        "all_target_labels_seen": true,
+        "argument": "The pinned source exposes only A-owned bit-0 and bit-2 clue values in the pre-read state, giving at most four form combinations for these cells. Both disjoint 512-seed windows observed all four combinations and every finite target label. This is source-bound capacity for this version, not an independence proof or a claim about changed generators.",
+        "probe_adds_forms": false,
+        "stable_target_to_form": true,
+        "status": "qualified_source_bound_and_two_window_census",
+        "target_count": 8
+      },
+      "closure_probe_per_form_capacity": {
+        "29aa3d7bd0da178e7b9cf05b7bb582d0bea4cca9429e8241105c595321c9aa2b": 129,
+        "8e884c10ecb76f804352280617a16f8a05587cab62a9445066ef9de39a963e4a": 144,
+        "a6e58c3d725ea782142e6277fb6bca34d4a14c08d1f0504a1be6817be2812e73": 123,
+        "c72e1c13e7e3895de52187e19e6ad3eca82e99c9fdb4d7a632f107fdff4a7064": 116
+      },
+      "complexity": "high",
+      "discovery_per_form_capacity": {
+        "29aa3d7bd0da178e7b9cf05b7bb582d0bea4cca9429e8241105c595321c9aa2b": 117,
+        "8e884c10ecb76f804352280617a16f8a05587cab62a9445066ef9de39a963e4a": 136,
+        "a6e58c3d725ea782142e6277fb6bca34d4a14c08d1f0504a1be6817be2812e73": 140,
+        "c72e1c13e7e3895de52187e19e6ad3eca82e99c9fdb4d7a632f107fdff4a7064": 119
+      },
+      "family": "poetry",
+      "holm_7_or_8_first_step_best_case_attainable": false,
+      "independence_limit": "Forms share a template; exact form sign flips require separately defended exchangeability. Seeds are not additional form units.",
+      "k": 4,
+      "minimum_discovery_per_form": 117,
+      "regime": "N",
+      "state_semantics": {
+        "forms_with_multiple_authoritative_a_sets": [],
+        "hash_distinct_forms_are_not_proven_independent": true,
+        "same_option_set_across_instances": true,
+        "shared_template_hashes": [
+          "f77711284fa44c7211fb224979a3006d015f423d52aaa4d8270f17a7e10f2ace"
+        ]
+      },
+      "structural": {
+        "authoritative_b_owned_informative": 1024,
+        "channel_complete": 1024,
+        "eligible_all_instances": true,
+        "finalizer_needs_peer": 1024,
+        "instances": 1024
+      },
+      "two_sided_sign_flip_floor": 0.125,
+      "unadjusted_alpha_0_05_best_case_attainable": false,
+      "unique_instance_ids": 1024
+    },
+    {
+      "classification": "descriptive_only",
+      "closed_form_space": {
+        "all_target_labels_seen": true,
+        "argument": "The pinned source exposes only A-owned bit-0 and bit-2 clue values in the pre-read state, giving at most four form combinations for these cells. Both disjoint 512-seed windows observed all four combinations and every finite target label. This is source-bound capacity for this version, not an independence proof or a claim about changed generators.",
+        "probe_adds_forms": false,
+        "stable_target_to_form": true,
+        "status": "qualified_source_bound_and_two_window_census",
+        "target_count": 16
+      },
+      "closure_probe_per_form_capacity": {
+        "4eeff591cbc6e4b788f61babdc294b5815d75dcab93b130f40693bdd40d7ee62": 119,
+        "9d9f6e2ddd82f2d47a9b0c63f3c09edb5d634344f9610605685ad524a0a279e2": 129,
+        "beda12bfbb6883d20da257fd1d0979d9f9581fc6a4c5284ee3361d59b3e446af": 125,
+        "fcc720df331328be8f85c8506154df2739ef83fc510a2a3eabf62dd14b0a68b5": 139
+      },
+      "complexity": "low",
+      "discovery_per_form_capacity": {
+        "4eeff591cbc6e4b788f61babdc294b5815d75dcab93b130f40693bdd40d7ee62": 140,
+        "9d9f6e2ddd82f2d47a9b0c63f3c09edb5d634344f9610605685ad524a0a279e2": 116,
+        "beda12bfbb6883d20da257fd1d0979d9f9581fc6a4c5284ee3361d59b3e446af": 125,
+        "fcc720df331328be8f85c8506154df2739ef83fc510a2a3eabf62dd14b0a68b5": 131
+      },
+      "family": "reference",
+      "holm_7_or_8_first_step_best_case_attainable": false,
+      "independence_limit": "Forms share a template; exact form sign flips require separately defended exchangeability. Seeds are not additional form units.",
+      "k": 4,
+      "minimum_discovery_per_form": 116,
+      "regime": "N",
+      "state_semantics": {
+        "forms_with_multiple_authoritative_a_sets": [],
+        "hash_distinct_forms_are_not_proven_independent": true,
+        "same_option_set_across_instances": true,
+        "shared_template_hashes": [
+          "f6dc0284563074a1a9fb558166add7c4fde282b0cb91e4a3eeda503d30d36ce5"
+        ]
+      },
+      "structural": {
+        "authoritative_b_owned_informative": 1024,
+        "channel_complete": 1024,
+        "eligible_all_instances": true,
+        "finalizer_needs_peer": 1024,
+        "instances": 1024
+      },
+      "two_sided_sign_flip_floor": 0.125,
+      "unadjusted_alpha_0_05_best_case_attainable": false,
+      "unique_instance_ids": 1024
+    },
+    {
+      "classification": "descriptive_only",
+      "closed_form_space": {
+        "all_target_labels_seen": true,
+        "argument": "The pinned source exposes only A-owned bit-0 and bit-2 clue values in the pre-read state, giving at most four form combinations for these cells. Both disjoint 512-seed windows observed all four combinations and every finite target label. This is source-bound capacity for this version, not an independence proof or a claim about changed generators.",
+        "probe_adds_forms": false,
+        "stable_target_to_form": true,
+        "status": "qualified_source_bound_and_two_window_census",
+        "target_count": 16
+      },
+      "closure_probe_per_form_capacity": {
+        "27972a6f6bf73db4747a48708b6046a0dff3db6cc274fcab4957c4f285e1ab8f": 139,
+        "971b6e38e1fb23afe84c6cc04deb4602295c2b9d29999b01195743574a367682": 125,
+        "b2386b85105c3ce1040f2d8b3b31b2d6078510d5bfde7124f119d7f592e61334": 129,
+        "e4bcb494be98fea15215bbc6647c244c5fca4dc547725bfaa3f803f25f528dc8": 119
+      },
+      "complexity": "medium",
+      "discovery_per_form_capacity": {
+        "27972a6f6bf73db4747a48708b6046a0dff3db6cc274fcab4957c4f285e1ab8f": 131,
+        "971b6e38e1fb23afe84c6cc04deb4602295c2b9d29999b01195743574a367682": 125,
+        "b2386b85105c3ce1040f2d8b3b31b2d6078510d5bfde7124f119d7f592e61334": 116,
+        "e4bcb494be98fea15215bbc6647c244c5fca4dc547725bfaa3f803f25f528dc8": 140
+      },
+      "family": "reference",
+      "holm_7_or_8_first_step_best_case_attainable": false,
+      "independence_limit": "Forms share a template; exact form sign flips require separately defended exchangeability. Seeds are not additional form units.",
+      "k": 4,
+      "minimum_discovery_per_form": 116,
+      "regime": "N",
+      "state_semantics": {
+        "forms_with_multiple_authoritative_a_sets": [],
+        "hash_distinct_forms_are_not_proven_independent": true,
+        "same_option_set_across_instances": true,
+        "shared_template_hashes": [
+          "acaafac35fc9baffc37ac41c2aa346b58982a7416eed92ae3f388c3180a4a903"
+        ]
+      },
+      "structural": {
+        "authoritative_b_owned_informative": 1024,
+        "channel_complete": 1024,
+        "eligible_all_instances": true,
+        "finalizer_needs_peer": 1024,
+        "instances": 1024
+      },
+      "two_sided_sign_flip_floor": 0.125,
+      "unadjusted_alpha_0_05_best_case_attainable": false,
+      "unique_instance_ids": 1024
+    },
+    {
+      "classification": "no_go_structural_or_semantic",
+      "closed_form_space": {
+        "all_target_labels_seen": true,
+        "argument": "The pinned source exposes only A-owned bit-0 and bit-2 clue values in the pre-read state, giving at most four form combinations for these cells. Both disjoint 512-seed windows observed all four combinations and every finite target label. This is source-bound capacity for this version, not an independence proof or a claim about changed generators.",
+        "probe_adds_forms": false,
+        "stable_target_to_form": true,
+        "status": "qualified_source_bound_and_two_window_census",
+        "target_count": 16
+      },
+      "closure_probe_per_form_capacity": {
+        "39874e922f48c9702c63adea2d4ee7727921dceb4baa1323f1f7589e8433d0ba": 119,
+        "b2016e7ca69320ff0c210fb6e6fec1e22cb452ec821a021feece8c22f0d49df3": 129,
+        "c15829e634a19825655f32a5c45927b65a5708897f714bb37aef0ae9564e3664": 125,
+        "ef6d2f4c4104af8cdd983c9071f459ab05b0615150a91033cb5e91780c8c92e7": 139
+      },
+      "complexity": "high",
+      "discovery_per_form_capacity": {
+        "39874e922f48c9702c63adea2d4ee7727921dceb4baa1323f1f7589e8433d0ba": 140,
+        "b2016e7ca69320ff0c210fb6e6fec1e22cb452ec821a021feece8c22f0d49df3": 116,
+        "c15829e634a19825655f32a5c45927b65a5708897f714bb37aef0ae9564e3664": 125,
+        "ef6d2f4c4104af8cdd983c9071f459ab05b0615150a91033cb5e91780c8c92e7": 131
+      },
+      "family": "reference",
+      "holm_7_or_8_first_step_best_case_attainable": false,
+      "independence_limit": "Forms share a template; exact form sign flips require separately defended exchangeability. Seeds are not additional form units.",
+      "k": 4,
+      "minimum_discovery_per_form": 116,
+      "regime": "N",
+      "state_semantics": {
+        "forms_with_multiple_authoritative_a_sets": [
+          "39874e922f48c9702c63adea2d4ee7727921dceb4baa1323f1f7589e8433d0ba",
+          "b2016e7ca69320ff0c210fb6e6fec1e22cb452ec821a021feece8c22f0d49df3",
+          "c15829e634a19825655f32a5c45927b65a5708897f714bb37aef0ae9564e3664",
+          "ef6d2f4c4104af8cdd983c9071f459ab05b0615150a91033cb5e91780c8c92e7"
+        ],
+        "hash_distinct_forms_are_not_proven_independent": true,
+        "same_option_set_across_instances": true,
+        "shared_template_hashes": [
+          "29c068e00d70c92270a1fc50ffa03911c38b26c7f25ee8339432fdbabf053ef2"
+        ]
+      },
+      "structural": {
+        "authoritative_b_owned_informative": 516,
+        "channel_complete": 1024,
+        "eligible_all_instances": false,
+        "finalizer_needs_peer": 516,
+        "instances": 1024
+      },
+      "two_sided_sign_flip_floor": 0.125,
+      "unadjusted_alpha_0_05_best_case_attainable": false,
+      "unique_instance_ids": 1024
+    }
+  ],
+  "content_hash": "e71252a607f35cde67dbaf5e66f3abbc8d57c3064cbb88d79a90ff0e31175684",
+  "holm_best_case_attainability": [
+    {
+      "first_step_alpha": 0.05,
+      "hypotheses": 1,
+      "minimum_k_for_best_case_first_step": 6
+    },
+    {
+      "first_step_alpha": 0.025,
+      "hypotheses": 2,
+      "minimum_k_for_best_case_first_step": 7
+    },
+    {
+      "first_step_alpha": 0.0071428571428571435,
+      "hypotheses": 7,
+      "minimum_k_for_best_case_first_step": 9
+    },
+    {
+      "first_step_alpha": 0.00625,
+      "hypotheses": 8,
+      "minimum_k_for_best_case_first_step": 9
+    }
+  ],
+  "inputs_sha256": {
+    "docs/jev-cross-family-entropy-program-v1.md": "d9acace24a0cdbfc9a41e331b1fd422f07f22e3fc01480e6408af78d9de4be05",
+    "docs/jev-discovery-confirmation-plan.md": "501e21b6dea760371b0bf368046d8bacd203f6b92f0af754a7955d1f738677f7",
+    "docs/jev-legal-p03-design.md": "24bd6d7e8cec205bf5b5cee96f98f09afad17c85a1e825c012b536e3a2716f79",
+    "runs/next-phase/legal/jev-legal-p03-design-v1.json": "688bc7875ff7b81bb70d60076e137b0274559b484d597f6f643ae2fb48c827ab",
+    "src/apart_incident_response/communication_protocol.py": "4efd8249491abcbdac4a48b6212b9e1eaf9dda98fe5fac7762a8669c531456c9",
+    "src/apart_incident_response/jev_choice.py": "9ce9920e5b902e4f68b5723a70f61f4cc8765c4d4fdae557ed93fbf7d3fb3695",
+    "src/apart_incident_response/jev_legal_form_census.py": "216eecde0dd0640451b4f32d2ae866be6db165d2ac8911405d496766ff5256e5",
+    "src/apart_incident_response/jev_replay.py": "5c1c2dfd68beb75e1ccdbbe281c88f879b4b34c98109d003ac3547c6c9d8a862",
+    "src/apart_incident_response/jev_replay_preregistration.py": "c4a6978d0efd63e18cc53a10f806de030f7e4f3d2da13a37672999749fb405c0",
+    "src/apart_incident_response/jev_replay_preregistration_v4.py": "18213126c17746de44158c96fb2cb0c40812985c51b1c35233b57a09418302d3",
+    "src/apart_incident_response/task_families.py": "b399bb15c96be98d2c4c7e00012448d9a3df9f1cd7deac0ff1375ecb3e1ea6c4"
+  },
+  "inventory": {
+    "inaccessible_directories": [
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/codex-c0/codex-c0-C0/"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/container-harness/"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/opencode-go-container-retry/"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/opencode-go-container/"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/opencode-qwen-container/"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/openrouter/pilot-container-2/"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/openrouter/pilot-container-3/"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/openrouter/pilot-container-4/"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/openrouter/pilot-container/"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/t1-container-retry/s0001-C0/"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/t1-container-retry/s0001-C1/"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/t1-container-retry/s0001-C2/"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/t1-container/s0001-C0/"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/t1-container/s0001-C1/"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/t1-container/s0001-C2/"
+      }
+    ],
+    "inaccessible_manifests": [
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/container-isolation.json"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/t1-container-retry/matrix.json"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/t1-container-retry/s0001.json"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/t1-container/matrix.json"
+      },
+      {
+        "detail": "PermissionError: Permission denied",
+        "error": "PermissionError",
+        "path": "runs/t1-container/s0001.json"
+      }
+    ],
+    "legal_reserved_windows": [
+      [
+        88000,
+        88511
+      ],
+      [
+        89000,
+        89511
+      ]
+    ],
+    "manifest_files_discovered": 1074,
+    "manifest_files_scanned": 1069,
+    "overlap_qualified_by_audit_exceptions": true,
+    "prior_seed_max_after_legal_reservation": 89511,
+    "prior_seed_union_sha256": "c4c55096579e341add56ba75df56739c458d2e5e46aece1104334ec0e549f2d3"
+  },
+  "issue": 227,
+  "network_audit_events": [],
+  "proposals": [
+    {
+      "end_task_objective": "A patch passes a sealed regression suite without breaking existing tests.",
+      "fixed_choice_checkpoint": "after a frozen test batch, A chooses among a preregistered set of candidate next repairs; Choice entropy is measured on that exact option set",
+      "fixed_choice_options": [
+        "add_targeted_regression_test",
+        "change_validation_logic",
+        "change_state_transition",
+        "collect_diagnostic_trace"
+      ],
+      "intermediate_artifacts": [
+        "reproduction script",
+        "patch",
+        "test output",
+        "counterexample log"
+      ],
+      "link_to_success": "check whether the selected repair improves held-out test pass rate; entropy reduction alone does not count as success",
+      "matched_placebo": "same envelope carrying an A-owned trace already visible in the frozen pre-read state, with zero new information",
+      "name": "repository_repair",
+      "objective_progress_checker": "isolated test runner reports reproducible passing and failing cases",
+      "offline_validation_needs": "prove every generated repository admits each option as a meaningful next action, that sealed tests objectively score the resulting multi-step patch, and that B-only traces do not leak into A's pre-read state or placebo",
+      "peer_owned_information": "B alone receives a reproducible failing trace from an independent test run; A owns the candidate patch and cannot inspect that trace before the message",
+      "required_new_boundary": "new generator, oracle, treatment, replay, form-capacity audit and held-out task split",
+      "status": "proposal_only_not_audited_or_runnable",
+      "task": "Repair a multi-file software repository through repeated diagnosis, edits and test runs."
+    },
+    {
+      "end_task_objective": "A validated solver improves score on sealed cases at a fixed compute budget.",
+      "fixed_choice_checkpoint": "A chooses the next solver approach from a preregistered finite set after receiving the peer message",
+      "fixed_choice_options": [
+        "revise_item_ordering",
+        "revise_placement_heuristic",
+        "add_local_search",
+        "inspect_invalid_cases"
+      ],
+      "intermediate_artifacts": [
+        "solver source",
+        "reproducible benchmark result",
+        "failed approach",
+        "score history"
+      ],
+      "link_to_success": "measure whether the choice leads to a valid higher-scoring solver on sealed cases",
+      "matched_placebo": "same envelope carrying an A-known score or counterexample that cannot narrow A's frozen options",
+      "name": "iterative_packing_research",
+      "objective_progress_checker": "independent scorer checks validity and score on a frozen case set",
+      "offline_validation_needs": "prove all four options remain meaningful across case variants, scorer determinism, B-only counterexample provenance, inert placebo information, and choice-to-sealed-score linkage",
+      "peer_owned_information": "B alone sees a verifier-backed improvement or counterexample from its own solver branch; A has not observed it before the message",
+      "required_new_boundary": "new multi-step environment, scorer, message oracle, fixed Choice checkpoint, source and treatment hashes, and fresh registration",
+      "status": "proposal_only_not_audited_or_runnable",
+      "task": "Develop and iteratively improve a packing solver across a multi-case benchmark."
+    }
+  ],
+  "provider_calls": 0,
+  "queue": {
+    "existing_family_next_cells_in_historical_order": [
+      "lexicon:low",
+      "poetry:low",
+      "reference:low"
+    ],
+    "historical_frozen": [
+      "hypothesis",
+      "legal",
+      "lexicon",
+      "poetry",
+      "reference"
+    ],
+    "offline_design_followup": [
+      "repository_repair",
+      "iterative_packing_research"
+    ],
+    "status": "design backlog only; no live collection registered or authorized; no outcome-based reordering"
+  },
+  "stage": "offline_capacity_and_prospective_family_design",
+  "statistical_limit": "Within-family k is prompt forms, not seeds or family count; shared templates require a defensible exchangeability argument. Seven or eight Holm tests need k>=9 for the first best-case threshold under the registered two-sided sign-flip recipe.",
+  "version": "jev-cross-family-capacity-v1",
+  "windows": {
+    "candidate_floor": 90000,
+    "inaccessible_locations_are_unknown_not_empty": true,
+    "no_seed_or_accessible_id_overlap": true,
+    "rule": "L02 inventory-first 1000-stride rule; reserve both legal windows before selection",
+    "selected": [
+      {
+        "base": 90000,
+        "candidate_floor": 90000,
+        "candidates_skipped": 0,
+        "chosen_after_inventory": true,
+        "description": "fixed discovery window: rebuilt here and the only window from which a later registered block may select seeds",
+        "end": 90511,
+        "role": "discovery",
+        "selection_rule": "first 1000-multiple at or above the floor that shares no seed with the completed prior inventory; stride 1000 > window 512 so consecutive windows are disjoint by construction",
+        "window": 512
+      },
+      {
+        "base": 91000,
+        "candidate_floor": 90000,
+        "candidates_skipped": 0,
+        "chosen_after_inventory": true,
+        "description": "independent closure-probe window: offline closure evidence only; disjoint from the discovery window and no seed may ever be selected from it",
+        "end": 91511,
+        "role": "closure_probe",
+        "selection_rule": "first 1000-multiple at or above the floor that shares no seed with the completed prior inventory; stride 1000 > window 512 so consecutive windows are disjoint by construction",
+        "window": 512
+      }
+    ]
+  }
+}
