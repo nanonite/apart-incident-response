@@ -8,7 +8,7 @@ usage() {
     'Dispatches #219 #220 #221 #227 #222 #223 #224, one task at a time.' \
     'Stops before #225, the separate user authorization gate.' \
     'Env: JEV_LEGAL_WORKER_MODEL and JEV_LEGAL_REVIEWER_MODEL' \
-    '     default to opencode-go/mimo-v2.6-flash.'
+    '     default to opencode/mimo-v2.6-flash-free.'
 }
 
 mode=${1:---dry-run}
@@ -23,8 +23,13 @@ project_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)
 cd -- "$project_root"
 export CHAINLINK_DB="$project_root/.chainlink/issues.db"
 loop_cli=${JEV_LOOP_CLI:-/home/framework/GitRepos/opencode-chainlink-loop-plugin/bin/chainlink-loop}
-worker_model=${JEV_LEGAL_WORKER_MODEL:-opencode-go/mimo-v2.6-flash}
-reviewer_model=${JEV_LEGAL_REVIEWER_MODEL:-opencode-go/mimo-v2.6-flash}
+worker_model=${JEV_LEGAL_WORKER_MODEL:-opencode/mimo-v2.6-flash-free}
+reviewer_model=${JEV_LEGAL_REVIEWER_MODEL:-opencode/mimo-v2.6-flash-free}
+for model in "$worker_model" "$reviewer_model"; do
+  [[ "$model" == opencode/*-free ]] || {
+    printf 'Refusing non-free OpenCode model: %s\n' "$model" >&2; exit 2;
+  }
+done
 worker_timeout=${JEV_LEGAL_WORKER_TIMEOUT:-3600}
 reviewer_timeout=${JEV_LEGAL_REVIEWER_TIMEOUT:-1800}
 for value in "$worker_timeout" "$reviewer_timeout"; do

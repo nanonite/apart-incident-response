@@ -127,3 +127,7 @@ template, treatment and evaluation audit before it becomes a family here.
   legal live-authorization pause; the previous hypothesis reference never
   carries forward. A completed legal discovery block is not held-out
   confirmation.
+* The scoped offline launcher uses the explicitly free
+  `opencode/mimo-v2.6-flash-free` model for worker and reviewer by default.
+  This changes only the OpenCode coding-agent route; it does not revise or
+  authorize any experimental Ling/Jev route or live collection.
