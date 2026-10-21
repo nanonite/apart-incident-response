@@ -1,0 +1,1329 @@
+{
+  "authorizes": "nothing beyond L04 planning; no provider call, no probe, no collection, no registration lock, no live run, no authorization inference; a failed predecessor never authorizes its successor",
+  "checks": [
+    {
+      "check": "design_version_matches",
+      "detail": "jev-legal-p03-design-v1",
+      "ok": true
+    },
+    {
+      "check": "frozen_input_prefixes_match",
+      "detail": {
+        "docs/jev-cross-family-entropy-program-v1.md": {
+          "prefix_match": null,
+          "sha256": "d9acace24a0cdbfc9a41e331b1fd422f07f22e3fc01480e6408af78d9de4be05"
+        },
+        "docs/jev-discovery-confirmation-plan.md": {
+          "prefix_match": true,
+          "sha256": "501e21b6dea760371b0bf368046d8bacd203f6b92f0af754a7955d1f738677f7"
+        },
+        "docs/jev-hypothesis-low-terminal-decision.md": {
+          "prefix_match": true,
+          "sha256": "89ef2aafb5e28f12d0db707499c583d89cdcc490d105c23c3c56b39e11818d0b"
+        },
+        "docs/jev-legal-p01-baseline.md": {
+          "prefix_match": true,
+          "sha256": "8926f48d85338163fae0f9434f63c62b380f6402580bb57cd1d35b25d0471870"
+        },
+        "docs/jev-legal-p02-capacity.md": {
+          "prefix_match": null,
+          "sha256": "25fac868d502b05ede479fa7e68161f8f4fd4db33267a0f01d710f2d0adec2fa"
+        },
+        "docs/jev-legal-task-sequence.md": {
+          "prefix_match": true,
+          "sha256": "884b0ed4329cc47888e797478f8f00b57f7f5c9d679998d154f5a789397d0394"
+        },
+        "runs/epic-126/replication/jev-replication-form-audit-v1.json": {
+          "prefix_match": true,
+          "sha256": "cb529cd61e0e662bfa19fc4998e89fa59a0bf0d63e14f77498035466d6bce89d"
+        },
+        "runs/next-phase/hypothesis/jev-discovery-v1/jev-discovery-collection-report.json": {
+          "prefix_match": true,
+          "sha256": "3086ceac558ff922bd083db3795f5f1aa5c7127813daba8bfd71ae1fbef09d3c"
+        },
+        "runs/next-phase/hypothesis/jev-discovery-v1/jev-discovery-collection.jsonl": {
+          "prefix_match": true,
+          "sha256": "4e8de096f2c30a6a36a94a0f79e5f450c2e196123e3eafe1c310a92c4f334c83"
+        },
+        "runs/next-phase/legal/jev-legal-p01-evidence-v1.json": {
+          "prefix_match": true,
+          "sha256": "b2d0726619f5a18ce1ed5a54c5197d51709b1e0473b58ee129c74592b7b707e3"
+        },
+        "runs/next-phase/legal/jev-legal-p02-form-census-v1.json": {
+          "prefix_match": null,
+          "sha256": "4bffa5cda2433a81efb41025f42fdd82c585c41798ff2c55e9d853aa45681d24"
+        }
+      },
+      "ok": true
+    },
+    {
+      "check": "generator_sources_recomputed",
+      "detail": {
+        "src/apart_incident_response/jev_choice.py": "9ce9920e5b902e4f68b5723a70f61f4cc8765c4d4fdae557ed93fbf7d3fb3695",
+        "src/apart_incident_response/jev_form_census.py": "a1a5839a1527ef7c1627305a531ac409acf252a53a9550292b28b46fad113c4a",
+        "src/apart_incident_response/jev_legal_form_census.py": "216eecde0dd0640451b4f32d2ae866be6db165d2ac8911405d496766ff5256e5",
+        "src/apart_incident_response/jev_replay.py": "5c1c2dfd68beb75e1ccdbbe281c88f879b4b34c98109d003ac3547c6c9d8a862",
+        "src/apart_incident_response/jev_replay_preregistration_v4.py": "18213126c17746de44158c96fb2cb0c40812985c51b1c35233b57a09418302d3",
+        "src/apart_incident_response/jev_replication_preregistration.py": "d91c0e3ad13fc3049240ab76f13214997872681485ef24b60627763f7ec06133",
+        "src/apart_incident_response/task_families.py": "b399bb15c96be98d2c4c7e00012448d9a3df9f1cd7deac0ff1375ecb3e1ea6c4"
+      },
+      "ok": true
+    },
+    {
+      "check": "l02_census_content_hash_recomputes",
+      "detail": {
+        "recomputed": "b01aa7de17cb21d18b7dd83a12764da7ff265a18b7089f2c2be7eaaf6b72b775",
+        "recorded": "b01aa7de17cb21d18b7dd83a12764da7ff265a18b7089f2c2be7eaaf6b72b775"
+      },
+      "ok": true
+    },
+    {
+      "check": "l02_handoff_targets_this_task",
+      "detail": {
+        "conditions": [
+          "#220 must be closed by the plugin after reviewer approval before L03 runs",
+          "form count, independence, closure and the fresh windows are recorded findings to cite, not assumptions to re-decide",
+          "the hypothesis 85000-87511 windows, instance ids and output paths stay unused",
+          "no provider call is authorized by this artifact; L07 supplies a separate scope-bound user authorization",
+          "a failed or stopped predecessor never authorizes its successor"
+        ],
+        "deliverable": "attainability, classification and outcome-blind discovery design",
+        "issue": 221,
+        "to": "L03"
+      },
+      "ok": true
+    },
+    {
+      "check": "l02_checks_all_pass_with_zero_network",
+      "detail": {
+        "checks": 35,
+        "failed": [],
+        "network_audit": {
+          "event_names": [],
+          "events": 0,
+          "hook": "sys.addaudithook(socket., urllib., http.client., ftplib.)",
+          "provider_calls": 0
+        }
+      },
+      "ok": true
+    },
+    {
+      "check": "l02_recorded_hashes_match_current_bytes",
+      "detail": "every input and source digest pinned by L02 recomputes from disk",
+      "ok": true
+    },
+    {
+      "check": "l01_predecessor_handoff_verified",
+      "detail": {
+        "checks": 19,
+        "inputs_recompute": true
+      },
+      "ok": true
+    },
+    {
+      "check": "k_matches_generator_rebuild",
+      "detail": {
+        "form_ids": [
+          "309706db278f790720bf76f19b248ff43e5eaf178d250cd60f9defccfb7b00c9",
+          "3ca0223020c4113d4a8147d3b611c414248eb64369497f9a5f6a4a7f78a0df9f",
+          "935f84146a383fa027fb55446dd011c55d81f32151477d56ca85d7e155b8c809",
+          "bb6fcd3ffb95e480cd779f380549bfca873e86b8c313825d97d14c6ea7b6ca07"
+        ],
+        "k": 4
+      },
+      "ok": true
+    },
+    {
+      "check": "growth_checkpoints_show_saturation",
+      "detail": [
+        [
+          32,
+          4
+        ],
+        [
+          64,
+          4
+        ],
+        [
+          128,
+          4
+        ],
+        [
+          256,
+          4
+        ],
+        [
+          512,
+          4
+        ]
+      ],
+      "ok": true
+    },
+    {
+      "check": "sign_flip_floor_derived_from_k",
+      "detail": {
+        "best_case_floor": "ties and zero effects can only make the attainable p larger; this floor assumes defensible form-level sign exchangeability",
+        "denominator": 16,
+        "derivation": "with k = 4 independent forms the exhaustive two-sided cluster sign-flip enumerates 2^4 = 16 sign assignments; the most extreme assignment ties the observed statistic on each side, so the smallest attainable two-sided p is 2/16 = 0.125",
+        "exact_fraction": "2/16",
+        "formula": "2/2^k",
+        "k": 4,
+        "numerator": 2,
+        "reduced_fraction": "1/8",
+        "value": "0.125"
+      },
+      "ok": true
+    },
+    {
+      "check": "floor_exceeds_unadjusted_alpha",
+      "detail": {
+        "alpha": 0.05,
+        "floor": "0.125"
+      },
+      "ok": true
+    },
+    {
+      "check": "confirmatory_minimum_is_six_forms",
+      "detail": {
+        "k": 4,
+        "min_k": 6
+      },
+      "ok": true
+    },
+    {
+      "check": "multiplicity_only_demands_more_forms",
+      "detail": [
+        {
+          "floor_at_min_k": "0.03125",
+          "holm_first_step_threshold": "0.05",
+          "holm_first_step_threshold_fraction": "1/20",
+          "k4_floor_eligible": false,
+          "min_k_for_attainable_floor": 6,
+          "note": "single-registration threshold; repeated singletons do not give .05 error control across the program",
+          "registered_family_count": 1,
+          "threshold_derivation": "alpha .05 / 1 = 1/20 = 0.05"
+        },
+        {
+          "floor_at_min_k": "0.015625",
+          "holm_first_step_threshold": "0.025",
+          "holm_first_step_threshold_fraction": "1/40",
+          "k4_floor_eligible": false,
+          "min_k_for_attainable_floor": 7,
+          "note": "first ordered Holm p must be at most this value",
+          "registered_family_count": 2,
+          "threshold_derivation": "alpha .05 / 2 = 1/40 = 0.025"
+        },
+        {
+          "floor_at_min_k": "0.00390625",
+          "holm_first_step_threshold": "0.007142857143",
+          "holm_first_step_threshold_fraction": "1/140",
+          "k4_floor_eligible": false,
+          "min_k_for_attainable_floor": 9,
+          "note": "cross-family breadth target from the program amendment; applies only if these family hypotheses are actually in the frozen multiplicity set",
+          "registered_family_count": 7,
+          "threshold_derivation": "alpha .05 / 7 = 1/140 = 0.007142857143"
+        },
+        {
+          "floor_at_min_k": "0.00390625",
+          "holm_first_step_threshold": "0.00625",
+          "holm_first_step_threshold_fraction": "1/160",
+          "k4_floor_eligible": false,
+          "min_k_for_attainable_floor": 9,
+          "note": "cross-family breadth target from the program amendment; applies only if these family hypotheses are actually in the frozen multiplicity set",
+          "registered_family_count": 8,
+          "threshold_derivation": "alpha .05 / 8 = 1/160 = 0.00625"
+        }
+      ],
+      "ok": true
+    },
+    {
+      "check": "classification_is_descriptive_discovery",
+      "detail": "descriptive_discovery",
+      "ok": true
+    },
+    {
+      "check": "structural_gate_passes",
+      "detail": {
+        "b_owned_informative_claims_full_window": true,
+        "channel_eligible_every_window": true,
+        "closed_finite_solution_set_every_window": true,
+        "finalizer_needs_peer_every_window": true,
+        "form_space_closed_and_proven": true,
+        "one_bit_b_to_a_information": true,
+        "placebo_inert_for_every_form": true,
+        "receiver_option_set_fixed_across_forms": true
+      },
+      "ok": true
+    },
+    {
+      "check": "capacity_gate_passes",
+      "detail": {
+        "closure_probe_window_recorded_and_unselectable": true,
+        "discovery_window_recorded": true,
+        "distinct_seeds_are_not_form_units": true,
+        "every_form_has_at_least_quantum_seeds": true,
+        "generator_scan_matches_census_counts": true,
+        "k_matches_l02_form_capacity": true,
+        "no_held_out_window_fixed": true,
+        "scarcest_cell_has_at_least_quantum_seeds": true
+      },
+      "ok": true
+    },
+    {
+      "check": "decision_rule_is_ordered_and_traceable",
+      "detail": [
+        {
+          "result": "structural gate passed -> continue",
+          "rule": 1
+        },
+        {
+          "result": "capacity gate passed -> continue",
+          "rule": 2
+        },
+        {
+          "result": "floor 0.125 > 0.05 -> descriptive_discovery",
+          "rule": 3
+        },
+        {
+          "result": "not reached",
+          "rule": 4
+        }
+      ],
+      "ok": true
+    },
+    {
+      "check": "estimand_preserved",
+      "detail": "the registered legal estimand is preserved unchanged: H0 Delta = 0, H1 Delta < 0, equal-weight form mean of real-minus-placebo entropy on the fixed eight-option set, tested two-sided with a negative-direction requirement",
+      "ok": true
+    },
+    {
+      "check": "exchangeability_limit_stated",
+      "detail": "the exact two-sided sign-flip p at k = 4 is reported as a descriptive, assumption-dependent statistic with the exchangeability assumption labeled, never as assumption-free inference; the companion t interval carries distributional assumptions that are especially fragile at k = 4",
+      "ok": true
+    },
+    {
+      "check": "seeds_not_counted_as_forms",
+      "detail": {
+        "fixed_n": 16,
+        "instances_per_form": 4,
+        "k": 4
+      },
+      "ok": true
+    },
+    {
+      "check": "no_effect_size_prior_from_other_families",
+      "detail": [
+        "no effect-size prior is taken from planning-low or hypothesis-low"
+      ],
+      "ok": true
+    },
+    {
+      "check": "fixed_n_screen_outcome_blind",
+      "detail": {
+        "consulted_outcomes": [],
+        "selection_rule": "first 4 seeds per form in ascending seed order inside the L02 discovery window; fixed N; no outcome-based stopping; selection uses only the generator's form assignment and the recorded capacity"
+      },
+      "ok": true
+    },
+    {
+      "check": "manifest_matches_generator",
+      "detail": {
+        "entries": 16,
+        "manifest_hash": "1eeda0eacc2d891e8117e2816c7a7bf2c65c3962c8e1fa102acdc4766deefb26"
+      },
+      "ok": true
+    },
+    {
+      "check": "manifest_four_per_form_and_fixed_n",
+      "detail": {
+        "fixed_n": 16,
+        "per_form": {
+          "309706db278f790720bf76f19b248ff43e5eaf178d250cd60f9defccfb7b00c9": 4,
+          "3ca0223020c4113d4a8147d3b611c414248eb64369497f9a5f6a4a7f78a0df9f": 4,
+          "935f84146a383fa027fb55446dd011c55d81f32151477d56ca85d7e155b8c809": 4,
+          "bb6fcd3ffb95e480cd779f380549bfca873e86b8c313825d97d14c6ea7b6ca07": 4
+        }
+      },
+      "ok": true
+    },
+    {
+      "check": "manifest_inside_discovery_window_and_disjoint_from_prior",
+      "detail": {
+        "forbidden_hits": [],
+        "prior_legal_instance_ids": 45,
+        "prior_overlaps": []
+      },
+      "ok": true
+    },
+    {
+      "check": "closure_probe_window_never_selectable",
+      "detail": [
+        89000,
+        89511
+      ],
+      "ok": true
+    },
+    {
+      "check": "held_out_window_not_chosen_here",
+      "detail": "no held-out/confirmation window is chosen by this task; any later held-out window must use the L02 inventory-first rule before its own outcomes exist",
+      "ok": true
+    },
+    {
+      "check": "scenario_selection_is_deterministic",
+      "detail": {
+        "feasible": [
+          4
+        ],
+        "rule": "s* = the smallest seeds-per-form value that is at least INSTANCES_PER_FORM = 4, at most the scarcest per-form discovery-window capacity, and whose retry-inclusive worst-case collection, replay and program costs fit the planning ceilings; the screen then takes the first s* seeds per form in ascending seed order inside the discovery window"
+      },
+      "ok": true
+    },
+    {
+      "check": "scenario_costs_recompute_from_rate_card",
+      "detail": {
+        "2": 0.097910784,
+        "4": 0.195821568,
+        "8": 0.391643136
+      },
+      "ok": true
+    },
+    {
+      "check": "stop_conditions_registered",
+      "detail": {
+        "stops": 11
+      },
+      "ok": true
+    },
+    {
+      "check": "coverage_rule_prospective_and_freezes_missingness",
+      "detail": "up to 3 of 4 seeds per form may be missing; at least 1 complete instance per form is required",
+      "ok": true
+    },
+    {
+      "check": "proposed_output_paths_fresh_and_absent",
+      "detail": {
+        "discovery_journal": "runs/next-phase/legal/jev-discovery-v1/jev-discovery-collection.jsonl",
+        "discovery_report": "runs/next-phase/legal/jev-discovery-v1/jev-discovery-collection-report.json",
+        "exploratory_replay_journal": "runs/next-phase/legal/jev-discovery-v1/jev-exploratory-replay.jsonl",
+        "exploratory_replay_report": "runs/next-phase/legal/jev-discovery-v1/jev-exploratory-replay-report.json"
+      },
+      "ok": true
+    },
+    {
+      "check": "constraints_cover_no_calls_and_l07_gate",
+      "detail": [
+        "no provider call, probe, live journal or network request of any kind",
+        "a failed or stopped predecessor never authorizes its successor",
+        "preserve frozen #200 and terminal #207/#215 files byte-identically",
+        "preserve the registered legal estimand and the two-sided exact sign-flip test",
+        "observed independent form count k comes from L02; seeds are never counted as forms",
+        "planning-low and hypothesis-low outcomes supply no legal-family effect-size prior",
+        "do not silently redesign the generator",
+        "do not re-order the frozen historical queue",
+        "the motivating paper is not Jev entropy evidence",
+        "#227's offline family-capacity and expansion audit precedes #222",
+        "k = 4 cannot become confirmatory by adding seeds or pooling families",
+        "L04 must register route, model, token budget, cost rates, request caps and stop rules as new registration fields",
+        "seed selection stays outcome-blind and capacity-derived",
+        "no held-out window is chosen here"
+      ],
+      "ok": true
+    },
+    {
+      "check": "handoff_to_l04_records_227_predecessor",
+      "detail": {
+        "conditions": 6,
+        "handoff_to_227_grants_authorization": false
+      },
+      "ok": true
+    },
+    {
+      "check": "frozen_200_207_and_215_byte_identical_after_build",
+      "detail": "every frozen and source digest recomputed at the end equals the digest at start",
+      "ok": true
+    },
+    {
+      "check": "zero_network_events_under_audit_hook",
+      "detail": {
+        "events": [],
+        "provider_calls": 0
+      },
+      "ok": true
+    },
+    {
+      "check": "no_authorization_recorded",
+      "detail": "nothing beyond L04 planning; no provider call, no probe, no collection, no registration lock, no live run, no authorization inference; a failed predecessor never authorizes its successor",
+      "ok": true
+    },
+    {
+      "check": "doc_pins_recomputed_input_hashes",
+      "detail": {
+        "digests": {
+          "docs/jev-cross-family-entropy-program-v1.md": "d9acace24a0cdbfc9a41e331b1fd422f07f22e3fc01480e6408af78d9de4be05",
+          "docs/jev-discovery-confirmation-plan.md": "501e21b6dea760371b0bf368046d8bacd203f6b92f0af754a7955d1f738677f7",
+          "docs/jev-hypothesis-low-terminal-decision.md": "89ef2aafb5e28f12d0db707499c583d89cdcc490d105c23c3c56b39e11818d0b",
+          "docs/jev-legal-p01-baseline.md": "8926f48d85338163fae0f9434f63c62b380f6402580bb57cd1d35b25d0471870",
+          "docs/jev-legal-p02-capacity.md": "25fac868d502b05ede479fa7e68161f8f4fd4db33267a0f01d710f2d0adec2fa",
+          "docs/jev-legal-task-sequence.md": "884b0ed4329cc47888e797478f8f00b57f7f5c9d679998d154f5a789397d0394",
+          "runs/epic-126/replication/jev-replication-form-audit-v1.json": "cb529cd61e0e662bfa19fc4998e89fa59a0bf0d63e14f77498035466d6bce89d",
+          "runs/next-phase/hypothesis/jev-discovery-v1/jev-discovery-collection-report.json": "3086ceac558ff922bd083db3795f5f1aa5c7127813daba8bfd71ae1fbef09d3c",
+          "runs/next-phase/hypothesis/jev-discovery-v1/jev-discovery-collection.jsonl": "4e8de096f2c30a6a36a94a0f79e5f450c2e196123e3eafe1c310a92c4f334c83",
+          "runs/next-phase/legal/jev-legal-p01-evidence-v1.json": "b2d0726619f5a18ce1ed5a54c5197d51709b1e0473b58ee129c74592b7b707e3",
+          "runs/next-phase/legal/jev-legal-p02-form-census-v1.json": "4bffa5cda2433a81efb41025f42fdd82c585c41798ff2c55e9d853aa45681d24"
+        },
+        "doc": "docs/jev-legal-p03-design.md"
+      },
+      "ok": true
+    },
+    {
+      "check": "output_path_is_fresh_and_scoped",
+      "detail": {
+        "design_path": "runs/next-phase/legal/jev-legal-p03-design-v1.json"
+      },
+      "ok": true
+    }
+  ],
+  "classification": {
+    "decision": "descriptive_discovery",
+    "decision_rule": [
+      "if the structural gate fails -> no_go: write a no-go design decision, never a runnable registration",
+      "if the capacity gate fails -> no_go: capacity cannot be satisfied outcome-blind from the recorded windows",
+      "if the attainable exact two-sided sign-flip floor 2/2^k exceeds alpha .05 (k < 6) -> descriptive_discovery: pilot/estimation only",
+      "if k >= 6 -> potentially_confirmatory_design, still subject to every other gate, the declared multiplicity rule, coverage, and a separate L07 authorization"
+    ],
+    "decision_trace": [
+      {
+        "result": "structural gate passed -> continue",
+        "rule": 1
+      },
+      {
+        "result": "capacity gate passed -> continue",
+        "rule": 2
+      },
+      {
+        "result": "floor 0.125 > 0.05 -> descriptive_discovery",
+        "rule": 3
+      },
+      {
+        "result": "not reached",
+        "rule": 4
+      }
+    ],
+    "descriptive_discovery_vs_no_go": "no-go is reserved for a failed structural or capacity gate: both gates pass here, so the family is runnable as descriptive discovery. It is not a no-go, and it is not confirmatory: the attainable floor 2/2^4 = 0.125 exceeds alpha .05 at any effect size, so no dichotomous rejection is attainable on this generator version.",
+    "descriptive_pilot_vs_potentially_confirmatory": "a descriptive pilot reports estimates and guards with no rejection claim and no alpha spent; potentially confirmatory work requires k >= 6 (floor <= .05) before declared multiplicity, plus fresh data, a registered error criterion, defensible exchangeability and a separate authorization. Legal:low at k = 4 is a descriptive pilot under every multiplicity rule in this artifact.",
+    "generator_version_scope": "this classification binds the closed four-form legal:low generator version audited by L02; a redesigned generator is a new protocol boundary with a new audit, not an upgrade of this decision",
+    "status": "offline design decision; not a registration, lock or authorization"
+  },
+  "complexity": "low",
+  "constraints": [
+    {
+      "basis": "#221 task text and chain direction; only the later L07 gate can grant a separate explicit authorization",
+      "consequence": "every number in this artifact is offline derivation or planning arithmetic",
+      "constraint": "no provider call, probe, live journal or network request of any kind"
+    },
+    {
+      "basis": "research protocol and legal task sequence",
+      "consequence": "closing #220/#221 with evidence releases planning work only",
+      "constraint": "a failed or stopped predecessor never authorizes its successor"
+    },
+    {
+      "basis": "#221 task text",
+      "consequence": "they are read-only pinned inputs here, rehashed before and after the build",
+      "constraint": "preserve frozen #200 and terminal #207/#215 files byte-identically"
+    },
+    {
+      "basis": "research protocol; program amendment",
+      "consequence": "no one-sided switch, no guard filtering, no imputation",
+      "constraint": "preserve the registered legal estimand and the two-sided exact sign-flip test"
+    },
+    {
+      "basis": "L02 census and program amendment",
+      "consequence": "k = 4 and floor 0.125 are findings to cite, not re-decide",
+      "constraint": "observed independent form count k comes from L02; seeds are never counted as forms"
+    },
+    {
+      "basis": "legal task sequence and program amendment",
+      "consequence": "no power, MDE or effect-size claim borrows those results",
+      "constraint": "planning-low and hypothesis-low outcomes supply no legal-family effect-size prior"
+    },
+    {
+      "basis": "program amendment",
+      "consequence": "a larger form space is a new version with its own audit; this classification binds the audited four-form version",
+      "constraint": "do not silently redesign the generator"
+    },
+    {
+      "basis": "program amendment (hypothesis -> legal -> lexicon -> poetry -> reference)",
+      "consequence": "capacity-based prioritization must use offline structural facts and disclose any departure",
+      "constraint": "do not re-order the frozen historical queue"
+    },
+    {
+      "basis": "program amendment",
+      "consequence": "its performance results are no effect-size prior and no validation of an entropy detector",
+      "constraint": "the motivating paper is not Jev entropy evidence"
+    },
+    {
+      "basis": "program amendment worker order #221 -> #227 -> #222",
+      "consequence": "this handoff supplies no authorization and cannot mutate this artifact or an eventual L04 lock",
+      "constraint": "#227's offline family-capacity and expansion audit precedes #222"
+    },
+    {
+      "basis": "program amendment",
+      "consequence": "the family stays descriptive under every multiplicity rule recorded here",
+      "constraint": "k = 4 cannot become confirmatory by adding seeds or pooling families"
+    },
+    {
+      "basis": "legal task sequence; L01 baseline",
+      "consequence": "the stopped hypothesis Ling route carries no authorization into the legal family",
+      "constraint": "L04 must register route, model, token budget, cost rates, request caps and stop rules as new registration fields"
+    },
+    {
+      "basis": "research protocol",
+      "consequence": "emission, guard and entropy values never enter the rule",
+      "constraint": "seed selection stays outcome-blind and capacity-derived"
+    },
+    {
+      "basis": "L02 handoff and research protocol",
+      "consequence": "a later window uses the inventory-first rule before its own outcomes exist",
+      "constraint": "no held-out window is chosen here"
+    }
+  ],
+  "content_hash": "adf52cb7b7d62e532acc0b8f26c000582e4a291767f737558f016fdf9eafed06",
+  "coverage_rule": {
+    "basis": "L02 per-form discovery-window capacity (minimum 121 seeds per form; scarcest cell across both windows 105) against the selection quantum 4",
+    "complete_case_scope": "the set of planned instances with all required fields: structural need, emission or recorded silence, verified B ownership, accepted board write followed by A read exposure, and information; reported by stage, form and branch with reasons",
+    "discovery_screen_requirements": [
+      "every registered form must have at least one instance with structural need (finalizer_needs_peer)",
+      "every registered form must have at least one instance with voluntary emission (B-authored claim) or recorded silence",
+      "every registered form must have at least one instance with verified B ownership and an accepted board write followed by A read exposure"
+    ],
+    "frozen_before_collection": true,
+    "instances_per_form": 4,
+    "min_complete_per_form": 1,
+    "missing_entire_form": "blocks the registered full-form estimand; label any available-form estimate descriptive and report it with its denominator",
+    "no_form_removal_after_outcomes": true,
+    "no_imputation": true,
+    "no_replenishment_from_spare_capacity": true,
+    "no_seed_replacement": true,
+    "permissible_within_form_missingness": "up to 3 of 4 seeds per form may be missing; at least 1 complete instance per form is required",
+    "prospective": true,
+    "reporting": "report planned, attempted, emitted, eligible, replayed, valid, complete and missing counts by stage, form and branch, with reasons; average valid complete pairs within their frozen forms regardless of guards",
+    "selection_risk": "if within-form missingness is not random, the complete-case estimate may be biased; this rule freezes the permissible missingness before collection and reports the resulting complete-case scope and selection risk"
+  },
+  "derivation": {
+    "alpha": 0.05,
+    "attainable_floor_grid": [
+      {
+        "attainable_two_sided_sign_flip_floor": "0.125",
+        "floor_le_alpha_0_05": false,
+        "k": 4,
+        "unadjusted_alpha_0_05_classification": "descriptive/estimation only"
+      },
+      {
+        "attainable_two_sided_sign_flip_floor": "0.0625",
+        "floor_le_alpha_0_05": false,
+        "k": 5,
+        "unadjusted_alpha_0_05_classification": "descriptive/estimation only"
+      },
+      {
+        "attainable_two_sided_sign_flip_floor": "0.03125",
+        "floor_le_alpha_0_05": true,
+        "k": 6,
+        "unadjusted_alpha_0_05_classification": "potentially confirmatory, subject to all other gates"
+      },
+      {
+        "attainable_two_sided_sign_flip_floor": "0.015625",
+        "floor_le_alpha_0_05": true,
+        "k": 7,
+        "unadjusted_alpha_0_05_classification": "potentially confirmatory, subject to all other gates"
+      },
+      {
+        "attainable_two_sided_sign_flip_floor": "0.0078125",
+        "floor_le_alpha_0_05": true,
+        "k": 8,
+        "unadjusted_alpha_0_05_classification": "potentially confirmatory, subject to all other gates"
+      },
+      {
+        "attainable_two_sided_sign_flip_floor": "0.00390625",
+        "floor_le_alpha_0_05": true,
+        "k": 9,
+        "unadjusted_alpha_0_05_classification": "potentially confirmatory, subject to all other gates"
+      }
+    ],
+    "declared_multiplicity": {
+      "consequence": "legal:low at k = 4 has a best-case floor of 0.125, above every first-step threshold in the grid, so no declared multiplicity rule can make this generator version confirmatory; adjusted multiplicity can only demand more forms",
+      "family_set_frozen_before_outcomes": true,
+      "grid": [
+        {
+          "floor_at_min_k": "0.03125",
+          "holm_first_step_threshold": "0.05",
+          "holm_first_step_threshold_fraction": "1/20",
+          "k4_floor_eligible": false,
+          "min_k_for_attainable_floor": 6,
+          "note": "single-registration threshold; repeated singletons do not give .05 error control across the program",
+          "registered_family_count": 1,
+          "threshold_derivation": "alpha .05 / 1 = 1/20 = 0.05"
+        },
+        {
+          "floor_at_min_k": "0.015625",
+          "holm_first_step_threshold": "0.025",
+          "holm_first_step_threshold_fraction": "1/40",
+          "k4_floor_eligible": false,
+          "min_k_for_attainable_floor": 7,
+          "note": "first ordered Holm p must be at most this value",
+          "registered_family_count": 2,
+          "threshold_derivation": "alpha .05 / 2 = 1/40 = 0.025"
+        },
+        {
+          "floor_at_min_k": "0.00390625",
+          "holm_first_step_threshold": "0.007142857143",
+          "holm_first_step_threshold_fraction": "1/140",
+          "k4_floor_eligible": false,
+          "min_k_for_attainable_floor": 9,
+          "note": "cross-family breadth target from the program amendment; applies only if these family hypotheses are actually in the frozen multiplicity set",
+          "registered_family_count": 7,
+          "threshold_derivation": "alpha .05 / 7 = 1/140 = 0.007142857143"
+        },
+        {
+          "floor_at_min_k": "0.00390625",
+          "holm_first_step_threshold": "0.00625",
+          "holm_first_step_threshold_fraction": "1/160",
+          "k4_floor_eligible": false,
+          "min_k_for_attainable_floor": 9,
+          "note": "cross-family breadth target from the program amendment; applies only if these family hypotheses are actually in the frozen multiplicity set",
+          "registered_family_count": 8,
+          "threshold_derivation": "alpha .05 / 8 = 1/160 = 0.00625"
+        }
+      ],
+      "rule": "Holm step-down at .05 is the default for any future registered family set; a single registration is legitimate but repeated singletons do not give program-wide .05 control"
+    },
+    "estimand": {
+      "closed_form_space_meaning": "E_f is a uniform average over the registered finite legal forms, not a population of prompts",
+      "estimand": "equal-weight form mean of real-minus-placebo entropy",
+      "experimental_unit": "prompt form",
+      "formula": "d_fe = H(real message | C_fe) - H(matched placebo | C_fe); d_f = mean_e(d_fe) within form f; Delta = (1/k) sum_f d_f",
+      "guards_never_filter_the_estimate": true,
+      "h0": "Delta = 0",
+      "h1": "Delta < 0",
+      "interval": "form-mean t interval with df = k - 1, unadjusted unless a simultaneous interval was registered; an interval half-width is not a power-based MDE",
+      "one_sided_switch_forbidden": "the scientific alternative is directional but the operational test stays two-sided; a one-sided design would need its own registration",
+      "preserved_from": "docs/jev-discovery-confirmation-plan.md (byte-identical input)",
+      "primary_test": "exhaustive two-sided exact cluster sign-flip over all 2^k sign assignments with a frozen numerical tie tolerance, plus a negative-direction requirement",
+      "statement": "the registered legal estimand is preserved unchanged: H0 Delta = 0, H1 Delta < 0, equal-weight form mean of real-minus-placebo entropy on the fixed eight-option set, tested two-sided with a negative-direction requirement"
+    },
+    "exchangeability_limits": {
+      "consequence": "the exact two-sided sign-flip p at k = 4 is reported as a descriptive, assumption-dependent statistic with the exchangeability assumption labeled, never as assumption-free inference; the companion t interval carries distributional assumptions that are especially fragile at k = 4",
+      "factorial_pairs": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "hash_distinct_not_independent": true,
+      "identical_except": [
+        "state.clues"
+      ],
+      "limit": "the four legal forms are hash-distinct but template-identical: they share model, question, instructions, the disposition-0..7 options and state structure, differing only in state.clues (bit0, bit2). A template-level effect would shift all four forms together, so form-level sign flips are not guaranteed to be exchangeable",
+      "more_forms_require_redesign": "raising k means a prospective, versioned generator redesign with its own audit (a new protocol boundary), never extra seeds or reordered history; this task performs no redesign",
+      "pooling_forbidden": "forms are not pooled across families and duplicates are not split: a cross-family claim needs its own registered estimand and error contract, and legal:low cannot become confirmatory by pooling with another family",
+      "seeds_do_not_fix_exchangeability": "more seeds within a form improve emission, coverage, variability and guard estimates but change neither k nor exchangeability; independent cluster exchangeability under the null must be defended on template/dependence grounds, not on hash-distinctness",
+      "shared_template_hash": "35b03db195dd6aed416005b5fa3f985e08572c66d058fed6572d9bff975ef6f6",
+      "structure": "complete 2x2 factorial over (bit0, bit2) of the target; the four forms are the entire finite legal form space, not a sample from a larger prompt population"
+    },
+    "form_ids": [
+      "309706db278f790720bf76f19b248ff43e5eaf178d250cd60f9defccfb7b00c9",
+      "3ca0223020c4113d4a8147d3b611c414248eb64369497f9a5f6a4a7f78a0df9f",
+      "935f84146a383fa027fb55446dd011c55d81f32151477d56ca85d7e155b8c809",
+      "bb6fcd3ffb95e480cd779f380549bfca873e86b8c313825d97d14c6ea7b6ca07"
+    ],
+    "form_set_hash": "ad2f6bee676229527b067912c4259f8fb7f9e4e0e989685d5afa8613f48e5633",
+    "k_observed": 4,
+    "k_source": "L02 form_capacity.k and the recorded form set, rebuilt here from the generator over the pinned discovery window; the observed growth checkpoints saturate at 4 forms by 32 seeds",
+    "priors": {
+      "hypothesis_low_effect_size_prior_used": false,
+      "planning_low_effect_size_prior_used": false,
+      "statement": "planning-low's conditional confirmatory result and hypothesis-low's inconclusive stop supply no legal-family effect size, power or prior; the motivating paper supplies none either"
+    },
+    "seeds_are_not_forms": "distinct seeds within a form improve measurement of emission, coverage, variability and guards but never add form units; the experimental unit is the prompt form",
+    "sign_flip_floor": {
+      "best_case_floor": "ties and zero effects can only make the attainable p larger; this floor assumes defensible form-level sign exchangeability",
+      "denominator": 16,
+      "derivation": "with k = 4 independent forms the exhaustive two-sided cluster sign-flip enumerates 2^4 = 16 sign assignments; the most extreme assignment ties the observed statistic on each side, so the smallest attainable two-sided p is 2/16 = 0.125",
+      "exact_fraction": "2/16",
+      "formula": "2/2^k",
+      "k": 4,
+      "numerator": 2,
+      "reduced_fraction": "1/8",
+      "value": "0.125"
+    },
+    "unadjusted_requirement": "at alpha .05 a potentially confirmatory design needs k >= 6 (floor 0.03125 <= .05); six forms are necessary, not sufficient for power or multiplicity-adjusted rejection"
+  },
+  "design_version": "jev-legal-p03-design-v1",
+  "deterministic_rebuild": {
+    "builder": "src/apart_incident_response/jev_legal_p03_design.py",
+    "byte_reproducible": true,
+    "fail_closed_on_drift": true,
+    "rebuild_command": "python -m apart_incident_response.jev_legal_p03_design --repo-root ."
+  },
+  "discovery_screen": {
+    "capacity_note": "spare capacity is headroom recorded for coverage reporting only; it never licenses seed replacement, replenishment or extra forms",
+    "closure_probe_window": [
+      89000,
+      89511
+    ],
+    "closure_probe_window_selectable": false,
+    "consulted_outcomes": [],
+    "fixed_n": 16,
+    "form_membership": {
+      "309706db278f790720bf76f19b248ff43e5eaf178d250cd60f9defccfb7b00c9": [
+        "legal-000157c8",
+        "legal-000157d4",
+        "legal-000157da",
+        "legal-000157df"
+      ],
+      "3ca0223020c4113d4a8147d3b611c414248eb64369497f9a5f6a4a7f78a0df9f": [
+        "legal-000157c6",
+        "legal-000157c9",
+        "legal-000157cb",
+        "legal-000157d1"
+      ],
+      "935f84146a383fa027fb55446dd011c55d81f32151477d56ca85d7e155b8c809": [
+        "legal-000157c4",
+        "legal-000157c5",
+        "legal-000157ca",
+        "legal-000157cd"
+      ],
+      "bb6fcd3ffb95e480cd779f380549bfca873e86b8c313825d97d14c6ea7b6ca07": [
+        "legal-000157c0",
+        "legal-000157c1",
+        "legal-000157c2",
+        "legal-000157c3"
+      ]
+    },
+    "held_out_window": {
+      "fixed_here": false,
+      "statement": "no held-out/confirmation window is chosen by this task; any later held-out window must use the L02 inventory-first rule before its own outcomes exist"
+    },
+    "instances_per_form": 4,
+    "manifest": [
+      {
+        "instance_id": "legal-000157c8",
+        "prompt_form_id": "309706db278f790720bf76f19b248ff43e5eaf178d250cd60f9defccfb7b00c9",
+        "seed": 88008
+      },
+      {
+        "instance_id": "legal-000157d4",
+        "prompt_form_id": "309706db278f790720bf76f19b248ff43e5eaf178d250cd60f9defccfb7b00c9",
+        "seed": 88020
+      },
+      {
+        "instance_id": "legal-000157da",
+        "prompt_form_id": "309706db278f790720bf76f19b248ff43e5eaf178d250cd60f9defccfb7b00c9",
+        "seed": 88026
+      },
+      {
+        "instance_id": "legal-000157df",
+        "prompt_form_id": "309706db278f790720bf76f19b248ff43e5eaf178d250cd60f9defccfb7b00c9",
+        "seed": 88031
+      },
+      {
+        "instance_id": "legal-000157c6",
+        "prompt_form_id": "3ca0223020c4113d4a8147d3b611c414248eb64369497f9a5f6a4a7f78a0df9f",
+        "seed": 88006
+      },
+      {
+        "instance_id": "legal-000157c9",
+        "prompt_form_id": "3ca0223020c4113d4a8147d3b611c414248eb64369497f9a5f6a4a7f78a0df9f",
+        "seed": 88009
+      },
+      {
+        "instance_id": "legal-000157cb",
+        "prompt_form_id": "3ca0223020c4113d4a8147d3b611c414248eb64369497f9a5f6a4a7f78a0df9f",
+        "seed": 88011
+      },
+      {
+        "instance_id": "legal-000157d1",
+        "prompt_form_id": "3ca0223020c4113d4a8147d3b611c414248eb64369497f9a5f6a4a7f78a0df9f",
+        "seed": 88017
+      },
+      {
+        "instance_id": "legal-000157c4",
+        "prompt_form_id": "935f84146a383fa027fb55446dd011c55d81f32151477d56ca85d7e155b8c809",
+        "seed": 88004
+      },
+      {
+        "instance_id": "legal-000157c5",
+        "prompt_form_id": "935f84146a383fa027fb55446dd011c55d81f32151477d56ca85d7e155b8c809",
+        "seed": 88005
+      },
+      {
+        "instance_id": "legal-000157ca",
+        "prompt_form_id": "935f84146a383fa027fb55446dd011c55d81f32151477d56ca85d7e155b8c809",
+        "seed": 88010
+      },
+      {
+        "instance_id": "legal-000157cd",
+        "prompt_form_id": "935f84146a383fa027fb55446dd011c55d81f32151477d56ca85d7e155b8c809",
+        "seed": 88013
+      },
+      {
+        "instance_id": "legal-000157c0",
+        "prompt_form_id": "bb6fcd3ffb95e480cd779f380549bfca873e86b8c313825d97d14c6ea7b6ca07",
+        "seed": 88000
+      },
+      {
+        "instance_id": "legal-000157c1",
+        "prompt_form_id": "bb6fcd3ffb95e480cd779f380549bfca873e86b8c313825d97d14c6ea7b6ca07",
+        "seed": 88001
+      },
+      {
+        "instance_id": "legal-000157c2",
+        "prompt_form_id": "bb6fcd3ffb95e480cd779f380549bfca873e86b8c313825d97d14c6ea7b6ca07",
+        "seed": 88002
+      },
+      {
+        "instance_id": "legal-000157c3",
+        "prompt_form_id": "bb6fcd3ffb95e480cd779f380549bfca873e86b8c313825d97d14c6ea7b6ca07",
+        "seed": 88003
+      }
+    ],
+    "manifest_hash": "1eeda0eacc2d891e8117e2816c7a7bf2c65c3962c8e1fa102acdc4766deefb26",
+    "outcome_blind": true,
+    "outcome_blind_derivation": "the rule is a pure function of the pinned discovery window, the rebuilt form assignment and INSTANCES_PER_FORM; emission, guard, entropy and writer results are never consulted, and the closure-probe window and every prior window are excluded by construction",
+    "per_form_spare_capacity": {
+      "309706db278f790720bf76f19b248ff43e5eaf178d250cd60f9defccfb7b00c9": 125,
+      "3ca0223020c4113d4a8147d3b611c414248eb64369497f9a5f6a4a7f78a0df9f": 122,
+      "935f84146a383fa027fb55446dd011c55d81f32151477d56ca85d7e155b8c809": 117,
+      "bb6fcd3ffb95e480cd779f380549bfca873e86b8c313825d97d14c6ea7b6ca07": 132
+    },
+    "selection_rule": "first 4 seeds per form in ascending seed order inside the L02 discovery window; fixed N; no outcome-based stopping; selection uses only the generator's form assignment and the recorded capacity",
+    "window": {
+      "base": 88000,
+      "end": 88511,
+      "role": "discovery",
+      "window": 512
+    }
+  },
+  "family": "legal",
+  "handoff": {
+    "conditions": [
+      "#221 must be closed by the plugin after reviewer approval before L04 runs",
+      "#227 (offline cross-family capacity and expansion audit) must complete first: the worker order is #221 -> #227 -> #222, and #227 grants no authorization and cannot mutate this artifact or an L04 lock",
+      "classification, k, floor, gates and the selection rule are recorded findings to cite, not assumptions to re-decide",
+      "L04 registers route, model, token budget, cost rates, retry-inclusive request and dollar caps, stop rules and fresh paths as new registration fields; the stopped hypothesis Ling route carries nothing forward",
+      "no provider call is authorized by this artifact; L07 supplies a separate scope-bound user authorization covering exact stage, route and caps",
+      "a failed or stopped predecessor never authorizes its successor"
+    ],
+    "deliverable": "fresh legal discovery registration or an explicit no-go; this design decision is input, never a registration",
+    "handoff_to_227": {
+      "grants_authorization": false,
+      "issue": 227,
+      "not_performed_here": "this task classifies legal:low only; the cross-family capacity and expansion inventory belongs to #227 and its outcome can demand a new program version but cannot rewrite this decision",
+      "scope": "offline audit of every remaining existing family across predeclared eligible complexity/regime cells plus prospective full task-family designs: enumerate canonical model-visible pre-read forms, prove or qualify closure, record per-form capacity and shared-template dependence, report structural B->A need and authoritative information, inventory prior IDs/seeds and inaccessible artifacts, and specify additional families only as substantial multi-step tasks with authentic peer-owned information, a matched inert placebo and measurable receiver Choice uncertainty - never microbenchmarks or a paper's benchmark name"
+    },
+    "issue": 222,
+    "to": "L04"
+  },
+  "input_evidence": {
+    "inputs": [
+      {
+        "expected_sha256_prefix": "501e21b6",
+        "path": "docs/jev-discovery-confirmation-plan.md",
+        "prefix_match": true,
+        "role": "research protocol (scientific contract)",
+        "sha256": "501e21b6dea760371b0bf368046d8bacd203f6b92f0af754a7955d1f738677f7"
+      },
+      {
+        "expected_sha256_prefix": "cb529cd6",
+        "path": "runs/epic-126/replication/jev-replication-form-audit-v1.json",
+        "prefix_match": true,
+        "role": "#200 frozen form-capacity audit",
+        "sha256": "cb529cd61e0e662bfa19fc4998e89fa59a0bf0d63e14f77498035466d6bce89d"
+      },
+      {
+        "expected_sha256_prefix": "4e8de096",
+        "path": "runs/next-phase/hypothesis/jev-discovery-v1/jev-discovery-collection.jsonl",
+        "prefix_match": true,
+        "role": "#207 terminal P06 discovery journal",
+        "sha256": "4e8de096f2c30a6a36a94a0f79e5f450c2e196123e3eafe1c310a92c4f334c83"
+      },
+      {
+        "expected_sha256_prefix": "3086ceac",
+        "path": "runs/next-phase/hypothesis/jev-discovery-v1/jev-discovery-collection-report.json",
+        "prefix_match": true,
+        "role": "#207 terminal P06 collection report",
+        "sha256": "3086ceac558ff922bd083db3795f5f1aa5c7127813daba8bfd71ae1fbef09d3c"
+      },
+      {
+        "expected_sha256_prefix": "89ef2aaf",
+        "path": "docs/jev-hypothesis-low-terminal-decision.md",
+        "prefix_match": true,
+        "role": "#215 terminal family report",
+        "sha256": "89ef2aafb5e28f12d0db707499c583d89cdcc490d105c23c3c56b39e11818d0b"
+      },
+      {
+        "expected_sha256_prefix": "b2d07266",
+        "path": "runs/next-phase/legal/jev-legal-p01-evidence-v1.json",
+        "prefix_match": true,
+        "role": "L01 evidence index (#219)",
+        "sha256": "b2d0726619f5a18ce1ed5a54c5197d51709b1e0473b58ee129c74592b7b707e3"
+      },
+      {
+        "expected_sha256_prefix": "8926f48d",
+        "path": "docs/jev-legal-p01-baseline.md",
+        "prefix_match": true,
+        "role": "L01 baseline narrative (#219)",
+        "sha256": "8926f48d85338163fae0f9434f63c62b380f6402580bb57cd1d35b25d0471870"
+      },
+      {
+        "expected_sha256_prefix": "884b0ed4",
+        "path": "docs/jev-legal-task-sequence.md",
+        "prefix_match": true,
+        "role": "legal family task sequence (#218)",
+        "sha256": "884b0ed4329cc47888e797478f8f00b57f7f5c9d679998d154f5a789397d0394"
+      },
+      {
+        "expected_sha256_prefix": null,
+        "path": "docs/jev-cross-family-entropy-program-v1.md",
+        "prefix_match": null,
+        "role": "cross-family program amendment (2026-09-29)",
+        "sha256": "d9acace24a0cdbfc9a41e331b1fd422f07f22e3fc01480e6408af78d9de4be05"
+      },
+      {
+        "expected_sha256_prefix": null,
+        "path": "runs/next-phase/legal/jev-legal-p02-form-census-v1.json",
+        "prefix_match": null,
+        "role": "L02 form census (#220), predecessor handoff",
+        "sha256": "4bffa5cda2433a81efb41025f42fdd82c585c41798ff2c55e9d853aa45681d24"
+      },
+      {
+        "expected_sha256_prefix": null,
+        "path": "docs/jev-legal-p02-capacity.md",
+        "prefix_match": null,
+        "role": "L02 capacity narrative (#220)",
+        "sha256": "25fac868d502b05ede479fa7e68161f8f4fd4db33267a0f01d710f2d0adec2fa"
+      }
+    ],
+    "sources": [
+      {
+        "expected_sha256_prefix": null,
+        "path": "src/apart_incident_response/task_families.py",
+        "prefix_match": null,
+        "role": "generator/hashing source",
+        "sha256": "b399bb15c96be98d2c4c7e00012448d9a3df9f1cd7deac0ff1375ecb3e1ea6c4"
+      },
+      {
+        "expected_sha256_prefix": null,
+        "path": "src/apart_incident_response/jev_replication_preregistration.py",
+        "prefix_match": null,
+        "role": "generator/hashing source",
+        "sha256": "d91c0e3ad13fc3049240ab76f13214997872681485ef24b60627763f7ec06133"
+      },
+      {
+        "expected_sha256_prefix": null,
+        "path": "src/apart_incident_response/jev_replay.py",
+        "prefix_match": null,
+        "role": "generator/hashing source",
+        "sha256": "5c1c2dfd68beb75e1ccdbbe281c88f879b4b34c98109d003ac3547c6c9d8a862"
+      },
+      {
+        "expected_sha256_prefix": null,
+        "path": "src/apart_incident_response/jev_replay_preregistration_v4.py",
+        "prefix_match": null,
+        "role": "generator/hashing source",
+        "sha256": "18213126c17746de44158c96fb2cb0c40812985c51b1c35233b57a09418302d3"
+      },
+      {
+        "expected_sha256_prefix": null,
+        "path": "src/apart_incident_response/jev_choice.py",
+        "prefix_match": null,
+        "role": "generator/hashing source",
+        "sha256": "9ce9920e5b902e4f68b5723a70f61f4cc8765c4d4fdae557ed93fbf7d3fb3695"
+      },
+      {
+        "expected_sha256_prefix": null,
+        "path": "src/apart_incident_response/jev_form_census.py",
+        "prefix_match": null,
+        "role": "generator/hashing source",
+        "sha256": "a1a5839a1527ef7c1627305a531ac409acf252a53a9550292b28b46fad113c4a"
+      },
+      {
+        "expected_sha256_prefix": null,
+        "path": "src/apart_incident_response/jev_legal_form_census.py",
+        "prefix_match": null,
+        "role": "generator/hashing source",
+        "sha256": "216eecde0dd0640451b4f32d2ae866be6db165d2ac8911405d496766ff5256e5"
+      }
+    ]
+  },
+  "issue": "#221",
+  "limitations": [
+    "Offline only: no provider call, probe, live journal or network event was made or authorized by this task.",
+    "Frozen #200 and terminal #207/#215 files are read-only inputs here and were preserved byte-identically.",
+    "The classification binds the audited four-form legal:low generator version; a redesigned generator is a new protocol boundary, not extra seeds.",
+    "Closure of the form space does not establish statistical independence: the four forms share one template, so sign-flip inference stays assumption-dependent and descriptive.",
+    "Cost figures are planning arithmetic from a carried rate card; no legal route, model, budget or cap is registered or authorized by this artifact.",
+    "Capacity, inventory exceptions and prior-overlap facts are cited from the hash-pinned L02 census; its 20 inaccessible locations remain open audit exceptions, never empty sets.",
+    "A failed or stopped predecessor never authorizes a successor: nothing here approves legal:low collection, a route, a budget or any provider call."
+  ],
+  "milestone": "L03",
+  "network_audit": {
+    "event_names": [],
+    "events": 0,
+    "hook": "sys.addaudithook(socket., urllib., http.client., ftplib.)",
+    "provider_calls": 0
+  },
+  "non_claims": [
+    "no provider call, probe or live journal was made or authorized",
+    "this artifact is not a registration, a lock or an authorization",
+    "no confirmatory or significance-style claim for legal:low at k = 4",
+    "no population-level generalization: the four forms are the entire finite form space",
+    "no effect-size prior is taken from planning-low or hypothesis-low",
+    "seeds are not forms and never increase k",
+    "forms are never pooled across families to obtain a smaller p-value",
+    "the generator is not redesigned and the frozen queue is not re-ordered",
+    "the motivating paper's benchmark results are not Jev entropy evidence",
+    "no route, model, budget or stop rule is approved for the legal family here",
+    "capacity headroom is not permission to replace missing seeds"
+  ],
+  "offline_only": true,
+  "parent_issue": "#218",
+  "predecessor_evidence": {
+    "all_checks_pass": true,
+    "artifact": "jev-legal-p02-form-census-v1",
+    "checks": 35,
+    "content_hash": "b01aa7de17cb21d18b7dd83a12764da7ff265a18b7089f2c2be7eaaf6b72b775",
+    "content_hash_recomputes": true,
+    "handoff_deliverable": "attainability, classification and outcome-blind discovery design",
+    "l01_recorded_hashes_match_current_bytes": true,
+    "network_events": 0,
+    "path": "runs/next-phase/legal/jev-legal-p02-form-census-v1.json",
+    "recorded_hashes_match_current_bytes": true
+  },
+  "predecessor_issue": "#220",
+  "program_amendment": "docs/jev-cross-family-entropy-program-v1.md",
+  "protocol": "docs/jev-discovery-confirmation-plan.md",
+  "provider_calls": 0,
+  "regime": "N",
+  "request_cost_scenarios": {
+    "authorization_status": "planning arithmetic only: L04 registers the legal route, rates, caps and stop rule as new registration fields, and only L07 may authorize any request",
+    "candidate_sizes": [
+      2,
+      4,
+      8
+    ],
+    "comparison": "s = 2 fails the registered selection quantum before any cost is considered; s = 4 fits every ceiling with the collection worst case 0.146276352 <= 0.20 and program worst case 0.195821568 <= 0.30; s = 8 exceeds the collection ceiling (0.292552704 > 0.20) and the program ceiling (0.391643136 > 0.30). The rule is a pure function of capacity and the rate card, so no outcome, emission or entropy value can enter it",
+    "cost_model": {
+      "jev_input_token_ceiling": 8192,
+      "jev_input_usd_per_mtok": 0.042,
+      "jev_worst_physical_call_usd": 0.000344064,
+      "ling_completion_usd_per_mtok": 0.18,
+      "ling_input_token_ceiling": 8192,
+      "ling_output_token_ceiling": 1024,
+      "ling_prompt_usd_per_mtok": 0.06,
+      "ling_worst_physical_call_usd": 0.00067584,
+      "retry_inclusive_physical_per_logical": 3,
+      "status": "planning arithmetic carried from the #200/#205 registration; the legal family has no registered or authorized route"
+    },
+    "planning_ceilings_usd": {
+      "collection": 0.2,
+      "exploratory_replay": 0.1,
+      "program": 0.3
+    },
+    "scenarios": [
+      {
+        "capacity_ok": true,
+        "collection": {
+          "cost_ceiling_usd": 0.2,
+          "physical": {
+            "combined": 120,
+            "receiver": 24,
+            "writer": 96
+          },
+          "planned": {
+            "combined": 40,
+            "receiver": 8,
+            "writer": 32
+          },
+          "within_ceiling": true,
+          "worst_case_cost_usd": 0.073138176
+        },
+        "exploratory_replay": {
+          "branches": 3,
+          "cost_ceiling_usd": 0.1,
+          "events_max": 8,
+          "physical": {
+            "combined": 72,
+            "jev": 72,
+            "writer": 0
+          },
+          "planned": {
+            "combined": 24,
+            "jev": 24,
+            "writer": 0
+          },
+          "within_ceiling": true,
+          "worst_case_cost_usd": 0.024772608
+        },
+        "feasible": false,
+        "fixed_n": 8,
+        "infeasible_reasons": [
+          "fewer than INSTANCES_PER_FORM = 4 seeds per form"
+        ],
+        "program": {
+          "cost_ceiling_usd": 0.3,
+          "within_ceiling": true,
+          "worst_case_cost_usd": 0.097910784
+        },
+        "quantum_ok": false,
+        "seeds_per_form": 2,
+        "selected": false
+      },
+      {
+        "capacity_ok": true,
+        "collection": {
+          "cost_ceiling_usd": 0.2,
+          "physical": {
+            "combined": 240,
+            "receiver": 48,
+            "writer": 192
+          },
+          "planned": {
+            "combined": 80,
+            "receiver": 16,
+            "writer": 64
+          },
+          "within_ceiling": true,
+          "worst_case_cost_usd": 0.146276352
+        },
+        "exploratory_replay": {
+          "branches": 3,
+          "cost_ceiling_usd": 0.1,
+          "events_max": 16,
+          "physical": {
+            "combined": 144,
+            "jev": 144,
+            "writer": 0
+          },
+          "planned": {
+            "combined": 48,
+            "jev": 48,
+            "writer": 0
+          },
+          "within_ceiling": true,
+          "worst_case_cost_usd": 0.049545216
+        },
+        "feasible": true,
+        "fixed_n": 16,
+        "infeasible_reasons": [],
+        "program": {
+          "cost_ceiling_usd": 0.3,
+          "within_ceiling": true,
+          "worst_case_cost_usd": 0.195821568
+        },
+        "quantum_ok": true,
+        "seeds_per_form": 4,
+        "selected": true
+      },
+      {
+        "capacity_ok": true,
+        "collection": {
+          "cost_ceiling_usd": 0.2,
+          "physical": {
+            "combined": 480,
+            "receiver": 96,
+            "writer": 384
+          },
+          "planned": {
+            "combined": 160,
+            "receiver": 32,
+            "writer": 128
+          },
+          "within_ceiling": false,
+          "worst_case_cost_usd": 0.292552704
+        },
+        "exploratory_replay": {
+          "branches": 3,
+          "cost_ceiling_usd": 0.1,
+          "events_max": 32,
+          "physical": {
+            "combined": 288,
+            "jev": 288,
+            "writer": 0
+          },
+          "planned": {
+            "combined": 96,
+            "jev": 96,
+            "writer": 0
+          },
+          "within_ceiling": true,
+          "worst_case_cost_usd": 0.099090432
+        },
+        "feasible": false,
+        "fixed_n": 32,
+        "infeasible_reasons": [
+          "collection worst case 0.292552704 exceeds $0.20",
+          "program worst case 0.391643136 exceeds $0.30"
+        ],
+        "program": {
+          "cost_ceiling_usd": 0.3,
+          "within_ceiling": false,
+          "worst_case_cost_usd": 0.391643136
+        },
+        "quantum_ok": true,
+        "seeds_per_form": 8,
+        "selected": false
+      }
+    ],
+    "selected_fixed_n": 16,
+    "selected_seeds_per_form": 4,
+    "selection_rule": "s* = the smallest seeds-per-form value that is at least INSTANCES_PER_FORM = 4, at most the scarcest per-form discovery-window capacity, and whose retry-inclusive worst-case collection, replay and program costs fit the planning ceilings; the screen then takes the first s* seeds per form in ascending seed order inside the discovery window"
+  },
+  "reserved_paths": {
+    "absent_at_build": {
+      "discovery_journal": true,
+      "discovery_report": true,
+      "exploratory_replay_journal": true,
+      "exploratory_replay_report": true
+    },
+    "lifecycle": "fresh paths only: no resume, no append, no overwrite, no path overrides; this artifact creates none of them",
+    "proposed": {
+      "discovery_journal": "runs/next-phase/legal/jev-discovery-v1/jev-discovery-collection.jsonl",
+      "discovery_report": "runs/next-phase/legal/jev-discovery-v1/jev-discovery-collection-report.json",
+      "exploratory_replay_journal": "runs/next-phase/legal/jev-discovery-v1/jev-exploratory-replay.jsonl",
+      "exploratory_replay_report": "runs/next-phase/legal/jev-discovery-v1/jev-exploratory-replay-report.json"
+    },
+    "proposed_not_created": true
+  },
+  "root_issue": "#159",
+  "stage": "offline design classification, attainability derivation and outcome-blind discovery screen",
+  "stop_conditions": {
+    "semantics": "fixed schedule with no outcome-based stopping or seed replacement; the cap closest to the next call wins; any stop keeps the whole fixed manifest as an immutable journal including failure and not-attempted rows and routes to a terminal report; resuming requires a new registration and fresh paths",
+    "stops": [
+      "request cap or cost cap reached before the next call",
+      "all fixed-N instances attempted (fixed schedule; completion ends the block)",
+      "model or endpoint drift from the registered value",
+      "protocol-key, normalization-policy or option-set identity drift",
+      "request/state/option identity drift or registration, source, treatment or geometry hash drift",
+      "malformed, non-finite, negative or option-mismatched receiver vector",
+      "hard normalization deviation above the registered ceiling or argmax shift after normalization",
+      "writer terminal errors (empty_output, truncated_output, unparsed_output, invalid_answer, writer_error, rate-limited)",
+      "two consecutive terminal provider failures",
+      "output collision (journal or report path already exists)",
+      "any audit exception that breaks provenance or treatment integrity"
+    ]
+  },
+  "successor_issue": "#222",
+  "task_sequence": "docs/jev-legal-task-sequence.md"
+}
