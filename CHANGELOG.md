@@ -37,6 +37,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix board IPC integration and CLI tool wiring (#58)
 
 ### Changed
+- L04 — Draft fresh legal discovery registration (#222)
 - Audit lexicon, poetry, and reference form capacity offline; identify the reference:high semantic no-go and propose two substantial new family designs without live calls (#227)
 - L03 — Classify legal design and discovery feasibility (#221)
 - L02 — Audit legal:low form capacity and independence: reproducible four-form census, fresh 88000/89000 windows, qualified prior-manifest exceptions, and offline tests (#220)
