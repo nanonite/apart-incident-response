@@ -37,6 +37,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix board IPC integration and CLI tool wiring (#58)
 
 ### Changed
+- L05 — Implement and verify legal discovery preflight offline (#223)
 - L04 — Draft fresh legal discovery registration (#222)
 - Audit lexicon, poetry, and reference form capacity offline; identify the reference:high semantic no-go and propose two substantial new family designs without live calls (#227)
 - L03 — Classify legal design and discovery feasibility (#221)
