@@ -1,0 +1,14 @@
+{
+  "authorization_record_path": "runs/next-phase/legal/jev-legal-discovery-authorization-record-v1.json",
+  "handoff": "L06 (#224): independent registration/runner review and hash lock; L07 (#225) supplies the separate scope-bound user authorization",
+  "lock_path": "runs/next-phase/legal/jev-legal-p06-discovery-lock-v1.json",
+  "lock_review_path": "runs/next-phase/legal/jev-legal-p06-discovery-lock-review-v1.json",
+  "mode": "jev-legal-p05-discovery-preflight-v1",
+  "network_events": 0,
+  "planned_seeds": 16,
+  "provider_calls": 0,
+  "registered_live_paths_absent": true,
+  "registration_hash": "5f31630bae7fe414f054f78e1c4bb5ebf3b525d083cd3f91b81e1f89b427bde1",
+  "registration_version": "jev-legal-p04-discovery-registration-v1",
+  "status": "offline"
+}
